@@ -5,7 +5,7 @@ namespace FreeRealmsUnpacker
     public class ManifestReader
     {
         private const string ManifestFile = "Assets_manifest.dat";
-        private const long ManifestChunkSize = 148;
+        private const int ManifestChunkSize = 148;
 
         public static Asset[] GetClientAssets(string clientPath)
         {
