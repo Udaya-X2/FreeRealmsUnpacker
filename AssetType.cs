@@ -1,0 +1,18 @@
+﻿namespace FreeRealmsUnpacker
+{
+    public enum AssetType
+    {
+        /// <summary>
+        /// Assets for the game, typically located in the "Free Realms/" directory.
+        /// </summary>
+        Game,
+        /// <summary>
+        /// Image assets for the TCG, typically located in the "Free Realms/assets/" directory.
+        /// </summary>
+        TCG,
+        /// <summary>
+        /// Resource assets for the TCG, typically located in the "Free Realms/tcg/" directory.
+        /// </summary>
+        Resource
+    }
+}
