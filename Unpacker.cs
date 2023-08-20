@@ -45,7 +45,7 @@ namespace FreeRealmsUnpacker
             foreach (Asset asset in clientAssets)
             {
                 reader.Read(asset, buffer);
-                using FileStream assetWriter = File.OpenWrite($"{OutputDirectory}/{asset.Name}");
+                using FileStream assetWriter = File.Open($"{OutputDirectory}/{asset.Name}", FileMode.Create);
                 assetWriter.Write(buffer, 0, asset.Size);
             }
         }

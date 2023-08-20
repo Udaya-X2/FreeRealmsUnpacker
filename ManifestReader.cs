@@ -18,14 +18,14 @@ namespace FreeRealmsUnpacker
 
             if (manifestPaths.Length == 0)
             {
-                throw new ArgumentException($"{clientPath} does not contain a {manifestPattern} file.");
+                throw new ArgumentException($"{clientPath} does not contain an {manifestPattern} file.");
             }
 
             using FileStream stream = File.OpenRead(manifestPaths[0]);
             using BinaryReader reader = new(stream);
             Asset[] clientAssets = new Asset[stream.Length / ManifestChunkSize];
 
-            // Scan each chunk of the manifest file for the information relating to each asset.
+            // Scan each chunk of the manifest file for information regarding each asset.
             for (int i = 0; i < clientAssets.Length; i++)
             {
                 int length = reader.ReadInt32();

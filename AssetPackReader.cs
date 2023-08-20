@@ -20,7 +20,7 @@
 
             if (assetStreams.Length == 0)
             {
-                throw new ArgumentException($"{clientPath} does not contain a {assetPackPattern} file.");
+                throw new ArgumentException($"{clientPath} does not contain any {assetPackPattern} file(s).");
             }
         }
 
