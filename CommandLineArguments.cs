@@ -21,6 +21,9 @@ namespace FreeRealmsUnpacker
         [Option(ShortName = "r", Description = "Extract resource assets only (in 'Free Realms/tcg/')")]
         public bool ExtractResource { get; }
 
+        [Option(ShortName = "q", LongName = "quiet", Description = "Don't show progress bars.")]
+        public bool HideProgressBars { get; }
+
         [Option(ShortName = "y", Description = "Automatically answer yes to any question.")]
         public bool AnswerYes { get; }
 

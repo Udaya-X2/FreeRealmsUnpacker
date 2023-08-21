@@ -10,18 +10,12 @@
         /// Initializes a new instance of the AssetPackReader class to open all
         /// asset packs of the specified type in the client directory for reading.
         /// </summary>
-        /// <exception cref="ArgumentException"></exception>
         public AssetPackReader(string clientPath, AssetType assetType)
         {
             string assetPackPattern = GetAssetPackPattern(assetType);
             assetStreams = Directory.EnumerateFiles(clientPath, assetPackPattern, SearchOption.AllDirectories)
                                     .Select(f => File.OpenRead(f))
                                     .ToArray();
-
-            if (assetStreams.Length == 0)
-            {
-                throw new ArgumentException($"{clientPath} does not contain any {assetPackPattern} file(s).");
-            }
         }
 
         /// <summary>
@@ -34,7 +28,7 @@
             AssetType.Game => "Assets_???.dat",
             AssetType.TCG => "assetpack000_000.dat",
             AssetType.Resource => "AssetsTcg_000.dat",
-            _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType)),
+            _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType))
         };
 
         /// <summary>

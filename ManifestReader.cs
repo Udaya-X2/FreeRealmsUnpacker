@@ -9,17 +9,16 @@ namespace FreeRealmsUnpacker
         /// <summary>
         /// Scans the client directory's manifest file for information on each asset of the specified type.
         /// </summary>
-        /// <returns>An array consisting of the assets in the client manifest file.</returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <returns>
+        /// An array consisting of the assets in the client manifest file,
+        /// or an empty array if the manifest file could not be found.
+        /// </returns>
         public static Asset[] GetClientAssets(string clientPath, AssetType assetType)
         {
             string manifestPattern = GetManifestPattern(assetType);
             string[] manifestPaths = Directory.GetFiles(clientPath, manifestPattern, SearchOption.AllDirectories);
 
-            if (manifestPaths.Length == 0)
-            {
-                throw new ArgumentException($"{clientPath} does not contain an {manifestPattern} file.");
-            }
+            if (manifestPaths.Length == 0) return Array.Empty<Asset>();
 
             using FileStream stream = File.OpenRead(manifestPaths[0]);
             using BinaryReader reader = new(stream);
@@ -50,7 +49,7 @@ namespace FreeRealmsUnpacker
             AssetType.Game => "Assets_manifest.dat",
             AssetType.TCG => "assetpack000_manifest.dat",
             AssetType.Resource => "AssetsTcg_manifest.dat",
-            _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType)),
+            _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType))
         };
     }
 }
