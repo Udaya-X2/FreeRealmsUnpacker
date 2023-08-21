@@ -27,6 +27,9 @@ namespace FreeRealmsUnpacker
         [Option(ShortName = "y", Description = "Automatically answer yes to any question.")]
         public bool AnswerYes { get; }
 
+        [Option(ShortName = "d", Description = "Show complete exception stack traces.")]
+        public bool Debug { get; }
+
         public static int Main(string[] args) => CommandLineApplication.Execute<Unpacker>(args);
     }
 }

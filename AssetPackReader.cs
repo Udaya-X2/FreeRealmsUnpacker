@@ -34,21 +34,29 @@
         /// <summary>
         /// Reads the contents of the specified asset from the asset pack(s) and writes the data in a given buffer.
         /// </summary>
+        /// <exception cref="IndexOutOfRangeException"></exception>
         public void Read(Asset asset, byte[] buffer)
         {
-            // Determine which asset pack to read and where to start reading from the asset address.
-            long file = asset.Address / MaxAssetPackSize;
-            long address = asset.Address % MaxAssetPackSize;
-            FileStream assetStream = assetStreams[file];
-            assetStream.Position = address;
-            int bytesRead = assetStream.Read(buffer, 0, asset.Size);
-
-            // If the asset spans two asset packs, begin reading the next pack to obtain the rest of the asset.
-            if (bytesRead != asset.Size)
+            try
             {
-                assetStream = assetStreams[file + 1];
-                assetStream.Position = 0;
-                assetStream.Read(buffer, 0, asset.Size);
+                // Determine which asset pack to read and where to start reading from the asset address.
+                long file = asset.Address / MaxAssetPackSize;
+                long address = asset.Address % MaxAssetPackSize;
+                FileStream assetStream = assetStreams[file];
+                assetStream.Position = address;
+                int bytesRead = assetStream.Read(buffer, 0, asset.Size);
+
+                // If the asset spans two asset packs, begin reading the next pack to obtain the rest of the asset.
+                if (bytesRead != asset.Size)
+                {
+                    assetStream = assetStreams[file + 1];
+                    assetStream.Position = 0;
+                    assetStream.Read(buffer, 0, asset.Size);
+                }
+            }
+            catch (IndexOutOfRangeException)
+            {
+                throw new IndexOutOfRangeException($"Ran out of asset packs while reading '{asset.Name}'");
             }
         }
 

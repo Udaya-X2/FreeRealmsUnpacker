@@ -5,6 +5,7 @@ namespace FreeRealmsUnpacker
     public class ManifestReader
     {
         private const int ManifestChunkSize = 148;
+        private const int MaxAssetNameLength = 128;
 
         /// <summary>
         /// Scans the client directory's manifest file for information on each asset of the specified type.
@@ -13,6 +14,7 @@ namespace FreeRealmsUnpacker
         /// An array consisting of the assets in the client manifest file,
         /// or an empty array if the manifest file could not be found.
         /// </returns>
+        /// <exception cref="ArgumentException"></exception>
         public static Asset[] GetClientAssets(string clientPath, AssetType assetType)
         {
             string manifestPattern = GetManifestPattern(assetType);
@@ -24,6 +26,11 @@ namespace FreeRealmsUnpacker
             using BinaryReader reader = new(stream);
             Asset[] clientAssets = new Asset[stream.Length / ManifestChunkSize];
 
+            if (stream.Length % ManifestChunkSize != 0)
+            {
+                throw new ArgumentException($"'{stream.Name}' does not have the correct format.");
+            }
+
             // Scan each chunk of the manifest file for information regarding each asset.
             for (int i = 0; i < clientAssets.Length; i++)
             {
@@ -33,7 +40,7 @@ namespace FreeRealmsUnpacker
                 int size = reader.ReadInt32();
                 uint crc32 = reader.ReadUInt32();
                 clientAssets[i] = new Asset(name, address, size, crc32);
-                reader.BaseStream.Seek(128 - length, SeekOrigin.Current);
+                reader.BaseStream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
             }
 
             return clientAssets;

@@ -8,7 +8,7 @@ namespace FreeRealmsUnpacker
         /// <summary>
         /// The entry point of <see href="FreeRealmsUnpacker"/>, following command parsing.
         /// </summary>
-        /// <returns>The exit code.</returns>
+        /// <returns>The process exit code.</returns>
         public int OnExecute()
         {
             try
@@ -26,7 +26,9 @@ namespace FreeRealmsUnpacker
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex.Message);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine(Debug ? $"\n{ex}" : $"ERROR - {ex.Message}");
+                Console.ResetColor();
                 return 2;
             }
 
