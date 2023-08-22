@@ -1,5 +1,8 @@
 ﻿namespace FreeRealmsUnpacker
 {
+    /// <summary>
+    /// Represents a Free Realms asset in terms of its file properties.
+    /// </summary>
     public class Asset
     {
         public readonly string Name;
@@ -8,7 +11,8 @@
         public readonly uint CRC32;
 
         /// <summary>
-        /// Represents a Free Realms asset in terms of its file properties.
+        /// Initializes a new instance of the <see cref="Asset"/> class,
+        /// which stores file information on a Free Realms asset.
         /// </summary>
         public Asset(string name, long address, int size, uint crc32)
         {

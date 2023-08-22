@@ -1,5 +1,8 @@
 ﻿namespace FreeRealmsUnpacker
 {
+    /// <summary>
+    /// Specifies the types of Free Realms assets.
+    /// </summary>
     public enum AssetType
     {
         /// <summary>

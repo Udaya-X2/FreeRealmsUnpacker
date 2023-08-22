@@ -1,5 +1,8 @@
 ﻿namespace FreeRealmsUnpacker
 {
+    /// <summary>
+    /// Provides random access reading operations on asset packs in a Free Realms client directory.
+    /// </summary>
     public class AssetPackReader : IDisposable
     {
         private const int MaxAssetPackSize = 209715200;
@@ -7,8 +10,8 @@
         private readonly FileStream[] assetStreams;
 
         /// <summary>
-        /// Initializes a new instance of the AssetPackReader class to open all
-        /// asset packs of the specified type in the client directory for reading.
+        /// Initializes a new instance of the <see cref="AssetPackReader"/>, which acts as a combination
+        /// file stream reader on all asset packs of the specified type in the client directory.
         /// </summary>
         public AssetPackReader(string clientPath, AssetType assetType)
         {

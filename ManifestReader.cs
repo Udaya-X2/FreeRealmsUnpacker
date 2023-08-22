@@ -2,7 +2,10 @@
 
 namespace FreeRealmsUnpacker
 {
-    public class ManifestReader
+    /// <summary>
+    /// Provides static methods for obtaining asset information in a Free Realms client directory.
+    /// </summary>
+    public static class ManifestReader
     {
         private const int ManifestChunkSize = 148;
         private const int MaxAssetNameLength = 128;

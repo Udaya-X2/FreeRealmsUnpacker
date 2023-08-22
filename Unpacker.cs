@@ -1,8 +1,13 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
+using System.Data;
+using System.Diagnostics;
 
 namespace FreeRealmsUnpacker
 {
+    /// <summary>
+    /// The driver class of <see href="FreeRealmsUnpacker"/>.
+    /// </summary>
     public partial class Unpacker
     {
         /// <summary>
@@ -14,15 +19,27 @@ namespace FreeRealmsUnpacker
             try
             {
                 // Set up the input and output directories.
-                if (!SetupInputDirectory() || !SetupOutputDirectory()) return 1;
+                if (!ValidateInputDirectory() || !SetupOutputDirectory()) return 1;
 
                 // By default, extract all assets.
+                Stopwatch sw = Stopwatch.StartNew();
                 bool extractAll = !ExtractGame && !ExtractTCG && !ExtractResource;
+                int numAssets = 0;
 
-                // Extract the asset type(s) specified to the output directory.
-                if (extractAll || ExtractGame) ExtractAssets(AssetType.Game);
-                if (extractAll || ExtractTCG) ExtractAssets(AssetType.TCG);
-                if (extractAll || ExtractResource) ExtractAssets(AssetType.Resource);
+                // Handle the asset type(s) specified.
+                if (extractAll || ExtractGame) numAssets += HandleAssets(AssetType.Game);
+                if (extractAll || ExtractTCG) numAssets += HandleAssets(AssetType.TCG);
+                if (extractAll || ExtractResource) numAssets += HandleAssets(AssetType.Resource);
+
+                // Print the number of assets found.
+                if (numAssets == 0)
+                {
+                    Console.Error.WriteLine("\nNo assets found.");
+                }
+                else
+                {
+                    Console.Error.WriteLine($"\n{numAssets} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.ff}");
+                }
             }
             catch (Exception ex)
             {
@@ -36,11 +53,32 @@ namespace FreeRealmsUnpacker
         }
 
         /// <summary>
-        /// Extracts assets of the specified type to the output directory.
+        /// Lists or extracts assets of the specified type, depending on the command.
         /// </summary>
-        private void ExtractAssets(AssetType assetType)
+        /// <returns>The number of assets of the specified type.</returns>
+        private int HandleAssets(AssetType assetType)
         {
             Asset[] clientAssets = ManifestReader.GetClientAssets(InputDirectory, assetType);
+
+            if (ListAssets)
+            {
+                Array.ForEach(clientAssets, asset => Console.WriteLine(asset.Name));
+            }
+            else
+            {
+                ExtractAssets(clientAssets, assetType);
+            }
+
+            return clientAssets.Length;
+        }
+
+        /// <summary>
+        /// Extracts assets of the specified type to the output directory.
+        /// </summary>
+        private void ExtractAssets(Asset[] clientAssets, AssetType assetType)
+        {
+            if (clientAssets.Length == 0) return;
+
             byte[] buffer = new byte[clientAssets.Select(x => x.Size).DefaultIfEmpty().Max()];
             using AssetPackReader reader = new(InputDirectory, assetType);
             using ProgressBar? pbar = GetExtractionProgressBar(clientAssets.Length, assetType);
@@ -48,10 +86,19 @@ namespace FreeRealmsUnpacker
 
             foreach (Asset asset in clientAssets)
             {
-                reader.Read(asset, buffer);
-                using FileStream assetWriter = File.Open($"{OutputDirectory}/{asset.Name}", FileMode.Create);
-                assetWriter.Write(buffer, 0, asset.Size);
-                UpdateProgress(pbar, $"Extracted {asset.Name}");
+                string assetPath = $"{OutputDirectory}/{asset.Name}";
+
+                if (SkipExisting && File.Exists(assetPath))
+                {
+                    pbar?.Tick($"({pbar.CurrentTick + 1})/({pbar.MaxTicks}) Skipped {asset.Name}");
+                }
+                else
+                {
+                    reader.Read(asset, buffer);
+                    using FileStream assetWriter = File.Open(assetPath, FileMode.Create);
+                    assetWriter.Write(buffer, 0, asset.Size);
+                    pbar?.Tick($"({pbar.CurrentTick + 1})/({pbar.MaxTicks}) Extracted {asset.Name}");
+                }
             }
         }
 
@@ -74,6 +121,19 @@ namespace FreeRealmsUnpacker
         };
 
         /// <summary>
+        /// Creates a <see cref="ProgressBar"/> with the specified parameters.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="ProgressBar"/> with the specified parameters,
+        /// or null if progress bars are disabled.
+        /// </returns>
+        private ProgressBar? CreateProgressBar(int maxTicks, string message, ConsoleColor color)
+        {
+            ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };
+            return NoProgressBars ? null : new ProgressBar(maxTicks, message, options);
+        }
+
+        /// <summary>
         /// Creates the directory structure used by the client assets in the output directory.
         /// </summary>
         private void CreateDirectoryStructure(Asset[] clientAssets, AssetType assetType)
@@ -92,7 +152,7 @@ namespace FreeRealmsUnpacker
         /// Checks whether the input directory exists.
         /// </summary>
         /// <returns>True if the input directory exists.</returns>
-        private bool SetupInputDirectory()
+        private bool ValidateInputDirectory()
         {
             if (!Directory.Exists(InputDirectory))
             {
@@ -104,42 +164,23 @@ namespace FreeRealmsUnpacker
         }
 
         /// <summary>
-        /// Prompts the user to create the output directory or remove files from it if the directory is not empty.
+        /// Prompts the user to create the output directory if it does not exist.
         /// </summary>
         /// <returns>True if the output directory was set up successfully.</returns>
         private bool SetupOutputDirectory()
         {
             DirectoryInfo dir = new(OutputDirectory);
 
-            if (!dir.Exists)
+            // Skip the directory setup if assets are being listed instead of extracted.
+            if (!ListAssets && !dir.Exists)
             {
-                if (PromptUser($"{OutputDirectory} does not exist. Create the directory?"))
+                if (PromptUser($"{dir.FullName} does not exist. Create the directory?"))
                 {
                     dir.Create();
                 }
                 else
                 {
                     return false;
-                }
-            }
-            else if ((dir.EnumerateFiles().Any() || dir.EnumerateDirectories().Any())
-                     && PromptUser($"{OutputDirectory} contains files. Delete them?"))
-            {
-                IEnumerable<FileInfo> files = dir.EnumerateFiles();
-                IEnumerable<DirectoryInfo> subdirs = dir.EnumerateDirectories();
-                using ProgressBar? pbar = CreateProgressBar(files.Count() + subdirs.Count(),
-                                                            "Deleting files...",
-                                                            ConsoleColor.Red);
-
-                foreach (FileInfo file in files)
-                {
-                    file.Delete();
-                    UpdateProgress(pbar, $"Deleted {file.Name}");
-                }
-                foreach (DirectoryInfo subdir in subdirs)
-                {
-                    subdir.Delete(true);
-                    UpdateProgress(pbar, $"Deleted {subdir.Name}");
                 }
             }
 
@@ -150,24 +191,6 @@ namespace FreeRealmsUnpacker
         /// Gets a yes/no response from the console after displaying a <paramref name="prompt"/>.
         /// </summary>
         /// <returns>True if the answer is 'yes', or --answer-yes is enabled.</returns>
-        private bool PromptUser(string prompt) => AnswerYes || Prompt.GetYesNo(prompt, false);
-
-        /// <summary>
-        /// Creates a <see cref="ProgressBar"/> with the specified parameters.
-        /// </summary>
-        /// <returns>A <see cref="ProgressBar"/> with the specified parameters, or null if --quiet is enabled.</returns>
-        private ProgressBar? CreateProgressBar(int maxTicks, string message, ConsoleColor color)
-        {
-            ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };
-            return HideProgressBars ? null : new ProgressBar(maxTicks, message, options);
-        }
-
-        /// <summary>
-        /// Moves the progress bar by one tick and displays a message.
-        /// </summary>
-        private static void UpdateProgress(ProgressBar? pbar, string message)
-        {
-            pbar?.Tick($"({pbar.CurrentTick + 1})/({pbar.MaxTicks}) {message}");
-        }
+        private bool PromptUser(string prompt) => AnswerYes || Prompt.GetYesNo(prompt, true);
     }
 }
