@@ -12,7 +12,7 @@
         /// <summary>
         /// Image assets for the TCG, typically located in the "Free Realms/assets/" directory.
         /// </summary>
-        TCG,
+        Tcg,
         /// <summary>
         /// Resource assets for the TCG, typically located in the "Free Realms/tcg/" directory.
         /// </summary>

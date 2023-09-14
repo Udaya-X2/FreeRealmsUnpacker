@@ -7,7 +7,7 @@
     {
         private const int MaxAssetPackSize = 209715200;
 
-        private readonly FileStream[] assetStreams;
+        private readonly FileStream[] _assetStreams;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetPackReader"/>, which acts as a combination
@@ -16,9 +16,9 @@
         public AssetPackReader(string clientPath, AssetType assetType)
         {
             string assetPackPattern = GetAssetPackPattern(assetType);
-            assetStreams = Directory.EnumerateFiles(clientPath, assetPackPattern, SearchOption.AllDirectories)
-                                    .Select(f => File.OpenRead(f))
-                                    .ToArray();
+            _assetStreams = Directory.EnumerateFiles(clientPath, assetPackPattern, SearchOption.AllDirectories)
+                                     .Select(File.OpenRead)
+                                     .ToArray();
         }
 
         /// <summary>
@@ -29,7 +29,7 @@
         private static string GetAssetPackPattern(AssetType assetType) => assetType switch
         {
             AssetType.Game => "Assets_???.dat",
-            AssetType.TCG => "assetpack000_000.dat",
+            AssetType.Tcg => "assetpack000_000.dat",
             AssetType.Resource => "AssetsTcg_000.dat",
             _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType))
         };
@@ -42,17 +42,17 @@
         {
             try
             {
-                // Determine which asset pack to read and where to start reading from the asset address.
-                long file = asset.Address / MaxAssetPackSize;
-                long address = asset.Address % MaxAssetPackSize;
-                FileStream assetStream = assetStreams[file];
+                // Determine which asset pack to read and where to start reading from based on the offset.
+                long file = asset.Offset / MaxAssetPackSize;
+                long address = asset.Offset % MaxAssetPackSize;
+                FileStream assetStream = _assetStreams[file];
                 assetStream.Position = address;
                 int bytesRead = assetStream.Read(buffer, 0, asset.Size);
 
                 // If the asset spans two asset packs, begin reading the next pack to obtain the rest of the asset.
                 if (bytesRead != asset.Size)
                 {
-                    assetStream = assetStreams[file + 1];
+                    assetStream = _assetStreams[file + 1];
                     assetStream.Position = 0;
                     assetStream.Read(buffer, 0, asset.Size);
                 }
@@ -65,7 +65,7 @@
 
         public void Dispose()
         {
-            Array.ForEach(assetStreams ?? Array.Empty<FileStream>(), x => x.Dispose());
+            Array.ForEach(_assetStreams, x => x.Dispose());
             GC.SuppressFinalize(this);
         }
     }

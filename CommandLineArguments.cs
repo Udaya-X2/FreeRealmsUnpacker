@@ -15,7 +15,7 @@ namespace FreeRealmsUnpacker
         public bool ExtractGame { get; }
 
         [Option(ShortName = "t", Description = "Extract TCG assets only (in 'Free Realms/assets/')")]
-        public bool ExtractTCG { get; }
+        public bool ExtractTcg { get; }
 
         [Option(ShortName = "r", Description = "Extract resource assets only (in 'Free Realms/tcg/')")]
         public bool ExtractResource { get; }

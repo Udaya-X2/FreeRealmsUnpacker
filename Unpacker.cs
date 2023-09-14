@@ -23,12 +23,12 @@ namespace FreeRealmsUnpacker
 
                 // By default, extract all assets.
                 Stopwatch sw = Stopwatch.StartNew();
-                bool extractAll = !ExtractGame && !ExtractTCG && !ExtractResource;
+                bool extractAll = !ExtractGame && !ExtractTcg && !ExtractResource;
                 int numAssets = 0;
 
                 // Handle the asset type(s) specified.
                 if (extractAll || ExtractGame) numAssets += HandleAssets(AssetType.Game);
-                if (extractAll || ExtractTCG) numAssets += HandleAssets(AssetType.TCG);
+                if (extractAll || ExtractTcg) numAssets += HandleAssets(AssetType.Tcg);
                 if (extractAll || ExtractResource) numAssets += HandleAssets(AssetType.Resource);
 
                 // Print the number of assets found.
@@ -79,7 +79,7 @@ namespace FreeRealmsUnpacker
         {
             if (clientAssets.Length == 0) return;
 
-            byte[] buffer = new byte[clientAssets.Select(x => x.Size).DefaultIfEmpty().Max()];
+            byte[] buffer = new byte[clientAssets.Max(x => x.Size)];
             using AssetPackReader reader = new(InputDirectory, assetType);
             using ProgressBar? pbar = GetExtractionProgressBar(clientAssets.Length, assetType);
             CreateDirectoryStructure(clientAssets, assetType);
@@ -107,15 +107,14 @@ namespace FreeRealmsUnpacker
         /// for max ticks and an <paramref name="assetType"/>-dependent color.
         /// </summary>
         /// <returns>
-        /// A <see cref="ProgressBar"/> with the number of assets for max ticks and an
-        /// <paramref name="assetType"/>-dependent color, or null if the number of assets is 0.
+        /// A <see cref="ProgressBar"/> with the number of assets for max
+        /// ticks and an <paramref name="assetType"/>-dependent color.
         /// </returns>
         /// <exception cref="ArgumentException"></exception>
         private ProgressBar? GetExtractionProgressBar(int numAssets, AssetType assetType) => assetType switch
         {
-            _ when numAssets == 0 => null,
             AssetType.Game => CreateProgressBar(numAssets, "Reading game assets...", ConsoleColor.Green),
-            AssetType.TCG => CreateProgressBar(numAssets, "Reading TCG assets...", ConsoleColor.Blue),
+            AssetType.Tcg => CreateProgressBar(numAssets, "Reading TCG assets...", ConsoleColor.Blue),
             AssetType.Resource => CreateProgressBar(numAssets, "Reading resource assets...", ConsoleColor.DarkYellow),
             _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType))
         };
@@ -125,7 +124,7 @@ namespace FreeRealmsUnpacker
         /// </summary>
         /// <returns>
         /// A <see cref="ProgressBar"/> with the specified parameters,
-        /// or null if progress bars are disabled.
+        /// or <see langword="null"/> if progress bars are disabled.
         /// </returns>
         private ProgressBar? CreateProgressBar(int maxTicks, string message, ConsoleColor color)
         {
@@ -139,7 +138,7 @@ namespace FreeRealmsUnpacker
         private void CreateDirectoryStructure(Asset[] clientAssets, AssetType assetType)
         {
             // Only TCG assets require subdirectories.
-            if (assetType == AssetType.TCG)
+            if (assetType == AssetType.Tcg)
             {
                 foreach (string? assetDir in clientAssets.Select(x => Path.GetDirectoryName(x.Name)).ToHashSet())
                 {
@@ -151,7 +150,9 @@ namespace FreeRealmsUnpacker
         /// <summary>
         /// Checks whether the input directory exists.
         /// </summary>
-        /// <returns>True if the input directory exists.</returns>
+        /// <returns>
+        /// <see langword="true"/> if the input directory exists; otherwise, <see langword="false"/>.
+        /// </returns>
         private bool ValidateInputDirectory()
         {
             if (!Directory.Exists(InputDirectory))
@@ -166,7 +167,9 @@ namespace FreeRealmsUnpacker
         /// <summary>
         /// Prompts the user to create the output directory if it does not exist.
         /// </summary>
-        /// <returns>True if the output directory was set up successfully.</returns>
+        /// <returns>
+        /// <see langword="true"/> if the output directory was set up successfully; otherwise, <see langword="false"/>.
+        /// </returns>
         private bool SetupOutputDirectory()
         {
             DirectoryInfo dir = new(OutputDirectory);
@@ -190,7 +193,7 @@ namespace FreeRealmsUnpacker
         /// <summary>
         /// Gets a yes/no response from the console after displaying a <paramref name="prompt"/>.
         /// </summary>
-        /// <returns>True if the answer is 'yes', or --answer-yes is enabled.</returns>
+        /// <returns><see langword="true"/> if the answer is 'yes'; otherwise, <see langword="false"/>.</returns>
         private bool PromptUser(string prompt) => AnswerYes || Prompt.GetYesNo(prompt, true);
     }
 }

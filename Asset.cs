@@ -3,23 +3,9 @@
     /// <summary>
     /// Represents a Free Realms asset in terms of its file properties.
     /// </summary>
-    public class Asset
-    {
-        public readonly string Name;
-        public readonly long Address;
-        public readonly int Size;
-        public readonly uint CRC32;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Asset"/> class,
-        /// which stores file information on a Free Realms asset.
-        /// </summary>
-        public Asset(string name, long address, int size, uint crc32)
-        {
-            Name = name;
-            Address = address;
-            Size = size;
-            CRC32 = crc32;
-        }
-    }
+    /// <param name="Name">The name of the asset.</param>
+    /// <param name="Offset">The byte offset of the asset in the asset packs.</param>
+    /// <param name="Size">The size of the asset, in bytes.</param>
+    /// <param name="Crc32">The CRC-32 checksum of the asset.</param>
+    public record Asset(string Name, long Offset, int Size, uint Crc32);
 }

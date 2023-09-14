@@ -57,7 +57,7 @@ namespace FreeRealmsUnpacker
         private static string GetManifestPattern(AssetType assetType) => assetType switch
         {
             AssetType.Game => "Assets_manifest.dat",
-            AssetType.TCG => "assetpack000_manifest.dat",
+            AssetType.Tcg => "assetpack000_manifest.dat",
             AssetType.Resource => "AssetsTcg_manifest.dat",
             _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType))
         };
