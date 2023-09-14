@@ -95,8 +95,8 @@ namespace FreeRealmsUnpacker
                 else
                 {
                     reader.Read(asset, buffer);
-                    using FileStream assetWriter = File.Open(assetPath, FileMode.Create);
-                    assetWriter.Write(buffer, 0, asset.Size);
+                    using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                    fs.Write(buffer, 0, asset.Size);
                     pbar?.Tick($"({pbar.CurrentTick + 1})/({pbar.MaxTicks}) Extracted {asset.Name}");
                 }
             }
