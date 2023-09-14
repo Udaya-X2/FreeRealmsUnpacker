@@ -54,7 +54,7 @@
                 {
                     assetStream = _assetStreams[file + 1];
                     assetStream.Position = 0;
-                    assetStream.Read(buffer, 0, asset.Size);
+                    assetStream.Read(buffer, bytesRead, asset.Size);
                 }
             }
             catch (IndexOutOfRangeException)
