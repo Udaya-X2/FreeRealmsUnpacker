@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.7.34009.444
+VisualStudioVersion = 17.7.34031.279
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FreeRealmsUnpacker", "FreeRealmsUnpacker.csproj", "{A138BB74-EDFC-40DD-9BF5-949BBC4B1C81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssetReader", "AssetReader\AssetReader.csproj", "{12622685-9B6E-478E-9B66-E88985F8A8BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnpackerCommandLine", "UnpackerCommandLine\UnpackerCommandLine.csproj", "{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +13,19 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A138BB74-EDFC-40DD-9BF5-949BBC4B1C81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A138BB74-EDFC-40DD-9BF5-949BBC4B1C81}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A138BB74-EDFC-40DD-9BF5-949BBC4B1C81}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A138BB74-EDFC-40DD-9BF5-949BBC4B1C81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{12622685-9B6E-478E-9B66-E88985F8A8BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12622685-9B6E-478E-9B66-E88985F8A8BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12622685-9B6E-478E-9B66-E88985F8A8BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12622685-9B6E-478E-9B66-E88985F8A8BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {7A96126B-E165-43F7-B0A3-B94E92D077AC}
+		SolutionGuid = {98BC8D97-8DF9-4835-928F-C57B583CAC3C}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,4 @@
-﻿namespace FreeRealmsUnpacker
+﻿namespace AssetReader
 {
     /// <summary>
     /// Represents a Free Realms asset in terms of its file properties.

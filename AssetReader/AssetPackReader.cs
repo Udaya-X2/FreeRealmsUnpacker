@@ -1,4 +1,4 @@
-﻿namespace FreeRealmsUnpacker
+﻿namespace AssetReader
 {
     /// <summary>
     /// Provides random access reading operations on asset packs in a Free Realms client directory.

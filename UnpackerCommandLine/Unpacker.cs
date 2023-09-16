@@ -1,18 +1,19 @@
-﻿using Force.Crc32;
+﻿using AssetReader;
+using Force.Crc32;
 using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
 using System.Data;
 using System.Diagnostics;
 
-namespace FreeRealmsUnpacker
+namespace UnpackerCommandLine
 {
     /// <summary>
-    /// The driver class of <see href="FreeRealmsUnpacker"/>.
+    /// The driver class of the command line Free Realms Unpacker.
     /// </summary>
     public partial class Unpacker
     {
         /// <summary>
-        /// The entry point of <see href="FreeRealmsUnpacker"/>, following command parsing.
+        /// The entry point of the command line Free Realms Unpacker, following command parsing.
         /// </summary>
         /// <returns>The process exit code.</returns>
         public int OnExecute()

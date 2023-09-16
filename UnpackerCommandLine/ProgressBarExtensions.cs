@@ -1,6 +1,6 @@
 ﻿using ShellProgressBar;
 
-namespace FreeRealmsUnpacker
+namespace UnpackerCommandLine
 {
     internal static class ProgressBarExtensions
     {

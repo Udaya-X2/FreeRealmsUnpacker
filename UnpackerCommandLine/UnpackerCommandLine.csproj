@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>FreeRealmsUnpackerCLI</AssemblyName>
+    <ApplicationIcon>unpacker.ico</ApplicationIcon>
+    <Authors>Udaya</Authors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="unpacker.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Crc32.NET" Version="1.2.0" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
+    <PackageReference Include="ShellProgressBar" Version="5.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AssetReader\AssetReader.csproj" />
+  </ItemGroup>
+
+</Project>

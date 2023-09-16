@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace FreeRealmsUnpacker
+namespace AssetReader
 {
     /// <summary>
     /// Provides static methods for obtaining asset information in a Free Realms client directory.

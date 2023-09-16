@@ -4,7 +4,7 @@ FreeRealmsUnpacker is a simple console application that allows you to extract .d
 While modern Free Realms clients typically store assets in .pack files, early versions of the game (2009-2010) used .dat files exclusively, and some later versions still retain .dat assets for TCG files. Unlike .pack files, which are self-contained, information from a manifest.dat file is required to read/extract data from .dat assets.
 
 ```
-Usage: FreeRealmsUnpacker [options] <InputDirectory> <OutputDirectory>
+Usage: FreeRealmsUnpackerCLI [options] <InputDirectory> <OutputDirectory>
 
 Arguments:
   InputDirectory         The Free Realms client directory.

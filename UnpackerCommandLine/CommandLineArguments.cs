@@ -1,7 +1,7 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using System.ComponentModel.DataAnnotations;
 
-namespace FreeRealmsUnpacker
+namespace UnpackerCommandLine
 {
     public partial class Unpacker
     {
@@ -70,7 +70,5 @@ namespace FreeRealmsUnpacker
         /// </summary>
         [Option(ShortName = "d", Description = "Show complete exception stack traces.")]
         public bool Debug { get; }
-
-        public static int Main(string[] args) => CommandLineApplication.Execute<Unpacker>(args);
     }
 }
