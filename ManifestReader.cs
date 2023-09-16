@@ -43,7 +43,7 @@ namespace FreeRealmsUnpacker
                 int size = reader.ReadInt32();
                 uint crc32 = reader.ReadUInt32();
                 clientAssets[i] = new Asset(name, address, size, crc32);
-                reader.BaseStream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
+                stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
             }
 
             return clientAssets;

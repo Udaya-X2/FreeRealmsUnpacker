@@ -31,7 +31,7 @@
             AssetType.Game => "Assets_???.dat",
             AssetType.Tcg => "assetpack000_000.dat",
             AssetType.Resource => "AssetsTcg_000.dat",
-            _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType))
+            _ => throw new ArgumentException("Invalid enum value for asset type", nameof(assetType))
         };
 
         /// <summary>
@@ -49,12 +49,12 @@
                 assetStream.Position = address;
                 int bytesRead = assetStream.Read(buffer, 0, asset.Size);
 
-                // If the asset spans two asset packs, begin reading the next pack to obtain the rest of the asset.
-                if (bytesRead != asset.Size)
+                // If the asset spans multiple asset packs, read the next pack(s) to obtain the rest of the asset.
+                while (bytesRead != asset.Size)
                 {
-                    assetStream = _assetStreams[file + 1];
+                    assetStream = _assetStreams[++file];
                     assetStream.Position = 0;
-                    assetStream.Read(buffer, bytesRead, asset.Size);
+                    bytesRead += assetStream.Read(buffer, bytesRead, asset.Size - bytesRead);
                 }
             }
             catch (IndexOutOfRangeException)
@@ -63,6 +63,7 @@
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             Array.ForEach(_assetStreams, x => x.Dispose());

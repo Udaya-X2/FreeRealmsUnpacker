@@ -3,35 +3,71 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FreeRealmsUnpacker
 {
-    partial class Unpacker
+    public partial class Unpacker
     {
-        [Argument(0, Description = "The Free Realms client directory."), Required]
+        /// <summary>
+        /// Gets the Free Realms client directory.
+        /// </summary>
+        [Argument(0, Description = "The Free Realms client directory."), Required, DirectoryExists]
         public string InputDirectory { get; } = "";
 
+        /// <summary>
+        /// Gets the destination for extracted assets.
+        /// </summary>
         [Argument(1, Description = "The destination for extracted assets.")]
         public string OutputDirectory { get; } = "./assets";
 
+        /// <summary>
+        /// Gets whether to extract game assets.
+        /// </summary>
         [Option(ShortName = "g", Description = "Extract game assets only (in 'Free Realms/')")]
         public bool ExtractGame { get; }
 
+        /// <summary>
+        /// Gets whether to extract TCG assets.
+        /// </summary>
         [Option(ShortName = "t", Description = "Extract TCG assets only (in 'Free Realms/assets/')")]
         public bool ExtractTcg { get; }
 
+        /// <summary>
+        /// Gets whether to extract resource assets.
+        /// </summary>
         [Option(ShortName = "r", Description = "Extract resource assets only (in 'Free Realms/tcg/')")]
         public bool ExtractResource { get; }
 
+        /// <summary>
+        /// Gets whether to list the assets without extracting them.
+        /// </summary>
         [Option(ShortName = "l", Description = "List the assets without extracting them.")]
         public bool ListAssets { get; }
 
-        [Option(ShortName = "s", Description = "Skip extracting assets that already exist.")]
+        /// <summary>
+        /// Gets whether to validate the assets without extracting them.
+        /// </summary>
+        [Option(ShortName = "v", Description = "Validate the assets without extracting them.")]
+        public bool ValidateAssets { get; }
+
+        /// <summary>
+        /// Gets whether to skip assets that already exist.
+        /// </summary>
+        [Option(ShortName = "s", Description = "Skip assets that already exist.")]
         public bool SkipExisting { get; }
 
-        [Option(ShortName = "n", Description = "Don't show progress bars.")]
+        /// <summary>
+        /// Gets whether to disable progress bars.
+        /// </summary>
+        [Option(ShortName = "p", Description = "Don't show progress bars.")]
         public bool NoProgressBars { get; }
 
+        /// <summary>
+        /// Gets whether to automatically answer yes to any question.
+        /// </summary>
         [Option(ShortName = "y", Description = "Automatically answer yes to any question.")]
         public bool AnswerYes { get; }
 
+        /// <summary>
+        /// Gets whether to show complete exception stack traces.
+        /// </summary>
         [Option(ShortName = "d", Description = "Show complete exception stack traces.")]
         public bool Debug { get; }
 

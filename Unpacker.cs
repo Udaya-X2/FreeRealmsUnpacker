@@ -1,4 +1,5 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using Force.Crc32;
+using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
 using System.Data;
 using System.Diagnostics;
@@ -18,15 +19,16 @@ namespace FreeRealmsUnpacker
         {
             try
             {
-                // Set up the input and output directories.
-                if (!ValidateInputDirectory() || !SetupOutputDirectory()) return 1;
+                // Validate the command line arguments.
+                if (ListAssets && ValidateAssets) throw new Exception("Cannot both list and validate assets.");
+                if (!ListAssets && !ValidateAssets && !SetupOutputDirectory()) return 1;
 
-                // By default, extract all assets.
+                // By default, handle all assets.
                 Stopwatch sw = Stopwatch.StartNew();
                 bool extractAll = !ExtractGame && !ExtractTcg && !ExtractResource;
                 int numAssets = 0;
 
-                // Handle the asset type(s) specified.
+                // Handle the asset types specified.
                 if (extractAll || ExtractGame) numAssets += HandleAssets(AssetType.Game);
                 if (extractAll || ExtractTcg) numAssets += HandleAssets(AssetType.Tcg);
                 if (extractAll || ExtractResource) numAssets += HandleAssets(AssetType.Resource);
@@ -64,6 +66,10 @@ namespace FreeRealmsUnpacker
             {
                 Array.ForEach(clientAssets, asset => Console.WriteLine(asset.Name));
             }
+            else if (ValidateAssets)
+            {
+                ValidateChecksums(clientAssets, assetType);
+            }
             else
             {
                 ExtractAssets(clientAssets, assetType);
@@ -73,8 +79,40 @@ namespace FreeRealmsUnpacker
         }
 
         /// <summary>
+        /// Validates assets of the specified type by comparing their checksums.
+        /// </summary>
+        private void ValidateChecksums(Asset[] clientAssets, AssetType assetType)
+        {
+            if (clientAssets.Length == 0) return;
+
+            byte[] buffer = new byte[clientAssets.Max(x => x.Size)];
+            using AssetPackReader reader = new(InputDirectory, assetType);
+            using ProgressBar? pbar = GetExtractionProgressBar(clientAssets.Length, assetType);
+            int numErrors = 0;
+
+            foreach (Asset asset in clientAssets)
+            {
+                reader.Read(asset, buffer);
+
+                if (asset.Crc32 == Crc32Algorithm.Compute(buffer, 0, asset.Size))
+                {
+                    pbar?.UpdateProgress($"[{numErrors} CRC errors] Validated {asset.Name}");
+                }
+                else if (pbar != null)
+                {
+                    pbar.UpdateProgress($"[{++numErrors} CRC errors] Validated {asset.Name}");
+                }
+                else
+                {
+                    Console.WriteLine($"{asset.Name} does not match the expected CRC.");
+                }
+            }
+        }
+
+        /// <summary>
         /// Extracts assets of the specified type to the output directory.
         /// </summary>
+        /// <exception cref="InvalidDataException"></exception>
         private void ExtractAssets(Asset[] clientAssets, AssetType assetType)
         {
             if (clientAssets.Length == 0) return;
@@ -90,14 +128,14 @@ namespace FreeRealmsUnpacker
 
                 if (SkipExisting && File.Exists(assetPath))
                 {
-                    pbar?.Tick($"({pbar.CurrentTick + 1})/({pbar.MaxTicks}) Skipped {asset.Name}");
+                    pbar?.UpdateProgress($"Skipped {asset.Name}");
                 }
                 else
                 {
                     reader.Read(asset, buffer);
                     using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
                     fs.Write(buffer, 0, asset.Size);
-                    pbar?.Tick($"({pbar.CurrentTick + 1})/({pbar.MaxTicks}) Extracted {asset.Name}");
+                    pbar?.UpdateProgress($"Extracted {asset.Name}");
                 }
             }
         }
@@ -116,7 +154,7 @@ namespace FreeRealmsUnpacker
             AssetType.Game => CreateProgressBar(numAssets, "Reading game assets...", ConsoleColor.Green),
             AssetType.Tcg => CreateProgressBar(numAssets, "Reading TCG assets...", ConsoleColor.Blue),
             AssetType.Resource => CreateProgressBar(numAssets, "Reading resource assets...", ConsoleColor.DarkYellow),
-            _ => throw new ArgumentException("Invalid enum value for extraction type", nameof(assetType))
+            _ => throw new ArgumentException("Invalid enum value for asset type", nameof(assetType))
         };
 
         /// <summary>
@@ -140,28 +178,11 @@ namespace FreeRealmsUnpacker
             // Only TCG assets require subdirectories.
             if (assetType == AssetType.Tcg)
             {
-                foreach (string? assetDir in clientAssets.Select(x => Path.GetDirectoryName(x.Name)).ToHashSet())
+                foreach (string? assetDir in clientAssets.Select(x => Path.GetDirectoryName(x.Name)).Distinct())
                 {
-                    Directory.CreateDirectory($"{OutputDirectory}/{assetDir ?? ""}");
+                    Directory.CreateDirectory($"{OutputDirectory}/{assetDir}");
                 }
             }
-        }
-
-        /// <summary>
-        /// Checks whether the input directory exists.
-        /// </summary>
-        /// <returns>
-        /// <see langword="true"/> if the input directory exists; otherwise, <see langword="false"/>.
-        /// </returns>
-        private bool ValidateInputDirectory()
-        {
-            if (!Directory.Exists(InputDirectory))
-            {
-                Console.Error.WriteLine($"{InputDirectory} is not a directory.");
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -174,8 +195,7 @@ namespace FreeRealmsUnpacker
         {
             DirectoryInfo dir = new(OutputDirectory);
 
-            // Skip the directory setup if assets are being listed instead of extracted.
-            if (!ListAssets && !dir.Exists)
+            if (!dir.Exists)
             {
                 if (PromptUser($"{dir.FullName} does not exist. Create the directory?"))
                 {

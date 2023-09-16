@@ -16,8 +16,9 @@ Options:
   -t|--extract-tcg       Extract TCG assets only (in 'Free Realms/assets/')
   -r|--extract-resource  Extract resource assets only (in 'Free Realms/tcg/')
   -l|--list-assets       List the assets without extracting them.
-  -s|--skip-existing     Skip extracting assets that already exist.
-  -n|--no-progress-bars  Don't show progress bars.
+  -v|--validate-assets   Validate the assets without extracting them.
+  -s|--skip-existing     Skip assets that already exist.
+  -p|--no-progress-bars  Don't show progress bars.
   -y|--answer-yes        Automatically answer yes to any question.
   -d|--debug             Show complete exception stack traces.
   -?|-h|--help           Show help information.
