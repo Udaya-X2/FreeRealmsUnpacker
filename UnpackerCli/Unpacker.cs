@@ -5,7 +5,7 @@ using ShellProgressBar;
 using System.Data;
 using System.Diagnostics;
 
-namespace UnpackerCommandLine
+namespace UnpackerCli
 {
     /// <summary>
     /// The driver class of the command line Free Realms Unpacker.

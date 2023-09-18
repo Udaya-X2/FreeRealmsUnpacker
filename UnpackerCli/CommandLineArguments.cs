@@ -1,7 +1,7 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using System.ComponentModel.DataAnnotations;
 
-namespace UnpackerCommandLine
+namespace UnpackerCli
 {
     public partial class Unpacker
     {

@@ -1,6 +1,6 @@
 ﻿using ShellProgressBar;
 
-namespace UnpackerCommandLine
+namespace UnpackerCli
 {
     internal static class ProgressBarExtensions
     {

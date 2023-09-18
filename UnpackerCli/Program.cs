@@ -1,6 +1,6 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 
-namespace UnpackerCommandLine
+namespace UnpackerCli
 {
     public static class Program
     {
