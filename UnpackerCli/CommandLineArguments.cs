@@ -8,13 +8,17 @@ namespace UnpackerCli
         /// <summary>
         /// Gets the Free Realms client directory.
         /// </summary>
-        [Argument(0, Description = "The Free Realms client directory."), Required, DirectoryExists]
+        [Argument(0, Description = "The Free Realms client directory.")]
+        [Required(AllowEmptyStrings = false)]
+        [DirectoryExists]
         public string InputDirectory { get; } = "";
 
         /// <summary>
         /// Gets the destination for extracted assets.
         /// </summary>
         [Argument(1, Description = "The destination for extracted assets.")]
+        [Required(AllowEmptyStrings = false)]
+        [FileNotExists]
         public string OutputDirectory { get; } = "./assets";
 
         /// <summary>

@@ -1,4 +1,6 @@
-﻿namespace AssetReader
+﻿using System.ComponentModel;
+
+namespace AssetReader
 {
     /// <summary>
     /// Provides random access reading operations on asset packs in a Free Realms client directory.
@@ -10,8 +12,8 @@
         private readonly FileStream[] _assetStreams;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AssetPackReader"/>, which acts as a combination
-        /// file stream reader on all asset packs of the specified type in the client directory.
+        /// Initializes a new instance of the <see cref="AssetPackReader"/> class
+        /// for all asset packs of the specified type in the client directory.
         /// </summary>
         public AssetPackReader(string clientPath, AssetType assetType)
         {
@@ -31,7 +33,7 @@
             AssetType.Game => "Assets_???.dat",
             AssetType.Tcg => "assetpack000_000.dat",
             AssetType.Resource => "AssetsTcg_000.dat",
-            _ => throw new ArgumentException("Invalid enum value for asset type", nameof(assetType))
+            _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
         };
 
         /// <summary>
