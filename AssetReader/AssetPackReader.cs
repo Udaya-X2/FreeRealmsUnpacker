@@ -11,12 +11,17 @@ namespace AssetReader
 
         private readonly FileStream[] _assetStreams;
 
+        private bool _disposed;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetPackReader"/> class
         /// for all asset packs of the specified type in the client directory.
         /// </summary>
+        /// <exception cref="ArgumentNullException"/>
         public AssetPackReader(string clientPath, AssetType assetType)
         {
+            if (clientPath == null) throw new ArgumentNullException(nameof(clientPath));
+
             string assetPackPattern = GetAssetPackPattern(assetType);
             _assetStreams = Directory.EnumerateFiles(clientPath, assetPackPattern, SearchOption.AllDirectories)
                                      .Select(File.OpenRead)
@@ -27,7 +32,7 @@ namespace AssetReader
         /// Determines which asset pack(s) to open based on the specified asset type.
         /// </summary>
         /// <returns>The search pattern to find the asset pack(s) of the specified asset type.</returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="InvalidEnumArgumentException"/>
         private static string GetAssetPackPattern(AssetType assetType) => assetType switch
         {
             AssetType.Game => "Assets_???.dat",
@@ -39,9 +44,15 @@ namespace AssetReader
         /// <summary>
         /// Reads the contents of the specified asset from the asset pack(s) and writes the data in a given buffer.
         /// </summary>
-        /// <exception cref="IndexOutOfRangeException"></exception>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="IndexOutOfRangeException"/>
+        /// <exception cref="ObjectDisposedException"/>
         public void Read(Asset asset, byte[] buffer)
         {
+            if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
+            if (asset == null) throw new ArgumentNullException(nameof(asset));
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+
             try
             {
                 // Determine which asset pack to read and where to start reading from based on the offset.
@@ -59,17 +70,21 @@ namespace AssetReader
                     bytesRead += assetStream.Read(buffer, bytesRead, asset.Size - bytesRead);
                 }
             }
-            catch (IndexOutOfRangeException)
+            catch (IndexOutOfRangeException ex)
             {
-                throw new IndexOutOfRangeException($"Ran out of asset packs while reading '{asset.Name}'");
+                throw new IndexOutOfRangeException(string.Format(SR.IndexOutOfRange_NoMoreAssets, asset.Name), ex);
             }
         }
 
         /// <inheritdoc/>
         public void Dispose()
         {
-            Array.ForEach(_assetStreams, x => x.Dispose());
-            GC.SuppressFinalize(this);
+            if (!_disposed)
+            {
+                Array.ForEach(_assetStreams, x => x.Dispose());
+                GC.SuppressFinalize(this);
+                _disposed = true;
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Buffers.Binary;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -117,7 +118,7 @@ namespace AssetReader
             }
             if (!input.CanRead)
             {
-                throw new ArgumentException(SR.ArgumentExceptionStreamNotReadable, nameof(input));
+                throw new ArgumentException(SR.Argument_StreamNotReadable, nameof(input));
             }
 
             _stream = input;
@@ -284,7 +285,7 @@ namespace AssetReader
         {
             ThrowIfDisposed();
             int b = _stream.ReadByte();
-            return b == -1 ? throw new EndOfStreamException(SR.IOExceptionEndOfFile) : (byte)b;
+            return b == -1 ? throw new EndOfStreamException(SR.IO_EndOfFile) : (byte)b;
         }
 
         /// <summary>
@@ -319,7 +320,7 @@ namespace AssetReader
         public char ReadChar()
         {
             int value = Read();
-            return value == -1 ? throw new EndOfStreamException(SR.IOExceptionEndOfFile) : (char)value;
+            return value == -1 ? throw new EndOfStreamException(SR.IO_EndOfFile) : (char)value;
         }
 
         /// <summary>
@@ -449,7 +450,7 @@ namespace AssetReader
             catch (ArgumentException ex)
             {
                 // ReadDecimal cannot leak out ArgumentException.
-                throw new IOException(SR.IOExceptionInvalidDecimalBits, ex);
+                throw new IOException(SR.IO_InvalidDecimalBits, ex);
             }
         }
 
@@ -507,7 +508,7 @@ namespace AssetReader
 
             if (stringLength < 0)
             {
-                throw new IOException(string.Format(SR.IOExceptionInvalidStringLength, stringLength));
+                throw new IOException(string.Format(SR.IO_InvalidStringLen, stringLength));
             }
             if (stringLength == 0)
             {
@@ -529,7 +530,7 @@ namespace AssetReader
 
                 if (n == 0)
                 {
-                    throw new EndOfStreamException(SR.IOExceptionEndOfFile);
+                    throw new EndOfStreamException(SR.IO_EndOfFile);
                 }
 
                 charsRead = _decoder.GetChars(_charBytes, 0, n, _charBuffer, 0);
@@ -578,19 +579,19 @@ namespace AssetReader
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException(nameof(buffer), SR.ArgumentNullExceptionBuffer);
+                throw new ArgumentNullException(nameof(buffer), SR.ArgumentNull_Buffer);
             }
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRangeExceptionNeedNonNegNum);
+                throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
             }
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRangeExceptionNeedNonNegNum);
+                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
             }
             if (buffer.Length - index < count)
             {
-                throw new ArgumentException(SR.ArgumentExceptionInvalidOffsetLength);
+                throw new ArgumentException(SR.Argument_InvalidOffLen);
             }
 
             ThrowIfDisposed();
@@ -699,7 +700,7 @@ namespace AssetReader
         {
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRangeExceptionNeedNonNegNum);
+                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
             }
 
             ThrowIfDisposed();
@@ -745,19 +746,19 @@ namespace AssetReader
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException(nameof(buffer), SR.ArgumentNullExceptionBuffer);
+                throw new ArgumentNullException(nameof(buffer), SR.ArgumentNull_Buffer);
             }
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRangeExceptionNeedNonNegNum);
+                throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
             }
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRangeExceptionNeedNonNegNum);
+                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
             }
             if (buffer.Length - index < count)
             {
-                throw new ArgumentException(SR.ArgumentExceptionInvalidOffsetLength);
+                throw new ArgumentException(SR.Argument_InvalidOffLen);
             }
 
             ThrowIfDisposed();
@@ -801,7 +802,7 @@ namespace AssetReader
         {
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRangeExceptionNeedNonNegNum);
+                throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
             }
 
             ThrowIfDisposed();
@@ -848,6 +849,7 @@ namespace AssetReader
         private ReadOnlySpan<byte> InternalRead(int numBytes)
         {
             ThrowIfDisposed();
+            Debug.Assert(numBytes is > 0 and < 16, "Number of bytes must be in the range [1, 16].");
 
             int bytesRead = 0;
 
@@ -857,7 +859,7 @@ namespace AssetReader
 
                 if (n == 0)
                 {
-                    throw new EndOfStreamException(SR.IOExceptionEndOfFile);
+                    throw new EndOfStreamException(SR.IO_EndOfFile);
                 }
 
                 bytesRead += n;
@@ -910,7 +912,7 @@ namespace AssetReader
 
             if (byteReadJustNow > 0b_1111u)
             {
-                throw new FormatException(SR.FormatExceptionBad7BitInt);
+                throw new FormatException(SR.Format_Bad7BitInt);
             }
 
             result |= (uint)byteReadJustNow << (MaxBytesWithoutOverflow * 7);
@@ -958,7 +960,7 @@ namespace AssetReader
 
             if (byteReadJustNow > 0b_1u)
             {
-                throw new FormatException(SR.FormatExceptionBad7BitInt);
+                throw new FormatException(SR.Format_Bad7BitInt);
             }
 
             result |= (ulong)byteReadJustNow << (MaxBytesWithoutOverflow * 7);

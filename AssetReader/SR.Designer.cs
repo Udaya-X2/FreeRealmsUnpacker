@@ -63,72 +63,126 @@ namespace AssetReader {
         /// <summary>
         ///   Looks up a localized string similar to Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection..
         /// </summary>
-        internal static string ArgumentExceptionInvalidOffsetLength {
+        internal static string Argument_InvalidOffLen {
             get {
-                return ResourceManager.GetString("ArgumentExceptionInvalidOffsetLength", resourceCulture);
+                return ResourceManager.GetString("Argument_InvalidOffLen", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Stream was not readable..
         /// </summary>
-        internal static string ArgumentExceptionStreamNotReadable {
+        internal static string Argument_StreamNotReadable {
             get {
-                return ResourceManager.GetString("ArgumentExceptionStreamNotReadable", resourceCulture);
+                return ResourceManager.GetString("Argument_StreamNotReadable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Too many manifest files in the client directory..
+        /// </summary>
+        internal static string Argument_TooManyManifestFiles {
+            get {
+                return ResourceManager.GetString("Argument_TooManyManifestFiles", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Buffer cannot be null..
         /// </summary>
-        internal static string ArgumentNullExceptionBuffer {
+        internal static string ArgumentNull_Buffer {
             get {
-                return ResourceManager.GetString("ArgumentNullExceptionBuffer", resourceCulture);
+                return ResourceManager.GetString("ArgumentNull_Buffer", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Non-negative number required..
         /// </summary>
-        internal static string ArgumentOutOfRangeExceptionNeedNonNegNum {
+        internal static string ArgumentOutOfRange_NeedNonNegNum {
             get {
-                return ResourceManager.GetString("ArgumentOutOfRangeExceptionNeedNonNegNum", resourceCulture);
+                return ResourceManager.GetString("ArgumentOutOfRange_NeedNonNegNum", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Too many bytes in what should have been a 7-bit encoded integer..
         /// </summary>
-        internal static string FormatExceptionBad7BitInt {
+        internal static string Format_Bad7BitInt {
             get {
-                return ResourceManager.GetString("FormatExceptionBad7BitInt", resourceCulture);
+                return ResourceManager.GetString("Format_Bad7BitInt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid asset name length of {0} bytes at position {1} in &apos;{2}&apos;..
+        /// </summary>
+        internal static string Format_BadAssetNameLength {
+            get {
+                return ResourceManager.GetString("Format_BadAssetNameLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid asset offset of {0} bytes at position {1} in &apos;{2}&apos;..
+        /// </summary>
+        internal static string Format_BadAssetOffset {
+            get {
+                return ResourceManager.GetString("Format_BadAssetOffset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid asset size of {0} bytes at position {1} in &apos;{2}&apos;..
+        /// </summary>
+        internal static string Format_BadAssetSize {
+            get {
+                return ResourceManager.GetString("Format_BadAssetSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest file was not divided in chunks of 148: &apos;{0}&apos;..
+        /// </summary>
+        internal static string Format_BadManifest {
+            get {
+                return ResourceManager.GetString("Format_BadManifest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ran out of asset packs while reading &apos;{0}&apos;..
+        /// </summary>
+        internal static string IndexOutOfRange_NoMoreAssets {
+            get {
+                return ResourceManager.GetString("IndexOutOfRange_NoMoreAssets", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Unable to read beyond the end of the stream..
         /// </summary>
-        internal static string IOExceptionEndOfFile {
+        internal static string IO_EndOfFile {
             get {
-                return ResourceManager.GetString("IOExceptionEndOfFile", resourceCulture);
+                return ResourceManager.GetString("IO_EndOfFile", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Decimal constructor requires an array or span of four valid decimal bytes..
         /// </summary>
-        internal static string IOExceptionInvalidDecimalBits {
+        internal static string IO_InvalidDecimalBits {
             get {
-                return ResourceManager.GetString("IOExceptionInvalidDecimalBits", resourceCulture);
+                return ResourceManager.GetString("IO_InvalidDecimalBits", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to EndianBinaryReader encountered an invalid string length of {0} characters..
         /// </summary>
-        internal static string IOExceptionInvalidStringLength {
+        internal static string IO_InvalidStringLen {
             get {
-                return ResourceManager.GetString("IOExceptionInvalidStringLength", resourceCulture);
+                return ResourceManager.GetString("IO_InvalidStringLen", resourceCulture);
             }
         }
     }

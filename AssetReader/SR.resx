@@ -117,28 +117,46 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ArgumentExceptionInvalidOffsetLength" xml:space="preserve">
-    <value>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</value>
-  </data>
-  <data name="ArgumentExceptionStreamNotReadable" xml:space="preserve">
-    <value>Stream was not readable.</value>
-  </data>
-  <data name="ArgumentNullExceptionBuffer" xml:space="preserve">
+  <data name="ArgumentNull_Buffer" xml:space="preserve">
     <value>Buffer cannot be null.</value>
   </data>
-  <data name="ArgumentOutOfRangeExceptionNeedNonNegNum" xml:space="preserve">
+  <data name="ArgumentOutOfRange_NeedNonNegNum" xml:space="preserve">
     <value>Non-negative number required.</value>
   </data>
-  <data name="FormatExceptionBad7BitInt" xml:space="preserve">
+  <data name="Argument_InvalidOffLen" xml:space="preserve">
+    <value>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</value>
+  </data>
+  <data name="Argument_StreamNotReadable" xml:space="preserve">
+    <value>Stream was not readable.</value>
+  </data>
+  <data name="Argument_TooManyManifestFiles" xml:space="preserve">
+    <value>Too many manifest files in the client directory.</value>
+  </data>
+  <data name="Format_Bad7BitInt" xml:space="preserve">
     <value>Too many bytes in what should have been a 7-bit encoded integer.</value>
   </data>
-  <data name="IOExceptionEndOfFile" xml:space="preserve">
+  <data name="Format_BadAssetNameLength" xml:space="preserve">
+    <value>Invalid asset name length of {0} bytes at position {1} in '{2}'.</value>
+  </data>
+  <data name="Format_BadAssetOffset" xml:space="preserve">
+    <value>Invalid asset offset of {0} bytes at position {1} in '{2}'.</value>
+  </data>
+  <data name="Format_BadAssetSize" xml:space="preserve">
+    <value>Invalid asset size of {0} bytes at position {1} in '{2}'.</value>
+  </data>
+  <data name="Format_BadManifest" xml:space="preserve">
+    <value>Manifest file was not divided in chunks of 148: '{0}'.</value>
+  </data>
+  <data name="IndexOutOfRange_NoMoreAssets" xml:space="preserve">
+    <value>Ran out of asset packs while reading '{0}'.</value>
+  </data>
+  <data name="IO_EndOfFile" xml:space="preserve">
     <value>Unable to read beyond the end of the stream.</value>
   </data>
-  <data name="IOExceptionInvalidDecimalBits" xml:space="preserve">
+  <data name="IO_InvalidDecimalBits" xml:space="preserve">
     <value>Decimal constructor requires an array or span of four valid decimal bytes.</value>
   </data>
-  <data name="IOExceptionInvalidStringLength" xml:space="preserve">
+  <data name="IO_InvalidStringLen" xml:space="preserve">
     <value>EndianBinaryReader encountered an invalid string length of {0} characters.</value>
   </data>
 </root>

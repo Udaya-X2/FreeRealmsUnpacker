@@ -2,6 +2,7 @@
 using Force.Crc32;
 using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 
@@ -61,7 +62,7 @@ namespace UnpackerCli
         /// <returns>The number of assets of the specified type.</returns>
         private int HandleAssets(AssetType assetType)
         {
-            Asset[] clientAssets = ManifestReader.GetClientAssets(InputDirectory, assetType);
+            Asset[] clientAssets = ManifestReader.GetManifestAssets(InputDirectory, assetType);
 
             if (ListAssets)
             {
@@ -149,13 +150,13 @@ namespace UnpackerCli
         /// A <see cref="ProgressBar"/> with the number of assets for max
         /// ticks and an <paramref name="assetType"/>-dependent color.
         /// </returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="InvalidEnumArgumentException"></exception>
         private ProgressBar? GetExtractionProgressBar(int numAssets, AssetType assetType) => assetType switch
         {
             AssetType.Game => CreateProgressBar(numAssets, "Reading game assets...", ConsoleColor.Green),
             AssetType.Tcg => CreateProgressBar(numAssets, "Reading TCG assets...", ConsoleColor.Blue),
             AssetType.Resource => CreateProgressBar(numAssets, "Reading resource assets...", ConsoleColor.DarkYellow),
-            _ => throw new ArgumentException("Invalid enum value for asset type", nameof(assetType))
+            _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
         };
 
         /// <summary>
