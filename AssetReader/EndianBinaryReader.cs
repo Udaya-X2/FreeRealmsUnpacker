@@ -285,7 +285,7 @@ namespace AssetReader
         {
             ThrowIfDisposed();
             int b = _stream.ReadByte();
-            return b == -1 ? throw new EndOfStreamException(SR.IO_EndOfFile) : (byte)b;
+            return b == -1 ? throw new EndOfStreamException(SR.EndOfStream_Stream) : (byte)b;
         }
 
         /// <summary>
@@ -320,7 +320,7 @@ namespace AssetReader
         public char ReadChar()
         {
             int value = Read();
-            return value == -1 ? throw new EndOfStreamException(SR.IO_EndOfFile) : (char)value;
+            return value == -1 ? throw new EndOfStreamException(SR.EndOfStream_Stream) : (char)value;
         }
 
         /// <summary>
@@ -530,7 +530,7 @@ namespace AssetReader
 
                 if (n == 0)
                 {
-                    throw new EndOfStreamException(SR.IO_EndOfFile);
+                    throw new EndOfStreamException(SR.EndOfStream_Stream);
                 }
 
                 charsRead = _decoder.GetChars(_charBytes, 0, n, _charBuffer, 0);
@@ -859,7 +859,7 @@ namespace AssetReader
 
                 if (n == 0)
                 {
-                    throw new EndOfStreamException(SR.IO_EndOfFile);
+                    throw new EndOfStreamException(SR.EndOfStream_Stream);
                 }
 
                 bytesRead += n;

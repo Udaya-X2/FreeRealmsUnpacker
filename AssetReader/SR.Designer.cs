@@ -106,6 +106,24 @@ namespace AssetReader {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to read beyond the end of &apos;{1}&apos;..
+        /// </summary>
+        internal static string EndOfStream_File {
+            get {
+                return ResourceManager.GetString("EndOfStream_File", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to read beyond the end of the stream..
+        /// </summary>
+        internal static string EndOfStream_Stream {
+            get {
+                return ResourceManager.GetString("EndOfStream_Stream", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Too many bytes in what should have been a 7-bit encoded integer..
         /// </summary>
         internal static string Format_Bad7BitInt {
@@ -115,56 +133,20 @@ namespace AssetReader {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid asset name length of {0} bytes at position {1} in &apos;{2}&apos;..
+        ///   Looks up a localized string similar to Invalid asset data at offset {0} in &apos;{1}&apos;..
         /// </summary>
-        internal static string Format_BadAssetNameLength {
+        internal static string IO_BadAsset {
             get {
-                return ResourceManager.GetString("Format_BadAssetNameLength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid asset offset of {0} bytes at position {1} in &apos;{2}&apos;..
-        /// </summary>
-        internal static string Format_BadAssetOffset {
-            get {
-                return ResourceManager.GetString("Format_BadAssetOffset", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Invalid asset size of {0} bytes at position {1} in &apos;{2}&apos;..
-        /// </summary>
-        internal static string Format_BadAssetSize {
-            get {
-                return ResourceManager.GetString("Format_BadAssetSize", resourceCulture);
+                return ResourceManager.GetString("IO_BadAsset", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Manifest file was not divided in chunks of 148: &apos;{0}&apos;..
         /// </summary>
-        internal static string Format_BadManifest {
+        internal static string IO_BadManifest {
             get {
-                return ResourceManager.GetString("Format_BadManifest", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Ran out of asset packs while reading &apos;{0}&apos;..
-        /// </summary>
-        internal static string IndexOutOfRange_NoMoreAssets {
-            get {
-                return ResourceManager.GetString("IndexOutOfRange_NoMoreAssets", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to read beyond the end of the stream..
-        /// </summary>
-        internal static string IO_EndOfFile {
-            get {
-                return ResourceManager.GetString("IO_EndOfFile", resourceCulture);
+                return ResourceManager.GetString("IO_BadManifest", resourceCulture);
             }
         }
         
@@ -183,6 +165,15 @@ namespace AssetReader {
         internal static string IO_InvalidStringLen {
             get {
                 return ResourceManager.GetString("IO_InvalidStringLen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ran out of asset packs while reading &apos;{0}&apos;..
+        /// </summary>
+        internal static string IO_NoMoreAssetPacks {
+            get {
+                return ResourceManager.GetString("IO_NoMoreAssetPacks", resourceCulture);
             }
         }
     }

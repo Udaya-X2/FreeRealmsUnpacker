@@ -45,8 +45,7 @@ namespace AssetReader
         /// Reads the contents of the specified asset from the asset pack(s) and writes the data in a given buffer.
         /// </summary>
         /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IndexOutOfRangeException"/>
-        /// <exception cref="ObjectDisposedException"/>
+        /// <exception cref="IOException"/>
         public void Read(Asset asset, byte[] buffer)
         {
             if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
@@ -72,7 +71,7 @@ namespace AssetReader
             }
             catch (IndexOutOfRangeException ex)
             {
-                throw new IndexOutOfRangeException(string.Format(SR.IndexOutOfRange_NoMoreAssets, asset.Name), ex);
+                throw new IOException(string.Format(SR.IO_NoMoreAssetPacks, asset.Name), ex);
             }
         }
 

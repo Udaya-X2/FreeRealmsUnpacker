@@ -132,31 +132,28 @@
   <data name="Argument_TooManyManifestFiles" xml:space="preserve">
     <value>Too many manifest files in the client directory.</value>
   </data>
+  <data name="EndOfStream_File" xml:space="preserve">
+    <value>Unable to read beyond the end of '{1}'.</value>
+  </data>
+  <data name="EndOfStream_Stream" xml:space="preserve">
+    <value>Unable to read beyond the end of the stream.</value>
+  </data>
   <data name="Format_Bad7BitInt" xml:space="preserve">
     <value>Too many bytes in what should have been a 7-bit encoded integer.</value>
   </data>
-  <data name="Format_BadAssetNameLength" xml:space="preserve">
-    <value>Invalid asset name length of {0} bytes at position {1} in '{2}'.</value>
+  <data name="IO_BadAsset" xml:space="preserve">
+    <value>Invalid asset data at offset {0} in '{1}'.</value>
   </data>
-  <data name="Format_BadAssetOffset" xml:space="preserve">
-    <value>Invalid asset offset of {0} bytes at position {1} in '{2}'.</value>
-  </data>
-  <data name="Format_BadAssetSize" xml:space="preserve">
-    <value>Invalid asset size of {0} bytes at position {1} in '{2}'.</value>
-  </data>
-  <data name="Format_BadManifest" xml:space="preserve">
+  <data name="IO_BadManifest" xml:space="preserve">
     <value>Manifest file was not divided in chunks of 148: '{0}'.</value>
-  </data>
-  <data name="IndexOutOfRange_NoMoreAssets" xml:space="preserve">
-    <value>Ran out of asset packs while reading '{0}'.</value>
-  </data>
-  <data name="IO_EndOfFile" xml:space="preserve">
-    <value>Unable to read beyond the end of the stream.</value>
   </data>
   <data name="IO_InvalidDecimalBits" xml:space="preserve">
     <value>Decimal constructor requires an array or span of four valid decimal bytes.</value>
   </data>
   <data name="IO_InvalidStringLen" xml:space="preserve">
     <value>EndianBinaryReader encountered an invalid string length of {0} characters.</value>
+  </data>
+  <data name="IO_NoMoreAssetPacks" xml:space="preserve">
+    <value>Ran out of asset packs while reading '{0}'.</value>
   </data>
 </root>

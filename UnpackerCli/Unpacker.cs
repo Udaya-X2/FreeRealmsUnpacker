@@ -62,7 +62,7 @@ namespace UnpackerCli
         /// <returns>The number of assets of the specified type.</returns>
         private int HandleAssets(AssetType assetType)
         {
-            Asset[] clientAssets = ManifestReader.GetManifestAssets(InputDirectory, assetType);
+            Asset[] clientAssets = ClientDirectory.GetManifestAssets(InputDirectory, assetType);
 
             if (ListAssets)
             {
