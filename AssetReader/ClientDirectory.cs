@@ -87,6 +87,79 @@ namespace AssetReader
         }
 
         /// <summary>
+        /// Scans the .pack file for information on each asset.
+        /// </summary>
+        /// <param name="packPath"></param>
+        /// <returns>An array consisting of the assets in the .pack file.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="EndOfStreamException"/>
+        /// <exception cref="IOException"/>
+        public static Asset[] GetPackAssets(string packPath)
+        {
+            if (packPath == null) throw new ArgumentNullException(nameof(packPath));
+
+            // Read the .pack file in big-endian format.
+            using FileStream stream = File.OpenRead(packPath);
+            using EndianBinaryReader reader = new(stream, Endian.Big);
+            List<Asset> assets = new();
+            uint nextOffset = 0;
+
+            // .pack files store assets via two types of data:
+            // 
+            // * Asset information chunks, which specify what
+            //   assets are in the file and where they are.
+            // 
+            // * Asset content chunks, which store the bytes of each
+            //   asset in sequential, contiguous regions of memory.
+            // 
+            // Asset information chunks begin with a preamble in the following format:
+            // 
+            // Positions    Sample Value    Description
+            // 1-4          2170048         Offset of the next asset info chunk.
+            // 5-8          197             Number of assets in the current chunk.
+            // 
+            // Following the preamble, each asset in the chunk has the following format:
+            // 
+            // Positions    Sample Value    Description
+            // 1-4          13              Length of the asset's name, in bytes.
+            // 5-X          ComicBook.lst   Name of the asset.
+            // X-X+4        1889108         Offset of the asset in the .pack file.
+            // X+4-X+8      338             Size of the asset, in bytes.
+            // X+8-X+12     1085288468      CRC-32 checksum of the asset.
+            // 
+            // Scan each asset info chunk of the .pack file for information regarding each asset.
+            try
+            {
+                do
+                {
+                    stream.Position = nextOffset;
+                    nextOffset = reader.ReadUInt32();
+                    int numAssets = ValidateRange(reader.ReadInt32(), minValue: 1);
+
+                    for (int i = 0; i < numAssets; i++)
+                    {
+                        int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
+                        string name = reader.ReadString(length);
+                        uint offset = reader.ReadUInt32();
+                        int size = ValidateRange(reader.ReadInt32(), minValue: 0);
+                        uint crc32 = reader.ReadUInt32();
+                        assets.Add(new Asset(name, offset, size, crc32));
+                    }
+                } while (nextOffset != 0);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
+            }
+            catch (EndOfStreamException ex)
+            {
+                throw new EndOfStreamException(string.Format(SR.EndOfStream_File, stream.Name), ex);
+            }
+
+            return assets.ToArray();
+        }
+
+        /// <summary>
         /// Determines which manifest.dat file to use based on the specified asset type.
         /// </summary>
         /// <returns>The search pattern to find the manifest.dat file of the specified asset type.</returns>

@@ -57,7 +57,7 @@ namespace UnpackerCli
         }
 
         /// <summary>
-        /// Lists or extracts assets of the specified type, depending on the command.
+        /// Dispatches on assets of the specified type, based on the command.
         /// </summary>
         /// <returns>The number of assets of the specified type.</returns>
         private int HandleAssets(AssetType assetType)
