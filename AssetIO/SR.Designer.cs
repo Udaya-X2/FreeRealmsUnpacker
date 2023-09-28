@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace AssetReader {
+namespace AssetIO {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace AssetReader {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AssetReader.SR", typeof(SR).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("AssetIO.SR", typeof(SR).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -99,9 +99,9 @@ namespace AssetReader {
         /// <summary>
         ///   Looks up a localized string similar to Unrecognized asset extension: &apos;{0}&apos;..
         /// </summary>
-        internal static string Argument_UnknownAsset {
+        internal static string Argument_UnknownAssetExt {
             get {
-                return ResourceManager.GetString("Argument_UnknownAsset", resourceCulture);
+                return ResourceManager.GetString("Argument_UnknownAssetExt", resourceCulture);
             }
         }
         

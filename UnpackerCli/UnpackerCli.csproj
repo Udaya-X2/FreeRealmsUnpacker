@@ -21,7 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AssetReader\AssetReader.csproj" />
+        <ProjectReference Include="..\AssetIO\AssetIO.csproj" />
     </ItemGroup>
 
 </Project>

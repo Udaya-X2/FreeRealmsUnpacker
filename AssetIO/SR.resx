@@ -135,7 +135,7 @@
   <data name="Argument_TooManyManifestFiles" xml:space="preserve">
     <value>Too many manifest files in the client directory.</value>
   </data>
-  <data name="Argument_UnknownAsset" xml:space="preserve">
+  <data name="Argument_UnknownAssetExt" xml:space="preserve">
     <value>Unrecognized asset extension: '{0}'.</value>
   </data>
   <data name="EndOfStream_File" xml:space="preserve">

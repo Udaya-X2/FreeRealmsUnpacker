@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace AssetReader
+namespace AssetIO
 {
     /// <summary>
     /// Reads primitive data types as binary values in a specific encoding and endianness.

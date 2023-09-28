@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace AssetReader
+namespace AssetIO
 {
     /// <summary>
     /// Provides static methods for obtaining asset information in a Free Realms client directory.
@@ -19,7 +19,7 @@ namespace AssetReader
         {
             ".dat" => GetManifestAssets(assetPath),
             ".pack" => GetPackAssets(assetPath),
-            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAsset, assetPath), nameof(assetPath))
+            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAssetExt, assetPath), nameof(assetPath))
         };
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace AssetReader
         {
             ".dat" => GetManifestAssetCount(assetPath),
             ".pack" => GetPackAssetCount(assetPath),
-            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAsset, assetPath), nameof(assetPath))
+            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAssetExt, assetPath), nameof(assetPath))
         };
 
         /// <summary>

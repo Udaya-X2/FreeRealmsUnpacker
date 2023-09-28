@@ -1,4 +1,4 @@
-﻿namespace AssetReader
+﻿namespace AssetIO
 {
     /// <summary>
     /// Specifies the types of Free Realms assets.

@@ -1,4 +1,4 @@
-﻿namespace AssetReader
+﻿namespace AssetIO
 {
     /// <summary>
     /// Indicates the order in which bytes are arranged into larger numerical values in memory.

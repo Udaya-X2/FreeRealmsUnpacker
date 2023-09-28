@@ -1,4 +1,4 @@
-﻿namespace AssetReader
+﻿namespace AssetIO
 {
     /// <summary>
     /// Represents a Free Realms asset in terms of its file properties.

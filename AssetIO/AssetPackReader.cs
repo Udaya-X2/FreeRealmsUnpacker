@@ -1,4 +1,4 @@
-﻿namespace AssetReader
+﻿namespace AssetIO
 {
     /// <summary>
     /// Provides random access reading operations on asset packs in a Free Realms client directory.
