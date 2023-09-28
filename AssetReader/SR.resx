@@ -123,6 +123,9 @@
   <data name="ArgumentOutOfRange_NeedNonNegNum" xml:space="preserve">
     <value>Non-negative number required.</value>
   </data>
+  <data name="Argument_BadManifestPath" xml:space="preserve">
+    <value>Invalid manfiest path; must end with 'manifest.dat': '{0}'.</value>
+  </data>
   <data name="Argument_InvalidOffLen" xml:space="preserve">
     <value>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</value>
   </data>
@@ -131,6 +134,9 @@
   </data>
   <data name="Argument_TooManyManifestFiles" xml:space="preserve">
     <value>Too many manifest files in the client directory.</value>
+  </data>
+  <data name="Argument_UnknownAsset" xml:space="preserve">
+    <value>Unrecognized asset extension: '{0}'.</value>
   </data>
   <data name="EndOfStream_File" xml:space="preserve">
     <value>Unable to read beyond the end of '{1}'.</value>

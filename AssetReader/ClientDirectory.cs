@@ -11,6 +11,30 @@ namespace AssetReader
         private const int MaxAssetNameLength = 128;
 
         /// <summary>
+        /// Scans the assets from the specified file path.
+        /// </summary>
+        /// <returns>An array consisting of the assets in the specified file.</returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static Asset[] GetAssets(string assetPath) => Path.GetExtension(assetPath) switch
+        {
+            ".dat" => GetManifestAssets(assetPath),
+            ".pack" => GetPackAssets(assetPath),
+            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAsset, assetPath), nameof(assetPath))
+        };
+
+        /// <summary>
+        /// Returns the number of assets in the specified file path.
+        /// </summary>
+        /// <returns>The number of assets in the specified file.</returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static int GetAssetCount(string assetPath) => Path.GetExtension(assetPath) switch
+        {
+            ".dat" => GetManifestAssetCount(assetPath),
+            ".pack" => GetPackAssetCount(assetPath),
+            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAsset, assetPath), nameof(assetPath))
+        };
+
+        /// <summary>
         /// Scans the client directory's manifest.dat file for information on each asset of the specified type.
         /// </summary>
         /// <returns>
@@ -87,6 +111,23 @@ namespace AssetReader
         }
 
         /// <summary>
+        /// Returns the number of assets in the specified manifest.dat file.
+        /// </summary>
+        /// <returns>The number of assets in the specified manifest.dat file.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="IOException"/>
+        public static int GetManifestAssetCount(string manifestPath)
+        {
+            if (manifestPath == null) throw new ArgumentNullException(nameof(manifestPath));
+
+            FileInfo manifestFile = new(manifestPath);
+
+            return manifestFile.Length % ManifestChunkSize == 0
+                ? (int)(manifestFile.Length / ManifestChunkSize)
+                : throw new IOException(string.Format(SR.IO_BadManifest, manifestPath));
+        }
+
+        /// <summary>
         /// Scans the .pack file for information on each asset.
         /// </summary>
         /// <param name="packPath"></param>
@@ -157,6 +198,44 @@ namespace AssetReader
             }
 
             return assets.ToArray();
+        }
+
+        /// <summary>
+        /// Returns the number of assets in the specified .pack file.
+        /// </summary>
+        /// <returns>The number of assets in the specified .pack file.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="IOException"/>
+        public static int GetPackAssetCount(string packPath)
+        {
+            if (packPath == null) throw new ArgumentNullException(nameof(packPath));
+
+            // Read the .pack file in big-endian format.
+            using FileStream stream = new(packPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
+            using EndianBinaryReader reader = new(stream, Endian.Big);
+            uint nextOffset = 0;
+            int numAssets = 0;
+
+            // Read the number of assets in each asset info chunk.
+            try
+            {
+                do
+                {
+                    stream.Position = nextOffset;
+                    nextOffset = reader.ReadUInt32();
+                    numAssets += ValidateRange(reader.ReadInt32(), minValue: 1);
+                } while (nextOffset != 0);
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
+            }
+            catch (EndOfStreamException ex)
+            {
+                throw new EndOfStreamException(string.Format(SR.EndOfStream_File, stream.Name), ex);
+            }
+
+            return numAssets;
         }
 
         /// <summary>

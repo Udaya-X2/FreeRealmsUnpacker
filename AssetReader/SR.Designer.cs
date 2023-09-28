@@ -61,6 +61,15 @@ namespace AssetReader {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid manfiest path; must end with &apos;manifest.dat&apos;: &apos;{0}&apos;..
+        /// </summary>
+        internal static string Argument_BadManifestPath {
+            get {
+                return ResourceManager.GetString("Argument_BadManifestPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection..
         /// </summary>
         internal static string Argument_InvalidOffLen {
@@ -84,6 +93,15 @@ namespace AssetReader {
         internal static string Argument_TooManyManifestFiles {
             get {
                 return ResourceManager.GetString("Argument_TooManyManifestFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unrecognized asset extension: &apos;{0}&apos;..
+        /// </summary>
+        internal static string Argument_UnknownAsset {
+            get {
+                return ResourceManager.GetString("Argument_UnknownAsset", resourceCulture);
             }
         }
         

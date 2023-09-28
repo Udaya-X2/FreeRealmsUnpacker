@@ -5,6 +5,7 @@ using ShellProgressBar;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace UnpackerCli
 {
@@ -13,6 +14,9 @@ namespace UnpackerCli
     /// </summary>
     public partial class Unpacker
     {
+        private const string ManifestPattern = "Asset*_manifest.dat";
+        private const string PackPattern = "Asset*.pack";
+
         /// <summary>
         /// The entry point of the command line Free Realms Unpacker, following command parsing.
         /// </summary>
@@ -23,17 +27,18 @@ namespace UnpackerCli
             {
                 // Validate the command line arguments.
                 if (ListAssets && ValidateAssets) throw new Exception("Cannot both list and validate assets.");
-                if (!ListAssets && !ValidateAssets && !SetupOutputDirectory()) return 1;
-
-                // By default, handle all assets.
-                Stopwatch sw = Stopwatch.StartNew();
-                bool extractAll = !ExtractGame && !ExtractTcg && !ExtractResource;
-                int numAssets = 0;
+                if (ListAssets && CountAssets) throw new Exception("Cannot both list and count assets.");
+                if (ValidateAssets && CountAssets) throw new Exception("Cannot both validate and count assets.");
+                if (!ListAssets && !ValidateAssets && !CountAssets && !SetupOutputDirectory()) return 1;
 
                 // Handle the asset types specified.
-                if (extractAll || ExtractGame) numAssets += HandleAssets(AssetType.Game);
-                if (extractAll || ExtractTcg) numAssets += HandleAssets(AssetType.Tcg);
-                if (extractAll || ExtractResource) numAssets += HandleAssets(AssetType.Resource);
+                Stopwatch sw = Stopwatch.StartNew();
+                int numAssets = 0;
+
+                foreach (KeyValuePair<AssetType, List<string>> item in GetAssetFilesByType())
+                {
+                    numAssets += HandleAssets(item.Key, item.Value);
+                }
 
                 // Print the number of assets found.
                 if (numAssets == 0)
@@ -42,7 +47,7 @@ namespace UnpackerCli
                 }
                 else
                 {
-                    Console.Error.WriteLine($"\n{numAssets} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.ff}");
+                    Console.Error.WriteLine($"\n{numAssets} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}");
                 }
             }
             catch (Exception ex)
@@ -60,36 +65,45 @@ namespace UnpackerCli
         /// Dispatches on assets of the specified type, based on the command.
         /// </summary>
         /// <returns>The number of assets of the specified type.</returns>
-        private int HandleAssets(AssetType assetType)
+        private int HandleAssets(AssetType assetType, List<string> assetFiles)
         {
-            Asset[] clientAssets = ClientDirectory.GetManifestAssets(InputDirectory, assetType);
+            if (assetFiles.Count == 0) return 0;
+            if (CountAssets) return assetFiles.Sum(ClientDirectory.GetAssetCount);
 
-            if (ListAssets)
+            int numAssets = ListAssets || NoProgressBars ? 0 : assetFiles.Sum(ClientDirectory.GetAssetCount);
+            using ProgressBar? pbar = numAssets > 0 ? CreateProgressBar(numAssets, assetType) : null;
+
+            foreach (string assetFile in assetFiles)
             {
-                Array.ForEach(clientAssets, asset => Console.WriteLine(asset.Name));
-            }
-            else if (ValidateAssets)
-            {
-                ValidateChecksums(clientAssets, assetType);
-            }
-            else
-            {
-                ExtractAssets(clientAssets, assetType);
+                Asset[] clientAssets = ClientDirectory.GetAssets(assetFile);
+
+                if (ListAssets)
+                {
+                    Array.ForEach(clientAssets, asset => Console.WriteLine(asset.Name));
+                    numAssets += clientAssets.Length;
+                }
+                else if (ValidateAssets)
+                {
+                    ValidateChecksums(assetFile, clientAssets, pbar);
+                }
+                else
+                {
+                    ExtractAssets(assetFile, clientAssets, pbar);
+                }
             }
 
-            return clientAssets.Length;
+            return numAssets;
         }
 
         /// <summary>
         /// Validates assets of the specified type by comparing their checksums.
         /// </summary>
-        private void ValidateChecksums(Asset[] clientAssets, AssetType assetType)
+        private static void ValidateChecksums(string assetFile, Asset[] clientAssets, ProgressBar? pbar)
         {
             if (clientAssets.Length == 0) return;
 
+            using AssetPackReader reader = new(assetFile);
             byte[] buffer = new byte[clientAssets.Max(x => x.Size)];
-            using AssetPackReader reader = new(InputDirectory, assetType);
-            using ProgressBar? pbar = GetExtractionProgressBar(clientAssets.Length, assetType);
             int numErrors = 0;
 
             foreach (Asset asset in clientAssets)
@@ -114,15 +128,13 @@ namespace UnpackerCli
         /// <summary>
         /// Extracts assets of the specified type to the output directory.
         /// </summary>
-        /// <exception cref="InvalidDataException"></exception>
-        private void ExtractAssets(Asset[] clientAssets, AssetType assetType)
+        private void ExtractAssets(string assetFile, Asset[] clientAssets, ProgressBar? pbar)
         {
             if (clientAssets.Length == 0) return;
 
+            using AssetPackReader reader = new(assetFile);
             byte[] buffer = new byte[clientAssets.Max(x => x.Size)];
-            using AssetPackReader reader = new(InputDirectory, assetType);
-            using ProgressBar? pbar = GetExtractionProgressBar(clientAssets.Length, assetType);
-            CreateDirectoryStructure(clientAssets, assetType);
+            CreateDirectoryStructure(clientAssets);
 
             foreach (Asset asset in clientAssets)
             {
@@ -151,40 +163,106 @@ namespace UnpackerCli
         /// ticks and an <paramref name="assetType"/>-dependent color.
         /// </returns>
         /// <exception cref="InvalidEnumArgumentException"></exception>
-        private ProgressBar? GetExtractionProgressBar(int numAssets, AssetType assetType) => assetType switch
+        private static ProgressBar CreateProgressBar(int numAssets, AssetType assetType)
         {
-            AssetType.Game => CreateProgressBar(numAssets, "Reading game assets...", ConsoleColor.Green),
-            AssetType.Tcg => CreateProgressBar(numAssets, "Reading TCG assets...", ConsoleColor.Blue),
-            AssetType.Resource => CreateProgressBar(numAssets, "Reading resource assets...", ConsoleColor.DarkYellow),
-            _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
-        };
+            (string message, ConsoleColor color) = assetType switch
+            {
+                AssetType.Game => ("Reading game assets...", ConsoleColor.Green),
+                AssetType.Tcg => ("Reading TCG assets...", ConsoleColor.Blue),
+                AssetType.Resource => ("Reading resource assets...", ConsoleColor.DarkYellow),
+                _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
+            };
 
-        /// <summary>
-        /// Creates a <see cref="ProgressBar"/> with the specified parameters.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="ProgressBar"/> with the specified parameters,
-        /// or <see langword="null"/> if progress bars are disabled.
-        /// </returns>
-        private ProgressBar? CreateProgressBar(int maxTicks, string message, ConsoleColor color)
-        {
             ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };
-            return NoProgressBars ? null : new ProgressBar(maxTicks, message, options);
+            return new ProgressBar(numAssets, message, options);
         }
 
         /// <summary>
         /// Creates the directory structure used by the client assets in the output directory.
         /// </summary>
-        private void CreateDirectoryStructure(Asset[] clientAssets, AssetType assetType)
+        private void CreateDirectoryStructure(Asset[] clientAssets)
         {
-            // Only TCG assets require subdirectories.
-            if (assetType == AssetType.Tcg)
+            foreach (string? assetDir in clientAssets.Select(x => Path.GetDirectoryName(x.Name)).Distinct())
             {
-                foreach (string? assetDir in clientAssets.Select(x => Path.GetDirectoryName(x.Name)).Distinct())
+                Directory.CreateDirectory($"{OutputDirectory}/{assetDir}");
+            }
+        }
+
+        /// <summary>
+        /// Scans the input directory for asset files that match the command-line extraction options.
+        /// </summary>
+        /// <returns>A sorted mapping from asset type to the corresponding asset files.</returns>
+        private IDictionary<AssetType, List<string>> GetAssetFilesByType()
+        {
+            // Create a mapping from asset type to asset files.
+            SortedDictionary<AssetType, List<string>> assetFiles = new();
+            Array.ForEach((AssetType[])Enum.GetValues(typeof(AssetType)), x => assetFiles[x] = new());
+            GetExtractionOptions(out bool extractGame, out bool extractTcg, out bool extractResource);
+
+            // Create patterns to determine the asset type of each file.
+            Regex gameAssetRegex = new(@"^Assets(_ps3)?W?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
+            Regex tcgAssetRegex = new(@"^assetpack000W?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
+            Regex resourceAssetRegex = new(@"^AssetsTcgW?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
+
+            // Bin each asset path into an asset type based on the filename.
+            foreach (string path in GetAssetFiles())
+            {
+                string filename = Path.GetFileName(path);
+
+                if (extractGame && gameAssetRegex.IsMatch(filename))
                 {
-                    Directory.CreateDirectory($"{OutputDirectory}/{assetDir}");
+                    assetFiles[AssetType.Game].Add(path);
+                }
+                else if (extractTcg && tcgAssetRegex.IsMatch(filename))
+                {
+                    assetFiles[AssetType.Tcg].Add(path);
+                }
+                else if (extractResource && resourceAssetRegex.IsMatch(filename))
+                {
+                    assetFiles[AssetType.Resource].Add(path);
                 }
             }
+
+            return assetFiles;
+        }
+
+        /// <summary>
+        /// Initializes the specified asset type extraction options according to the command-line arguments.
+        /// </summary>
+        private void GetExtractionOptions(out bool extractGame, out bool extractTcg, out bool extractResource)
+        {
+            // By default (no options are set), extract all asset types.
+            extractGame = ExtractGame || !(ExtractTcg || ExtractResource);
+            extractTcg = ExtractTcg || !(ExtractGame || ExtractResource);
+            extractResource = ExtractResource || !(ExtractGame || ExtractTcg);
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of full asset file names that match the command-line extraction options.
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<string> GetAssetFiles() => (ExtractDat, ExtractPack) switch
+        {
+            (true, false) => Directory.EnumerateFiles(InputDirectory, ManifestPattern, SearchOption.AllDirectories),
+            (false, true) => Directory.EnumerateFiles(InputDirectory, PackPattern, SearchOption.AllDirectories),
+            // By default (no options are set), extract both .dat and .pack assets.
+            _ => Directory.EnumerateFiles(InputDirectory, "*", SearchOption.AllDirectories)
+                          .Where(IsAssetPackOrManifestFile)
+        };
+
+        /// <summary>
+        /// Determines whether the specified path string is an asset pack or manifest file.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="path"/> is the name of
+        /// an asset pack or manifest file; otherwise, <see langword="false"/>.
+        /// </returns>
+        private static bool IsAssetPackOrManifestFile(string path)
+        {
+            ReadOnlySpan<char> filename = Path.GetFileName(path.AsSpan());
+            return filename.StartsWith("Asset", StringComparison.OrdinalIgnoreCase)
+                && (filename.EndsWith(".pack", StringComparison.OrdinalIgnoreCase)
+                || filename.EndsWith("_manifest.dat", StringComparison.OrdinalIgnoreCase));
         }
 
         /// <summary>

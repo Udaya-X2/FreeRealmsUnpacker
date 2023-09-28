@@ -1,12 +1,11 @@
-﻿using System.ComponentModel;
-
-namespace AssetReader
+﻿namespace AssetReader
 {
     /// <summary>
     /// Provides random access reading operations on asset packs in a Free Realms client directory.
     /// </summary>
     public class AssetPackReader : IDisposable
     {
+        private const string ManifestFileSuffix = "manifest.dat";
         private const int MaxAssetPackSize = 209715200;
 
         private readonly FileStream[] _assetStreams;
@@ -18,28 +17,33 @@ namespace AssetReader
         /// for all asset packs of the specified type in the client directory.
         /// </summary>
         /// <exception cref="ArgumentNullException"/>
-        public AssetPackReader(string clientPath, AssetType assetType)
+        public AssetPackReader(string manifestPath)
         {
-            if (clientPath == null) throw new ArgumentNullException(nameof(clientPath));
+            if (manifestPath == null) throw new ArgumentNullException(nameof(manifestPath));
 
-            string assetPackPattern = GetAssetPackPattern(assetType);
-            _assetStreams = Directory.EnumerateFiles(clientPath, assetPackPattern, SearchOption.AllDirectories)
+            manifestPath = Path.GetFullPath(manifestPath);
+            string manifestDirectory = Path.GetDirectoryName(manifestPath)!;
+            string assetPackPattern = GetAssetPackPattern(manifestPath);
+            _assetStreams = Directory.EnumerateFiles(manifestDirectory, assetPackPattern)
                                      .Select(File.OpenRead)
                                      .ToArray();
         }
 
         /// <summary>
-        /// Determines which asset pack(s) to open based on the specified asset type.
+        /// Determines which asset pack(s) to open based on the name of the manifest file.
         /// </summary>
-        /// <returns>The search pattern to find the asset pack(s) of the specified asset type.</returns>
-        /// <exception cref="InvalidEnumArgumentException"/>
-        private static string GetAssetPackPattern(AssetType assetType) => assetType switch
+        /// <returns>The search pattern to find the asset pack(s) corresponding to the manifest.</returns>
+        private static string GetAssetPackPattern(string manifestPath)
         {
-            AssetType.Game => "Assets_???.dat",
-            AssetType.Tcg => "assetpack000_000.dat",
-            AssetType.Resource => "AssetsTcg_000.dat",
-            _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
-        };
+            if (!manifestPath.EndsWith(ManifestFileSuffix))
+            {
+                throw new ArgumentException(string.Format(SR.Argument_BadManifestPath, manifestPath));
+            }
+
+            ReadOnlySpan<char> manifestFile = Path.GetFileName(manifestPath.AsSpan());
+            ReadOnlySpan<char> manifestFilePrefix = manifestFile[..^ManifestFileSuffix.Length];
+            return $"{manifestFilePrefix}???.dat";
+        }
 
         /// <summary>
         /// Reads the contents of the specified asset from the asset pack(s) and writes the data in a given buffer.

@@ -40,6 +40,18 @@ namespace UnpackerCli
         public bool ExtractResource { get; }
 
         /// <summary>
+        /// Gets whether to extract .dat assets only.
+        /// </summary>
+        [Option(ShortName = "d", Description = "Extract .dat assets only.")]
+        public bool ExtractDat { get; }
+
+        /// <summary>
+        /// Gets whether to extract .pack assets only.
+        /// </summary>
+        [Option(ShortName = "p", Description = "Extract .pack assets only.")]
+        public bool ExtractPack { get; }
+
+        /// <summary>
         /// Gets whether to list the assets without extracting them.
         /// </summary>
         [Option(ShortName = "l", Description = "List the assets without extracting them.")]
@@ -52,6 +64,12 @@ namespace UnpackerCli
         public bool ValidateAssets { get; }
 
         /// <summary>
+        /// Gets whether to count the assets without extracting them.
+        /// </summary>
+        [Option(ShortName = "c", Description = "Count the assets without extracting them.")]
+        public bool CountAssets { get; }
+
+        /// <summary>
         /// Gets whether to skip assets that already exist.
         /// </summary>
         [Option(ShortName = "s", Description = "Skip assets that already exist.")]
@@ -60,7 +78,7 @@ namespace UnpackerCli
         /// <summary>
         /// Gets whether to disable progress bars.
         /// </summary>
-        [Option(ShortName = "p", Description = "Don't show progress bars.")]
+        [Option(ShortName = "n", Description = "Don't show progress bars.")]
         public bool NoProgressBars { get; }
 
         /// <summary>
@@ -72,7 +90,7 @@ namespace UnpackerCli
         /// <summary>
         /// Gets whether to show complete exception stack traces.
         /// </summary>
-        [Option(ShortName = "d", Description = "Show complete exception stack traces.")]
+        [Option(ShortName = "e", Description = "Show complete exception stack traces.")]
         public bool Debug { get; }
     }
 }
