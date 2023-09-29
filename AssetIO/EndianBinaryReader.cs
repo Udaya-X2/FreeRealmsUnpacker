@@ -148,21 +148,27 @@ namespace AssetIO
         /// </summary>
         public Endian Endianness => _isLittleEndian ? Endian.Little : Endian.Big;
 
-        /// <summary>
-        /// Releases all resources used by the current instance of the <see cref="EndianBinaryReader"/> class.
-        /// </summary>
-        public void Dispose()
+        /// <inheritdoc cref="Dispose()"/>
+        protected virtual void Dispose(bool disposing)
         {
             if (!_disposed)
             {
-                if (!_leaveOpen)
+                if (disposing && !_leaveOpen)
                 {
                     _stream.Close();
                 }
 
                 _disposed = true;
-                GC.SuppressFinalize(this);
             }
+        }
+
+        /// <summary>
+        /// Releases all resources used by the current instance of the <see cref="EndianBinaryReader"/> class.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>

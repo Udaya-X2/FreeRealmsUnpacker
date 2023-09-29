@@ -61,7 +61,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid manfiest path; must end with &apos;manifest.dat&apos;: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Invalid manfiest.dat file path: &apos;{0}&apos;..
         /// </summary>
         internal static string Argument_BadManifestPath {
             get {
@@ -97,7 +97,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unrecognized asset extension: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unrecognized asset file extension: &apos;{0}&apos;..
         /// </summary>
         internal static string Argument_UnknownAssetExt {
             get {
@@ -120,6 +120,15 @@ namespace AssetIO {
         internal static string ArgumentOutOfRange_NeedNonNegNum {
             get {
                 return ResourceManager.GetString("ArgumentOutOfRange_NeedNonNegNum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset &apos;{0}&apos; extends past the end of &apos;{1}&apos;..
+        /// </summary>
+        internal static string EndOfStream_Asset {
+            get {
+                return ResourceManager.GetString("EndOfStream_Asset", resourceCulture);
             }
         }
         
@@ -160,7 +169,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manifest file was not divided in chunks of 148: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Manifest.dat file was not divided in chunks of 148: &apos;{0}&apos;..
         /// </summary>
         internal static string IO_BadManifest {
             get {
@@ -187,11 +196,11 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ran out of asset packs while reading &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Ran out of asset .dat files while reading &apos;{0}&apos;..
         /// </summary>
-        internal static string IO_NoMoreAssetPacks {
+        internal static string IO_NoMoreAssetDatFiles {
             get {
-                return ResourceManager.GetString("IO_NoMoreAssetPacks", resourceCulture);
+                return ResourceManager.GetString("IO_NoMoreAssetDatFiles", resourceCulture);
             }
         }
     }

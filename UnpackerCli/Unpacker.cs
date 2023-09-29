@@ -70,43 +70,44 @@ namespace UnpackerCli
             if (assetFiles.Count == 0) return 0;
             if (CountAssets) return assetFiles.Sum(ClientDirectory.GetAssetCount);
 
-            int numAssets = ListAssets || NoProgressBars ? 0 : assetFiles.Sum(ClientDirectory.GetAssetCount);
-            using ProgressBar? pbar = numAssets > 0 ? CreateProgressBar(numAssets, assetType) : null;
+            using ProgressBar? pbar = CreateProgressBar(assetFiles, assetType);
+            int numAssets = 0;
+            int numErrors = 0;
 
             foreach (string assetFile in assetFiles)
             {
-                Asset[] clientAssets = ClientDirectory.GetAssets(assetFile);
+                Asset[] assets = ClientDirectory.GetAssets(assetFile);
 
                 if (ListAssets)
                 {
-                    Array.ForEach(clientAssets, asset => Console.WriteLine(asset.Name));
-                    numAssets += clientAssets.Length;
+                    Array.ForEach(assets, asset => Console.WriteLine(asset.Name));
                 }
                 else if (ValidateAssets)
                 {
-                    ValidateChecksums(assetFile, clientAssets, pbar);
+                    ValidateChecksums(assetFile, assets, pbar, ref numErrors);
                 }
                 else
                 {
-                    ExtractAssets(assetFile, clientAssets, pbar);
+                    ExtractAssets(assetFile, assets, pbar);
                 }
+
+                numAssets += assets.Length;
             }
 
             return numAssets;
         }
 
         /// <summary>
-        /// Validates assets of the specified type by comparing their checksums.
+        /// Validates assets in the specified asset file by comparing their checksums.
         /// </summary>
-        private static void ValidateChecksums(string assetFile, Asset[] clientAssets, ProgressBar? pbar)
+        private static void ValidateChecksums(string assetFile, Asset[] assets, ProgressBar? pbar, ref int numErrors)
         {
-            if (clientAssets.Length == 0) return;
+            if (assets.Length == 0) return;
 
-            using AssetPackReader reader = new(assetFile);
-            byte[] buffer = new byte[clientAssets.Max(x => x.Size)];
-            int numErrors = 0;
+            using AssetReader reader = AssetReader.Create(assetFile);
+            byte[] buffer = new byte[assets.Max(x => x.Size)];
 
-            foreach (Asset asset in clientAssets)
+            foreach (Asset asset in assets)
             {
                 reader.Read(asset, buffer);
 
@@ -120,19 +121,19 @@ namespace UnpackerCli
                 }
                 else
                 {
-                    Console.WriteLine($"{asset.Name} does not match the expected CRC.");
+                    Console.WriteLine($"'{asset.Name}' in '{assetFile}' does not match the expected CRC.");
                 }
             }
         }
 
         /// <summary>
-        /// Extracts assets of the specified type to the output directory.
+        /// Extracts assets in the specified asset file to the output directory.
         /// </summary>
         private void ExtractAssets(string assetFile, Asset[] clientAssets, ProgressBar? pbar)
         {
             if (clientAssets.Length == 0) return;
 
-            using AssetPackReader reader = new(assetFile);
+            using AssetReader reader = AssetReader.Create(assetFile);
             byte[] buffer = new byte[clientAssets.Max(x => x.Size)];
             CreateDirectoryStructure(clientAssets);
 
@@ -155,16 +156,19 @@ namespace UnpackerCli
         }
 
         /// <summary>
-        /// Creates a <see cref="ProgressBar"/> with the specified number of assets
-        /// for max ticks and an <paramref name="assetType"/>-dependent color.
+        /// Creates a <see cref="ProgressBar"/> to display the number of
+        /// assets processed in the asset files of the specified type.
         /// </summary>
         /// <returns>
         /// A <see cref="ProgressBar"/> with the number of assets for max
-        /// ticks and an <paramref name="assetType"/>-dependent color.
+        /// ticks and an <paramref name="assetType"/>-dependent color,
+        /// or <see langword="null"/> if progress bars are disabled.
         /// </returns>
         /// <exception cref="InvalidEnumArgumentException"></exception>
-        private static ProgressBar CreateProgressBar(int numAssets, AssetType assetType)
+        private ProgressBar? CreateProgressBar(IEnumerable<string> assetFiles, AssetType assetType)
         {
+            if (NoProgressBars || ListAssets || CountAssets) return null;
+
             (string message, ConsoleColor color) = assetType switch
             {
                 AssetType.Game => ("Reading game assets...", ConsoleColor.Green),
@@ -172,7 +176,7 @@ namespace UnpackerCli
                 AssetType.Resource => ("Reading resource assets...", ConsoleColor.DarkYellow),
                 _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
             };
-
+            int numAssets = assetFiles.Sum(ClientDirectory.GetAssetCount);
             ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };
             return new ProgressBar(numAssets, message, options);
         }
@@ -180,9 +184,9 @@ namespace UnpackerCli
         /// <summary>
         /// Creates the directory structure used by the client assets in the output directory.
         /// </summary>
-        private void CreateDirectoryStructure(Asset[] clientAssets)
+        private void CreateDirectoryStructure(Asset[] assets)
         {
-            foreach (string? assetDir in clientAssets.Select(x => Path.GetDirectoryName(x.Name)).Distinct())
+            foreach (string? assetDir in assets.Select(x => Path.GetDirectoryName(x.Name)).Distinct())
             {
                 Directory.CreateDirectory($"{OutputDirectory}/{assetDir}");
             }
@@ -231,16 +235,22 @@ namespace UnpackerCli
         /// </summary>
         private void GetExtractionOptions(out bool extractGame, out bool extractTcg, out bool extractResource)
         {
-            // By default (no options are set), extract all asset types.
-            extractGame = ExtractGame || !(ExtractTcg || ExtractResource);
-            extractTcg = ExtractTcg || !(ExtractGame || ExtractResource);
-            extractResource = ExtractResource || !(ExtractGame || ExtractTcg);
+            (bool, bool, bool) extractionOptions = (ExtractGame, ExtractTcg, ExtractResource);
+            (extractGame, extractTcg, extractResource) = extractionOptions switch
+            {
+                // By default (no options are set), extract all asset types.
+                (false, false, false) => (true, true, true),
+                _ => extractionOptions
+            };
         }
 
         /// <summary>
         /// Returns an enumerable collection of full asset file names that match the command-line extraction options.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// An enumerable collection of the full names (including paths) for the asset
+        /// files in the input directory that match the command-line extraction options.
+        /// </returns>
         private IEnumerable<string> GetAssetFiles() => (ExtractDat, ExtractPack) switch
         {
             (true, false) => Directory.EnumerateFiles(InputDirectory, ManifestPattern, SearchOption.AllDirectories),
@@ -251,11 +261,11 @@ namespace UnpackerCli
         };
 
         /// <summary>
-        /// Determines whether the specified path string is an asset pack or manifest file.
+        /// Determines whether the specified path string is a .pack or manifest.dat file.
         /// </summary>
         /// <returns>
         /// <see langword="true"/> if <paramref name="path"/> is the name of
-        /// an asset pack or manifest file; otherwise, <see langword="false"/>.
+        /// an .pack or manifest.dat file; otherwise, <see langword="false"/>.
         /// </returns>
         private static bool IsAssetPackOrManifestFile(string path)
         {

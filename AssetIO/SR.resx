@@ -124,7 +124,7 @@
     <value>Non-negative number required.</value>
   </data>
   <data name="Argument_BadManifestPath" xml:space="preserve">
-    <value>Invalid manfiest path; must end with 'manifest.dat': '{0}'.</value>
+    <value>Invalid manfiest.dat file path: '{0}'.</value>
   </data>
   <data name="Argument_InvalidOffLen" xml:space="preserve">
     <value>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</value>
@@ -136,7 +136,10 @@
     <value>Too many manifest files in the client directory.</value>
   </data>
   <data name="Argument_UnknownAssetExt" xml:space="preserve">
-    <value>Unrecognized asset extension: '{0}'.</value>
+    <value>Unrecognized asset file extension: '{0}'.</value>
+  </data>
+  <data name="EndOfStream_Asset" xml:space="preserve">
+    <value>The asset '{0}' extends past the end of '{1}'.</value>
   </data>
   <data name="EndOfStream_File" xml:space="preserve">
     <value>Unable to read beyond the end of '{1}'.</value>
@@ -151,7 +154,7 @@
     <value>Invalid asset data at offset {0} in '{1}'.</value>
   </data>
   <data name="IO_BadManifest" xml:space="preserve">
-    <value>Manifest file was not divided in chunks of 148: '{0}'.</value>
+    <value>Manifest.dat file was not divided in chunks of 148: '{0}'.</value>
   </data>
   <data name="IO_InvalidDecimalBits" xml:space="preserve">
     <value>Decimal constructor requires an array or span of four valid decimal bytes.</value>
@@ -159,7 +162,7 @@
   <data name="IO_InvalidStringLen" xml:space="preserve">
     <value>EndianBinaryReader encountered an invalid string length of {0} characters.</value>
   </data>
-  <data name="IO_NoMoreAssetPacks" xml:space="preserve">
-    <value>Ran out of asset packs while reading '{0}'.</value>
+  <data name="IO_NoMoreAssetDatFiles" xml:space="preserve">
+    <value>Ran out of asset .dat files while reading '{0}'.</value>
   </data>
 </root>
