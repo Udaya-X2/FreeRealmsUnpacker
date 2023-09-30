@@ -70,6 +70,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset size exceeds the length of the buffer..
+        /// </summary>
+        internal static string Argument_InvalidAssetLen {
+            get {
+                return ResourceManager.GetString("Argument_InvalidAssetLen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection..
         /// </summary>
         internal static string Argument_InvalidOffLen {
@@ -88,6 +97,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Stream was not writable..
+        /// </summary>
+        internal static string Argument_StreamNotWritable {
+            get {
+                return ResourceManager.GetString("Argument_StreamNotWritable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Too many manifest files in the client directory..
         /// </summary>
         internal static string Argument_TooManyManifestFiles {
@@ -99,9 +117,9 @@ namespace AssetIO {
         /// <summary>
         ///   Looks up a localized string similar to Unrecognized asset file extension: &apos;{0}&apos;..
         /// </summary>
-        internal static string Argument_UnknownAssetExt {
+        internal static string Argument_UnkAssetExt {
             get {
-                return ResourceManager.GetString("Argument_UnknownAssetExt", resourceCulture);
+                return ResourceManager.GetString("Argument_UnkAssetExt", resourceCulture);
             }
         }
         
@@ -124,20 +142,11 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The asset &apos;{0}&apos; extends past the end of &apos;{1}&apos;..
+        ///   Looks up a localized string similar to End of file reached before assets were parsed: &apos;{1}&apos;..
         /// </summary>
-        internal static string EndOfStream_Asset {
+        internal static string EndOfStream_AssetFile {
             get {
-                return ResourceManager.GetString("EndOfStream_Asset", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unable to read beyond the end of &apos;{1}&apos;..
-        /// </summary>
-        internal static string EndOfStream_File {
-            get {
-                return ResourceManager.GetString("EndOfStream_File", resourceCulture);
+                return ResourceManager.GetString("EndOfStream_AssetFile", resourceCulture);
             }
         }
         
@@ -156,6 +165,15 @@ namespace AssetIO {
         internal static string Format_Bad7BitInt {
             get {
                 return ResourceManager.GetString("Format_Bad7BitInt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset &apos;{0}&apos; extends past the end of &apos;{1}&apos;..
+        /// </summary>
+        internal static string IO_AssetEOF {
+            get {
+                return ResourceManager.GetString("IO_AssetEOF", resourceCulture);
             }
         }
         

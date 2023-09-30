@@ -1,5 +1,4 @@
 ﻿using AssetIO;
-using Force.Crc32;
 using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
 using System.ComponentModel;
@@ -105,13 +104,10 @@ namespace UnpackerCli
             if (assets.Length == 0) return;
 
             using AssetReader reader = AssetReader.Create(assetFile);
-            byte[] buffer = new byte[assets.Max(x => x.Size)];
 
             foreach (Asset asset in assets)
             {
-                reader.Read(asset, buffer);
-
-                if (asset.Crc32 == Crc32Algorithm.Compute(buffer, 0, asset.Size))
+                if (asset.Crc32 == reader.GetCrc32(asset))
                 {
                     pbar?.UpdateProgress($"[{numErrors} CRC errors] Validated {asset.Name}");
                 }
@@ -134,7 +130,6 @@ namespace UnpackerCli
             if (clientAssets.Length == 0) return;
 
             using AssetReader reader = AssetReader.Create(assetFile);
-            byte[] buffer = new byte[clientAssets.Max(x => x.Size)];
             CreateDirectoryStructure(clientAssets);
 
             foreach (Asset asset in clientAssets)
@@ -147,9 +142,8 @@ namespace UnpackerCli
                 }
                 else
                 {
-                    reader.Read(asset, buffer);
                     using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
-                    fs.Write(buffer, 0, asset.Size);
+                    reader.CopyTo(asset, fs);
                     pbar?.UpdateProgress($"Extracted {asset.Name}");
                 }
             }

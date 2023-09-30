@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace AssetIO
+﻿namespace AssetIO
 {
     /// <summary>
     /// Provides static methods for obtaining asset information in a Free Realms client directory.
@@ -15,11 +13,11 @@ namespace AssetIO
         /// </summary>
         /// <returns>An array consisting of the assets in the specified file.</returns>
         /// <exception cref="ArgumentException"></exception>
-        public static Asset[] GetAssets(string assetPath) => Path.GetExtension(assetPath) switch
+        public static Asset[] GetAssets(string assetFile) => Path.GetExtension(assetFile) switch
         {
-            ".dat" => GetManifestAssets(assetPath),
-            ".pack" => GetPackAssets(assetPath),
-            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAssetExt, assetPath), nameof(assetPath))
+            ".dat" => GetManifestAssets(assetFile),
+            ".pack" => GetPackAssets(assetFile),
+            _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
         };
 
         /// <summary>
@@ -27,36 +25,12 @@ namespace AssetIO
         /// </summary>
         /// <returns>The number of assets in the specified file.</returns>
         /// <exception cref="ArgumentException"></exception>
-        public static int GetAssetCount(string assetPath) => Path.GetExtension(assetPath) switch
+        public static int GetAssetCount(string assetFile) => Path.GetExtension(assetFile) switch
         {
-            ".dat" => GetManifestAssetCount(assetPath),
-            ".pack" => GetPackAssetCount(assetPath),
-            _ => throw new ArgumentException(string.Format(SR.Argument_UnknownAssetExt, assetPath), nameof(assetPath))
+            ".dat" => GetManifestAssetCount(assetFile),
+            ".pack" => GetPackAssetCount(assetFile),
+            _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
         };
-
-        /// <summary>
-        /// Scans the client directory's manifest.dat file for information on each asset of the specified type.
-        /// </summary>
-        /// <returns>
-        /// An array consisting of the assets in the manifest.dat
-        /// file, or an empty array if the file could not be found.
-        /// </returns>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        public static Asset[] GetManifestAssets(string clientPath, AssetType assetType)
-        {
-            if (clientPath == null) throw new ArgumentNullException(nameof(clientPath));
-
-            string manifestPattern = GetManifestPattern(assetType);
-            string[] manifestPaths = Directory.GetFiles(clientPath, manifestPattern, SearchOption.AllDirectories);
-
-            return manifestPaths.Length switch
-            {
-                0 => Array.Empty<Asset>(),
-                1 => GetManifestAssets(manifestPaths[0]),
-                _ => throw new ArgumentException(SR.Argument_TooManyManifestFiles)
-            };
-        }
 
         /// <summary>
         /// Scans the manifest.dat file for information on each asset.
@@ -64,12 +38,12 @@ namespace AssetIO
         /// <returns>An array consisting of the assets in the manifest.dat file.</returns>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="IOException"/>
-        public static Asset[] GetManifestAssets(string manifestPath)
+        public static Asset[] GetManifestAssets(string manifestFile)
         {
-            if (manifestPath == null) throw new ArgumentNullException(nameof(manifestPath));
+            if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
 
             // Read the manifest.dat file in little-endian format.
-            using FileStream stream = File.OpenRead(manifestPath);
+            using FileStream stream = File.OpenRead(manifestFile);
             using EndianBinaryReader reader = new(stream, Endian.Little);
             Asset[] clientAssets = new Asset[stream.Length / ManifestChunkSize];
 
@@ -96,7 +70,7 @@ namespace AssetIO
                     int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
                     string name = reader.ReadString(length);
                     long offset = ValidateRange(reader.ReadInt64(), minValue: 0);
-                    int size = ValidateRange(reader.ReadInt32(), minValue: 0);
+                    uint size = reader.ReadUInt32();
                     uint crc32 = reader.ReadUInt32();
                     clientAssets[i] = new Asset(name, offset, size, crc32);
                     stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
@@ -116,31 +90,31 @@ namespace AssetIO
         /// <returns>The number of assets in the specified manifest.dat file.</returns>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="IOException"/>
-        public static int GetManifestAssetCount(string manifestPath)
+        public static int GetManifestAssetCount(string manifestFile)
         {
-            if (manifestPath == null) throw new ArgumentNullException(nameof(manifestPath));
+            if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
 
-            FileInfo manifestFile = new(manifestPath);
+            FileInfo manifestFileInfo = new(manifestFile);
 
-            return manifestFile.Length % ManifestChunkSize == 0
-                ? (int)(manifestFile.Length / ManifestChunkSize)
-                : throw new IOException(string.Format(SR.IO_BadManifest, manifestPath));
+            return manifestFileInfo.Length % ManifestChunkSize == 0
+                ? (int)(manifestFileInfo.Length / ManifestChunkSize)
+                : throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
         }
 
         /// <summary>
         /// Scans the .pack file for information on each asset.
         /// </summary>
-        /// <param name="packPath"></param>
+        /// <param name="packFile"></param>
         /// <returns>An array consisting of the assets in the .pack file.</returns>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="EndOfStreamException"/>
         /// <exception cref="IOException"/>
-        public static Asset[] GetPackAssets(string packPath)
+        public static Asset[] GetPackAssets(string packFile)
         {
-            if (packPath == null) throw new ArgumentNullException(nameof(packPath));
+            if (packFile == null) throw new ArgumentNullException(nameof(packFile));
 
             // Read the .pack file in big-endian format.
-            using FileStream stream = File.OpenRead(packPath);
+            using FileStream stream = File.OpenRead(packFile);
             using EndianBinaryReader reader = new(stream, Endian.Big);
             List<Asset> assets = new();
             uint nextOffset = 0;
@@ -182,7 +156,7 @@ namespace AssetIO
                         int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
                         string name = reader.ReadString(length);
                         uint offset = reader.ReadUInt32();
-                        int size = ValidateRange(reader.ReadInt32(), minValue: 0);
+                        uint size = reader.ReadUInt32();
                         uint crc32 = reader.ReadUInt32();
                         assets.Add(new Asset(name, offset, size, crc32));
                     }
@@ -194,7 +168,7 @@ namespace AssetIO
             }
             catch (EndOfStreamException ex)
             {
-                throw new EndOfStreamException(string.Format(SR.EndOfStream_File, stream.Name), ex);
+                throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
             }
 
             return assets.ToArray();
@@ -206,12 +180,12 @@ namespace AssetIO
         /// <returns>The number of assets in the specified .pack file.</returns>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="IOException"/>
-        public static int GetPackAssetCount(string packPath)
+        public static int GetPackAssetCount(string packFile)
         {
-            if (packPath == null) throw new ArgumentNullException(nameof(packPath));
+            if (packFile == null) throw new ArgumentNullException(nameof(packFile));
 
             // Read the .pack file in big-endian format.
-            using FileStream stream = new(packPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
+            using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
             using EndianBinaryReader reader = new(stream, Endian.Big);
             uint nextOffset = 0;
             int numAssets = 0;
@@ -232,24 +206,11 @@ namespace AssetIO
             }
             catch (EndOfStreamException ex)
             {
-                throw new EndOfStreamException(string.Format(SR.EndOfStream_File, stream.Name), ex);
+                throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
             }
 
             return numAssets;
         }
-
-        /// <summary>
-        /// Determines which manifest.dat file to use based on the specified asset type.
-        /// </summary>
-        /// <returns>The search pattern to find the manifest.dat file of the specified asset type.</returns>
-        /// <exception cref="InvalidEnumArgumentException"/>
-        private static string GetManifestPattern(AssetType assetType) => assetType switch
-        {
-            AssetType.Game => "Assets_manifest.dat",
-            AssetType.Tcg => "assetpack000_manifest.dat",
-            AssetType.Resource => "AssetsTcg_manifest.dat",
-            _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
-        };
 
         /// <summary>
         /// Throws an exception if the specified 32-bit integer is outside the given range.
