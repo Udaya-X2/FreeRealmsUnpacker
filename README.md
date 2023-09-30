@@ -15,11 +15,14 @@ Options:
   -g|--extract-game      Extract game assets only (in 'Free Realms/')
   -t|--extract-tcg       Extract TCG assets only (in 'Free Realms/assets/')
   -r|--extract-resource  Extract resource assets only (in 'Free Realms/tcg/')
+  -d|--extract-dat       Extract .dat assets only.
+  -p|--extract-pack      Extract .pack assets only.
   -l|--list-assets       List the assets without extracting them.
   -v|--validate-assets   Validate the assets without extracting them.
+  -c|--count-assets      Count the assets without extracting them.
   -s|--skip-existing     Skip assets that already exist.
-  -p|--no-progress-bars  Don't show progress bars.
+  -n|--no-progress-bars  Don't show progress bars.
   -y|--answer-yes        Automatically answer yes to any question.
-  -d|--debug             Show complete exception stack traces.
+  -e|--debug             Show complete exception stack traces.
   -?|-h|--help           Show help information.
 ```
