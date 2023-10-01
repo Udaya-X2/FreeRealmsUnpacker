@@ -10,11 +10,11 @@
         /// </summary>
         /// <returns>An <see cref="AssetReader"/> on the specified asset file.</returns>
         /// <exception cref="ArgumentException"></exception>
-        public static AssetReader Create(string assetFile) => Path.GetExtension(assetFile) switch
+        public static AssetReader Create(string assetFile) => ClientDirectory.GetAssetFileType(assetFile) switch
         {
-            ".dat" => new AssetDatReader(assetFile),
-            ".pack" => new AssetPackReader(assetFile),
-            _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile))
+            AssetType.Dat => new AssetDatReader(assetFile),
+            AssetType.Pack => new AssetPackReader(assetFile),
+            _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
         };
 
         /// <summary>

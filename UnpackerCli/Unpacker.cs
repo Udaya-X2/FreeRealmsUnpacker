@@ -13,8 +13,8 @@ namespace UnpackerCli
     /// </summary>
     public partial class Unpacker
     {
-        private const string ManifestPattern = "Asset*_manifest.dat";
-        private const string PackPattern = "Asset*.pack";
+        private const AssetType AssetDirTypes = AssetType.Game | AssetType.Tcg | AssetType.Resource;
+        private const AssetType AssetFileTypes = AssetType.Dat | AssetType.Pack;
 
         /// <summary>
         /// The entry point of the command line Free Realms Unpacker, following command parsing.
@@ -189,33 +189,48 @@ namespace UnpackerCli
         /// <summary>
         /// Scans the input directory for asset files that match the command-line extraction options.
         /// </summary>
-        /// <returns>A sorted mapping from asset type to the corresponding asset files.</returns>
+        /// <returns>A sorted mapping from asset directory type to the corresponding asset files.</returns>
         private IDictionary<AssetType, List<string>> GetAssetFilesByType()
         {
-            // Create a mapping from asset type to asset files.
-            SortedDictionary<AssetType, List<string>> assetFiles = new();
-            Array.ForEach((AssetType[])Enum.GetValues(typeof(AssetType)), x => assetFiles[x] = new());
-            GetExtractionOptions(out bool extractGame, out bool extractTcg, out bool extractResource);
+            // Create a mapping from asset directory type to asset files.
+            SortedDictionary<AssetType, List<string>> assetFiles = new()
+            {
+                { AssetType.Game, new List<string>() },
+                { AssetType.Tcg, new List<string>() },
+                { AssetType.Resource, new List<string>() }
+            };
+            AssetType assetOptions = GetExtractionOptions();
 
-            // Create patterns to determine the asset type of each file.
+            // Create patterns to determine the asset directory type of each file.
             Regex gameAssetRegex = new(@"^Assets(_ps3)?W?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
             Regex tcgAssetRegex = new(@"^assetpack000W?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
             Regex resourceAssetRegex = new(@"^AssetsTcgW?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
 
-            // Bin each asset path into an asset type based on the filename.
-            foreach (string path in GetAssetFiles())
+            // Scan the input directory for asset files that match the extraction options.
+            foreach (string path in Directory.EnumerateFiles(InputDirectory, "*", SearchOption.AllDirectories))
             {
+                switch (ClientDirectory.GetAssetFileType(path))
+                {
+                    case AssetType.Dat when assetOptions.HasFlag(AssetType.Dat):
+                        break;
+                    case AssetType.Pack when assetOptions.HasFlag(AssetType.Pack):
+                        break;
+                    default:
+                        continue;
+                }
+
                 string filename = Path.GetFileName(path);
 
-                if (extractGame && gameAssetRegex.IsMatch(filename))
+                // Bin each asset path into an asset directory type based on the filename.
+                if (assetOptions.HasFlag(AssetType.Game) && gameAssetRegex.IsMatch(filename))
                 {
                     assetFiles[AssetType.Game].Add(path);
                 }
-                else if (extractTcg && tcgAssetRegex.IsMatch(filename))
+                else if (assetOptions.HasFlag(AssetType.Tcg) && tcgAssetRegex.IsMatch(filename))
                 {
                     assetFiles[AssetType.Tcg].Add(path);
                 }
-                else if (extractResource && resourceAssetRegex.IsMatch(filename))
+                else if (assetOptions.HasFlag(AssetType.Resource) && resourceAssetRegex.IsMatch(filename))
                 {
                     assetFiles[AssetType.Resource].Add(path);
                 }
@@ -225,48 +240,34 @@ namespace UnpackerCli
         }
 
         /// <summary>
-        /// Initializes the specified asset type extraction options according to the command-line arguments.
+        /// Returns an enum value specifying the asset types to extract, based on the command-line options.
         /// </summary>
-        private void GetExtractionOptions(out bool extractGame, out bool extractTcg, out bool extractResource)
+        /// <returns>An enum value specifying the asset types to extract.</returns>
+        private AssetType GetExtractionOptions()
         {
-            (bool, bool, bool) extractionOptions = (ExtractGame, ExtractTcg, ExtractResource);
-            (extractGame, extractTcg, extractResource) = extractionOptions switch
+            Span<bool> options = stackalloc[] { ExtractGame, ExtractTcg, ExtractResource, ExtractDat, ExtractPack };
+            AssetType extractionOptions = 0;
+
+            // Set the enum flag corresponding to each command-line option.
+            for (int i = 0; i < options.Length; i++)
             {
-                // By default (no options are set), extract all asset types.
-                (false, false, false) => (true, true, true),
-                _ => extractionOptions
-            };
-        }
+                if (options[i])
+                {
+                    extractionOptions |= (AssetType)(1 << i);
+                }
+            }
 
-        /// <summary>
-        /// Returns an enumerable collection of full asset file names that match the command-line extraction options.
-        /// </summary>
-        /// <returns>
-        /// An enumerable collection of the full names (including paths) for the asset
-        /// files in the input directory that match the command-line extraction options.
-        /// </returns>
-        private IEnumerable<string> GetAssetFiles() => (ExtractDat, ExtractPack) switch
-        {
-            (true, false) => Directory.EnumerateFiles(InputDirectory, ManifestPattern, SearchOption.AllDirectories),
-            (false, true) => Directory.EnumerateFiles(InputDirectory, PackPattern, SearchOption.AllDirectories),
-            // By default (no options are set), extract both .dat and .pack assets.
-            _ => Directory.EnumerateFiles(InputDirectory, "*", SearchOption.AllDirectories)
-                          .Where(IsAssetPackOrManifestFile)
-        };
+            // By default (no options are set), extract all asset types.
+            if ((extractionOptions & AssetDirTypes) is 0)
+            {
+                extractionOptions |= AssetDirTypes;
+            }
+            if ((extractionOptions & AssetFileTypes) is 0)
+            {
+                extractionOptions |= AssetFileTypes;
+            }
 
-        /// <summary>
-        /// Determines whether the specified path string is a .pack or manifest.dat file.
-        /// </summary>
-        /// <returns>
-        /// <see langword="true"/> if <paramref name="path"/> is the name of
-        /// an .pack or manifest.dat file; otherwise, <see langword="false"/>.
-        /// </returns>
-        private static bool IsAssetPackOrManifestFile(string path)
-        {
-            ReadOnlySpan<char> filename = Path.GetFileName(path.AsSpan());
-            return filename.StartsWith("Asset", StringComparison.OrdinalIgnoreCase)
-                && (filename.EndsWith(".pack", StringComparison.OrdinalIgnoreCase)
-                || filename.EndsWith("_manifest.dat", StringComparison.OrdinalIgnoreCase));
+            return extractionOptions;
         }
 
         /// <summary>

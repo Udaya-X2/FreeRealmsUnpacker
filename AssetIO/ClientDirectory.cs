@@ -13,10 +13,10 @@
         /// </summary>
         /// <returns>An array consisting of the assets in the specified file.</returns>
         /// <exception cref="ArgumentException"></exception>
-        public static Asset[] GetAssets(string assetFile) => Path.GetExtension(assetFile) switch
+        public static Asset[] GetAssets(string assetFile) => GetAssetFileType(assetFile) switch
         {
-            ".dat" => GetManifestAssets(assetFile),
-            ".pack" => GetPackAssets(assetFile),
+            AssetType.Dat => GetManifestAssets(assetFile),
+            AssetType.Pack => GetPackAssets(assetFile),
             _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
         };
 
@@ -25,10 +25,10 @@
         /// </summary>
         /// <returns>The number of assets in the specified file.</returns>
         /// <exception cref="ArgumentException"></exception>
-        public static int GetAssetCount(string assetFile) => Path.GetExtension(assetFile) switch
+        public static int GetAssetCount(string assetFile) => GetAssetFileType(assetFile) switch
         {
-            ".dat" => GetManifestAssetCount(assetFile),
-            ".pack" => GetPackAssetCount(assetFile),
+            AssetType.Dat => GetManifestAssetCount(assetFile),
+            AssetType.Pack => GetPackAssetCount(assetFile),
             _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
         };
 
@@ -210,6 +210,26 @@
             }
 
             return numAssets;
+        }
+
+        /// <summary>
+        /// Gets an enum value corresponding to the suffix of the specified asset file.
+        /// </summary>
+        /// <returns>An enum value corresponding to the suffix of the specified asset file.</returns>
+        public static AssetType GetAssetFileType(string assetFile)
+        {
+            if (assetFile.EndsWith(".pack", StringComparison.OrdinalIgnoreCase))
+            {
+                return AssetType.Pack;
+            }
+            else if (assetFile.EndsWith("_manifest.dat", StringComparison.OrdinalIgnoreCase))
+            {
+                return AssetType.Dat;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         /// <summary>
