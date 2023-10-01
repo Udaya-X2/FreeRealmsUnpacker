@@ -2,7 +2,6 @@
 using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
 using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -130,7 +129,6 @@ namespace UnpackerCli
             if (clientAssets.Length == 0) return;
 
             using AssetReader reader = AssetReader.Create(assetFile);
-            CreateDirectoryStructure(clientAssets);
 
             foreach (Asset asset in clientAssets)
             {
@@ -142,6 +140,7 @@ namespace UnpackerCli
                 }
                 else
                 {
+                    Directory.CreateDirectory(Path.GetDirectoryName(assetPath) ?? OutputDirectory);
                     using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
                     reader.CopyTo(asset, fs);
                     pbar?.UpdateProgress($"Extracted {asset.Name}");
@@ -173,17 +172,6 @@ namespace UnpackerCli
             int numAssets = assetFiles.Sum(ClientDirectory.GetAssetCount);
             ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };
             return new ProgressBar(numAssets, message, options);
-        }
-
-        /// <summary>
-        /// Creates the directory structure used by the client assets in the output directory.
-        /// </summary>
-        private void CreateDirectoryStructure(Asset[] assets)
-        {
-            foreach (string? assetDir in assets.Select(x => Path.GetDirectoryName(x.Name)).Distinct())
-            {
-                Directory.CreateDirectory($"{OutputDirectory}/{assetDir}");
-            }
         }
 
         /// <summary>
