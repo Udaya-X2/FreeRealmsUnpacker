@@ -190,9 +190,10 @@ namespace UnpackerCli
             AssetType assetOptions = GetExtractionOptions();
 
             // Create patterns to determine the asset directory type of each file.
-            Regex gameAssetRegex = new(@"^Assets(_ps3)?W?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
-            Regex tcgAssetRegex = new(@"^assetpack000W?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
-            Regex resourceAssetRegex = new(@"^AssetsTcgW?_(manifest\.dat|\d{3}\.pack)$", RegexOptions.IgnoreCase);
+            const RegexOptions options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
+            Regex gameAssetRegex = new(@"^Assets((_ps3)?W?_\d{3}\.pack|_manifest\.dat)$", options);
+            Regex tcgAssetRegex = new(@"^assetpack000(W?_\d{3}\.pack|_manifest\.dat)$", options);
+            Regex resourceAssetRegex = new(@"^AssetsTcg(W?_\d{3}\.pack|_manifest\.dat)$", options);
 
             // Scan the input directory for asset files that match the extraction options.
             foreach (string path in Directory.EnumerateFiles(InputDirectory, "*", SearchOption.AllDirectories))
