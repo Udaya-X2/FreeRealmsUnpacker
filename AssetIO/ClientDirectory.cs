@@ -1,4 +1,6 @@
-﻿namespace AssetIO
+﻿using System.Text.RegularExpressions;
+
+namespace AssetIO
 {
     /// <summary>
     /// Provides static methods for obtaining asset information in a Free Realms client directory.
@@ -7,6 +9,11 @@
     {
         private const int ManifestChunkSize = 148;
         private const int MaxAssetNameLength = 128;
+        private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
+
+        private static readonly Regex GameAssetRegex = new(@"^Assets((_ps3)?W?_\d{3}\.pack|_manifest\.dat)$", Options);
+        private static readonly Regex TcgAssetRegex = new(@"^assetpack000(W?_\d{3}\.pack|_manifest\.dat)$", Options);
+        private static readonly Regex ResourceAssetRegex = new(@"^AssetsTcg(W?_\d{3}\.pack|_manifest\.dat)$", Options);
 
         /// <summary>
         /// Scans the assets from the specified file path.
@@ -213,23 +220,148 @@
         }
 
         /// <summary>
+        /// Returns a sorted mapping from asset directory type to full file names for assets in a specified path.
+        /// </summary>
+        /// <returns>A sorted mapping from asset directory type to the corresponding asset files.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        public static IDictionary<AssetType, List<string>> GetAssetFilesByType(string path)
+            => GetAssetFilesByType(path, AssetType.All);
+
+        /// <summary>
+        /// Returns a sorted mapping from asset directory type to full file
+        /// names for assets that match a filter on a specified path.
+        /// </summary>
+        /// <returns>A sorted mapping from asset directory type to the corresponding asset files.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        public static IDictionary<AssetType, List<string>> GetAssetFilesByType(string path, AssetType assetFilter)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+            
+            SortedDictionary<AssetType, List<string>> assetTypeToFiles = new();
+
+            foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+            {
+                AssetType assetType = GetAssetType(file);
+
+                if (assetType != 0 && assetFilter.HasFlag(assetType))
+                {
+                    AssetType assetDirectoryType = assetType & AssetType.AllDirectories;
+
+                    if (assetTypeToFiles.TryGetValue(assetDirectoryType, out List<string>? assetFiles))
+                    {
+                        assetFiles.Add(file);
+                    }
+                    else
+                    {
+                        assetTypeToFiles[assetDirectoryType] = new() { file };
+                    }
+                }
+            }
+
+            return assetTypeToFiles;
+        }
+
+        /// <summary>
+        /// Returns an enumerable collection of full file names for assets in the specified path.
+        /// </summary>
+        /// <returns>
+        /// An enumerable collection of the full file names (including paths) for
+        /// the asset files in the directory specified by <paramref name="path"/>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"/>
+        public static IEnumerable<string> EnumerateAssetFiles(string path)
+            => EnumerateAssetFiles(path, AssetType.All);
+
+        /// <summary>
+        /// Returns an enumerable collection of full file names for assets that match a filter on a specified path.
+        /// </summary>
+        /// <returns>
+        /// An enumerable collection of the full file names (including paths) for the asset files in
+        /// the directory specified by <paramref name="path"/> and that match the specified filter.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"/>
+        public static IEnumerable<string> EnumerateAssetFiles(string path, AssetType assetFilter)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
+            foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+            {
+                AssetType assetType = GetAssetType(file);
+
+                if (assetType != 0 && assetFilter.HasFlag(assetType))
+                {
+                    yield return file;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets an enum value corresponding to the name of the specified asset file.
+        /// </summary>
+        /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        public static AssetType GetAssetType(string assetFile)
+        {
+            if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
+
+            AssetType assetFileType = GetAssetFileType(assetFile);
+
+            if (assetFileType == 0)
+            {
+                return 0;
+            }
+
+            AssetType assetDirType = GetAssetDirectoryType(assetFile);
+
+            return assetDirType == 0 ? 0 : assetFileType | assetDirType;
+        }
+
+        /// <summary>
         /// Gets an enum value corresponding to the suffix of the specified asset file.
         /// </summary>
         /// <returns>An enum value corresponding to the suffix of the specified asset file.</returns>
+        /// <exception cref="ArgumentNullException"/>
         public static AssetType GetAssetFileType(string assetFile)
         {
+            if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
+
             if (assetFile.EndsWith(".pack", StringComparison.OrdinalIgnoreCase))
             {
                 return AssetType.Pack;
             }
-            else if (assetFile.EndsWith("_manifest.dat", StringComparison.OrdinalIgnoreCase))
+            if (assetFile.EndsWith("_manifest.dat", StringComparison.OrdinalIgnoreCase))
             {
                 return AssetType.Dat;
             }
-            else
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Gets an enum value corresponding to the prefix of the specified asset file.
+        /// </summary>
+        /// <returns>An enum value corresponding to the prefix of the specified asset file.</returns>
+        /// <exception cref="ArgumentNullException"/>
+        public static AssetType GetAssetDirectoryType(string assetFile)
+        {
+            if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
+
+            assetFile = Path.GetFileName(assetFile);
+
+            if (GameAssetRegex.IsMatch(assetFile))
             {
-                return 0;
+                return AssetType.Game;
             }
+            if (TcgAssetRegex.IsMatch(assetFile))
+            {
+                return AssetType.Tcg;
+            }
+            if (ResourceAssetRegex.IsMatch(assetFile))
+            {
+                return AssetType.Resource;
+            }
+
+            return 0;
         }
 
         /// <summary>

@@ -19,12 +19,24 @@
         /// </summary>
         Resource = 4,
         /// <summary>
+        /// Assets from any Free Realms client subdirectory.
+        /// </summary>
+        AllDirectories = Game | Tcg | Resource,
+        /// <summary>
         /// Asset .dat files, which come with a manifest.dat file consisting of asset information.
         /// </summary>
         Dat = 8,
         /// <summary>
         /// Asset .pack files, which consist of both asset information and content.
         /// </summary>
-        Pack = 16
+        Pack = 16,
+        /// <summary>
+        /// Asset files with any file extension.
+        /// </summary>
+        AllFiles = Dat | Pack,
+        /// <summary>
+        /// Assets from any Free Realms client subdirectory, with any file extension.
+        /// </summary>
+        All = AllDirectories | AllFiles
     }
 }
