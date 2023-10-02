@@ -63,15 +63,15 @@ namespace UnpackerCli
         private int HandleAssets(AssetType assetType, List<string> assetFiles)
         {
             if (assetFiles.Count == 0) return 0;
-            if (CountAssets) return assetFiles.Sum(ClientDirectory.GetAssetCount);
+            if (CountAssets) return assetFiles.Sum(ClientFile.GetAssetCount);
 
-            using ProgressBar? pbar = CreateProgressBar(assetFiles, assetType);
+            using ProgressBar? pbar = CreateProgressBar(assetType, assetFiles);
             int numAssets = 0;
             int numErrors = 0;
 
             foreach (string assetFile in assetFiles)
             {
-                Asset[] assets = ClientDirectory.GetAssets(assetFile);
+                Asset[] assets = ClientFile.GetAssets(assetFile);
 
                 if (ListAssets)
                 {
@@ -155,7 +155,7 @@ namespace UnpackerCli
         /// or <see langword="null"/> if progress bars are disabled.
         /// </returns>
         /// <exception cref="InvalidEnumArgumentException"></exception>
-        private ProgressBar? CreateProgressBar(IEnumerable<string> assetFiles, AssetType assetType)
+        private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<string> assetFiles)
         {
             if (NoProgressBars || ListAssets || CountAssets) return null;
 
@@ -166,7 +166,7 @@ namespace UnpackerCli
                 AssetType.Resource => ("Reading resource assets...", ConsoleColor.DarkYellow),
                 _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
             };
-            int numAssets = assetFiles.Sum(ClientDirectory.GetAssetCount);
+            int numAssets = assetFiles.Sum(ClientFile.GetAssetCount);
             ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };
             return new ProgressBar(numAssets, message, options);
         }

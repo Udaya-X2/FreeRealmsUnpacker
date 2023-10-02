@@ -10,7 +10,7 @@
         /// </summary>
         /// <returns>An <see cref="AssetReader"/> on the specified asset file.</returns>
         /// <exception cref="ArgumentException"></exception>
-        public static AssetReader Create(string assetFile) => ClientDirectory.GetAssetFileType(assetFile) switch
+        public static AssetReader Create(string assetFile) => ClientFile.GetAssetFileType(assetFile) switch
         {
             AssetType.Dat => new AssetDatReader(assetFile),
             AssetType.Pack => new AssetPackReader(assetFile),
