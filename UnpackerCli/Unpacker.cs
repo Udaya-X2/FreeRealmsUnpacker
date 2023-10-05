@@ -3,6 +3,7 @@ using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 
 namespace UnpackerCli
 {
@@ -17,33 +18,43 @@ namespace UnpackerCli
         /// <returns>The process exit code.</returns>
         public int OnExecute()
         {
+            Encoding consoleEncoding = Console.OutputEncoding;
+
             try
             {
-                // Validate the command line arguments.
-                if (ListAssets && ValidateAssets) throw new Exception("Cannot both list and validate assets.");
-                if (ListAssets && CountAssets) throw new Exception("Cannot both list and count assets.");
-                if (ValidateAssets && CountAssets) throw new Exception("Cannot both validate and count assets.");
-                if (!ListAssets && !ValidateAssets && !CountAssets && !SetupOutputDirectory()) return 1;
+                if (!ValidateArguments()) return 1;
 
                 // Handle the asset types specified.
                 Stopwatch sw = Stopwatch.StartNew();
+                Console.OutputEncoding = Encoding.UTF8;
                 AssetType assetFilter = GetAssetFilter();
                 int numAssets = 0;
 
-                foreach (var item in ClientDirectory.GetAssetFilesByType(InputDirectory, assetFilter))
+                if (ListFiles)
                 {
-                    numAssets += HandleAssets(item.Key, item.Value);
-                }
-
-                // Print the number of assets found.
-                if (numAssets == 0)
-                {
-                    Console.Error.WriteLine("\nNo assets found.");
+                    numAssets = ListFilesFormatted(ClientDirectory.GetAssetFiles(InputDirectory, assetFilter));
                 }
                 else
                 {
-                    Console.Error.WriteLine($"\n{numAssets} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}");
+                    foreach (var item in ClientDirectory.GetAssetFilesByType(InputDirectory, assetFilter))
+                    {
+                        numAssets += HandleAssets(item.Key, item.Value);
+                    }
                 }
+
+                // Print the number of assets or files found.
+                string message = (numAssets, ListFiles) switch
+                {
+                    (0, false) => $"\nNo assets found.",
+                    (0, true) => $"\nNo asset files found.",
+                    (1, false) => $"\n{numAssets} asset found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                    (1, true) => $"\n{numAssets} asset file found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                    (_, false) => $"\n{numAssets} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                    (_, true) => $"\n{numAssets} asset files found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}"
+                };
+
+                Console.Error.WriteLine(message);
+                return 0;
             }
             catch (Exception ex)
             {
@@ -52,8 +63,10 @@ namespace UnpackerCli
                 Console.ResetColor();
                 return 2;
             }
-
-            return 0;
+            finally
+            {
+                Console.OutputEncoding = consoleEncoding;
+            }
         }
 
         /// <summary>
@@ -75,7 +88,7 @@ namespace UnpackerCli
 
                 if (ListAssets)
                 {
-                    Array.ForEach(assets, asset => Console.WriteLine(asset.Name));
+                    ListAssetsFormatted(assetFile, assets);
                 }
                 else if (ValidateAssets)
                 {
@@ -90,6 +103,53 @@ namespace UnpackerCli
             }
 
             return numAssets;
+        }
+
+        /// <summary>
+        /// Lists the specified asset files in either tabular or
+        /// line-based form, depending on the command-line options.
+        /// </summary>
+        private int ListFilesFormatted(string[] assetFiles)
+        {
+            if (DisplayTable)
+            {
+                Table table = new(assetFiles.Length, "Name", "Assets", "Size");
+
+                foreach (string assetFile in assetFiles)
+                {
+                    int numAssets = ClientFile.GetAssetCount(assetFile);
+                    long size = new FileInfo(assetFile).Length;
+                    table.AddRow(assetFile, numAssets, size);
+                }
+
+                table.Print();
+            }
+            else
+            {
+                Array.ForEach(assetFiles, Console.WriteLine);
+            }
+
+            return assetFiles.Length;
+        }
+
+        /// <summary>
+        /// Lists assets from the specified asset file in either tabular
+        /// or line-based form, depending on the command-line options.
+        /// </summary>
+        private void ListAssetsFormatted(string assetFile, Asset[] assets)
+        {
+            if (DisplayTable)
+            {
+                Table table = new(assets.Length, "Name", "Offset", "Size", "CRC-32");
+                string plural = assets.Length == 1 ? "" : "s";
+                Console.WriteLine($"\nFound {assets.Length} asset{plural} in {assetFile}:\n");
+                Array.ForEach(assets, x => table.AddRow(x.Name, x.Offset, x.Size, x.Crc32));
+                table.Print();
+            }
+            else
+            {
+                Array.ForEach(assets, x => Console.WriteLine(x.Name));
+            }
         }
 
         /// <summary>
@@ -157,7 +217,7 @@ namespace UnpackerCli
         /// <exception cref="InvalidEnumArgumentException"></exception>
         private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<string> assetFiles)
         {
-            if (NoProgressBars || ListAssets || CountAssets) return null;
+            if (NoProgressBars || ListAssets || ListFiles || CountAssets) return null;
 
             (string message, ConsoleColor color) = assetType switch
             {
@@ -178,29 +238,46 @@ namespace UnpackerCli
         private AssetType GetAssetFilter()
         {
             Span<bool> options = stackalloc[] { ExtractGame, ExtractTcg, ExtractResource, ExtractDat, ExtractPack };
-            AssetType extractionOptions = 0;
+            AssetType assetType = 0;
 
             // Set the enum flag corresponding to each command-line option.
             for (int i = 0; i < options.Length; i++)
             {
                 if (options[i])
                 {
-                    extractionOptions |= (AssetType)(1 << i);
+                    assetType |= (AssetType)(1 << i);
                 }
             }
 
             // By default (no options are set), extract all asset types.
-            if ((extractionOptions & AssetType.AllDirectories) == 0)
+            if ((assetType & AssetType.AllDirectories) == 0)
             {
-                extractionOptions |= AssetType.AllDirectories;
+                assetType |= AssetType.AllDirectories;
             }
-            if ((extractionOptions & AssetType.AllFiles) == 0)
+            if ((assetType & AssetType.AllFiles) == 0)
             {
-                extractionOptions |= AssetType.AllFiles;
+                assetType |= AssetType.AllFiles;
             }
 
-            return extractionOptions;
+            return assetType;
         }
+
+        /// <summary>
+        /// Throws an exception if the provided command-line arguments are invalid.
+        /// </summary>
+        /// <returns><see langword="true"/> if the arguments are valid; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="Exception"></exception>
+        private bool ValidateArguments() => (ListAssets, ListFiles, ValidateAssets, CountAssets) switch
+        {
+            (true, true, _, _) => throw new Exception("Cannot both list assets and files."),
+            (true, _, true, _) => throw new Exception("Cannot both list and validate assets."),
+            (_, true, true, _) => throw new Exception("Cannot both list files and validate assets."),
+            (true, _, _, true) => throw new Exception("Cannot both list and count assets."),
+            (_, true, _, true) => throw new Exception("Cannot both list files and count assets."),
+            (_, _, true, true) => throw new Exception("Cannot both validate and count assets."),
+            (false, false, false, false) => SetupOutputDirectory(),
+            _ => true,
+        };
 
         /// <summary>
         /// Prompts the user to create the output directory if it does not exist.

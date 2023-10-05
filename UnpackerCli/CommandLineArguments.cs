@@ -58,6 +58,12 @@ namespace UnpackerCli
         public bool ListAssets { get; }
 
         /// <summary>
+        /// Gets whether to list the asset file paths without extracting them.
+        /// </summary>
+        [Option(ShortName = "f", Description = "List the asset file paths without extracting them.")]
+        public bool ListFiles { get; }
+
+        /// <summary>
         /// Gets whether to validate the assets without extracting them.
         /// </summary>
         [Option(ShortName = "v", Description = "Validate the assets without extracting them.")]
@@ -68,6 +74,12 @@ namespace UnpackerCli
         /// </summary>
         [Option(ShortName = "c", Description = "Count the assets without extracting them.")]
         public bool CountAssets { get; }
+
+        /// <summary>
+        /// Gets whether to display listed information in a table.
+        /// </summary>
+        [Option(ShortName = "#", Description = "Display listed information in a table.")]
+        public bool DisplayTable { get; }
 
         /// <summary>
         /// Gets whether to skip assets that already exist.

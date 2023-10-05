@@ -2,7 +2,10 @@
 
 namespace UnpackerCli
 {
-    internal static class ProgressBarExtensions
+    /// <summary>
+    /// Provides extension methods for the <see cref="ProgressBar"/> class.
+    /// </summary>
+    public static class ProgressBarExtensions
     {
         /// <summary>
         /// Moves the progress bar one tick and displays the specified message.
