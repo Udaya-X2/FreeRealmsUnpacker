@@ -5,15 +5,18 @@ namespace AssetIO
     /// <summary>
     /// Provides static methods for obtaining asset information from a Free Realms client file.
     /// </summary>
-    public static class ClientFile
+    public static partial class ClientFile
     {
         private const int ManifestChunkSize = 148;
         private const int MaxAssetNameLength = 128;
         private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
 
-        private static readonly Regex GameAssetRegex = new(@"^Assets((_ps3)?W?_\d{3}\.pack|_manifest\.dat)$", Options);
-        private static readonly Regex TcgAssetRegex = new(@"^assetpack000(W?_\d{3}\.pack|_manifest\.dat)$", Options);
-        private static readonly Regex ResourceAssetRegex = new(@"^AssetsTcg(W?_\d{3}\.pack|_manifest\.dat)$", Options);
+        [GeneratedRegex("^Assets((_ps3)?W?_\\d{3}\\.pack|_manifest\\.dat)$", Options, "en-US")]
+        private static partial Regex GameAssetRegex();
+        [GeneratedRegex("^assetpack000(W?_\\d{3}\\.pack|_manifest\\.dat)$", Options, "en-US")]
+        private static partial Regex TcgAssetRegex();
+        [GeneratedRegex("^AssetsTcg(W?_\\d{3}\\.pack|_manifest\\.dat)$", Options, "en-US")]
+        private static partial Regex ResourceAssetRegex();
 
         /// <summary>
         /// Scans the assets from the specified file path.
@@ -272,15 +275,15 @@ namespace AssetIO
 
             assetFile = Path.GetFileName(assetFile);
 
-            if (GameAssetRegex.IsMatch(assetFile))
+            if (GameAssetRegex().IsMatch(assetFile))
             {
                 return AssetType.Game;
             }
-            if (TcgAssetRegex.IsMatch(assetFile))
+            if (TcgAssetRegex().IsMatch(assetFile))
             {
                 return AssetType.Tcg;
             }
-            if (ResourceAssetRegex.IsMatch(assetFile))
+            if (ResourceAssetRegex().IsMatch(assetFile))
             {
                 return AssetType.Resource;
             }
