@@ -1,4 +1,4 @@
 ﻿using System.Reflection;
 
+[assembly: AssemblyTitle("Free Realms Unpacker")]
 [assembly: AssemblyProduct("FreeRealmsUnpackerCLI")]
-[assembly: AssemblyTitle("A command-line Free Realms asset unpacker.")]
