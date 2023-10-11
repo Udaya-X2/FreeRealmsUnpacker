@@ -1,226 +1,225 @@
 ﻿using Force.Crc32;
 using System.Buffers;
 
-namespace AssetIO
+namespace AssetIO;
+
+/// <summary>
+/// Provides random access reading operations on Free Realms asset .dat files.
+/// </summary>
+public class AssetDatReader : AssetReader
 {
+    private const string ManifestFileSuffix = "manifest.dat";
+    private const int MaxAssetDatSize = 209715200;
+    private const int BufferSize = 81920;
+
+    private readonly FileStream[] _assetStreams;
+    private readonly byte[] _buffer;
+
+    private bool _disposed;
+
     /// <summary>
-    /// Provides random access reading operations on Free Realms asset .dat files.
+    /// Initializes a new instance of the <see cref="AssetDatReader"/> class for
+    /// all asset .dat files corresponding to the specified manifest.dat file.
     /// </summary>
-    public class AssetDatReader : AssetReader
+    /// <exception cref="ArgumentNullException"/>
+    public AssetDatReader(string manifestPath)
     {
-        private const string ManifestFileSuffix = "manifest.dat";
-        private const int MaxAssetDatSize = 209715200;
-        private const int BufferSize = 81920;
+        if (manifestPath == null) throw new ArgumentNullException(nameof(manifestPath));
 
-        private readonly FileStream[] _assetStreams;
-        private readonly byte[] _buffer;
+        manifestPath = Path.GetFullPath(manifestPath);
+        string manifestDirectory = Path.GetDirectoryName(manifestPath)!;
+        string assetDatPattern = GetAssetDatPattern(manifestPath);
+        _assetStreams = OpenReadFiles(Directory.EnumerateFiles(manifestDirectory, assetDatPattern));
+        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+    }
 
-        private bool _disposed;
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AssetDatReader"/> class for the specified asset .dat files.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    public AssetDatReader(IEnumerable<string> assetDatPaths)
+    {
+        if (assetDatPaths == null) throw new ArgumentNullException(nameof(assetDatPaths));
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AssetDatReader"/> class for
-        /// all asset .dat files corresponding to the specified manifest.dat file.
-        /// </summary>
-        /// <exception cref="ArgumentNullException"/>
-        public AssetDatReader(string manifestPath)
+        _assetStreams = OpenReadFiles(assetDatPaths);
+        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+    }
+
+    /// <summary>
+    /// Reads the bytes of the specified asset from the .dat file(s) and writes the data in a given buffer.
+    /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public override void Read(Asset asset, byte[] buffer)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+        if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
+
+        // Determine which .dat file to read and where to start reading from based on the offset.
+        long file = asset.Offset / MaxAssetDatSize;
+        long address = asset.Offset % MaxAssetDatSize;
+        FileStream assetStream = GetAssetStream(file, asset);
+        assetStream.Position = address;
+        int bytesRead = assetStream.Read(buffer, 0, (int)asset.Size);
+
+        // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
+        while (bytesRead != asset.Size)
         {
-            if (manifestPath == null) throw new ArgumentNullException(nameof(manifestPath));
+            assetStream = GetAssetStream(++file, asset);
+            assetStream.Position = 0;
+            bytesRead += assetStream.Read(buffer, bytesRead, (int)asset.Size - bytesRead);
+        }
+    }
 
-            manifestPath = Path.GetFullPath(manifestPath);
-            string manifestDirectory = Path.GetDirectoryName(manifestPath)!;
-            string assetDatPattern = GetAssetDatPattern(manifestPath);
-            _assetStreams = OpenReadFiles(Directory.EnumerateFiles(manifestDirectory, assetDatPattern));
-            _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+    /// <summary>
+    /// Reads the bytes of the specified asset from the .dat file(s) and writes them to another stream.
+    /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public override void CopyTo(Asset asset, Stream destination)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+        if (destination == null) throw new ArgumentNullException(nameof(destination));
+        if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
+
+        foreach (int bytesRead in InternalRead(asset))
+        {
+            destination.Write(_buffer, 0, bytesRead);
+        }
+    }
+
+    /// <summary>
+    /// Reads the bytes of the specified asset from the .dat file(s) and computes its CRC-32 value.
+    /// </summary>
+    /// <returns>The CRC-32 checksum value of the specified asset.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public override uint GetCrc32(Asset asset)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+
+        uint crc32 = 0u;
+
+        foreach (int bytesRead in InternalRead(asset))
+        {
+            crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AssetDatReader"/> class for the specified asset .dat files.
-        /// </summary>
-        /// <exception cref="ArgumentNullException"/>
-        public AssetDatReader(IEnumerable<string> assetDatPaths)
+        return crc32;
+    }
+
+    /// <summary>
+    /// Incrementally reads blocks of bytes of the specified asset from the .dat file(s) into the internal buffer.
+    /// </summary>
+    /// <returns>An enumerable sequence of the number of bytes read into the buffer at each read.</returns>
+    private IEnumerable<int> InternalRead(Asset asset)
+    {
+        // Determine which .dat file to read and where to start reading from based on the offset.
+        long file = asset.Offset / MaxAssetDatSize;
+        long address = asset.Offset % MaxAssetDatSize;
+        FileStream assetStream = GetAssetStream(file, asset);
+        assetStream.Position = address;
+        uint bytes = asset.Size;
+
+        // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
+        while (bytes > 0u)
         {
-            if (assetDatPaths == null) throw new ArgumentNullException(nameof(assetDatPaths));
-
-            _assetStreams = OpenReadFiles(assetDatPaths);
-            _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-        }
-
-        /// <summary>
-        /// Reads the bytes of the specified asset from the .dat file(s) and writes the data in a given buffer.
-        /// </summary>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public override void Read(Asset asset, byte[] buffer)
-        {
-            if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
-            if (asset == null) throw new ArgumentNullException(nameof(asset));
-            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-            if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
-
-            // Determine which .dat file to read and where to start reading from based on the offset.
-            long file = asset.Offset / MaxAssetDatSize;
-            long address = asset.Offset % MaxAssetDatSize;
-            FileStream assetStream = GetAssetStream(file, asset);
-            assetStream.Position = address;
-            int bytesRead = assetStream.Read(buffer, 0, (int)asset.Size);
+            int count = BufferSize <= bytes ? BufferSize : (int)bytes;
+            int bytesRead = assetStream.Read(_buffer, 0, count);
 
             // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
-            while (bytesRead != asset.Size)
+            while (bytesRead != count)
             {
                 assetStream = GetAssetStream(++file, asset);
                 assetStream.Position = 0;
-                bytesRead += assetStream.Read(buffer, bytesRead, (int)asset.Size - bytesRead);
+                bytesRead += assetStream.Read(_buffer, bytesRead, count - bytesRead);
             }
-        }
 
-        /// <summary>
-        /// Reads the bytes of the specified asset from the .dat file(s) and writes them to another stream.
-        /// </summary>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public override void CopyTo(Asset asset, Stream destination)
+            yield return count;
+            bytes -= (uint)count;
+        }
+    }
+
+    /// <summary>
+    /// Returns the <see cref="FileStream"/> at the specified index.
+    /// </summary>
+    /// <returns>The <see cref="FileStream"/> at the specified index.</returns>
+    /// <exception cref="IOException"/>
+    private FileStream GetAssetStream(long file, Asset asset)
+    {
+        try
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
-            if (asset == null) throw new ArgumentNullException(nameof(asset));
-            if (destination == null) throw new ArgumentNullException(nameof(destination));
-            if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
-
-            foreach (int bytesRead in InternalRead(asset))
-            {
-                destination.Write(_buffer, 0, bytesRead);
-            }
+            return _assetStreams[file];
         }
-
-        /// <summary>
-        /// Reads the bytes of the specified asset from the .dat file(s) and computes its CRC-32 value.
-        /// </summary>
-        /// <returns>The CRC-32 checksum value of the specified asset.</returns>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public override uint GetCrc32(Asset asset)
+        catch
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
-            if (asset == null) throw new ArgumentNullException(nameof(asset));
-
-            uint crc32 = 0u;
-
-            foreach (int bytesRead in InternalRead(asset))
-            {
-                crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
-            }
-
-            return crc32;
+            throw new IOException(string.Format(SR.IO_NoMoreAssetDatFiles, asset.Name));
         }
+    }
 
-        /// <summary>
-        /// Incrementally reads blocks of bytes of the specified asset from the .dat file(s) into the internal buffer.
-        /// </summary>
-        /// <returns>An enumerable sequence of the number of bytes read into the buffer at each read.</returns>
-        private IEnumerable<int> InternalRead(Asset asset)
+    /// <summary>
+    /// Determines which asset .dat files to open based on the name of the manifest file.
+    /// </summary>
+    /// <returns>The search pattern to find the asset pack(s) corresponding to the manifest.</returns>
+    /// <exception cref="ArgumentException"/>
+    private static string GetAssetDatPattern(string manifestPath)
+    {
+        if (!manifestPath.EndsWith(ManifestFileSuffix))
         {
-            // Determine which .dat file to read and where to start reading from based on the offset.
-            long file = asset.Offset / MaxAssetDatSize;
-            long address = asset.Offset % MaxAssetDatSize;
-            FileStream assetStream = GetAssetStream(file, asset);
-            assetStream.Position = address;
-            uint bytes = asset.Size;
-
-            // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
-            while (bytes > 0u)
-            {
-                int count = BufferSize <= bytes ? BufferSize : (int)bytes;
-                int bytesRead = assetStream.Read(_buffer, 0, count);
-
-                // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
-                while (bytesRead != count)
-                {
-                    assetStream = GetAssetStream(++file, asset);
-                    assetStream.Position = 0;
-                    bytesRead += assetStream.Read(_buffer, bytesRead, count - bytesRead);
-                }
-
-                yield return count;
-                bytes -= (uint)count;
-            }
+            throw new ArgumentException(string.Format(SR.Argument_BadManifestPath, manifestPath));
         }
 
-        /// <summary>
-        /// Returns the <see cref="FileStream"/> at the specified index.
-        /// </summary>
-        /// <returns>The <see cref="FileStream"/> at the specified index.</returns>
-        /// <exception cref="IOException"/>
-        private FileStream GetAssetStream(long file, Asset asset)
+        ReadOnlySpan<char> manifestFile = Path.GetFileName(manifestPath.AsSpan());
+        ReadOnlySpan<char> manifestFilePrefix = manifestFile[..^ManifestFileSuffix.Length];
+        return $"{manifestFilePrefix}???.dat";
+    }
+
+    /// <summary>
+    /// Opens the specified files for reading.
+    /// </summary>
+    /// <returns>An array of read-only <see cref="FileStream"/> objects on the specified files.</returns>
+    private static FileStream[] OpenReadFiles(IEnumerable<string> files)
+    {
+        List<FileStream> fileStreams = new();
+
+        foreach (string file in files)
         {
             try
             {
-                return _assetStreams[file];
+                fileStreams.Add(File.OpenRead(file));
             }
             catch
             {
-                throw new IOException(string.Format(SR.IO_NoMoreAssetDatFiles, asset.Name));
+                // If some files were opened before the error occurred, dispose them before throwing.
+                fileStreams.ForEach(x => x.Dispose());
+                throw;
             }
         }
 
-        /// <summary>
-        /// Determines which asset .dat files to open based on the name of the manifest file.
-        /// </summary>
-        /// <returns>The search pattern to find the asset pack(s) corresponding to the manifest.</returns>
-        /// <exception cref="ArgumentException"/>
-        private static string GetAssetDatPattern(string manifestPath)
+        return fileStreams.ToArray();
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (!_disposed)
         {
-            if (!manifestPath.EndsWith(ManifestFileSuffix))
+            if (disposing)
             {
-                throw new ArgumentException(string.Format(SR.Argument_BadManifestPath, manifestPath));
+                Array.ForEach(_assetStreams, x => x.Dispose());
+                ArrayPool<byte>.Shared.Return(_buffer);
             }
 
-            ReadOnlySpan<char> manifestFile = Path.GetFileName(manifestPath.AsSpan());
-            ReadOnlySpan<char> manifestFilePrefix = manifestFile[..^ManifestFileSuffix.Length];
-            return $"{manifestFilePrefix}???.dat";
-        }
-
-        /// <summary>
-        /// Opens the specified files for reading.
-        /// </summary>
-        /// <returns>An array of read-only <see cref="FileStream"/> objects on the specified files.</returns>
-        private static FileStream[] OpenReadFiles(IEnumerable<string> files)
-        {
-            List<FileStream> fileStreams = new();
-
-            foreach (string file in files)
-            {
-                try
-                {
-                    fileStreams.Add(File.OpenRead(file));
-                }
-                catch
-                {
-                    // If some files were opened before the error occurred, dispose them before throwing.
-                    fileStreams.ForEach(x => x.Dispose());
-                    throw;
-                }
-            }
-
-            return fileStreams.ToArray();
-        }
-
-        /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    Array.ForEach(_assetStreams, x => x.Dispose());
-                    ArrayPool<byte>.Shared.Return(_buffer);
-                }
-
-                _disposed = true;
-            }
+            _disposed = true;
         }
     }
 }

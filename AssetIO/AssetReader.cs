@@ -1,59 +1,58 @@
-﻿namespace AssetIO
+﻿namespace AssetIO;
+
+/// <summary>
+/// Provides random access reading operations on Free Realms asset file(s).
+/// </summary>
+public abstract class AssetReader : IDisposable
 {
     /// <summary>
-    /// Provides random access reading operations on Free Realms asset file(s).
+    /// Creates a new instance of <see cref="AssetReader"/> from the specified asset file.
     /// </summary>
-    public abstract class AssetReader : IDisposable
+    /// <returns>An <see cref="AssetReader"/> on the specified asset file.</returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static AssetReader Create(string assetFile) => ClientFile.GetAssetFileType(assetFile) switch
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="AssetReader"/> from the specified asset file.
-        /// </summary>
-        /// <returns>An <see cref="AssetReader"/> on the specified asset file.</returns>
-        /// <exception cref="ArgumentException"></exception>
-        public static AssetReader Create(string assetFile) => ClientFile.GetAssetFileType(assetFile) switch
-        {
-            AssetType.Dat => new AssetDatReader(assetFile),
-            AssetType.Pack => new AssetPackReader(assetFile),
-            _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
-        };
+        AssetType.Dat => new AssetDatReader(assetFile),
+        AssetType.Pack => new AssetPackReader(assetFile),
+        _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
+    };
 
-        /// <summary>
-        /// Reads the bytes of the specified asset from the asset file(s) and writes the data in a given buffer.
-        /// </summary>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public abstract void Read(Asset asset, byte[] buffer);
+    /// <summary>
+    /// Reads the bytes of the specified asset from the asset file(s) and writes the data in a given buffer.
+    /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract void Read(Asset asset, byte[] buffer);
 
-        /// <summary>
-        /// Reads the bytes of the specified asset from the asset file(s) and writes them to another stream.
-        /// </summary>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public abstract void CopyTo(Asset asset, Stream destination);
+    /// <summary>
+    /// Reads the bytes of the specified asset from the asset file(s) and writes them to another stream.
+    /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract void CopyTo(Asset asset, Stream destination);
 
-        /// <summary>
-        /// Reads the bytes of the specified asset from the asset file(s) and computes its CRC-32 value.
-        /// </summary>
-        /// <returns>The CRC-32 checksum value of the specified asset.</returns>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public abstract uint GetCrc32(Asset asset);
+    /// <summary>
+    /// Reads the bytes of the specified asset from the asset file(s) and computes its CRC-32 value.
+    /// </summary>
+    /// <returns>The CRC-32 checksum value of the specified asset.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract uint GetCrc32(Asset asset);
 
-        /// <inheritdoc cref="Dispose()"/>
-        protected abstract void Dispose(bool disposing);
+    /// <inheritdoc cref="Dispose()"/>
+    protected abstract void Dispose(bool disposing);
 
-        /// <summary>
-        /// Releases all resources used by the current instance of the <see cref="AssetReader"/> class.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+    /// <summary>
+    /// Releases all resources used by the current instance of the <see cref="AssetReader"/> class.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }

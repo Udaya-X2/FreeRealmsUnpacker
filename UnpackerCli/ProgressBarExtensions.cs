@@ -1,18 +1,17 @@
 ﻿using ShellProgressBar;
 
-namespace UnpackerCli
+namespace UnpackerCli;
+
+/// <summary>
+/// Provides extension methods for the <see cref="ProgressBar"/> class.
+/// </summary>
+public static class ProgressBarExtensions
 {
     /// <summary>
-    /// Provides extension methods for the <see cref="ProgressBar"/> class.
+    /// Moves the progress bar one tick and displays the specified message.
     /// </summary>
-    public static class ProgressBarExtensions
+    public static void UpdateProgress(this ProgressBar progressBar, string message)
     {
-        /// <summary>
-        /// Moves the progress bar one tick and displays the specified message.
-        /// </summary>
-        public static void UpdateProgress(this ProgressBar progressBar, string message)
-        {
-            progressBar.Tick($"({progressBar.CurrentTick + 1}/{progressBar.MaxTicks}) {message}");
-        }
+        progressBar.Tick($"({progressBar.CurrentTick + 1}/{progressBar.MaxTicks}) {message}");
     }
 }

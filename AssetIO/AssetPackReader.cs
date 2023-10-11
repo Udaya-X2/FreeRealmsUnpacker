@@ -1,133 +1,132 @@
 ﻿using Force.Crc32;
 using System.Buffers;
 
-namespace AssetIO
+namespace AssetIO;
+
+/// <summary>
+/// Provides random access reading operations on a Free Realms asset .pack file.
+/// </summary>
+public class AssetPackReader : AssetReader
 {
+    private const int BufferSize = 81920;
+
+    private readonly FileStream _assetStream;
+    private readonly byte[] _buffer;
+
+    private bool _disposed;
+
     /// <summary>
-    /// Provides random access reading operations on a Free Realms asset .pack file.
+    /// Initializes a new instance of the <see cref="AssetPackReader"/> class for the specified asset .pack file.
     /// </summary>
-    public class AssetPackReader : AssetReader
+    /// <exception cref="ArgumentNullException"/>
+    public AssetPackReader(string assetPackPath)
     {
-        private const int BufferSize = 81920;
+        if (assetPackPath == null) throw new ArgumentNullException(nameof(assetPackPath));
 
-        private readonly FileStream _assetStream;
-        private readonly byte[] _buffer;
+        _assetStream = File.OpenRead(assetPackPath);
+        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+    }
 
-        private bool _disposed;
+    /// <summary>
+    /// Reads the bytes of the specified asset from the .pack file and writes the data in a given buffer.
+    /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public override void Read(Asset asset, byte[] buffer)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+        if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AssetPackReader"/> class for the specified asset .pack file.
-        /// </summary>
-        /// <exception cref="ArgumentNullException"/>
-        public AssetPackReader(string assetPackPath)
+        _assetStream.Position = asset.Offset;
+        int bytesRead = _assetStream.Read(buffer, 0, (int)asset.Size);
+
+        if (bytesRead != asset.Size)
         {
-            if (assetPackPath == null) throw new ArgumentNullException(nameof(assetPackPath));
+            throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
+        }
+    }
 
-            _assetStream = File.OpenRead(assetPackPath);
-            _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+    /// <summary>
+    /// Reads the bytes of the specified asset from the .pack file and writes them to another stream.
+    /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public override void CopyTo(Asset asset, Stream destination)
+    {
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+        if (destination == null) throw new ArgumentNullException(nameof(destination));
+        if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
+
+        foreach (int bytesRead in InternalRead(asset))
+        {
+            destination.Write(_buffer, 0, bytesRead);
+        }
+    }
+
+    /// <summary>
+    /// Reads the bytes of the specified asset from the .pack file and computes its CRC-32 value.
+    /// </summary>
+    /// <returns>The CRC-32 checksum value of the specified asset.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public override uint GetCrc32(Asset asset)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+
+        uint crc32 = 0u;
+
+        foreach (int bytesRead in InternalRead(asset))
+        {
+            crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
         }
 
-        /// <summary>
-        /// Reads the bytes of the specified asset from the .pack file and writes the data in a given buffer.
-        /// </summary>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public override void Read(Asset asset, byte[] buffer)
+        return crc32;
+    }
+
+    /// <summary>
+    /// Incrementally reads blocks of bytes of the specified asset from the .dat file(s) into the internal buffer.
+    /// </summary>
+    /// <returns>An enumerable sequence of the number of bytes read into the buffer at each read.</returns>
+    private IEnumerable<int> InternalRead(Asset asset)
+    {
+        _assetStream.Position = asset.Offset;
+        uint bytes = asset.Size;
+
+        // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
+        while (bytes > 0u)
         {
-            if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
-            if (asset == null) throw new ArgumentNullException(nameof(asset));
-            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
-            if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
+            int count = BufferSize <= bytes ? BufferSize : (int)bytes;
 
-            _assetStream.Position = asset.Offset;
-            int bytesRead = _assetStream.Read(buffer, 0, (int)asset.Size);
-
-            if (bytesRead != asset.Size)
+            if (_assetStream.Read(_buffer, 0, count) != count)
             {
                 throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
             }
+
+            yield return count;
+            bytes -= (uint)count;
         }
+    }
 
-        /// <summary>
-        /// Reads the bytes of the specified asset from the .pack file and writes them to another stream.
-        /// </summary>
-        /// <exception cref="ArgumentException"/>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public override void CopyTo(Asset asset, Stream destination)
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (!_disposed)
         {
-            if (asset == null) throw new ArgumentNullException(nameof(asset));
-            if (destination == null) throw new ArgumentNullException(nameof(destination));
-            if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
-
-            foreach (int bytesRead in InternalRead(asset))
+            if (disposing)
             {
-                destination.Write(_buffer, 0, bytesRead);
-            }
-        }
-
-        /// <summary>
-        /// Reads the bytes of the specified asset from the .pack file and computes its CRC-32 value.
-        /// </summary>
-        /// <returns>The CRC-32 checksum value of the specified asset.</returns>
-        /// <exception cref="ArgumentNullException"/>
-        /// <exception cref="IOException"/>
-        /// <exception cref="ObjectDisposedException"/>
-        public override uint GetCrc32(Asset asset)
-        {
-            if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
-            if (asset == null) throw new ArgumentNullException(nameof(asset));
-
-            uint crc32 = 0u;
-
-            foreach (int bytesRead in InternalRead(asset))
-            {
-                crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
+                _assetStream.Dispose();
+                ArrayPool<byte>.Shared.Return(_buffer);
             }
 
-            return crc32;
-        }
-
-        /// <summary>
-        /// Incrementally reads blocks of bytes of the specified asset from the .dat file(s) into the internal buffer.
-        /// </summary>
-        /// <returns>An enumerable sequence of the number of bytes read into the buffer at each read.</returns>
-        private IEnumerable<int> InternalRead(Asset asset)
-        {
-            _assetStream.Position = asset.Offset;
-            uint bytes = asset.Size;
-
-            // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
-            while (bytes > 0u)
-            {
-                int count = BufferSize <= bytes ? BufferSize : (int)bytes;
-
-                if (_assetStream.Read(_buffer, 0, count) != count)
-                {
-                    throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
-                }
-
-                yield return count;
-                bytes -= (uint)count;
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    _assetStream.Dispose();
-                    ArrayPool<byte>.Shared.Return(_buffer);
-                }
-
-                _disposed = true;
-            }
+            _disposed = true;
         }
     }
 }

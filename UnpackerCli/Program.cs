@@ -1,12 +1,11 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 
-namespace UnpackerCli
+namespace UnpackerCli;
+
+public static class Program
 {
-    public static class Program
+    public static int Main(string[] args)
     {
-        public static int Main(string[] args)
-        {
-            return CommandLineApplication.Execute<Unpacker>(args);
-        }
+        return CommandLineApplication.Execute<Unpacker>(args);
     }
 }
