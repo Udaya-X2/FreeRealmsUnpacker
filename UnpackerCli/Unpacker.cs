@@ -47,8 +47,8 @@ namespace UnpackerCli
                 {
                     (0, false) => $"\nNo assets found.",
                     (0, true) => $"\nNo asset files found.",
-                    (1, false) => $"\n{numAssets} asset found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
-                    (1, true) => $"\n{numAssets} asset file found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                    (1, false) => $"\n1 asset found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                    (1, true) => $"\n1 asset file found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
                     (_, false) => $"\n{numAssets} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
                     (_, true) => $"\n{numAssets} asset files found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}"
                 };

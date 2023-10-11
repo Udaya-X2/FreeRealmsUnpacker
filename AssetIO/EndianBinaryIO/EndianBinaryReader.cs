@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace AssetIO
+namespace AssetIO.EndianBinaryIO
 {
     /// <summary>
     /// Reads primitive data types as binary values in a specific encoding and endianness.
@@ -921,7 +921,7 @@ namespace AssetIO
                 throw new FormatException(SR.Format_Bad7BitInt);
             }
 
-            result |= (uint)byteReadJustNow << (MaxBytesWithoutOverflow * 7);
+            result |= (uint)byteReadJustNow << MaxBytesWithoutOverflow * 7;
             return (int)result;
         }
 
@@ -969,7 +969,7 @@ namespace AssetIO
                 throw new FormatException(SR.Format_Bad7BitInt);
             }
 
-            result |= (ulong)byteReadJustNow << (MaxBytesWithoutOverflow * 7);
+            result |= (ulong)byteReadJustNow << MaxBytesWithoutOverflow * 7;
             return (long)result;
         }
     }
