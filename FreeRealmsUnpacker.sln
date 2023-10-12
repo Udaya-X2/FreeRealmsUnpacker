@@ -10,7 +10,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D73E2C91-4CC0-4765-899B-0ADB3B241B6B}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		README.md = README.md
+		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnpackerGui", "UnpackerGui\UnpackerGui.csproj", "{3F11BF91-C20D-476B-8474-0F94A6B7F55D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnpackerGui.Desktop", "UnpackerGui.Desktop\UnpackerGui.Desktop.csproj", "{619725C0-A6B2-4A9E-AEFB-D4A4B9A723A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,6 +33,14 @@ Global
 		{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE61784B-47AB-45CA-AFF4-A2700C9AA8BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F11BF91-C20D-476B-8474-0F94A6B7F55D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F11BF91-C20D-476B-8474-0F94A6B7F55D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F11BF91-C20D-476B-8474-0F94A6B7F55D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F11BF91-C20D-476B-8474-0F94A6B7F55D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{619725C0-A6B2-4A9E-AEFB-D4A4B9A723A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{619725C0-A6B2-4A9E-AEFB-D4A4B9A723A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{619725C0-A6B2-4A9E-AEFB-D4A4B9A723A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{619725C0-A6B2-4A9E-AEFB-D4A4B9A723A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

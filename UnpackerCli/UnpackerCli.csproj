@@ -6,12 +6,16 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>FreeRealmsUnpackerCLI</AssemblyName>
-        <ApplicationIcon>..\unpacker.ico</ApplicationIcon>
+        <ApplicationIcon>unpacker.ico</ApplicationIcon>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
     <ItemGroup>
         <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="unpacker.ico" />
     </ItemGroup>
 
     <ItemGroup>
