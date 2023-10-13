@@ -10,8 +10,15 @@
     <Design.DataContext>
         <vm:MainViewModel/>
     </Design.DataContext>
-    <Grid>
-        <DataGrid Margin="300,100,20,20"
+    <Grid ColumnDefinitions="0,*">
+        <StackPanel Grid.Column="1">
+            <Button Command="{Binding AddPackFilesCommand}"
+                    Content="Add .pack files"
+                    HorizontalAlignment="Left">
+            </Button>
+        </StackPanel>
+        <DataGrid Grid.Column="2"
+                  Margin="300,100,20,20"
                   ItemsSource="{Binding Assets}"
                   IsReadOnly="True"
                   CanUserReorderColumns="True"
@@ -20,7 +27,7 @@
                   BorderThickness="1"
                   BorderBrush="Gray">
             <DataGrid.Columns>
-                <DataGridTextColumn FontSize="12" Width="2*" Header="Name" Binding="{Binding Name}"/>
+                <DataGridTextColumn FontSize="12" Width="3*" Header="Name" Binding="{Binding Name}"/>
                 <DataGridTextColumn FontSize="12" Width="*" Header="Offset" Binding="{Binding Offset}"/>
                 <DataGridTextColumn FontSize="12" Width="*" Header="Size" Binding="{Binding Size}"/>
                 <DataGridTextColumn FontSize="12" Width="*" Header="CRC-32" Binding="{Binding Crc32}"/>
