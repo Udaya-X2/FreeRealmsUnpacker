@@ -5,12 +5,26 @@
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UnpackerGui.Views.MainView"
+             FontFamily="Tahoma"
              x:DataType="vm:MainViewModel">
-  <Design.DataContext>
-    <!-- This only sets the DataContext for the previewer in an IDE,
-         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-    <vm:MainViewModel />
-  </Design.DataContext>
-
-  <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Design.DataContext>
+        <vm:MainViewModel/>
+    </Design.DataContext>
+    <Grid>
+        <DataGrid Margin="300,100,20,20"
+                  ItemsSource="{Binding Assets}"
+                  IsReadOnly="True"
+                  CanUserReorderColumns="True"
+                  CanUserResizeColumns="True"
+                  GridLinesVisibility="All"
+                  BorderThickness="1"
+                  BorderBrush="Gray">
+            <DataGrid.Columns>
+                <DataGridTextColumn FontSize="12" Width="2*" Header="Name" Binding="{Binding Name}"/>
+                <DataGridTextColumn FontSize="12" Width="*" Header="Offset" Binding="{Binding Offset}"/>
+                <DataGridTextColumn FontSize="12" Width="*" Header="Size" Binding="{Binding Size}"/>
+                <DataGridTextColumn FontSize="12" Width="*" Header="CRC-32" Binding="{Binding Crc32}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
 </UserControl>

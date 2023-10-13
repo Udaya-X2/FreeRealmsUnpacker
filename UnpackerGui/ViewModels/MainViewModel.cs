@@ -1,6 +1,9 @@
-﻿namespace UnpackerGui.ViewModels;
+﻿using AssetIO;
+using System.Collections.ObjectModel;
+
+namespace UnpackerGui.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    public string Greeting => "Welcome to Avalonia!";
+    public ObservableCollection<Asset> Assets { get; } = new(ClientFile.GetPackAssets(@"C:\Users\udaya\Downloads\Temp\shared\Assets_000.pack"));
 }
