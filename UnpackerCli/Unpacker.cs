@@ -181,13 +181,13 @@ public partial class Unpacker
     /// <summary>
     /// Extracts assets in the specified asset file to the output directory.
     /// </summary>
-    private void ExtractAssets(string assetFile, Asset[] clientAssets, ProgressBar? pbar)
+    private void ExtractAssets(string assetFile, Asset[] assets, ProgressBar? pbar)
     {
-        if (clientAssets.Length == 0) return;
+        if (assets.Length == 0) return;
 
         using AssetReader reader = AssetReader.Create(assetFile);
 
-        foreach (Asset asset in clientAssets)
+        foreach (Asset asset in assets)
         {
             string assetPath = $"{OutputDirectory}/{asset.Name}";
 

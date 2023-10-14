@@ -56,7 +56,7 @@ public static partial class ClientFile
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
         using EndianBinaryReader reader = new(stream, Endian.Little);
-        Asset[] clientAssets = new Asset[stream.Length / ManifestChunkSize];
+        Asset[] assets = new Asset[stream.Length / ManifestChunkSize];
 
         if (stream.Length % ManifestChunkSize != 0)
         {
@@ -76,14 +76,14 @@ public static partial class ClientFile
         // Scan each manifest chunk for information regarding each asset.
         try
         {
-            for (int i = 0; i < clientAssets.Length; i++)
+            for (int i = 0; i < assets.Length; i++)
             {
                 int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
                 string name = reader.ReadString(length);
                 long offset = ValidateRange(reader.ReadInt64(), minValue: 0);
                 uint size = reader.ReadUInt32();
                 uint crc32 = reader.ReadUInt32();
-                clientAssets[i] = new Asset(name, offset, size, crc32);
+                assets[i] = new Asset(name, offset, size, crc32);
                 stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
             }
         }
@@ -92,7 +92,7 @@ public static partial class ClientFile
             throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
         }
 
-        return clientAssets;
+        return assets;
     }
 
     /// <summary>
