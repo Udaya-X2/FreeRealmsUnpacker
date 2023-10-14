@@ -16,6 +16,32 @@
                     Content="Add .pack files"
                     HorizontalAlignment="Left">
             </Button>
+            <Button Command="{Binding SelectAllCommand}"
+                    Content="Select all"
+                    HorizontalAlignment="Left">
+            </Button>
+            <Button Command="{Binding DeselectAllCommand}"
+                    Content="Deselect all"
+                    HorizontalAlignment="Left">
+            </Button>
+            <ListBox ItemsSource="{Binding PackFiles}"
+                     Width="240"
+                     Height="200"
+                     SelectionMode="Toggle"
+                     HorizontalAlignment="Left">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <LayoutTransformControl>
+                            <LayoutTransformControl.LayoutTransform>
+                                <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
+                            </LayoutTransformControl.LayoutTransform>
+                            <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">
+                                <TextBlock Text="{Binding Name}"/>
+                            </CheckBox>
+                        </LayoutTransformControl>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
         </StackPanel>
         <DataGrid Grid.Column="2"
                   Margin="300,100,20,20"
