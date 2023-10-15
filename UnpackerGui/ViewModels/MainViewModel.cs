@@ -1,15 +1,14 @@
 ﻿using AssetIO;
 using Avalonia.Platform.Storage;
-using DynamicData;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using UnpackerGui.Collections;
 using UnpackerGui.Services;
 using UnpackerGui.Storage;
 
@@ -19,19 +18,20 @@ public class MainViewModel : ViewModelBase
 {
     public MainViewModel()
     {
-        Assets = new List<Asset>();
-        PackFiles = new ObservableCollection<PackFileViewModel>();
+        Assets = new RangeObservableCollection<Asset>();
+        PackFiles = new RangeObservableCollection<PackFileViewModel>();
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
-        //Assets.CollectionChanged += (s, e) => Debug.WriteLine(Assets.Count);
+        RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
     }
 
-    public List<Asset> Assets { get; }
-    public ObservableCollection<PackFileViewModel> PackFiles { get; }
+    public RangeObservableCollection<Asset> Assets { get; }
+    public RangeObservableCollection<PackFileViewModel> PackFiles { get; }
     public ICommand AddPackFilesCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
+    public ICommand RemoveSelectedCommand { get; }
 
     private async Task AddPackFiles()
     {
@@ -67,7 +67,7 @@ public class MainViewModel : ViewModelBase
         {
             Assets.AddRange(packFile.Assets);
         }
-        else if (PackFiles.Count(x => x.IsChecked) > 1)
+        else if (PackFiles.Any(x => x.IsChecked))
         {
             Assets.RemoveMany(packFile.Assets);
         }
@@ -79,9 +79,12 @@ public class MainViewModel : ViewModelBase
 
     private void SelectAll()
     {
-        foreach (PackFileViewModel packFile in PackFiles)
+        using (Assets.SuppressChangeNotifications())
         {
-            packFile.IsChecked = true;
+            foreach (PackFileViewModel packFile in PackFiles)
+            {
+                packFile.IsChecked = true;
+            }
         }
     }
 
@@ -92,6 +95,25 @@ public class MainViewModel : ViewModelBase
         foreach (PackFileViewModel packFile in PackFiles)
         {
             packFile.IsChecked = false;
+        }
+    }
+
+    private void RemoveSelected()
+    {
+        Assets.Clear();
+        int index = 0;
+
+        foreach (PackFileViewModel packFile in PackFiles.ToList())
+        {
+            if (packFile.IsChecked)
+            {
+                packFile.IsChecked = false;
+                PackFiles.RemoveAt(index);
+            }
+            else
+            {
+                index++;
+            }
         }
     }
 }

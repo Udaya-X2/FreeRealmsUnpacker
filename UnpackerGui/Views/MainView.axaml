@@ -17,11 +17,15 @@
                     HorizontalAlignment="Left">
             </Button>
             <Button Command="{Binding SelectAllCommand}"
-                    Content="Select all"
+                    Content="Select all files"
                     HorizontalAlignment="Left">
             </Button>
             <Button Command="{Binding DeselectAllCommand}"
-                    Content="Deselect all"
+                    Content="Deselect all files"
+                    HorizontalAlignment="Left">
+            </Button>
+            <Button Command="{Binding RemoveSelectedCommand}"
+                    Content="Remove selected files"
                     HorizontalAlignment="Left">
             </Button>
             <ListBox ItemsSource="{Binding PackFiles}"
