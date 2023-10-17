@@ -5,6 +5,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -19,7 +20,17 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         Assets = new ReactiveList<Asset>();
+        SelectedAssets = new ReactiveList<Asset>();
         PackFiles = new ReactiveList<PackFileViewModel>();
+#if DEBUG
+        DebugCommand = ReactiveCommand.Create(() =>
+        {
+            string timestamp = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss,fff}]";
+            Debug.WriteLine($"{timestamp} Assets.Count = {Assets.Count}");
+            Debug.WriteLine($"{timestamp} SelectedAssets.Count = {SelectedAssets.Count}");
+            Debug.WriteLine($"{timestamp} PackFiles.Count = {PackFiles.Count}");
+        });
+#endif
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
@@ -27,7 +38,9 @@ public class MainViewModel : ViewModelBase
     }
 
     public ReactiveList<Asset> Assets { get; }
+    public ReactiveList<Asset> SelectedAssets { get; }
     public ReactiveList<PackFileViewModel> PackFiles { get; }
+    public ICommand DebugCommand { get; }
     public ICommand AddPackFilesCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }

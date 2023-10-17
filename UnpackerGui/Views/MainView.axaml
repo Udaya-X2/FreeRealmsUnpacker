@@ -12,6 +12,10 @@
     </Design.DataContext>
     <Grid ColumnDefinitions="0,*">
         <StackPanel Grid.Column="1">
+            <Button Command="{Binding DebugCommand}"
+                    Content="Debug"
+                    HorizontalAlignment="Left">
+            </Button>
             <Button Command="{Binding AddPackFilesCommand}"
                     Content="Add .pack files"
                     HorizontalAlignment="Left">
