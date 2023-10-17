@@ -29,8 +29,8 @@
                     HorizontalAlignment="Left">
             </Button>
             <ListBox ItemsSource="{Binding PackFiles}"
-                     Width="240"
-                     Height="200"
+                     Width="200"
+                     Height="185"
                      SelectionMode="Toggle"
                      HorizontalAlignment="Left">
                 <ListBox.ItemTemplate>
@@ -51,6 +51,7 @@
                   Margin="300,100,20,20"
                   ItemsSource="{Binding Assets}"
                   IsReadOnly="True"
+                  SelectionMode="Extended"
                   CanUserReorderColumns="True"
                   CanUserResizeColumns="True"
                   GridLinesVisibility="All"

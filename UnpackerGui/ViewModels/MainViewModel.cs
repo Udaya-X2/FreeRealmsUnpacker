@@ -18,16 +18,16 @@ public class MainViewModel : ViewModelBase
 {
     public MainViewModel()
     {
-        Assets = new RangeObservableCollection<Asset>();
-        PackFiles = new RangeObservableCollection<PackFileViewModel>();
+        Assets = new ReactiveList<Asset>();
+        PackFiles = new ReactiveList<PackFileViewModel>();
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
     }
 
-    public RangeObservableCollection<Asset> Assets { get; }
-    public RangeObservableCollection<PackFileViewModel> PackFiles { get; }
+    public ReactiveList<Asset> Assets { get; }
+    public ReactiveList<PackFileViewModel> PackFiles { get; }
     public ICommand AddPackFilesCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
@@ -67,35 +67,24 @@ public class MainViewModel : ViewModelBase
         {
             Assets.AddRange(packFile.Assets);
         }
-        else if (PackFiles.Any(x => x.IsChecked))
+        else if (Assets.Count > 0)
         {
-            Assets.RemoveMany(packFile.Assets);
-        }
-        else
-        {
-            Assets.Clear();
+            Assets.RemoveRange(packFile.Assets);
         }
     }
 
     private void SelectAll()
     {
-        using (Assets.SuppressChangeNotifications())
+        using (Assets.SuspendNotifications())
         {
-            foreach (PackFileViewModel packFile in PackFiles)
-            {
-                packFile.IsChecked = true;
-            }
+            PackFiles.ForEach(x => x.IsChecked = true);
         }
     }
 
     private void DeselectAll()
     {
         Assets.Clear();
-
-        foreach (PackFileViewModel packFile in PackFiles)
-        {
-            packFile.IsChecked = false;
-        }
+        PackFiles.ForEach(x => x.IsChecked = false);
     }
 
     private void RemoveSelected()
@@ -103,7 +92,7 @@ public class MainViewModel : ViewModelBase
         Assets.Clear();
         int index = 0;
 
-        foreach (PackFileViewModel packFile in PackFiles.ToList())
+        foreach (PackFileViewModel packFile in PackFiles.ToArray())
         {
             if (packFile.IsChecked)
             {
