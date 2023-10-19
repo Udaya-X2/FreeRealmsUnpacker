@@ -23,8 +23,8 @@ public class Table
     /// Initializes a new instance of the <see cref="Table"/> class
     /// with the specified initial row capacity and column names.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException"/>
+    /// <exception cref="ArgumentNullException"/>
     public Table(int capacity, params string[] columns)
     {
         if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity), capacity, NonNegNumRequired);
@@ -41,10 +41,16 @@ public class Table
     }
 
     /// <summary>
+    /// Gets the number of rows in the table.
+    /// </summary>
+    /// <returns>The number of rows in the table.</returns>
+    public int Count => _rows.Count;
+
+    /// <summary>
     /// Adds a row with the specified values to the end of the <see cref="Table"/>.
     /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentException"/>
     public void AddRow(params object[] values)
     {
         if (values == null) throw new ArgumentNullException(nameof(values));

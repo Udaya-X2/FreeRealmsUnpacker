@@ -9,8 +9,8 @@ public abstract class AssetReader : IDisposable
     /// Creates a new instance of <see cref="AssetReader"/> from the specified asset file.
     /// </summary>
     /// <returns>An <see cref="AssetReader"/> on the specified asset file.</returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static AssetReader Create(string assetFile) => ClientFile.GetAssetFileType(assetFile) switch
+    /// <exception cref="ArgumentException"/>
+    public static AssetReader Create(string assetFile) => ClientFile.InferAssetFileType(assetFile) switch
     {
         AssetType.Dat => new AssetDatReader(assetFile),
         AssetType.Pack => new AssetPackReader(assetFile),

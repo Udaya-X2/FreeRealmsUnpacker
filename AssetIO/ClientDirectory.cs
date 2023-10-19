@@ -27,7 +27,7 @@ public static class ClientDirectory
 
         foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
         {
-            AssetType assetType = ClientFile.GetAssetType(file);
+            AssetType assetType = ClientFile.InferAssetType(file);
 
             if (assetType != 0 && assetFilter.HasFlag(assetType))
             {
@@ -95,7 +95,7 @@ public static class ClientDirectory
 
         foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
         {
-            AssetType assetType = ClientFile.GetAssetType(file);
+            AssetType assetType = ClientFile.InferAssetType(file);
 
             if (assetType != 0 && assetFilter.HasFlag(assetType))
             {

@@ -32,7 +32,7 @@ public partial class Unpacker
 
             if (ListFiles)
             {
-                numAssets = ListFilesFormatted(ClientDirectory.GetAssetFiles(InputDirectory, assetFilter));
+                numAssets = ListFilesFormatted(ClientDirectory.EnumerateAssetFiles(InputDirectory, assetFilter));
             }
             else
             {
@@ -84,22 +84,18 @@ public partial class Unpacker
 
         foreach (string assetFile in assetFiles)
         {
-            Asset[] assets = ClientFile.GetAssets(assetFile);
-
             if (ListAssets)
             {
-                ListAssetsFormatted(assetFile, assets);
+                numAssets += ListAssetsFormatted(assetFile);
             }
             else if (ValidateAssets)
             {
-                ValidateChecksums(assetFile, assets, pbar, ref numErrors);
+                numAssets += ValidateChecksums(assetFile, pbar, ref numErrors);
             }
             else
             {
-                ExtractAssets(assetFile, assets, pbar);
+                numAssets += ExtractAssets(assetFile, pbar);
             }
-
-            numAssets += assets.Length;
         }
 
         return numAssets;
@@ -109,11 +105,11 @@ public partial class Unpacker
     /// Lists the specified asset files in either tabular or
     /// line-based form, depending on the command-line options.
     /// </summary>
-    private int ListFilesFormatted(string[] assetFiles)
+    private int ListFilesFormatted(IEnumerable<string> assetFiles)
     {
         if (DisplayTable)
         {
-            Table table = new(assetFiles.Length, "Name", "Assets", "Size");
+            Table table = new("Name", "Assets", "Size");
 
             foreach (string assetFile in assetFiles)
             {
@@ -123,45 +119,65 @@ public partial class Unpacker
             }
 
             table.Print();
+            return table.Count;
         }
         else
         {
-            Array.ForEach(assetFiles, Console.WriteLine);
-        }
+            int numAssets = 0;
 
-        return assetFiles.Length;
+            foreach (string assetFile in assetFiles)
+            {
+                Console.WriteLine(assetFile);
+                numAssets++;
+            }
+
+            return numAssets;
+        }
     }
 
     /// <summary>
     /// Lists assets from the specified asset file in either tabular
     /// or line-based form, depending on the command-line options.
     /// </summary>
-    private void ListAssetsFormatted(string assetFile, Asset[] assets)
+    private int ListAssetsFormatted(string assetFile)
     {
         if (DisplayTable)
         {
-            Table table = new(assets.Length, "Name", "Offset", "Size", "CRC-32");
-            string plural = assets.Length == 1 ? "" : "s";
-            Console.WriteLine($"\nFound {assets.Length} asset{plural} in {assetFile}:\n");
-            Array.ForEach(assets, x => table.AddRow(x.Name, x.Offset, x.Size, x.Crc32));
+            Table table = new("Name", "Offset", "Size", "CRC-32");
+
+            foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
+            {
+                table.AddRow(asset.Name, asset.Offset, asset.Size, asset.Crc32);
+            }
+            
+            string plural = table.Count == 1 ? "" : "s";
+            Console.WriteLine($"\nFound {table.Count} asset{plural} in {assetFile}:\n");
             table.Print();
+            return table.Count;
         }
         else
         {
-            Array.ForEach(assets, x => Console.WriteLine(x.Name));
+            int numAssets = 0;
+
+            foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
+            {
+                Console.WriteLine(asset.Name);
+                numAssets++;
+            }
+
+            return numAssets;
         }
     }
 
     /// <summary>
     /// Validates assets in the specified asset file by comparing their checksums.
     /// </summary>
-    private static void ValidateChecksums(string assetFile, Asset[] assets, ProgressBar? pbar, ref int numErrors)
+    private static int ValidateChecksums(string assetFile, ProgressBar? pbar, ref int numErrors)
     {
-        if (assets.Length == 0) return;
-
         using AssetReader reader = AssetReader.Create(assetFile);
+        int numAssets = 0;
 
-        foreach (Asset asset in assets)
+        foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
         {
             if (asset.Crc32 == reader.GetCrc32(asset))
             {
@@ -175,19 +191,22 @@ public partial class Unpacker
             {
                 Console.WriteLine($"'{asset.Name}' in '{assetFile}' does not match the expected CRC.");
             }
+
+            numAssets++;
         }
+
+        return numAssets;
     }
 
     /// <summary>
     /// Extracts assets in the specified asset file to the output directory.
     /// </summary>
-    private void ExtractAssets(string assetFile, Asset[] assets, ProgressBar? pbar)
+    private int ExtractAssets(string assetFile, ProgressBar? pbar)
     {
-        if (assets.Length == 0) return;
-
         using AssetReader reader = AssetReader.Create(assetFile);
+        int numAssets = 0;
 
-        foreach (Asset asset in assets)
+        foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
         {
             string assetPath = $"{OutputDirectory}/{asset.Name}";
 
@@ -202,7 +221,11 @@ public partial class Unpacker
                 reader.CopyTo(asset, fs);
                 pbar?.UpdateProgress($"Extracted {asset.Name}");
             }
+
+            numAssets++;
         }
+
+        return numAssets;
     }
 
     /// <summary>
@@ -214,7 +237,7 @@ public partial class Unpacker
     /// ticks and an <paramref name="assetType"/>-dependent color,
     /// or <see langword="null"/> if progress bars are disabled.
     /// </returns>
-    /// <exception cref="InvalidEnumArgumentException"></exception>
+    /// <exception cref="InvalidEnumArgumentException"/>
     private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<string> assetFiles)
     {
         if (NoProgressBars || ListAssets || ListFiles || CountAssets) return null;
@@ -266,7 +289,7 @@ public partial class Unpacker
     /// Throws an exception if the provided command-line arguments are invalid.
     /// </summary>
     /// <returns><see langword="true"/> if the arguments are valid; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="Exception"></exception>
+    /// <exception cref="Exception"/>
     private bool ValidateArguments() => (ListAssets, ListFiles, ValidateAssets, CountAssets) switch
     {
         (true, true, _, _) => throw new Exception("Cannot both list assets and files."),

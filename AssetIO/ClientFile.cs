@@ -20,11 +20,23 @@ public static partial class ClientFile
     private static partial Regex ResourceAssetRegex();
 
     /// <summary>
-    /// Scans the assets from the specified file path.
+    /// Returns an enumerable collection of the assets in the specified file.
+    /// </summary>
+    /// <returns>An enumerable collection of the assets in the specified file.</returns>
+    /// <exception cref="ArgumentException"/>
+    public static IEnumerable<Asset> EnumerateAssets(string assetFile) => InferAssetFileType(assetFile) switch
+    {
+        AssetType.Dat => EnumerateManifestAssets(assetFile),
+        AssetType.Pack => EnumeratePackAssets(assetFile),
+        _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
+    };
+
+    /// <summary>
+    /// Returns the assets in the specified file.
     /// </summary>
     /// <returns>An array consisting of the assets in the specified file.</returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static Asset[] GetAssets(string assetFile) => GetAssetFileType(assetFile) switch
+    /// <exception cref="ArgumentException"/>
+    public static Asset[] GetAssets(string assetFile) => InferAssetFileType(assetFile) switch
     {
         AssetType.Dat => GetManifestAssets(assetFile),
         AssetType.Pack => GetPackAssets(assetFile),
@@ -32,11 +44,11 @@ public static partial class ClientFile
     };
 
     /// <summary>
-    /// Returns the number of assets in the specified file path.
+    /// Returns the number of assets in the specified file.
     /// </summary>
     /// <returns>The number of assets in the specified file.</returns>
-    /// <exception cref="ArgumentException"></exception>
-    public static int GetAssetCount(string assetFile) => GetAssetFileType(assetFile) switch
+    /// <exception cref="ArgumentException"/>
+    public static int GetAssetCount(string assetFile) => InferAssetFileType(assetFile) switch
     {
         AssetType.Dat => GetManifestAssetCount(assetFile),
         AssetType.Pack => GetPackAssetCount(assetFile),
@@ -44,19 +56,20 @@ public static partial class ClientFile
     };
 
     /// <summary>
-    /// Scans the manifest.dat file for information on each asset.
+    /// Returns an enumerable collection of the assets in the specified manifest.dat file.
     /// </summary>
-    /// <returns>An array consisting of the assets in the manifest.dat file.</returns>
+    /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public static Asset[] GetManifestAssets(string manifestFile)
+    public static IEnumerable<Asset> EnumerateManifestAssets(string manifestFile)
     {
         if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
 
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
         using EndianBinaryReader reader = new(stream, Endian.Little);
-        Asset[] assets = new Asset[stream.Length / ManifestChunkSize];
+        int numAssets = (int)(stream.Length / ManifestChunkSize);
+        Asset asset;
 
         if (stream.Length % ManifestChunkSize != 0)
         {
@@ -74,22 +87,43 @@ public static partial class ClientFile
         // X+16-148     0               Null bytes for the rest of the chunk.
         // 
         // Scan each manifest chunk for information regarding each asset.
-        try
+        for (int i = 0; i < numAssets; i++)
         {
-            for (int i = 0; i < assets.Length; i++)
+            try
             {
                 int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
                 string name = reader.ReadString(length);
                 long offset = ValidateRange(reader.ReadInt64(), minValue: 0);
                 uint size = reader.ReadUInt32();
                 uint crc32 = reader.ReadUInt32();
-                assets[i] = new Asset(name, offset, size, crc32);
+                asset = new Asset(name, offset, size, crc32);
                 stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
             }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
+            }
+
+            yield return asset;
         }
-        catch (ArgumentOutOfRangeException ex)
+    }
+
+    /// <summary>
+    /// Returns the assets in the specified manifest.dat file.
+    /// </summary>
+    /// <returns>An array consisting of the assets in the specified manifest.dat file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static Asset[] GetManifestAssets(string manifestFile)
+    {
+        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+
+        Asset[] assets = new Asset[GetManifestAssetCount(manifestFile)];
+        int index = 0;
+
+        foreach (Asset asset in EnumerateManifestAssets(manifestFile))
         {
-            throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
+            assets[index++] = asset;
         }
 
         return assets;
@@ -113,22 +147,22 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Scans the .pack file for information on each asset.
+    /// Returns an enumerable collection of the assets in the specified .pack file.
     /// </summary>
-    /// <param name="packFile"></param>
-    /// <returns>An array consisting of the assets in the .pack file.</returns>
+    /// <returns>An enumerable collection of the assets in the specified .pack file.</returns>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    public static Asset[] GetPackAssets(string packFile)
+    public static IEnumerable<Asset> EnumeratePackAssets(string packFile)
     {
         if (packFile == null) throw new ArgumentNullException(nameof(packFile));
 
         // Read the .pack file in big-endian format.
         using FileStream stream = File.OpenRead(packFile);
         using EndianBinaryReader reader = new(stream, Endian.Big);
-        List<Asset> assets = new();
         uint nextOffset = 0;
+        uint numAssets = 0;
+        Asset asset;
 
         // .pack files store assets via two types of data:
         // 
@@ -154,42 +188,61 @@ public static partial class ClientFile
         // X+8-X+12     1085288468      CRC-32 checksum of the asset.
         // 
         // Scan each asset info chunk of the .pack file for information regarding each asset.
-        try
+        do
         {
-            do
+            try
             {
                 stream.Position = nextOffset;
                 nextOffset = reader.ReadUInt32();
-                int numAssets = ValidateRange(reader.ReadInt32(), minValue: 1);
+                numAssets = reader.ReadUInt32();
+            }
+            catch (EndOfStreamException ex)
+            {
+                throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
+            }
 
-                for (int i = 0; i < numAssets; i++)
+            for (uint i = 0; i < numAssets; i++)
+            {
+                try
                 {
                     int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
                     string name = reader.ReadString(length);
                     uint offset = reader.ReadUInt32();
                     uint size = reader.ReadUInt32();
                     uint crc32 = reader.ReadUInt32();
-                    assets.Add(new Asset(name, offset, size, crc32));
+                    asset = new Asset(name, offset, size, crc32);
                 }
-            } while (nextOffset != 0);
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
-        }
-        catch (EndOfStreamException ex)
-        {
-            throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
-        }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
+                }
+                catch (EndOfStreamException ex)
+                {
+                    throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
+                }
 
-        return assets.ToArray();
+                yield return asset;
+            }
+        } while (nextOffset != 0);
     }
+
+    /// <summary>
+    /// Returns the assets in the specified .pack file.
+    /// </summary>
+    /// <returns>An array consisting of the assets in the specified .pack file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static Asset[] GetPackAssets(string packFile) => packFile == null
+        ? throw new ArgumentNullException(nameof(packFile))
+        : EnumeratePackAssets(packFile).ToArray();
 
     /// <summary>
     /// Returns the number of assets in the specified .pack file.
     /// </summary>
     /// <returns>The number of assets in the specified .pack file.</returns>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static int GetPackAssetCount(string packFile)
     {
@@ -199,7 +252,7 @@ public static partial class ClientFile
         using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
         using EndianBinaryReader reader = new(stream, Endian.Big);
         uint nextOffset = 0;
-        int numAssets = 0;
+        uint numAssets = 0;
 
         // Read the number of assets in each asset info chunk.
         try
@@ -208,19 +261,15 @@ public static partial class ClientFile
             {
                 stream.Position = nextOffset;
                 nextOffset = reader.ReadUInt32();
-                numAssets += ValidateRange(reader.ReadInt32(), minValue: 1);
+                numAssets += reader.ReadUInt32();
             } while (nextOffset != 0);
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
         }
         catch (EndOfStreamException ex)
         {
             throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
         }
 
-        return numAssets;
+        return (int)numAssets;
     }
 
     /// <summary>
@@ -228,18 +277,15 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType GetAssetType(string assetFile)
+    public static AssetType InferAssetType(string assetFile)
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
-        AssetType assetFileType = GetAssetFileType(assetFile);
+        AssetType assetFileType = InferAssetFileType(assetFile);
 
-        if (assetFileType == 0)
-        {
-            return 0;
-        }
+        if (assetFileType == 0) return 0;
 
-        AssetType assetDirType = GetAssetDirectoryType(assetFile);
+        AssetType assetDirType = InferAssetDirectoryType(assetFile);
 
         return assetDirType == 0 ? 0 : assetFileType | assetDirType;
     }
@@ -249,7 +295,7 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>An enum value corresponding to the suffix of the specified asset file.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType GetAssetFileType(string assetFile)
+    public static AssetType InferAssetFileType(string assetFile)
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
@@ -270,7 +316,7 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>An enum value corresponding to the prefix of the specified asset file.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType GetAssetDirectoryType(string assetFile)
+    public static AssetType InferAssetDirectoryType(string assetFile)
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
