@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
-using AssetIO.EndianBinaryIO;
+﻿using AssetIO.EndianBinaryIO;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace AssetIO;
 
@@ -68,7 +70,7 @@ public static partial class ClientFile
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
         using EndianBinaryReader reader = new(stream, Endian.Little);
-        int numAssets = (int)(stream.Length / ManifestChunkSize);
+        long numAssets = stream.Length / ManifestChunkSize;
         Asset asset;
 
         if (stream.Length % ManifestChunkSize != 0)
@@ -93,15 +95,15 @@ public static partial class ClientFile
             {
                 int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
                 string name = reader.ReadString(length);
-                long offset = ValidateRange(reader.ReadInt64(), minValue: 0);
+                long offset = ValidateRange(reader.ReadInt64(), minValue: 0, maxValue: long.MaxValue);
                 uint size = reader.ReadUInt32();
                 uint crc32 = reader.ReadUInt32();
                 asset = new Asset(name, offset, size, crc32);
                 stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
             }
-            catch (ArgumentOutOfRangeException ex)
+            catch (ArgumentOutOfRangeException ex) when (ex.ActualValue is int bytesRead)
             {
-                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
+                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
             }
 
             yield return asset;
@@ -135,15 +137,23 @@ public static partial class ClientFile
     /// <returns>The number of assets in the specified manifest.dat file.</returns>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
     public static int GetManifestAssetCount(string manifestFile)
     {
         if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
 
         FileInfo manifestFileInfo = new(manifestFile);
 
-        return manifestFileInfo.Length % ManifestChunkSize == 0
-            ? (int)(manifestFileInfo.Length / ManifestChunkSize)
-            : throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
+        try
+        {
+            return manifestFileInfo.Length % ManifestChunkSize == 0
+                ? checked((int)(manifestFileInfo.Length / ManifestChunkSize))
+                : throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
+        }
+        catch (OverflowException ex)
+        {
+            throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, manifestFileInfo.Name), ex);
+        }
     }
 
     /// <summary>
@@ -212,9 +222,9 @@ public static partial class ClientFile
                     uint crc32 = reader.ReadUInt32();
                     asset = new Asset(name, offset, size, crc32);
                 }
-                catch (ArgumentOutOfRangeException ex)
+                catch (ArgumentOutOfRangeException ex) when (ex.ActualValue is int bytesRead)
                 {
-                    throw new IOException(string.Format(SR.IO_BadAsset, stream.Position, stream.Name), ex);
+                    throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
                 }
                 catch (EndOfStreamException ex)
                 {
@@ -243,7 +253,7 @@ public static partial class ClientFile
     /// <returns>The number of assets in the specified .pack file.</returns>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
-    /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
     public static int GetPackAssetCount(string packFile)
     {
         if (packFile == null) throw new ArgumentNullException(nameof(packFile));
@@ -257,19 +267,26 @@ public static partial class ClientFile
         // Read the number of assets in each asset info chunk.
         try
         {
-            do
+            checked
             {
-                stream.Position = nextOffset;
-                nextOffset = reader.ReadUInt32();
-                numAssets += reader.ReadUInt32();
-            } while (nextOffset != 0);
+                do
+                {
+                    stream.Position = nextOffset;
+                    nextOffset = reader.ReadUInt32();
+                    numAssets += reader.ReadUInt32();
+                } while (nextOffset != 0);
+
+                return (int)numAssets;
+            }
         }
         catch (EndOfStreamException ex)
         {
             throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
         }
-
-        return (int)numAssets;
+        catch (OverflowException ex)
+        {
+            throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, stream.Name), ex);
+        }
     }
 
     /// <summary>
@@ -339,22 +356,20 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Throws an exception if the specified 32-bit integer is outside the given range.
+    /// Throws an exception if the specified integer is outside the given range.
     /// </summary>
-    /// <returns>The specified 32-bit integer.</returns>
+    /// <returns>The specified integer.</returns>
     /// <exception cref="ArgumentOutOfRangeException"/>
-    private static int ValidateRange(int n, int minValue = int.MinValue, int maxValue = int.MaxValue)
+    private static T ValidateRange<T>(T value, T minValue, T maxValue) where T : IBinaryInteger<T>
     {
-        return minValue <= n && n <= maxValue ? n : throw new ArgumentOutOfRangeException(nameof(n));
-    }
-
-    /// <summary>
-    /// Throws an exception if the specified 64-bit integer is outside the given range.
-    /// </summary>
-    /// <returns>The specified 64-bit integer.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"/>
-    private static long ValidateRange(long n, long minValue = long.MinValue, long maxValue = long.MaxValue)
-    {
-        return minValue <= n && n <= maxValue ? n : throw new ArgumentOutOfRangeException(nameof(n));
+        if (minValue <= value && value <= maxValue)
+        {
+            return value;
+        }
+        else
+        {
+            string message = string.Format(SR.ArgumentOutOfRange_Integer, value, minValue, maxValue);
+            throw new ArgumentOutOfRangeException(nameof(value), Unsafe.SizeOf<T>(), message);
+        }
     }
 }

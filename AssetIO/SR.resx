@@ -120,6 +120,9 @@
   <data name="ArgumentNull_Buffer" xml:space="preserve">
     <value>Buffer cannot be null.</value>
   </data>
+  <data name="ArgumentOutOfRange_Integer" xml:space="preserve">
+    <value>Specified integer '{0}' was not in the range [{1}, {2}].</value>
+  </data>
   <data name="ArgumentOutOfRange_NeedNonNegNum" xml:space="preserve">
     <value>Non-negative number required.</value>
   </data>
@@ -170,5 +173,8 @@
   </data>
   <data name="IO_NoMoreAssetDatFiles" xml:space="preserve">
     <value>Ran out of asset .dat files while reading '{0}'.</value>
+  </data>
+  <data name="Overflow_TooManyAssets" xml:space="preserve">
+    <value>Number of assets exceeds the maximum integer value: '{0}'.</value>
   </data>
 </root>
