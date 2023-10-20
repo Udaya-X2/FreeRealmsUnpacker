@@ -101,7 +101,7 @@ public static partial class ClientFile
                 asset = new Asset(name, offset, size, crc32);
                 stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
             }
-            catch (ArgumentOutOfRangeException ex) when (ex.ActualValue is int bytesRead)
+            catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytesRead)
             {
                 throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
             }
@@ -222,7 +222,7 @@ public static partial class ClientFile
                     uint crc32 = reader.ReadUInt32();
                     asset = new Asset(name, offset, size, crc32);
                 }
-                catch (ArgumentOutOfRangeException ex) when (ex.ActualValue is int bytesRead)
+                catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytesRead)
                 {
                     throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
                 }
@@ -369,7 +369,9 @@ public static partial class ClientFile
         else
         {
             string message = string.Format(SR.ArgumentOutOfRange_Integer, value, minValue, maxValue);
-            throw new ArgumentOutOfRangeException(nameof(value), Unsafe.SizeOf<T>(), message);
+            ArgumentOutOfRangeException exception = new(message, (Exception?)null);
+            exception.Data["BytesRead"] = Unsafe.SizeOf<T>();
+            throw exception;
         }
     }
 }
