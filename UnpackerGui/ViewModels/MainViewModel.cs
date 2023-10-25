@@ -21,17 +21,18 @@ public class MainViewModel : ViewModelBase
     {
         Assets = new ReactiveList<Asset>();
         SelectedAssets = new ReactiveList<Asset>();
-        PackFiles = new ReactiveList<PackFileViewModel>();
+        AssetFiles = new ReactiveList<AssetFileViewModel>();
 #if DEBUG
         DebugCommand = ReactiveCommand.Create(() =>
         {
             string timestamp = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss,fff}]";
             Debug.WriteLine($"{timestamp} Assets.Count = {Assets.Count}");
             Debug.WriteLine($"{timestamp} SelectedAssets.Count = {SelectedAssets.Count}");
-            Debug.WriteLine($"{timestamp} PackFiles.Count = {PackFiles.Count}");
+            Debug.WriteLine($"{timestamp} PackFiles.Count = {AssetFiles.Count}");
         });
 #endif
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
+        AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
@@ -39,50 +40,55 @@ public class MainViewModel : ViewModelBase
 
     public ReactiveList<Asset> Assets { get; }
     public ReactiveList<Asset> SelectedAssets { get; }
-    public ReactiveList<PackFileViewModel> PackFiles { get; }
+    public ReactiveList<AssetFileViewModel> AssetFiles { get; }
     public ICommand DebugCommand { get; }
     public ICommand AddPackFilesCommand { get; }
+    public ICommand AddManifestFilesCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
     public ICommand RemoveSelectedCommand { get; }
 
     private async Task AddPackFiles()
+        => await AddAssetFiles(AssetType.Game | AssetType.Pack, FileTypeFilters.PackFiles);
+
+    private async Task AddManifestFiles()
+        => await AddAssetFiles(AssetType.Game | AssetType.Dat, FileTypeFilters.DatFiles);
+
+    private async Task AddAssetFiles(AssetType assetType, FilePickerFileType[] fileTypeFilter)
     {
         IFilesService filesService = App.Current?.Services?.GetService<IFilesService>()
             ?? throw new NullReferenceException("Missing file service instance.");
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
         {
             AllowMultiple = true,
-            FileTypeFilter = new[] { FilePickerTypes.PackFiles, FilePickerTypes.AllFiles }
+            FileTypeFilter = fileTypeFilter
         });
 
         foreach (IStorageFile file in files)
         {
             string path = file.Path.LocalPath;
 
-            if (PackFiles.All(x => x.Path != path))
+            if (AssetFiles.All(x => x.FullName != path))
             {
-                PackFileViewModel packFile = new(path);
-                packFile.PropertyChanged += UpdateAssets;
-                PackFiles.Add(packFile);
+                AssetFileViewModel assetFile = new(new AssetFile(path, assetType));
+                assetFile.PropertyChanged += UpdateAssets;
+                AssetFiles.Add(assetFile);
             }
         }
     }
 
     private void UpdateAssets(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not nameof(PackFileViewModel.IsChecked)) return;
+        if (e.PropertyName is not nameof(AssetFileViewModel.IsChecked)) return;
+        if (sender is not AssetFileViewModel assetFile) return;
 
-        PackFileViewModel packFile = sender as PackFileViewModel
-            ?? throw new ArgumentException($"{nameof(sender)} must be a {nameof(PackFileViewModel)}.");
-
-        if (packFile.IsChecked)
+        if (assetFile.IsChecked)
         {
-            Assets.AddRange(packFile.Assets);
+            Assets.AddRange(assetFile.Assets);
         }
         else if (Assets.Count > 0)
         {
-            Assets.RemoveRange(packFile.Assets);
+            Assets.RemoveRange(assetFile.Assets);
         }
     }
 
@@ -90,14 +96,14 @@ public class MainViewModel : ViewModelBase
     {
         using (Assets.SuspendNotifications())
         {
-            PackFiles.ForEach(x => x.IsChecked = true);
+            AssetFiles.ForEach(x => x.IsChecked = true);
         }
     }
 
     private void DeselectAll()
     {
         Assets.Clear();
-        PackFiles.ForEach(x => x.IsChecked = false);
+        AssetFiles.ForEach(x => x.IsChecked = false);
     }
 
     private void RemoveSelected()
@@ -105,12 +111,12 @@ public class MainViewModel : ViewModelBase
         Assets.Clear();
         int index = 0;
 
-        foreach (PackFileViewModel packFile in PackFiles.ToArray())
+        foreach (AssetFileViewModel assetFile in AssetFiles.ToArray())
         {
-            if (packFile.IsChecked)
+            if (assetFile.IsChecked)
             {
-                packFile.IsChecked = false;
-                PackFiles.RemoveAt(index);
+                assetFile.IsChecked = false;
+                AssetFiles.RemoveAt(index);
             }
             else
             {

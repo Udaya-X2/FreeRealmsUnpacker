@@ -10,7 +10,7 @@
     <Design.DataContext>
         <vm:MainViewModel/>
     </Design.DataContext>
-    <Grid ColumnDefinitions="0,*">
+    <Grid ColumnDefinitions="0,*" Margin="5">
         <StackPanel Grid.Column="1">
             <Button Command="{Binding DebugCommand}"
                     Content="Debug"
@@ -18,6 +18,10 @@
             </Button>
             <Button Command="{Binding AddPackFilesCommand}"
                     Content="Add .pack files"
+                    HorizontalAlignment="Left">
+            </Button>
+            <Button Command="{Binding AddManifestFilesCommand}"
+                    Content="Add manifest.dat files"
                     HorizontalAlignment="Left">
             </Button>
             <Button Command="{Binding SelectAllCommand}"
@@ -32,7 +36,7 @@
                     Content="Remove selected files"
                     HorizontalAlignment="Left">
             </Button>
-            <ListBox ItemsSource="{Binding PackFiles}"
+            <ListBox ItemsSource="{Binding AssetFiles}"
                      Width="200"
                      Height="185"
                      SelectionMode="Toggle"
