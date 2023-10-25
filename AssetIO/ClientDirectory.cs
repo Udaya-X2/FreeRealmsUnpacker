@@ -1,29 +1,33 @@
-﻿namespace AssetIO;
+﻿using System.ComponentModel;
+using System.Text.RegularExpressions;
+
+namespace AssetIO;
 
 /// <summary>
-/// Provides static methods for obtaining asset paths in a Free Realms client directory.
+/// Provides static methods for obtaining asset files in a Free Realms client directory.
 /// </summary>
-public static class ClientDirectory
+public static partial class ClientDirectory
 {
-    /// <summary>
-    /// Returns a sorted mapping from asset directory type to full file names for assets in a specified path.
-    /// </summary>
-    /// <returns>A sorted mapping from asset directory type to the corresponding asset files.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    public static IDictionary<AssetType, List<string>> GetAssetFilesByType(string path)
-        => GetAssetFilesByType(path, AssetType.All);
+    private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
+
+    [GeneratedRegex(@"^Assets_\d{3}\.dat$", Options, "en-US")]
+    private static partial Regex GameDataRegex();
+    [GeneratedRegex(@"^assetpack000_\d{3}\.dat$", Options, "en-US")]
+    private static partial Regex TcgDataRegex();
+    [GeneratedRegex(@"^AssetsTcg_\d{3}\.dat$", Options, "en-US")]
+    private static partial Regex ResourceDataRegex();
 
     /// <summary>
-    /// Returns a sorted mapping from asset directory type to full file
-    /// names for assets that match a filter on a specified path.
+    /// Returns an enumerable collection of the asset files that match a filter on a specified path.
     /// </summary>
-    /// <returns>A sorted mapping from asset directory type to the corresponding asset files.</returns>
+    /// <returns>
+    /// An enumerable collection of the asset files in the directory specified
+    /// by <paramref name="path"/> that match the specified filter.
+    /// </returns>
     /// <exception cref="ArgumentNullException"/>
-    public static IDictionary<AssetType, List<string>> GetAssetFilesByType(string path, AssetType assetFilter)
+    public static IEnumerable<AssetFile> EnumerateAssetFiles(string path, AssetType assetFilter = AssetType.All)
     {
         if (path == null) throw new ArgumentNullException(nameof(path));
-
-        SortedDictionary<AssetType, List<string>> assetTypeToFiles = new();
 
         foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
         {
@@ -31,76 +35,58 @@ public static class ClientDirectory
 
             if (assetType != 0 && assetFilter.HasFlag(assetType))
             {
-                AssetType assetDirectoryType = assetType & AssetType.AllDirectories;
-
-                if (assetTypeToFiles.TryGetValue(assetDirectoryType, out List<string>? assetFiles))
-                {
-                    assetFiles.Add(file);
-                }
-                else
-                {
-                    assetTypeToFiles[assetDirectoryType] = new() { file };
-                }
+                yield return new AssetFile(file, assetType);
             }
         }
-
-        return assetTypeToFiles;
     }
 
     /// <summary>
-    /// Returns the names of asset files (including their paths) in the specified directory.
+    /// Returns the asset files that match a filter on a specified path.
     /// </summary>
     /// <returns>
-    /// An array of the full file names (including paths) for the asset files
-    /// in the specified directory, or an empty array if no files are found.
+    /// An array of the asset files in the directory specified by
+    /// <paramref name="path"/> that match the specified filter.
     /// </returns>
     /// <exception cref="ArgumentNullException"/>
-    public static string[] GetAssetFiles(string path)
-        => EnumerateAssetFiles(path).ToArray();
-
-    /// <summary>
-    /// Returns the names of asset files (including their paths)
-    /// that match the specified filter in the specified directory.
-    /// </summary>
-    /// <returns>
-    /// An array of the full file names (including paths) for the asset files that match
-    /// the filter in the specified directory, or an empty array if no files are found.
-    /// </returns>
-    /// <exception cref="ArgumentNullException"/>
-    public static string[] GetAssetFiles(string path, AssetType assetFilter)
+    public static AssetFile[] GetAssetFiles(string path, AssetType assetFilter = AssetType.All)
         => EnumerateAssetFiles(path, assetFilter).ToArray();
 
     /// <summary>
-    /// Returns an enumerable collection of full file names for assets in the specified path.
+    /// Returns an enumerable collection of full file names for all asset
+    /// .dat files with the specified asset type in a specified path.
     /// </summary>
     /// <returns>
-    /// An enumerable collection of the full file names (including paths) for
-    /// the asset files in the directory specified by <paramref name="path"/>.
+    /// An enumerable collection of the full file names (including paths) for the asset .dat files
+    /// with the specified asset type in the directory specified by <paramref name="path"/>.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<string> EnumerateAssetFiles(string path)
-        => EnumerateAssetFiles(path, AssetType.All);
-
-    /// <summary>
-    /// Returns an enumerable collection of full file names for assets that match a filter on a specified path.
-    /// </summary>
-    /// <returns>
-    /// An enumerable collection of the full file names (including paths) for the asset files in
-    /// the directory specified by <paramref name="path"/> and that match the specified filter.
-    /// </returns>
-    /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<string> EnumerateAssetFiles(string path, AssetType assetFilter)
+    public static IEnumerable<string> EnumerateDataFiles(string path, AssetType assetType)
     {
         if (path == null) throw new ArgumentNullException(nameof(path));
+        if (!assetType.IsValid()) throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, assetType));
+        if (assetType.GetFileType() != AssetType.Dat) return Enumerable.Empty<string>();
 
-        foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+        Regex dataRegex = assetType.GetDirectoryType() switch
         {
-            AssetType assetType = ClientFile.InferAssetType(file);
-
-            if (assetType != 0 && assetFilter.HasFlag(assetType))
-            {
-                yield return file;
-            }
-        }
+            AssetType.Game => GameDataRegex(),
+            AssetType.Tcg => TcgDataRegex(),
+            AssetType.Resource => ResourceDataRegex(),
+            _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
+        };
+        return Directory.EnumerateFiles(path)
+                        .Where(x => dataRegex.IsMatch(Path.GetFileName(x.AsSpan())));
     }
+
+    /// <summary>
+    /// Returns the full file names of all asset .dat files with the specified asset type in a specified path.
+    /// </summary>
+    /// <returns>
+    /// An array of full file names (including paths) for the asset .dat files with the
+    /// specified asset type in the directory specified by <paramref name="path"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentException"/>
+    public static string[] GetDataFiles(string path, AssetType assetType)
+        => EnumerateDataFiles(path, assetType).ToArray();
 }

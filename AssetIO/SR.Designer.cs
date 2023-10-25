@@ -79,6 +79,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and directory flag must be set: &apos;{0}&apos;..
+        /// </summary>
+        internal static string Argument_InvalidAssetType {
+            get {
+                return ResourceManager.GetString("Argument_InvalidAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection..
         /// </summary>
         internal static string Argument_InvalidOffLen {
@@ -111,15 +120,6 @@ namespace AssetIO {
         internal static string Argument_TooManyManifestFiles {
             get {
                 return ResourceManager.GetString("Argument_TooManyManifestFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Unrecognized asset file extension: &apos;{0}&apos;..
-        /// </summary>
-        internal static string Argument_UnkAssetExt {
-            get {
-                return ResourceManager.GetString("Argument_UnkAssetExt", resourceCulture);
             }
         }
         

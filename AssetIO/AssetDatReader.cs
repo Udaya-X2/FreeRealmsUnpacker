@@ -8,7 +8,6 @@ namespace AssetIO;
 /// </summary>
 public class AssetDatReader : AssetReader
 {
-    private const string ManifestFileSuffix = "manifest.dat";
     private const int MaxAssetDatSize = 209715200;
     private const int BufferSize = 81920;
 
@@ -16,22 +15,6 @@ public class AssetDatReader : AssetReader
     private readonly byte[] _buffer;
 
     private bool _disposed;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AssetDatReader"/> class for
-    /// all asset .dat files corresponding to the specified manifest.dat file.
-    /// </summary>
-    /// <exception cref="ArgumentNullException"/>
-    public AssetDatReader(string manifestPath)
-    {
-        if (manifestPath == null) throw new ArgumentNullException(nameof(manifestPath));
-
-        manifestPath = Path.GetFullPath(manifestPath);
-        string manifestDirectory = Path.GetDirectoryName(manifestPath)!;
-        string assetDatPattern = GetAssetDatPattern(manifestPath);
-        _assetStreams = OpenReadFiles(Directory.EnumerateFiles(manifestDirectory, assetDatPattern));
-        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetDatReader"/> class for the specified asset .dat files.
@@ -164,23 +147,6 @@ public class AssetDatReader : AssetReader
         {
             throw new IOException(string.Format(SR.IO_NoMoreAssetDatFiles, asset.Name));
         }
-    }
-
-    /// <summary>
-    /// Determines which asset .dat files to open based on the name of the manifest file.
-    /// </summary>
-    /// <returns>The search pattern to find the asset pack(s) corresponding to the manifest.</returns>
-    /// <exception cref="ArgumentException"/>
-    private static string GetAssetDatPattern(string manifestPath)
-    {
-        if (!manifestPath.EndsWith(ManifestFileSuffix))
-        {
-            throw new ArgumentException(string.Format(SR.Argument_BadManifestPath, manifestPath));
-        }
-
-        ReadOnlySpan<char> manifestFile = Path.GetFileName(manifestPath.AsSpan());
-        ReadOnlySpan<char> manifestFilePrefix = manifestFile[..^ManifestFileSuffix.Length];
-        return $"{manifestFilePrefix}???.dat";
     }
 
     /// <summary>

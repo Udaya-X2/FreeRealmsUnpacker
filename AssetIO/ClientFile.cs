@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 namespace AssetIO;
 
 /// <summary>
-/// Provides static methods for obtaining asset information from a Free Realms client file.
+/// Provides static methods for obtaining asset information from a Free Realms asset file.
 /// </summary>
 public static partial class ClientFile
 {
@@ -14,48 +14,12 @@ public static partial class ClientFile
     private const int MaxAssetNameLength = 128;
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
 
-    [GeneratedRegex("^Assets((_ps3)?W?_\\d{3}\\.pack|_manifest\\.dat)$", Options, "en-US")]
+    [GeneratedRegex(@"^Assets((_ps3)?W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex GameAssetRegex();
-    [GeneratedRegex("^assetpack000(W?_\\d{3}\\.pack|_manifest\\.dat)$", Options, "en-US")]
+    [GeneratedRegex(@"^assetpack000(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex TcgAssetRegex();
-    [GeneratedRegex("^AssetsTcg(W?_\\d{3}\\.pack|_manifest\\.dat)$", Options, "en-US")]
+    [GeneratedRegex(@"^AssetsTcg(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex ResourceAssetRegex();
-
-    /// <summary>
-    /// Returns an enumerable collection of the assets in the specified file.
-    /// </summary>
-    /// <returns>An enumerable collection of the assets in the specified file.</returns>
-    /// <exception cref="ArgumentException"/>
-    public static IEnumerable<Asset> EnumerateAssets(string assetFile) => InferAssetFileType(assetFile) switch
-    {
-        AssetType.Dat => EnumerateManifestAssets(assetFile),
-        AssetType.Pack => EnumeratePackAssets(assetFile),
-        _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
-    };
-
-    /// <summary>
-    /// Returns the assets in the specified file.
-    /// </summary>
-    /// <returns>An array consisting of the assets in the specified file.</returns>
-    /// <exception cref="ArgumentException"/>
-    public static Asset[] GetAssets(string assetFile) => InferAssetFileType(assetFile) switch
-    {
-        AssetType.Dat => GetManifestAssets(assetFile),
-        AssetType.Pack => GetPackAssets(assetFile),
-        _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
-    };
-
-    /// <summary>
-    /// Returns the number of assets in the specified file.
-    /// </summary>
-    /// <returns>The number of assets in the specified file.</returns>
-    /// <exception cref="ArgumentException"/>
-    public static int GetAssetCount(string assetFile) => InferAssetFileType(assetFile) switch
-    {
-        AssetType.Dat => GetManifestAssetCount(assetFile),
-        AssetType.Pack => GetPackAssetCount(assetFile),
-        _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
-    };
 
     /// <summary>
     /// Returns an enumerable collection of the assets in the specified manifest.dat file.
@@ -337,17 +301,17 @@ public static partial class ClientFile
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
-        assetFile = Path.GetFileName(assetFile);
+        ReadOnlySpan<char> filename = Path.GetFileName(assetFile.AsSpan());
 
-        if (GameAssetRegex().IsMatch(assetFile))
+        if (GameAssetRegex().IsMatch(filename))
         {
             return AssetType.Game;
         }
-        if (TcgAssetRegex().IsMatch(assetFile))
+        if (TcgAssetRegex().IsMatch(filename))
         {
             return AssetType.Tcg;
         }
-        if (ResourceAssetRegex().IsMatch(assetFile))
+        if (ResourceAssetRegex().IsMatch(filename))
         {
             return AssetType.Resource;
         }

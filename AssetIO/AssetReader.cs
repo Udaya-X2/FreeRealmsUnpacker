@@ -6,18 +6,6 @@
 public abstract class AssetReader : IDisposable
 {
     /// <summary>
-    /// Creates a new instance of <see cref="AssetReader"/> from the specified asset file.
-    /// </summary>
-    /// <returns>An <see cref="AssetReader"/> on the specified asset file.</returns>
-    /// <exception cref="ArgumentException"/>
-    public static AssetReader Create(string assetFile) => ClientFile.InferAssetFileType(assetFile) switch
-    {
-        AssetType.Dat => new AssetDatReader(assetFile),
-        AssetType.Pack => new AssetPackReader(assetFile),
-        _ => throw new ArgumentException(string.Format(SR.Argument_UnkAssetExt, assetFile), nameof(assetFile))
-    };
-
-    /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s) and writes the data in a given buffer.
     /// </summary>
     /// <exception cref="ArgumentException"/>

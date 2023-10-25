@@ -28,19 +28,9 @@ public partial class Unpacker
             Stopwatch sw = Stopwatch.StartNew();
             Console.OutputEncoding = Encoding.UTF8;
             AssetType assetFilter = GetAssetFilter();
-            int numAssets = 0;
-
-            if (ListFiles)
-            {
-                numAssets = ListFilesFormatted(ClientDirectory.EnumerateAssetFiles(InputDirectory, assetFilter));
-            }
-            else
-            {
-                foreach (var item in ClientDirectory.GetAssetFilesByType(InputDirectory, assetFilter))
-                {
-                    numAssets += HandleAssets(item.Key, item.Value);
-                }
-            }
+            IEnumerable<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(InputDirectory, assetFilter);
+            int numAssets = ListFiles ? ListFilesFormatted(assetFiles) : assetFiles.GroupBy(x => x.DirectoryType)
+                                                                                   .Sum(x => HandleAssets(x.Key, x));
 
             // Print the number of assets or files found.
             string message = (numAssets, ListFiles) switch
@@ -73,16 +63,15 @@ public partial class Unpacker
     /// Dispatches on assets of the specified type, based on the command.
     /// </summary>
     /// <returns>The number of assets of the specified type.</returns>
-    private int HandleAssets(AssetType assetType, List<string> assetFiles)
+    private int HandleAssets(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
-        if (assetFiles.Count == 0) return 0;
-        if (CountAssets) return assetFiles.Sum(ClientFile.GetAssetCount);
+        if (CountAssets) return assetFiles.Sum(x => x.Count);
 
         using ProgressBar? pbar = CreateProgressBar(assetType, assetFiles);
         int numAssets = 0;
         int numErrors = 0;
 
-        foreach (string assetFile in assetFiles)
+        foreach (AssetFile assetFile in assetFiles)
         {
             if (ListAssets)
             {
@@ -105,17 +94,16 @@ public partial class Unpacker
     /// Lists the specified asset files in either tabular or
     /// line-based form, depending on the command-line options.
     /// </summary>
-    private int ListFilesFormatted(IEnumerable<string> assetFiles)
+    /// <returns>The number of asset files.</returns>
+    private int ListFilesFormatted(IEnumerable<AssetFile> assetFiles)
     {
         if (DisplayTable)
         {
             Table table = new("Name", "Assets", "Size");
 
-            foreach (string assetFile in assetFiles)
+            foreach (AssetFile assetFile in assetFiles)
             {
-                int numAssets = ClientFile.GetAssetCount(assetFile);
-                long size = new FileInfo(assetFile).Length;
-                table.AddRow(assetFile, numAssets, size);
+                table.AddRow(assetFile.FullName, assetFile.Count, assetFile.Info.Length);
             }
 
             table.Print();
@@ -125,9 +113,9 @@ public partial class Unpacker
         {
             int numAssets = 0;
 
-            foreach (string assetFile in assetFiles)
+            foreach (AssetFile assetFile in assetFiles)
             {
-                Console.WriteLine(assetFile);
+                Console.WriteLine(assetFile.FullName);
                 numAssets++;
             }
 
@@ -139,17 +127,18 @@ public partial class Unpacker
     /// Lists assets from the specified asset file in either tabular
     /// or line-based form, depending on the command-line options.
     /// </summary>
-    private int ListAssetsFormatted(string assetFile)
+    /// <returns>The number of assets in the asset file.</returns>
+    private int ListAssetsFormatted(AssetFile assetFile)
     {
         if (DisplayTable)
         {
             Table table = new("Name", "Offset", "Size", "CRC-32");
 
-            foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
+            foreach (Asset asset in assetFile)
             {
                 table.AddRow(asset.Name, asset.Offset, asset.Size, asset.Crc32);
             }
-            
+
             string plural = table.Count == 1 ? "" : "s";
             Console.WriteLine($"\nFound {table.Count} asset{plural} in {assetFile}:\n");
             table.Print();
@@ -159,7 +148,7 @@ public partial class Unpacker
         {
             int numAssets = 0;
 
-            foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
+            foreach (Asset asset in assetFile)
             {
                 Console.WriteLine(asset.Name);
                 numAssets++;
@@ -172,12 +161,13 @@ public partial class Unpacker
     /// <summary>
     /// Validates assets in the specified asset file by comparing their checksums.
     /// </summary>
-    private static int ValidateChecksums(string assetFile, ProgressBar? pbar, ref int numErrors)
+    /// <returns>The number of assets in the asset file.</returns>
+    private static int ValidateChecksums(AssetFile assetFile, ProgressBar? pbar, ref int numErrors)
     {
-        using AssetReader reader = AssetReader.Create(assetFile);
+        using AssetReader reader = assetFile.OpenRead();
         int numAssets = 0;
 
-        foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
+        foreach (Asset asset in assetFile)
         {
             if (asset.Crc32 == reader.GetCrc32(asset))
             {
@@ -201,12 +191,13 @@ public partial class Unpacker
     /// <summary>
     /// Extracts assets in the specified asset file to the output directory.
     /// </summary>
-    private int ExtractAssets(string assetFile, ProgressBar? pbar)
+    /// <returns>The number of assets in the asset file.</returns>
+    private int ExtractAssets(AssetFile assetFile, ProgressBar? pbar)
     {
-        using AssetReader reader = AssetReader.Create(assetFile);
+        using AssetReader reader = assetFile.OpenRead();
         int numAssets = 0;
 
-        foreach (Asset asset in ClientFile.EnumerateAssets(assetFile))
+        foreach (Asset asset in assetFile)
         {
             string assetPath = $"{OutputDirectory}/{asset.Name}";
 
@@ -238,7 +229,7 @@ public partial class Unpacker
     /// or <see langword="null"/> if progress bars are disabled.
     /// </returns>
     /// <exception cref="InvalidEnumArgumentException"/>
-    private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<string> assetFiles)
+    private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
         if (NoProgressBars || ListAssets || ListFiles || CountAssets) return null;
 
@@ -249,7 +240,7 @@ public partial class Unpacker
             AssetType.Resource => ("Reading resource assets...", ConsoleColor.DarkYellow),
             _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
         };
-        int numAssets = assetFiles.Sum(ClientFile.GetAssetCount);
+        int numAssets = assetFiles.Sum(x => x.Count);
         ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };
         return new ProgressBar(numAssets, message, options);
     }
@@ -260,24 +251,21 @@ public partial class Unpacker
     /// <returns>An enum value specifying the asset types to extract.</returns>
     private AssetType GetAssetFilter()
     {
-        Span<bool> options = stackalloc[] { ExtractGame, ExtractTcg, ExtractResource, ExtractDat, ExtractPack };
         AssetType assetType = 0;
 
         // Set the enum flag corresponding to each command-line option.
-        for (int i = 0; i < options.Length; i++)
-        {
-            if (options[i])
-            {
-                assetType |= (AssetType)(1 << i);
-            }
-        }
+        if (ExtractGame) assetType |= AssetType.Game;
+        if (ExtractTcg) assetType |= AssetType.Tcg;
+        if (ExtractResource) assetType |= AssetType.Resource;
+        if (ExtractDat) assetType |= AssetType.Dat;
+        if (ExtractPack) assetType |= AssetType.Pack;
 
         // By default (no options are set), extract all asset types.
-        if ((assetType & AssetType.AllDirectories) == 0)
+        if (assetType.GetDirectoryType() == 0)
         {
             assetType |= AssetType.AllDirectories;
         }
-        if ((assetType & AssetType.AllFiles) == 0)
+        if (assetType.GetFileType() == 0)
         {
             assetType |= AssetType.AllFiles;
         }

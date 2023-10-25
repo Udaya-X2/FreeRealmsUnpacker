@@ -5,33 +5,20 @@
 /// </summary>
 public class Table
 {
-    private const string NonNegNumRequired = "Non-negative number required.";
-    private const string NotEnoughRowValues = "Not enough values in the specified array to add a row.";
-    private const int DefaultCapacity = 4;
-
     private readonly TableColumn[] _columns;
     private readonly List<string[]> _rows;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Table"/> class with the specified column names.
     /// </summary>
-    public Table(params string[] columns) : this(DefaultCapacity, columns)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Table"/> class
-    /// with the specified initial row capacity and column names.
-    /// </summary>
     /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="ArgumentNullException"/>
-    public Table(int capacity, params string[] columns)
+    public Table(params string[] columns)
     {
-        if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity), capacity, NonNegNumRequired);
         if (columns == null) throw new ArgumentNullException(nameof(columns));
 
         _columns = new TableColumn[columns.Length];
-        _rows = new List<string[]>(capacity);
+        _rows = new List<string[]>();
 
         for (int i = 0; i < columns.Length; i++)
         {
@@ -54,7 +41,7 @@ public class Table
     public void AddRow(params object[] values)
     {
         if (values == null) throw new ArgumentNullException(nameof(values));
-        if (values.Length < _columns.Length) throw new ArgumentException(NotEnoughRowValues);
+        if (values.Length < _columns.Length) throw new ArgumentException("Not enough values to add a table row.");
 
         string[] row = new string[values.Length];
 
