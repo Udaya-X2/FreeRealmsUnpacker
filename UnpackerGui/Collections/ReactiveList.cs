@@ -211,45 +211,6 @@ public class ReactiveList<T> : ObservableCollection<T>, IObservableCollection<T>
     public void RemoveRange(int index, int count)
         => DoWhileSuspended(x => x.RemoveRange(index, count));
 
-    /// <summary>
-    /// Removes the range of elements in the specified collection from the list.
-    /// </summary>
-    /// <param name="collection">The range of items to remove.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="collection"/> is null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// <paramref name="collection"/> is larger than the list.
-    /// </exception>
-    /// <exception cref="ArgumentException">
-    /// The list does not contain the range of elements specified in <paramref name="collection"/>.
-    /// </exception>
-    public void RemoveRange(IEnumerable<T> collection)
-    {
-        if (collection == null) throw new ArgumentNullException(nameof(collection));
-
-        T? firstItem = collection.FirstOrDefault();
-
-        if (firstItem == null) return;
-
-        IList<T> values = collection as IList<T> ?? collection.ToList();
-        int maxIndex = Count - values.Count;
-        int index = -1;
-
-    NextItem:
-        index = IndexOf(firstItem, index + 1);
-
-        if (index == -1 || index > maxIndex) throw new ArgumentException(SR.Argument_RangeNotFound);
-
-        for (int i = 1; i < values.Count; i++)
-        {
-            if (!Equals(_items[index + i], values[i]))
-            {
-                goto NextItem;
-            }
-        }
-
-        RemoveRange(index, values.Count);
-    }
-
     /// <inheritdoc cref="List{T}.Reverse()"/>
     public void Reverse()
         => DoWhileSuspended(x => x.Reverse());

@@ -14,7 +14,7 @@ public class FilesService : IFilesService
         _target = target;
     }
 
-    public async Task<IStorageFile?> OpenFileAsync() => await OpenFileAsync(new FilePickerOpenOptions
+    public async Task<IStorageFile?> OpenFileAsync() => await OpenFileAsync(new()
     {
         Title = "Open File",
         AllowMultiple = false
@@ -26,7 +26,7 @@ public class FilesService : IFilesService
         return files.Count >= 1 ? files[0] : null;
     }
 
-    public async Task<IReadOnlyList<IStorageFile>> OpenFilesAsync() => await OpenFilesAsync(new FilePickerOpenOptions
+    public async Task<IReadOnlyList<IStorageFile>> OpenFilesAsync() => await OpenFilesAsync(new()
     {
         Title = "Open File",
         AllowMultiple = true
@@ -35,7 +35,28 @@ public class FilesService : IFilesService
     public async Task<IReadOnlyList<IStorageFile>> OpenFilesAsync(FilePickerOpenOptions options)
         => await _target.StorageProvider.OpenFilePickerAsync(options);
 
-    public async Task<IStorageFile?> SaveFileAsync() => await SaveFileAsync(new FilePickerSaveOptions
+    public async Task<IStorageFolder?> OpenFolderAsync() => await OpenFolderAsync(new()
+    {
+        Title = "Open Folder",
+        AllowMultiple = false
+    });
+
+    public async Task<IStorageFolder?> OpenFolderAsync(FolderPickerOpenOptions options)
+    {
+        IReadOnlyList<IStorageFolder> folders = await OpenFoldersAsync(options);
+        return folders.Count >= 1 ? folders[0] : null;
+    }
+
+    public async Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync() => await OpenFoldersAsync(new()
+    {
+        Title = "Open Folder",
+        AllowMultiple = true
+    });
+
+    public async Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync(FolderPickerOpenOptions options)
+        => await _target.StorageProvider.OpenFolderPickerAsync(options);
+
+    public async Task<IStorageFile?> SaveFileAsync() => await SaveFileAsync(new()
     {
         Title = "Save File As"
     });

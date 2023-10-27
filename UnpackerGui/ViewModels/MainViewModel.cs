@@ -5,11 +5,13 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UnpackerGui.Collections;
+using UnpackerGui.Models;
 using UnpackerGui.Services;
 using UnpackerGui.Storage;
 
@@ -19,18 +21,9 @@ public class MainViewModel : ViewModelBase
 {
     public MainViewModel()
     {
-        Assets = new ReactiveList<Asset>();
-        SelectedAssets = new ReactiveList<Asset>();
+        Assets = new ReactiveList<AssetInfo>();
+        SelectedAssets = new ReactiveList<AssetInfo>();
         AssetFiles = new ReactiveList<AssetFileViewModel>();
-#if DEBUG
-        DebugCommand = ReactiveCommand.Create(() =>
-        {
-            string timestamp = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss,fff}]";
-            Debug.WriteLine($"{timestamp} Assets.Count = {Assets.Count}");
-            Debug.WriteLine($"{timestamp} SelectedAssets.Count = {SelectedAssets.Count}");
-            Debug.WriteLine($"{timestamp} PackFiles.Count = {AssetFiles.Count}");
-        });
-#endif
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
@@ -39,10 +32,9 @@ public class MainViewModel : ViewModelBase
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
     }
 
-    public ReactiveList<Asset> Assets { get; }
-    public ReactiveList<Asset> SelectedAssets { get; }
+    public ReactiveList<AssetInfo> Assets { get; }
+    public ReactiveList<AssetInfo> SelectedAssets { get; }
     public ReactiveList<AssetFileViewModel> AssetFiles { get; }
-    public ICommand DebugCommand { get; }
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
     public ICommand ExtractFilesCommand { get; }
@@ -90,15 +82,33 @@ public class MainViewModel : ViewModelBase
         }
         else if (Assets.Count > 0)
         {
-            // TODO: Remove based on asset file
-            //Assets.RemoveAll(x => );
-            Assets.RemoveRange(assetFileVM.Assets);
+            Assets.RemoveAll(assetFileVM.Contains);
         }
     }
 
     private async Task ExtractFiles()
     {
+        IFilesService filesService = App.Current?.Services?.GetService<IFilesService>()
+            ?? throw new NullReferenceException("Missing file service instance.");
 
+        if (await filesService.OpenFolderAsync() is not IStorageFolder folder) return;
+
+        string outputDir = folder.Path.LocalPath;
+
+        foreach (AssetFileViewModel assetFileVM in AssetFiles)
+        {
+            if (!assetFileVM.IsChecked) continue;
+
+            using AssetReader reader = assetFileVM.OpenRead();
+
+            foreach (AssetInfo asset in assetFileVM.Assets)
+            {
+                string assetPath = $"{outputDir}/{asset.Name}";
+                Directory.CreateDirectory(Path.GetDirectoryName(assetPath) ?? outputDir);
+                using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                reader.CopyTo(asset, fs);
+            }
+        }
     }
 
     private void SelectAll()
