@@ -33,6 +33,7 @@ public class MainViewModel : ViewModelBase
 #endif
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
+        ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
@@ -44,6 +45,7 @@ public class MainViewModel : ViewModelBase
     public ICommand DebugCommand { get; }
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
+    public ICommand ExtractFilesCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
     public ICommand RemoveSelectedCommand { get; }
@@ -80,16 +82,23 @@ public class MainViewModel : ViewModelBase
     private void UpdateAssets(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is not nameof(AssetFileViewModel.IsChecked)) return;
-        if (sender is not AssetFileViewModel assetFile) return;
+        if (sender is not AssetFileViewModel assetFileVM) return;
 
-        if (assetFile.IsChecked)
+        if (assetFileVM.IsChecked)
         {
-            Assets.AddRange(assetFile.Assets);
+            Assets.AddRange(assetFileVM.Assets);
         }
         else if (Assets.Count > 0)
         {
-            Assets.RemoveRange(assetFile.Assets);
+            // TODO: Remove based on asset file
+            //Assets.RemoveAll(x => );
+            Assets.RemoveRange(assetFileVM.Assets);
         }
+    }
+
+    private async Task ExtractFiles()
+    {
+
     }
 
     private void SelectAll()
@@ -111,11 +120,11 @@ public class MainViewModel : ViewModelBase
         Assets.Clear();
         int index = 0;
 
-        foreach (AssetFileViewModel assetFile in AssetFiles.ToArray())
+        foreach (AssetFileViewModel assetFileVM in AssetFiles.ToArray())
         {
-            if (assetFile.IsChecked)
+            if (assetFileVM.IsChecked)
             {
-                assetFile.IsChecked = false;
+                assetFileVM.IsChecked = false;
                 AssetFiles.RemoveAt(index);
             }
             else

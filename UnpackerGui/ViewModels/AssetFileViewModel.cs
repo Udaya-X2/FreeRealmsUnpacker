@@ -5,15 +5,14 @@ namespace UnpackerGui.ViewModels;
 
 public class AssetFileViewModel : ViewModelBase
 {
-    private readonly AssetFile _assetFile;
+    public AssetFile AssetFile { get; }
+    public Asset[] Assets { get; }
 
     private bool _isChecked;
 
-    public Asset[] Assets { get; }
-
     public AssetFileViewModel(AssetFile assetFile)
     {
-        _assetFile = assetFile;
+        AssetFile = assetFile;
         Assets = assetFile.Assets;
     }
 
@@ -23,7 +22,7 @@ public class AssetFileViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isChecked, value);
     }
 
-    public string Name => _assetFile.Name;
+    public string Name => AssetFile.Name;
 
-    public string FullName => _assetFile.FullName;
+    public string FullName => AssetFile.FullName;
 }

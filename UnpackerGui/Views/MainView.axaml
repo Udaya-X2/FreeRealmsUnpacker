@@ -10,53 +10,71 @@
     <Design.DataContext>
         <vm:MainViewModel/>
     </Design.DataContext>
-    <Grid ColumnDefinitions="0,*" Margin="5">
-        <StackPanel Grid.Column="1">
-            <Button Command="{Binding DebugCommand}"
-                    Content="Debug"
-                    HorizontalAlignment="Left">
-            </Button>
-            <Button Command="{Binding AddPackFilesCommand}"
-                    Content="Add .pack files"
-                    HorizontalAlignment="Left">
-            </Button>
-            <Button Command="{Binding AddManifestFilesCommand}"
-                    Content="Add manifest.dat files"
-                    HorizontalAlignment="Left">
-            </Button>
-            <Button Command="{Binding SelectAllCommand}"
-                    Content="Select all files"
-                    HorizontalAlignment="Left">
-            </Button>
-            <Button Command="{Binding DeselectAllCommand}"
-                    Content="Deselect all files"
-                    HorizontalAlignment="Left">
-            </Button>
-            <Button Command="{Binding RemoveSelectedCommand}"
-                    Content="Remove selected files"
-                    HorizontalAlignment="Left">
-            </Button>
+    <Grid ColumnDefinitions="Auto,*"
+          Margin="5">
+        <Grid RowDefinitions="Auto,*,Auto"
+              Margin="5"
+              Grid.Column="0">
+            <Grid Width="240"
+                  Grid.Row="0"
+                  ColumnDefinitions="*,*,*,*,*,*">
+                <Button Command="{Binding AddPackFilesCommand}"
+                        ToolTip.Tip="Add .pack Files..."
+                        Grid.Column="0">
+                    <Image Source="/Assets/icon_ui_pickup_siding_32.png"/>
+                </Button>
+                <Button Command="{Binding AddManifestFilesCommand}"
+                        ToolTip.Tip="Add manifest.dat Files..."
+                        Grid.Column="1">
+                    <Image Source="/Assets/icon_ui_pickup_siding_blue_32.png"/>
+                </Button>
+                <Button Command="{Binding ExtractFilesCommand}"
+                        ToolTip.Tip="Extract Selected Files..."
+                        Grid.Column="2">
+                    <Image Source="/Assets/downloadIcon.png"/>
+                </Button>
+                <Button Command="{Binding SelectAllCommand}"
+                        ToolTip.Tip="Select All Files"
+                        Grid.Column="3">
+                    <Image Source="/Assets/ui_notify_objective_completed.png"/>
+                </Button>
+                <Button Command="{Binding DeselectAllCommand}"
+                        ToolTip.Tip="Deselect All Files"
+                        Grid.Column="4">
+                    <Image Source="/Assets/icon_ui_none.png"/>
+                </Button>
+                <Button Command="{Binding RemoveSelectedCommand}"
+                        ToolTip.Tip="Remove Selected Files"
+                        Grid.Column="5">
+                    <Image Source="/Assets/ui_dialog_exit.png"/>
+                </Button>
+            </Grid>
             <ListBox ItemsSource="{Binding AssetFiles}"
-                     Width="200"
-                     Height="185"
-                     SelectionMode="Toggle"
-                     HorizontalAlignment="Left">
+                     Grid.Row="1"
+                     Margin="0,5,0,5"
+                     SelectionMode="Toggle">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <LayoutTransformControl>
-                            <LayoutTransformControl.LayoutTransform>
-                                <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
-                            </LayoutTransformControl.LayoutTransform>
-                            <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">
-                                <TextBlock Text="{Binding Name}"/>
-                            </CheckBox>
-                        </LayoutTransformControl>
+                        <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">
+                            <TextBlock FontSize="12"
+                                       Text="{Binding Name}"/>
+                        </CheckBox>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-        </StackPanel>
-        <DataGrid Grid.Column="2"
-                  Margin="300,100,20,20"
+            <Grid Grid.Row="2"
+                  RowDefinitions="*,*,*"
+                  ColumnDefinitions="*,2*">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Path"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="Binding Path"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Count"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="Binding Count"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Size"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="Binding Path"/>
+            </Grid>
+        </Grid>
+        <DataGrid Grid.Column="1"
+                  Margin="5"
                   ItemsSource="{Binding Assets}"
                   IsReadOnly="True"
                   SelectionMode="Extended"
@@ -66,10 +84,22 @@
                   BorderThickness="1"
                   BorderBrush="Gray">
             <DataGrid.Columns>
-                <DataGridTextColumn FontSize="12" Width="3*" Header="Name" Binding="{Binding Name}"/>
-                <DataGridTextColumn FontSize="12" Width="*" Header="Offset" Binding="{Binding Offset}"/>
-                <DataGridTextColumn FontSize="12" Width="*" Header="Size" Binding="{Binding Size}"/>
-                <DataGridTextColumn FontSize="12" Width="*" Header="CRC-32" Binding="{Binding Crc32}"/>
+                <DataGridTextColumn FontSize="12"
+                                    Width="3*"
+                                    Header="Name"
+                                    Binding="{Binding Name}"/>
+                <DataGridTextColumn FontSize="12"
+                                    Width="*"
+                                    Header="Offset"
+                                    Binding="{Binding Offset}"/>
+                <DataGridTextColumn FontSize="12"
+                                    Width="*"
+                                    Header="Size"
+                                    Binding="{Binding Size}"/>
+                <DataGridTextColumn FontSize="12"
+                                    Width="*"
+                                    Header="CRC-32"
+                                    Binding="{Binding Crc32}"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
