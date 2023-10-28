@@ -3,13 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="450"
              x:Class="UnpackerGui.Views.MainView"
              FontFamily="Tahoma"
              x:DataType="vm:MainViewModel">
-    <Design.DataContext>
-        <vm:MainViewModel/>
-    </Design.DataContext>
     <Grid ColumnDefinitions="Auto,*"
           Margin="5">
         <Grid RowDefinitions="Auto,*,Auto"
@@ -85,19 +84,22 @@
                   BorderBrush="Gray">
             <DataGrid.Columns>
                 <DataGridTextColumn FontSize="12"
-                                    Width="3*"
+                                    Width="2*"
                                     Header="Name"
                                     Binding="{Binding Name}"/>
                 <DataGridTextColumn FontSize="12"
                                     Width="*"
+                                    MaxWidth="150"
                                     Header="Offset"
                                     Binding="{Binding Offset}"/>
                 <DataGridTextColumn FontSize="12"
                                     Width="*"
+                                    MaxWidth="150"
                                     Header="Size"
                                     Binding="{Binding Size}"/>
                 <DataGridTextColumn FontSize="12"
                                     Width="*"
+                                    MaxWidth="150"
                                     Header="CRC-32"
                                     Binding="{Binding Crc32}"/>
             </DataGrid.Columns>

@@ -5,9 +5,8 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Reflection.PortableExecutable;
+using System.Reactive;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UnpackerGui.Collections;
@@ -24,6 +23,7 @@ public class MainViewModel : ViewModelBase
         Assets = new ReactiveList<AssetInfo>();
         SelectedAssets = new ReactiveList<AssetInfo>();
         AssetFiles = new ReactiveList<AssetFileViewModel>();
+
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
@@ -35,6 +35,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveList<AssetInfo> Assets { get; }
     public ReactiveList<AssetInfo> SelectedAssets { get; }
     public ReactiveList<AssetFileViewModel> AssetFiles { get; }
+
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
     public ICommand ExtractFilesCommand { get; }
@@ -74,15 +75,15 @@ public class MainViewModel : ViewModelBase
     private void UpdateAssets(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is not nameof(AssetFileViewModel.IsChecked)) return;
-        if (sender is not AssetFileViewModel assetFileVM) return;
+        if (sender is not AssetFileViewModel assetFile) return;
 
-        if (assetFileVM.IsChecked)
+        if (assetFile.IsChecked)
         {
-            Assets.AddRange(assetFileVM.Assets);
+            Assets.AddRange(assetFile.Assets);
         }
         else if (Assets.Count > 0)
         {
-            Assets.RemoveAll(assetFileVM.Contains);
+            Assets.RemoveAll(assetFile.Contains);
         }
     }
 
@@ -93,22 +94,7 @@ public class MainViewModel : ViewModelBase
 
         if (await filesService.OpenFolderAsync() is not IStorageFolder folder) return;
 
-        string outputDir = folder.Path.LocalPath;
-
-        foreach (AssetFileViewModel assetFileVM in AssetFiles)
-        {
-            if (!assetFileVM.IsChecked) continue;
-
-            using AssetReader reader = assetFileVM.OpenRead();
-
-            foreach (AssetInfo asset in assetFileVM.Assets)
-            {
-                string assetPath = $"{outputDir}/{asset.Name}";
-                Directory.CreateDirectory(Path.GetDirectoryName(assetPath) ?? outputDir);
-                using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
-                reader.CopyTo(asset, fs);
-            }
-        }
+        ExtractionViewModel extractionModel = new(folder.Path.LocalPath, AssetFiles);
     }
 
     private void SelectAll()
@@ -130,11 +116,11 @@ public class MainViewModel : ViewModelBase
         Assets.Clear();
         int index = 0;
 
-        foreach (AssetFileViewModel assetFileVM in AssetFiles.ToArray())
+        foreach (AssetFileViewModel assetFile in AssetFiles.ToArray())
         {
-            if (assetFileVM.IsChecked)
+            if (assetFile.IsChecked)
             {
-                assetFileVM.IsChecked = false;
+                assetFile.IsChecked = false;
                 AssetFiles.RemoveAt(index);
             }
             else
