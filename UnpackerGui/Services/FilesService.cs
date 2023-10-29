@@ -7,11 +7,11 @@ namespace UnpackerGui.Services;
 
 public class FilesService : IFilesService
 {
-    private readonly Window _target;
+    private readonly IStorageProvider _storageProvider;
 
-    public FilesService(Window target)
+    public FilesService(TopLevel target)
     {
-        _target = target;
+        _storageProvider = target.StorageProvider;
     }
 
     public async Task<IStorageFile?> OpenFileAsync() => await OpenFileAsync(new()
@@ -33,7 +33,7 @@ public class FilesService : IFilesService
     });
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFilesAsync(FilePickerOpenOptions options)
-        => await _target.StorageProvider.OpenFilePickerAsync(options);
+        => await _storageProvider.OpenFilePickerAsync(options);
 
     public async Task<IStorageFolder?> OpenFolderAsync() => await OpenFolderAsync(new()
     {
@@ -54,7 +54,7 @@ public class FilesService : IFilesService
     });
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync(FolderPickerOpenOptions options)
-        => await _target.StorageProvider.OpenFolderPickerAsync(options);
+        => await _storageProvider.OpenFolderPickerAsync(options);
 
     public async Task<IStorageFile?> SaveFileAsync() => await SaveFileAsync(new()
     {
@@ -62,5 +62,5 @@ public class FilesService : IFilesService
     });
 
     public async Task<IStorageFile?> SaveFileAsync(FilePickerSaveOptions options)
-        => await _target.StorageProvider.SaveFilePickerAsync(options);
+        => await _storageProvider.SaveFilePickerAsync(options);
 }

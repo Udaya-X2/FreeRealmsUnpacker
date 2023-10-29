@@ -13,11 +13,23 @@ using UnpackerGui.Collections;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
 using UnpackerGui.Storage;
+using UnpackerGui.Views;
 
 namespace UnpackerGui.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    public ReactiveList<AssetInfo> Assets { get; }
+    public ReactiveList<AssetInfo> SelectedAssets { get; }
+    public ReactiveList<AssetFileViewModel> AssetFiles { get; }
+
+    public ICommand AddPackFilesCommand { get; }
+    public ICommand AddManifestFilesCommand { get; }
+    public ICommand ExtractFilesCommand { get; }
+    public ICommand SelectAllCommand { get; }
+    public ICommand DeselectAllCommand { get; }
+    public ICommand RemoveSelectedCommand { get; }
+
     public MainViewModel()
     {
         Assets = new ReactiveList<AssetInfo>();
@@ -31,17 +43,6 @@ public class MainViewModel : ViewModelBase
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
     }
-
-    public ReactiveList<AssetInfo> Assets { get; }
-    public ReactiveList<AssetInfo> SelectedAssets { get; }
-    public ReactiveList<AssetFileViewModel> AssetFiles { get; }
-
-    public ICommand AddPackFilesCommand { get; }
-    public ICommand AddManifestFilesCommand { get; }
-    public ICommand ExtractFilesCommand { get; }
-    public ICommand SelectAllCommand { get; }
-    public ICommand DeselectAllCommand { get; }
-    public ICommand RemoveSelectedCommand { get; }
 
     private async Task AddPackFiles()
         => await AddAssetFiles(AssetType.Game | AssetType.Pack, FileTypeFilters.PackFiles);
@@ -93,8 +94,15 @@ public class MainViewModel : ViewModelBase
             ?? throw new NullReferenceException("Missing file service instance.");
 
         if (await filesService.OpenFolderAsync() is not IStorageFolder folder) return;
+        if (!AssetFiles.Any(x => x.IsChecked)) return;
 
-        ExtractionViewModel extractionModel = new(folder.Path.LocalPath, AssetFiles);
+        ExtractionWindow extractionWindow = new()
+        {
+            DataContext = new ExtractionViewModel(folder.Path.LocalPath, AssetFiles)
+        };
+        IDialogService dialogService = App.Current?.Services?.GetService<IDialogService>()
+            ?? throw new NullReferenceException("Missing dialog service instance.");
+        await dialogService.ShowDialog(extractionWindow);
     }
 
     private void SelectAll()

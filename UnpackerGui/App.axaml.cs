@@ -35,17 +35,9 @@ public partial class App : Application
             {
                 DataContext = new MainViewModel()
             };
-
-            var services = new ServiceCollection();
-            services.AddSingleton<IFilesService>(new FilesService(desktop.MainWindow));
-            Services = services.BuildServiceProvider();
-        }
-        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
-        {
-            singleViewPlatform.MainView = new MainView
-            {
-                DataContext = new MainViewModel()
-            };
+            Services = new ServiceCollection().AddSingleton<IFilesService>(new FilesService(desktop.MainWindow))
+                                              .AddSingleton<IDialogService>(new DialogService(desktop.MainWindow))
+                                              .BuildServiceProvider();
         }
 
         base.OnFrameworkInitializationCompleted();
