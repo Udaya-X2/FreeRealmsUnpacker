@@ -1,6 +1,7 @@
 ﻿using AssetIO;
 using ReactiveUI;
 using System.Collections.Generic;
+using UnpackerGui.Collections;
 using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
@@ -13,6 +14,11 @@ public class AssetFileViewModel : ViewModelBase
     public List<AssetInfo> Assets { get; }
 
     /// <summary>
+    /// The asset .dat files corresponding to the asset file.
+    /// </summary>
+    public ReactiveList<string> DataFiles { get; }
+
+    /// <summary>
     /// The total size of all assets in the asset file.
     /// </summary>
     public ulong Size { get; }
@@ -21,10 +27,20 @@ public class AssetFileViewModel : ViewModelBase
 
     private bool _isChecked;
 
-    public AssetFileViewModel(AssetFile assetFile)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AssetFileViewModel"/>
+    /// class, which acts as a wrapper for an <see cref="AssetFile"/>.
+    /// </summary>
+    public AssetFileViewModel(string path, AssetType assetType)
     {
-        _assetFile = assetFile;
         Assets = new List<AssetInfo>();
+        DataFiles = new ReactiveList<string>();
+        _assetFile = new AssetFile(path, assetType, DataFiles);
+
+        if (_assetFile.FileType == AssetType.Dat)
+        {
+            DataFiles.AddRange(ClientDirectory.EnumerateDataFiles(_assetFile.Info));
+        }
 
         foreach (Asset asset in _assetFile)
         {

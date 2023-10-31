@@ -19,7 +19,7 @@ public class AssetFile : IEnumerable<Asset>
     public AssetType Type { get; }
 
     /// <summary>
-    /// Gets or sets the asset.dat files corresponding to the asset file.
+    /// Gets the asset.dat files corresponding to the asset file.
     /// </summary>
     /// <remarks>This is only used by asset files with the <see cref="AssetType.Dat"/> flag set.</remarks>
     public IEnumerable<string> DataFiles { get; }
@@ -80,22 +80,12 @@ public class AssetFile : IEnumerable<Asset>
 
         Info = new FileInfo(path);
         Type = assetType;
-
-        if (findDataFiles)
+        DataFiles = (findDataFiles, FileType) switch
         {
-            if (FileType is AssetType.Dat && Info.DirectoryName is string dirName)
-            {
-                DataFiles = ClientDirectory.EnumerateDataFiles(dirName, assetType);
-            }
-            else
-            {
-                DataFiles = Enumerable.Empty<string>();
-            }
-        }
-        else
-        {
-            DataFiles = dataFiles ?? throw new ArgumentNullException(nameof(dataFiles));
-        }
+            (true, AssetType.Dat) => ClientDirectory.EnumerateDataFiles(Info),
+            (true, _) => Enumerable.Empty<string>(),
+            (false, _) => dataFiles ?? throw new ArgumentNullException(nameof(dataFiles))
+        };
     }
 
     /// <summary>

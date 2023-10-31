@@ -20,6 +20,12 @@ public static partial class ClientFile
     private static partial Regex TcgAssetRegex();
     [GeneratedRegex(@"^AssetsTcg(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex ResourceAssetRegex();
+    [GeneratedRegex(@"^Assets_\d{3}\.dat$", Options, "en-US")]
+    private static partial Regex GameDataRegex();
+    [GeneratedRegex(@"^assetpack000_\d{3}\.dat$", Options, "en-US")]
+    private static partial Regex TcgDataRegex();
+    [GeneratedRegex(@"^AssetsTcg_\d{3}\.dat$", Options, "en-US")]
+    private static partial Regex ResourceDataRegex();
 
     /// <summary>
     /// Returns an enumerable collection of the assets in the specified manifest.dat file.
@@ -312,6 +318,34 @@ public static partial class ClientFile
             return AssetType.Tcg;
         }
         if (ResourceAssetRegex().IsMatch(filename))
+        {
+            return AssetType.Resource;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Gets an enum value corresponding to the name of the specified asset .dat file.
+    /// </summary>
+    /// <returns>An enum value corresponding to the name of the specified asset .dat file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static AssetType InferDataType(string assetDataFile)
+    {
+        if (assetDataFile == null) throw new ArgumentNullException(nameof(assetDataFile));
+        if (!assetDataFile.EndsWith(".dat", StringComparison.OrdinalIgnoreCase)) return 0;
+
+        ReadOnlySpan<char> filename = Path.GetFileName(assetDataFile.AsSpan());
+
+        if (GameDataRegex().IsMatch(filename))
+        {
+            return AssetType.Game;
+        }
+        if (TcgDataRegex().IsMatch(filename))
+        {
+            return AssetType.Tcg;
+        }
+        if (ResourceDataRegex().IsMatch(filename))
         {
             return AssetType.Resource;
         }

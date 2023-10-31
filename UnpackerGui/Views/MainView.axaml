@@ -9,9 +9,6 @@
              x:Class="UnpackerGui.Views.MainView"
              FontFamily="Tahoma"
              x:DataType="vm:MainViewModel">
-    <Design.DataContext>
-        <vm:MainViewModel/>
-    </Design.DataContext>
     <Grid ColumnDefinitions="Auto,*"
           Margin="5">
         <Grid RowDefinitions="Auto,*,Auto"

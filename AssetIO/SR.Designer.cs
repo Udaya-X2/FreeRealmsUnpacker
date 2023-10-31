@@ -61,15 +61,6 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid manfiest.dat file path: &apos;{0}&apos;..
-        /// </summary>
-        internal static string Argument_BadManifestPath {
-            get {
-                return ResourceManager.GetString("Argument_BadManifestPath", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Asset size exceeds the length of the buffer..
         /// </summary>
         internal static string Argument_InvalidAssetLen {
@@ -79,7 +70,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and directory flag must be set: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and one directory flag must be set: &apos;{0}&apos;..
         /// </summary>
         internal static string Argument_InvalidAssetType {
             get {

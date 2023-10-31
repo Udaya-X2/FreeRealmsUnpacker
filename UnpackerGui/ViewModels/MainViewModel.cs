@@ -1,6 +1,5 @@
 ﻿using AssetIO;
 using Avalonia.Platform.Storage;
-using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -52,8 +51,7 @@ public class MainViewModel : ViewModelBase
 
     private async Task AddAssetFiles(AssetType assetType, FilePickerFileType[] fileTypeFilter)
     {
-        IFilesService filesService = App.Current?.Services?.GetService<IFilesService>()
-            ?? throw new NullReferenceException("Missing file service instance.");
+        IFilesService filesService = App.GetService<IFilesService>();
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
         {
             AllowMultiple = true,
@@ -66,7 +64,7 @@ public class MainViewModel : ViewModelBase
 
             if (AssetFiles.All(x => x.FullName != path))
             {
-                AssetFileViewModel assetFile = new(new AssetFile(path, assetType));
+                AssetFileViewModel assetFile = new(path, assetType);
                 assetFile.PropertyChanged += UpdateAssets;
                 AssetFiles.Add(assetFile);
             }
@@ -90,8 +88,7 @@ public class MainViewModel : ViewModelBase
 
     private async Task ExtractFiles()
     {
-        IFilesService filesService = App.Current?.Services?.GetService<IFilesService>()
-            ?? throw new NullReferenceException("Missing file service instance.");
+        IFilesService filesService = App.GetService<IFilesService>();
 
         if (await filesService.OpenFolderAsync() is not IStorageFolder folder) return;
         if (!AssetFiles.Any(x => x.IsChecked)) return;
@@ -100,8 +97,7 @@ public class MainViewModel : ViewModelBase
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath, AssetFiles)
         };
-        IDialogService dialogService = App.Current?.Services?.GetService<IDialogService>()
-            ?? throw new NullReferenceException("Missing dialog service instance.");
+        IDialogService dialogService = App.GetService<IDialogService>();
         await dialogService.ShowDialog(extractionWindow);
     }
 

@@ -42,4 +42,15 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    /// <summary>
+    /// Returns the service of type <typeparamref name="T"/> from
+    /// the current application's <see cref="IServiceProvider"/>.
+    /// </summary>
+    /// <typeparam name="T">The type of service object to get.</typeparam>
+    /// <returns>The service of type <typeparamref name="T"/> from the <see cref="IServiceProvider"/>.</returns>
+    /// <exception cref="InvalidOperationException"/>
+    public static T GetService<T>() where T : class
+        => Current?.Services?.GetService<T>()
+        ?? throw new InvalidOperationException($"Missing {typeof(T).Name} instance.");
 }
