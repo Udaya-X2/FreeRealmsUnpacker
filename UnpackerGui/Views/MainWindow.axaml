@@ -11,5 +11,5 @@
         Height="450"
         WindowStartupLocation="CenterScreen"
         Title="Free Realms Unpacker">
-        <views:MainView />
+    <views:MainView/>
 </Window>

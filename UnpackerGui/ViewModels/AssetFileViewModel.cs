@@ -1,6 +1,11 @@
 ﻿using AssetIO;
+using DynamicData;
+using DynamicData.Binding;
 using ReactiveUI;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Reactive.Linq;
 using UnpackerGui.Collections;
 using UnpackerGui.Models;
 
@@ -8,38 +13,28 @@ namespace UnpackerGui.ViewModels;
 
 public class AssetFileViewModel : ViewModelBase
 {
-    /// <summary>
-    /// The assets in the asset file.
-    /// </summary>
     public List<AssetInfo> Assets { get; }
-
-    /// <summary>
-    /// The asset .dat files corresponding to the asset file.
-    /// </summary>
-    public ReactiveList<string> DataFiles { get; }
-
-    /// <summary>
-    /// The total size of all assets in the asset file.
-    /// </summary>
     public ulong Size { get; }
 
+    private readonly ReadOnlyObservableCollection<DataFileViewModel> _dataFiles;
+    private readonly ReactiveList<string> _dataFilePaths;
     private readonly AssetFile _assetFile;
 
     private bool _isChecked;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AssetFileViewModel"/>
-    /// class, which acts as a wrapper for an <see cref="AssetFile"/>.
-    /// </summary>
     public AssetFileViewModel(string path, AssetType assetType)
     {
         Assets = new List<AssetInfo>();
-        DataFiles = new ReactiveList<string>();
-        _assetFile = new AssetFile(path, assetType, DataFiles);
+        _dataFilePaths = new ReactiveList<string>();
+        _assetFile = new AssetFile(path, assetType, _dataFilePaths);
+        _dataFilePaths.ToObservableChangeSet()
+                      .Transform(x => new DataFileViewModel(x, this))
+                      .Bind(out _dataFiles)
+                      .Subscribe();
 
         if (_assetFile.FileType == AssetType.Dat)
         {
-            DataFiles.AddRange(ClientDirectory.EnumerateDataFiles(_assetFile.Info));
+            _dataFilePaths.AddRange(ClientDirectory.EnumerateDataFiles(_assetFile.Info));
         }
 
         foreach (Asset asset in _assetFile)
@@ -49,15 +44,26 @@ public class AssetFileViewModel : ViewModelBase
         }
     }
 
+    protected AssetFileViewModel(AssetFileViewModel assetFile)
+    {
+        Assets = assetFile.Assets;
+        Size = assetFile.Size;
+        _dataFiles = null!;
+        _dataFilePaths = null!;
+        _assetFile = assetFile._assetFile;
+    }
+
     public bool IsChecked
     {
         get => _isChecked;
         set => this.RaiseAndSetIfChanged(ref _isChecked, value);
     }
 
-    public string Name => _assetFile.Name;
+    public virtual string Name => _assetFile.Name;
 
-    public string FullName => _assetFile.FullName;
+    public virtual string FullName => _assetFile.FullName;
+
+    public ReadOnlyObservableCollection<DataFileViewModel> DataFiles => _dataFiles;
 
     public int Count => Assets.Count;
 

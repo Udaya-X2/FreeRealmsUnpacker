@@ -48,19 +48,22 @@
                     <Image Source="/Assets/ui_dialog_exit.png"/>
                 </Button>
             </Grid>
-            <ListBox ItemsSource="{Binding AssetFiles}"
-                     Grid.Row="1"
-                     Margin="0,5,0,5"
-                     SelectionMode="Toggle">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
+            <TreeView ItemsSource="{Binding AssetFiles}"
+                      Grid.Row="1"
+                      Margin="0 5 0 5"
+                      MaxWidth="240"
+                      SelectionMode="Toggle"
+                      BorderThickness="1"
+                      BorderBrush="Gray">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding DataFiles}">
                         <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">
                             <TextBlock FontSize="12"
                                        Text="{Binding Name}"/>
                         </CheckBox>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
             <Grid Grid.Row="2"
                   RowDefinitions="*,*,*"
                   ColumnDefinitions="*,2*">

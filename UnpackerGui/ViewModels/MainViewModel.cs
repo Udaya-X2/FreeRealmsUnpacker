@@ -88,10 +88,8 @@ public class MainViewModel : ViewModelBase
 
     private async Task ExtractFiles()
     {
-        IFilesService filesService = App.GetService<IFilesService>();
-
-        if (await filesService.OpenFolderAsync() is not IStorageFolder folder) return;
         if (!AssetFiles.Any(x => x.IsChecked)) return;
+        if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
         ExtractionWindow extractionWindow = new()
         {
