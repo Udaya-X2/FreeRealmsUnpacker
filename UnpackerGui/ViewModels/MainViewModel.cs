@@ -4,6 +4,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -29,6 +30,8 @@ public class MainViewModel : ViewModelBase
     public ICommand DeselectAllCommand { get; }
     public ICommand RemoveSelectedCommand { get; }
 
+    private AssetFileViewModel? _selectedAssetFile;
+
     public MainViewModel()
     {
         Assets = new ReactiveList<AssetInfo>();
@@ -41,6 +44,12 @@ public class MainViewModel : ViewModelBase
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
+    }
+
+    public AssetFileViewModel? SelectedAssetFile
+    {
+        get => _selectedAssetFile;
+        set => this.RaiseAndSetIfChanged(ref _selectedAssetFile, value);
     }
 
     private async Task AddPackFiles()
@@ -105,6 +114,7 @@ public class MainViewModel : ViewModelBase
         {
             AssetFiles.ForEach(x => x.IsChecked = true);
         }
+        Debug.WriteLine(SelectedAssetFile?.Name);
     }
 
     private void DeselectAll()

@@ -16,7 +16,7 @@ public class AssetFileViewModel : ViewModelBase
     public List<AssetInfo> Assets { get; }
     public ulong Size { get; }
 
-    private readonly ReadOnlyObservableCollection<DataFileViewModel> _dataFiles;
+    private readonly ReadOnlyObservableCollection<DataFileViewModel>? _dataFiles;
     private readonly ReactiveList<string> _dataFilePaths;
     private readonly AssetFile _assetFile;
 
@@ -27,20 +27,20 @@ public class AssetFileViewModel : ViewModelBase
         Assets = new List<AssetInfo>();
         _dataFilePaths = new ReactiveList<string>();
         _assetFile = new AssetFile(path, assetType, _dataFilePaths);
-        _dataFilePaths.ToObservableChangeSet()
-                      .Transform(x => new DataFileViewModel(x, this))
-                      .Bind(out _dataFiles)
-                      .Subscribe();
-
-        if (_assetFile.FileType == AssetType.Dat)
-        {
-            _dataFilePaths.AddRange(ClientDirectory.EnumerateDataFiles(_assetFile.Info));
-        }
 
         foreach (Asset asset in _assetFile)
         {
             Assets.Add(new AssetInfo(asset, _assetFile));
             Size += asset.Size;
+        }
+
+        if (_assetFile.FileType == AssetType.Dat)
+        {
+            _dataFilePaths.AddRange(ClientDirectory.EnumerateDataFiles(_assetFile.Info));
+            _dataFilePaths.ToObservableChangeSet()
+                          .Transform(x => new DataFileViewModel(x, this))
+                          .Bind(out _dataFiles)
+                          .Subscribe();
         }
     }
 
@@ -48,8 +48,8 @@ public class AssetFileViewModel : ViewModelBase
     {
         Assets = assetFile.Assets;
         Size = assetFile.Size;
-        _dataFiles = null!;
-        _dataFilePaths = null!;
+        _dataFiles = null;
+        _dataFilePaths = assetFile._dataFilePaths;
         _assetFile = assetFile._assetFile;
     }
 
@@ -63,7 +63,7 @@ public class AssetFileViewModel : ViewModelBase
 
     public virtual string FullName => _assetFile.FullName;
 
-    public ReadOnlyObservableCollection<DataFileViewModel> DataFiles => _dataFiles;
+    public ReadOnlyObservableCollection<DataFileViewModel>? DataFiles => _dataFiles;
 
     public int Count => Assets.Count;
 

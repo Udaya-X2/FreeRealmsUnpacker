@@ -12,47 +12,48 @@
     <Grid ColumnDefinitions="Auto,*"
           Margin="5">
         <Grid RowDefinitions="Auto,*,Auto"
+              MaxWidth="220"
               Margin="5"
               Grid.Column="0">
-            <Grid Width="240"
-                  Grid.Row="0"
-                  ColumnDefinitions="*,*,*,*,*,*">
+            <StackPanel Grid.Row="0"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        MaxHeight="32">
                 <Button Command="{Binding AddPackFilesCommand}"
-                        ToolTip.Tip="Add .pack Files..."
-                        Grid.Column="0">
+                        ToolTip.Tip="Add .pack Files...">
                     <Image Source="/Assets/icon_ui_pickup_siding_32.png"/>
                 </Button>
                 <Button Command="{Binding AddManifestFilesCommand}"
-                        ToolTip.Tip="Add manifest.dat Files..."
-                        Grid.Column="1">
+                        ToolTip.Tip="Add manifest.dat Files...">
                     <Image Source="/Assets/icon_ui_pickup_siding_blue_32.png"/>
                 </Button>
                 <Button Command="{Binding ExtractFilesCommand}"
-                        ToolTip.Tip="Extract Selected Files..."
-                        Grid.Column="2">
+                        ToolTip.Tip="Extract Selected Files...">
                     <Image Source="/Assets/downloadIcon.png"/>
                 </Button>
                 <Button Command="{Binding SelectAllCommand}"
-                        ToolTip.Tip="Select All Files"
-                        Grid.Column="3">
+                        ToolTip.Tip="Select All Files">
                     <Image Source="/Assets/ui_notify_objective_completed.png"/>
                 </Button>
                 <Button Command="{Binding DeselectAllCommand}"
-                        ToolTip.Tip="Deselect All Files"
-                        Grid.Column="4">
+                        ToolTip.Tip="Deselect All Files">
                     <Image Source="/Assets/icon_ui_none.png"/>
                 </Button>
                 <Button Command="{Binding RemoveSelectedCommand}"
-                        ToolTip.Tip="Remove Selected Files"
-                        Grid.Column="5">
+                        ToolTip.Tip="Remove Selected Files">
                     <Image Source="/Assets/ui_dialog_exit.png"/>
                 </Button>
-            </Grid>
+            </StackPanel>
+            <!--<ListBox ItemsSource="{Binding AssetFiles}"
+                     Grid.Row="1"
+                     Margin="0 5 0 5"
+                     SelectionMode="Toggle">
+            </ListBox>-->
             <TreeView ItemsSource="{Binding AssetFiles}"
                       Grid.Row="1"
                       Margin="0 5 0 5"
-                      MaxWidth="240"
                       SelectionMode="Toggle"
+                      SelectedItem="{Binding SelectedAssetFile}"
                       BorderThickness="1"
                       BorderBrush="Gray">
                 <TreeView.ItemTemplate>
@@ -66,13 +67,61 @@
             </TreeView>
             <Grid Grid.Row="2"
                   RowDefinitions="*,*,*"
-                  ColumnDefinitions="*,2*">
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Path"/>
-                <TextBlock Grid.Row="0" Grid.Column="1" Text="Binding Path"/>
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Count"/>
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="Binding Count"/>
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Size"/>
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="Binding Path"/>
+                  ColumnDefinitions="*,2.5*">
+                <TextBox Grid.Row="0"
+                         Grid.Column="0"
+                         CornerRadius="0"
+                         IsReadOnly="True"
+                         FontSize="12"
+                         FontFamily="Tahoma"
+                         VerticalAlignment="Center"
+                         Text="Path"
+                         ToolTip.Tip="The full path of this file."/>
+                <TextBox Grid.Row="0"
+                         Grid.Column="1"
+                         CornerRadius="0"
+                         IsReadOnly="True"
+                         FontSize="12"
+                         FontFamily="Tahoma"
+                         VerticalAlignment="Center"
+                         Text="{Binding SelectedAssetFile.FullName}"
+                         ToolTip.Tip="{Binding SelectedAssetFile.FullName}"/>
+                <TextBox Grid.Row="1"
+                         Grid.Column="0"
+                         CornerRadius="0"
+                         IsReadOnly="True"
+                         FontSize="12"
+                         FontFamily="Tahoma"
+                         VerticalAlignment="Center"
+                         Text="Count"
+                         ToolTip.Tip="The number of assets contained in this file."/>
+                <TextBox Grid.Row="1"
+                         Grid.Column="1"
+                         CornerRadius="0"
+                         IsReadOnly="True"
+                         FontSize="12"
+                         FontFamily="Tahoma"
+                         VerticalAlignment="Center"
+                         Text="{Binding SelectedAssetFile.Count}"
+                         ToolTip.Tip="{Binding SelectedAssetFile.Count}"/>
+                <TextBox Grid.Row="2"
+                         Grid.Column="0"
+                         CornerRadius="0"
+                         IsReadOnly="True"
+                         FontSize="12"
+                         FontFamily="Tahoma"
+                         VerticalAlignment="Center"
+                         Text="Size"
+                         ToolTip.Tip="The total size, in bytes, of all assets in this file."/>
+                <TextBox Grid.Row="2"
+                         Grid.Column="1"
+                         CornerRadius="0"
+                         IsReadOnly="True"
+                         FontSize="12"
+                         FontFamily="Tahoma"
+                         VerticalAlignment="Center"
+                         Text="{Binding SelectedAssetFile.Size}"
+                         ToolTip.Tip="{Binding SelectedAssetFile.Size}"/>
             </Grid>
         </Grid>
         <DataGrid Grid.Column="1"

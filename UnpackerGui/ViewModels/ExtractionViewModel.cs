@@ -23,7 +23,7 @@ public class ExtractionViewModel : ViewModelBase
     private string _elapsedTime = $@"{TimeSpan.Zero:hh\:mm\:ss}";
     private int _assetIndex;
 
-    public ExtractionViewModel(string outputDir, IList<AssetFileViewModel> assetFiles)
+    public ExtractionViewModel(string outputDir, IEnumerable<AssetFileViewModel> assetFiles)
     {
         AssetCount = assetFiles.Sum(x => x.Count);
         _outputDir = outputDir;
