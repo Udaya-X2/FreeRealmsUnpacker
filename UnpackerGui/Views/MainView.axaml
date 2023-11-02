@@ -62,7 +62,8 @@
             </TreeView>
             <Grid Grid.Row="2"
                   RowDefinitions="*,*,*"
-                  ColumnDefinitions="*,2.5*">
+                  ColumnDefinitions="*,2.5*"
+                  IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <TextBox Grid.Row="0"
                          Grid.Column="0"
                          CornerRadius="0"

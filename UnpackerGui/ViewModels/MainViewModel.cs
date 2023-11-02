@@ -4,7 +4,6 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -114,7 +113,6 @@ public class MainViewModel : ViewModelBase
         {
             AssetFiles.ForEach(x => x.IsChecked = true);
         }
-        Debug.WriteLine(SelectedAssetFile?.Name);
     }
 
     private void DeselectAll()
