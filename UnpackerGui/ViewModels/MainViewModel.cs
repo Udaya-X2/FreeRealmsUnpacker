@@ -102,7 +102,7 @@ public class MainViewModel : ViewModelBase
 
         ExtractionWindow extractionWindow = new()
         {
-            DataContext = new ExtractionViewModel(folder.Path.LocalPath, AssetFiles)
+            DataContext = new ExtractionViewModel(folder.Path.LocalPath, AssetFiles.Where(x => x.IsChecked))
         };
         IDialogService dialogService = App.GetService<IDialogService>();
         await dialogService.ShowDialog(extractionWindow);
