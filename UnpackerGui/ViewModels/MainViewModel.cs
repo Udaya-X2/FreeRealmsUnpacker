@@ -1,11 +1,11 @@
 ﻿using AssetIO;
 using Avalonia.Platform.Storage;
+using DynamicData;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UnpackerGui.Collections;
@@ -24,12 +24,14 @@ public class MainViewModel : ViewModelBase
 
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
+    public ICommand AddDataFilesCommand { get; }
     public ICommand ExtractFilesCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
     public ICommand RemoveSelectedCommand { get; }
 
     private AssetFileViewModel? _selectedAssetFile;
+    private bool _manifestFileSelected;
 
     public MainViewModel()
     {
@@ -39,10 +41,15 @@ public class MainViewModel : ViewModelBase
 
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
+        AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
+
+        this.WhenAnyValue(x => x.SelectedAssetFile)
+            .Select(x => x?.FileType is AssetType.Dat)
+            .BindTo(this, x => x.ManifestFileSelected);
     }
 
     public AssetFileViewModel? SelectedAssetFile
@@ -51,11 +58,17 @@ public class MainViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedAssetFile, value);
     }
 
+    public bool ManifestFileSelected
+    {
+        get => _manifestFileSelected;
+        set => this.RaiseAndSetIfChanged(ref _manifestFileSelected, value);
+    }
+
     private async Task AddPackFiles()
         => await AddAssetFiles(AssetType.Game | AssetType.Pack, FileTypeFilters.PackFiles);
 
     private async Task AddManifestFiles()
-        => await AddAssetFiles(AssetType.Game | AssetType.Dat, FileTypeFilters.DatFiles);
+        => await AddAssetFiles(AssetType.Game | AssetType.Dat, FileTypeFilters.ManifestFiles);
 
     private async Task AddAssetFiles(AssetType assetType, FilePickerFileType[] fileTypeFilter)
     {
@@ -65,30 +78,37 @@ public class MainViewModel : ViewModelBase
             AllowMultiple = true,
             FileTypeFilter = fileTypeFilter
         });
+        IEnumerable<string> assetFiles = files.Select(x => x.Path.LocalPath)
+                                              .Except(AssetFiles.Select(x => x.FullName));
 
-        foreach (IStorageFile file in files)
+        foreach (string path in assetFiles)
         {
-            string path = file.Path.LocalPath;
-
-            if (AssetFiles.All(x => x.FullName != path))
-            {
-                AssetFileViewModel assetFile = new(path, assetType);
-                assetFile.PropertyChanged += UpdateAssets;
-                AssetFiles.Add(assetFile);
-            }
+            AssetFileViewModel assetFile = new(path, assetType);
+            assetFile.WhenAnyValue(x => x.IsChecked)
+                     .Subscribe(_ => UpdateAssets(assetFile));
+            AssetFiles.Add(assetFile);
         }
     }
 
-    private void UpdateAssets(object? sender, PropertyChangedEventArgs e)
+    public async Task AddDataFiles()
     {
-        if (e.PropertyName is not nameof(AssetFileViewModel.IsChecked)) return;
-        if (sender is not AssetFileViewModel assetFile) return;
+        IFilesService filesService = App.GetService<IFilesService>();
+        IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = true,
+            FileTypeFilter = FileTypeFilters.AssetDatFiles
+        });
+        ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
+        dataFiles?.AddRange(files.Select(x => x.Path.LocalPath).Except(dataFiles));
+    }
 
+    private void UpdateAssets(AssetFileViewModel assetFile)
+    {
         if (assetFile.IsChecked)
         {
             Assets.AddRange(assetFile.Assets);
         }
-        else if (Assets.Count > 0)
+        else
         {
             Assets.RemoveAll(assetFile.Contains);
         }
@@ -109,33 +129,56 @@ public class MainViewModel : ViewModelBase
 
     private void SelectAll()
     {
-        using (Assets.SuspendNotifications())
+        if (ManifestFileSelected)
         {
-            AssetFiles.ForEach(x => x.IsChecked = true);
+            SelectedAssetFile?.DataFiles?.ForEach(x => x.IsChecked = true);
+        }
+        else
+        {
+            using (Assets.SuspendNotifications())
+            {
+                AssetFiles.ForEach(x => x.IsChecked = true);
+            }
         }
     }
 
     private void DeselectAll()
     {
-        Assets.Clear();
-        AssetFiles.ForEach(x => x.IsChecked = false);
+        if (ManifestFileSelected)
+        {
+            SelectedAssetFile?.DataFiles?.ForEach(x => x.IsChecked = false);
+        }
+        else
+        {
+            Assets.Clear();
+            AssetFiles.ForEach(x => x.IsChecked = false);
+        }
     }
 
     private void RemoveSelected()
     {
-        Assets.Clear();
-        int index = 0;
-
-        foreach (AssetFileViewModel assetFile in AssetFiles.ToArray())
+        if (ManifestFileSelected)
         {
-            if (assetFile.IsChecked)
+            SelectedAssetFile?.DataFilePaths.RemoveMany(SelectedAssetFile!.DataFiles!.Where(x => x.IsChecked)
+                                                                                     .Select(x => x.FullName)
+                                                                                     .ToList());
+        }
+        else
+        {
+            Assets.Clear();
+            int index = 0;
+
+            foreach (AssetFileViewModel assetFile in AssetFiles.ToArray())
             {
-                assetFile.IsChecked = false;
-                AssetFiles.RemoveAt(index);
-            }
-            else
-            {
-                index++;
+                if (assetFile.IsChecked)
+                {
+                    assetFile.IsChecked = false;
+                    AssetFiles.RemoveAt(index);
+                }
+                else
+                {
+                    index++;
+                }
             }
         }
     }

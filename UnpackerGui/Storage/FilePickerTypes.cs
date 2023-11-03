@@ -4,19 +4,24 @@ namespace UnpackerGui.Storage;
 
 public static class FilePickerTypes
 {
-    public static FilePickerFileType AllFiles { get; } = new("All Files")
+    public static readonly FilePickerFileType AllFiles = new("All Files")
     {
         Patterns = new[] { "*.*" },
         MimeTypes = new[] { "*/*" }
     };
 
-    public static FilePickerFileType PackFiles => new("Pack Files")
+    public static readonly FilePickerFileType PackFiles = new("Pack Files")
     {
         Patterns = new[] { "*.pack" }
     };
 
-    public static FilePickerFileType DatFiles => new("Dat Files")
+    public static readonly FilePickerFileType ManifestFiles = new("Manifest Files")
     {
-        Patterns = new[] { "*.dat" }
+        Patterns = new[] { "*_manifest.dat" }
+    };
+
+    public static readonly FilePickerFileType AssetDatFiles = new("Asset Dat Files")
+    {
+        Patterns = new[] { "*_???.dat" }
     };
 }

@@ -19,35 +19,47 @@
               MaxWidth="220"
               Margin="5"
               Grid.Column="0">
-            <StackPanel Grid.Row="0"
-                        Orientation="Horizontal"
-                        HorizontalAlignment="Center"
-                        MaxHeight="32">
+            <Grid Grid.Row="0"
+                  MaxHeight="32"
+                  ColumnDefinitions="*,*,*,*,*,*">
                 <Button Command="{Binding AddPackFilesCommand}"
-                        ToolTip.Tip="Add .pack Files...">
+                        ToolTip.Tip="Add .pack Files..."
+                        Grid.Column="0">
                     <Image Source="/Assets/icon_ui_pickup_siding_32.png"/>
                 </Button>
                 <Button Command="{Binding AddManifestFilesCommand}"
-                        ToolTip.Tip="Add manifest.dat Files...">
+                        ToolTip.Tip="Add manifest.dat Files..."
+                        IsVisible="{Binding !ManifestFileSelected}"
+                        Grid.Column="1">
                     <Image Source="/Assets/icon_ui_pickup_siding_blue_32.png"/>
                 </Button>
+                <Button Command="{Binding AddDataFilesCommand}"
+                        ToolTip.Tip="Add asset .dat Files..."
+                        IsVisible="{Binding ManifestFileSelected}"
+                        Grid.Column="1">
+                    <Image Source="/Assets/icon_minigame_mailsorting_box_64.png"/>
+                </Button>
                 <Button Command="{Binding ExtractFilesCommand}"
-                        ToolTip.Tip="Extract Selected Files...">
+                        ToolTip.Tip="Extract Selected Files..."
+                        Grid.Column="2">
                     <Image Source="/Assets/downloadIcon.png"/>
                 </Button>
                 <Button Command="{Binding SelectAllCommand}"
-                        ToolTip.Tip="Select All Files">
+                        ToolTip.Tip="Select All Files"
+                        Grid.Column="3">
                     <Image Source="/Assets/ui_notify_objective_completed.png"/>
                 </Button>
                 <Button Command="{Binding DeselectAllCommand}"
-                        ToolTip.Tip="Deselect All Files">
+                        ToolTip.Tip="Deselect All Files"
+                        Grid.Column="4">
                     <Image Source="/Assets/icon_ui_none.png"/>
                 </Button>
                 <Button Command="{Binding RemoveSelectedCommand}"
-                        ToolTip.Tip="Remove Selected Files">
+                        ToolTip.Tip="Remove Selected Files"
+                        Grid.Column="5">
                     <Image Source="/Assets/ui_dialog_exit.png"/>
                 </Button>
-            </StackPanel>
+            </Grid>
             <TreeView ItemsSource="{Binding AssetFiles}"
                       Grid.Row="1"
                       Margin="0 5 0 5"

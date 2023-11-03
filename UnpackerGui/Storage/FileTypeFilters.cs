@@ -10,9 +10,15 @@ public static class FileTypeFilters
         FilePickerTypes.AllFiles
     };
 
-    public static readonly FilePickerFileType[] DatFiles = new FilePickerFileType[]
+    public static readonly FilePickerFileType[] ManifestFiles = new FilePickerFileType[]
     {
-        FilePickerTypes.DatFiles,
+        FilePickerTypes.ManifestFiles,
+        FilePickerTypes.AllFiles
+    };
+
+    public static readonly FilePickerFileType[] AssetDatFiles = new FilePickerFileType[]
+    {
+        FilePickerTypes.AssetDatFiles,
         FilePickerTypes.AllFiles
     };
 }

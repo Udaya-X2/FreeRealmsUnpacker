@@ -14,10 +14,10 @@ namespace UnpackerGui.ViewModels;
 public class AssetFileViewModel : ViewModelBase
 {
     public List<AssetInfo> Assets { get; }
+    public ReactiveList<string> DataFilePaths { get; }
     public long Size { get; }
 
     private readonly ReadOnlyObservableCollection<DataFileViewModel>? _dataFiles;
-    private readonly ReactiveList<string> _dataFilePaths;
     private readonly AssetFile _assetFile;
 
     private bool _isChecked;
@@ -25,8 +25,8 @@ public class AssetFileViewModel : ViewModelBase
     public AssetFileViewModel(string path, AssetType assetType)
     {
         Assets = new List<AssetInfo>();
-        _dataFilePaths = new ReactiveList<string>();
-        _assetFile = new AssetFile(path, assetType, _dataFilePaths);
+        DataFilePaths = new ReactiveList<string>();
+        _assetFile = new AssetFile(path, assetType, DataFilePaths);
 
         foreach (Asset asset in _assetFile)
         {
@@ -36,11 +36,11 @@ public class AssetFileViewModel : ViewModelBase
 
         if (_assetFile.FileType == AssetType.Dat)
         {
-            _dataFilePaths.AddRange(ClientDirectory.EnumerateDataFiles(_assetFile.Info));
-            _dataFilePaths.ToObservableChangeSet()
-                          .Transform(x => new DataFileViewModel(x, this))
-                          .Bind(out _dataFiles)
-                          .Subscribe();
+            DataFilePaths.AddRange(ClientDirectory.EnumerateDataFiles(_assetFile.Info));
+            DataFilePaths.ToObservableChangeSet()
+                         .Transform(x => new DataFileViewModel(x, this))
+                         .Bind(out _dataFiles)
+                         .Subscribe();
         }
     }
 
@@ -49,7 +49,7 @@ public class AssetFileViewModel : ViewModelBase
         Assets = assetFile.Assets;
         Size = assetFile.Size;
         _dataFiles = null;
-        _dataFilePaths = assetFile._dataFilePaths;
+        DataFilePaths = assetFile.DataFilePaths;
         _assetFile = assetFile._assetFile;
     }
 
@@ -62,6 +62,8 @@ public class AssetFileViewModel : ViewModelBase
     public virtual string Name => _assetFile.Name;
 
     public virtual string FullName => _assetFile.FullName;
+
+    public AssetType FileType => _assetFile.FileType;
 
     public ReadOnlyObservableCollection<DataFileViewModel>? DataFiles => _dataFiles;
 
