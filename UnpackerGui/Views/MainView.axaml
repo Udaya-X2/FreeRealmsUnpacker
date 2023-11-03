@@ -3,12 +3,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+             xmlns:conv="clr-namespace:UnpackerGui.Converters"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
              x:Class="UnpackerGui.Views.MainView"
              FontFamily="Tahoma"
              x:DataType="vm:MainViewModel">
+    <UserControl.Resources>
+        <conv:FileSizeConverter x:Key="fileSizeConverter"/>
+    </UserControl.Resources>
     <Grid ColumnDefinitions="Auto,*"
           Margin="5">
         <Grid RowDefinitions="Auto,*,Auto"
@@ -108,7 +112,7 @@
                          FontFamily="Tahoma"
                          VerticalAlignment="Center"
                          Text="Size"
-                         ToolTip.Tip="The total size, in bytes, of all assets in this file."/>
+                         ToolTip.Tip="The total size of all assets in this file."/>
                 <TextBox Grid.Row="2"
                          Grid.Column="1"
                          CornerRadius="0"
@@ -116,8 +120,8 @@
                          FontSize="12"
                          FontFamily="Tahoma"
                          VerticalAlignment="Center"
-                         Text="{Binding SelectedAssetFile.Size}"
-                         ToolTip.Tip="{Binding SelectedAssetFile.Size}"/>
+                         Text="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"
+                         ToolTip.Tip="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"/>
             </Grid>
         </Grid>
         <DataGrid Grid.Column="1"

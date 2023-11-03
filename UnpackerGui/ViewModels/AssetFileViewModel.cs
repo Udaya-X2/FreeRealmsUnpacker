@@ -14,7 +14,7 @@ namespace UnpackerGui.ViewModels;
 public class AssetFileViewModel : ViewModelBase
 {
     public List<AssetInfo> Assets { get; }
-    public ulong Size { get; }
+    public long Size { get; }
 
     private readonly ReadOnlyObservableCollection<DataFileViewModel>? _dataFiles;
     private readonly ReactiveList<string> _dataFilePaths;
