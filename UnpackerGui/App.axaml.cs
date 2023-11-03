@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +39,10 @@ public partial class App : Application
             Services = new ServiceCollection().AddSingleton<IFilesService>(new FilesService(desktop.MainWindow))
                                               .AddSingleton<IDialogService>(new DialogService(desktop.MainWindow))
                                               .BuildServiceProvider();
+        }
+        if (Design.IsDesignMode)
+        {
+            RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
         }
 
         base.OnFrameworkInitializationCompleted();
