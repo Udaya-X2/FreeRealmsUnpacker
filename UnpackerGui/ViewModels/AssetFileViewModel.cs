@@ -5,6 +5,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Reactive.Linq;
 using UnpackerGui.Collections;
 using UnpackerGui.Models;
@@ -59,13 +60,15 @@ public class AssetFileViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _isChecked, value);
     }
 
+    public ReadOnlyObservableCollection<DataFileViewModel>? DataFiles => _dataFiles;
+
     public virtual string Name => _assetFile.Name;
 
     public virtual string FullName => _assetFile.FullName;
 
-    public AssetType FileType => _assetFile.FileType;
+    public FileInfo Info => _assetFile.Info;
 
-    public ReadOnlyObservableCollection<DataFileViewModel>? DataFiles => _dataFiles;
+    public AssetType FileType => _assetFile.FileType;
 
     public int Count => Assets.Count;
 

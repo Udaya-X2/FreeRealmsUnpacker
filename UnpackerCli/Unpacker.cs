@@ -199,16 +199,16 @@ public partial class Unpacker
 
         foreach (Asset asset in assetFile)
         {
-            string assetPath = $"{OutputDirectory}/{asset.Name}";
+            FileInfo file = new(Path.Combine(OutputDirectory, asset.Name));
 
-            if (SkipExisting && File.Exists(assetPath))
+            if (SkipExisting && file.Exists)
             {
                 pbar?.UpdateProgress($"Skipped {asset.Name}");
             }
             else
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(assetPath) ?? OutputDirectory);
-                using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+                file.Directory?.Create();
+                using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
                 reader.CopyTo(asset, fs);
                 pbar?.UpdateProgress($"Extracted {asset.Name}");
             }

@@ -1,6 +1,5 @@
 ﻿using AssetIO;
 using Avalonia.Threading;
-using DynamicData.Kernel;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -8,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Threading;
 using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
@@ -16,7 +16,7 @@ public class ExtractionViewModel : ViewModelBase
 {
     public int AssetCount { get; }
 
-    private readonly Action _extractAssetsAction;
+    private readonly IEnumerable<ExtractionAssetFile> _extractionAssetFiles;
     private readonly string _outputDir;
 
     private string _extractionMessage = "";
@@ -27,40 +27,15 @@ public class ExtractionViewModel : ViewModelBase
     {
         AssetCount = assetFiles.Sum(x => x.Count);
         _outputDir = outputDir;
-        _extractAssetsAction = () =>
-        {
-            using (Timer())
-            {
-                foreach (AssetFileViewModel assetFile in assetFiles)
-                {
-                    ExtractionMessage = $"Extracting {assetFile.Name}";
-                    using AssetReader reader = assetFile.OpenRead();
-                    InternalExtractAssets(reader, assetFile.Assets);
-                }
-            }
-
-            ExtractionMessage = "Extraction Complete";
-        };
+        _extractionAssetFiles = assetFiles.Select(x => new ExtractionAssetFile(x.Info, x.OpenRead, x.Assets));
     }
 
-    public ExtractionViewModel(string outputDir, IList<AssetInfo> assets)
+    public ExtractionViewModel(string outputDir, IEnumerable<AssetInfo> assets)
     {
-        AssetCount = assets.Count;
+        AssetCount = assets.Count();
         _outputDir = outputDir;
-        _extractAssetsAction = () =>
-        {
-            using (Timer())
-            {
-                foreach (var group in assets.GroupBy(x => x.AssetFile))
-                {
-                    ExtractionMessage = $"Extracting {group.Key.Name}";
-                    using AssetReader reader = group.Key.OpenRead();
-                    InternalExtractAssets(reader, group.AsList());
-                }
-            }
-
-            ExtractionMessage = "Extraction Complete";
-        };
+        _extractionAssetFiles = assets.GroupBy(x => x.AssetFile)
+                                      .Select(x => new ExtractionAssetFile(x.Key.Info, x.Key.OpenRead, x));
     }
 
     public string ExtractionMessage
@@ -81,15 +56,32 @@ public class ExtractionViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _assetIndex, value);
     }
 
-    public void ExtractAssets() => _extractAssetsAction();
+    public void ExtractAssets(CancellationToken cancellationToken)
+    {
+        using (Timer())
+        {
+            foreach (ExtractionAssetFile assetFile in _extractionAssetFiles)
+            {
+                ExtractionMessage = $"Extracting {assetFile.Info.Name}";
+                using AssetReader reader = assetFile.OpenRead();
+                InternalExtractAssets(reader, assetFile.Assets, cancellationToken);
+            }
 
-    private void InternalExtractAssets(AssetReader reader, IEnumerable<AssetInfo> assets)
+            ExtractionMessage = "Extraction Complete";
+        }
+    }
+
+    private void InternalExtractAssets(AssetReader reader,
+                                       IEnumerable<AssetInfo> assets,
+                                       CancellationToken cancellationToken)
     {
         foreach (AssetInfo asset in assets)
         {
-            string assetPath = Path.Combine(_outputDir, asset.Name);
-            Directory.CreateDirectory(Path.GetDirectoryName(assetPath) ?? _outputDir);
-            using FileStream fs = new(assetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+            if (cancellationToken.IsCancellationRequested) cancellationToken.ThrowIfCancellationRequested();
+
+            FileInfo file = new(Path.Combine(_outputDir, asset.Name));
+            file.Directory?.Create();
+            using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
             reader.CopyTo(asset, fs);
             AssetIndex++;
         }
