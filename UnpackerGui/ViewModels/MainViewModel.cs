@@ -1,6 +1,8 @@
 ﻿using AssetIO;
+using Avalonia;
 using Avalonia.Platform.Storage;
 using DynamicData;
+using DynamicData.Aggregation;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -37,18 +39,13 @@ public class MainViewModel : ViewModelBase
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _checkedAssetFiles;
 
+    private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private bool _manifestFileSelected;
 
     public MainViewModel()
     {
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
-        _sourceAssetFiles.Connect()
-                         .Bind(out _assetFiles)
-                         .AutoRefresh(x => x.IsChecked)
-                         .Filter(x => x.IsChecked)
-                         .Bind(out _checkedAssetFiles)
-                         .Subscribe();
         Assets = new ReactiveList<AssetInfo>();
 
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
@@ -59,9 +56,30 @@ public class MainViewModel : ViewModelBase
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
 
+        var source = _sourceAssetFiles.Connect();
+
+        // Update asset files when changed/checked asset files when checked.
+        source.Bind(out _assetFiles)
+              .AutoRefresh(x => x.IsChecked)
+              .Filter(x => x.IsChecked)
+              .Bind(out _checkedAssetFiles)
+              .Subscribe();
+
+        // Update total asset count when asset files change.
+        source.ForAggregation()
+              .Sum(x => x.Count)
+              .BindTo(this, x => x.NumAssets);
+
+        // Keep track of whether the selected asset file is a manifest file.
         this.WhenAnyValue(x => x.SelectedAssetFile)
             .Select(x => x?.FileType is AssetType.Dat)
             .BindTo(this, x => x.ManifestFileSelected);
+    }
+
+    public int NumAssets
+    {
+        get => _numAssets;
+        set => this.RaiseAndSetIfChanged(ref _numAssets, value);
     }
 
     public AssetFileViewModel? SelectedAssetFile

@@ -216,7 +216,7 @@
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}/{1}">
                                 <Binding Path="Assets.Count" FallbackValue="0"/>
-                                <Binding Path="Unknown" FallbackValue="0"/>
+                                <Binding Path="NumAssets" FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
