@@ -22,7 +22,8 @@ public class MainViewModel : ViewModelBase
     public static string Unknown => "?";
 
     public ReactiveList<AssetInfo> Assets { get; }
-    public ObservableCollection<AssetFileViewModel> AssetFiles { get; }
+    public ReadOnlyObservableCollection<AssetFileViewModel> AssetFiles => _assetFiles;
+    public ReadOnlyObservableCollection<AssetFileViewModel> CheckedAssetFiles => _checkedAssetFiles;
 
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
@@ -32,13 +33,23 @@ public class MainViewModel : ViewModelBase
     public ICommand DeselectAllCommand { get; }
     public ICommand RemoveSelectedCommand { get; }
 
+    private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
+    private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
+    private readonly ReadOnlyObservableCollection<AssetFileViewModel> _checkedAssetFiles;
+
     private AssetFileViewModel? _selectedAssetFile;
     private bool _manifestFileSelected;
 
     public MainViewModel()
     {
+        _sourceAssetFiles = new SourceList<AssetFileViewModel>();
+        _sourceAssetFiles.Connect()
+                         .Bind(out _assetFiles)
+                         .AutoRefresh(x => x.IsChecked)
+                         .Filter(x => x.IsChecked)
+                         .Bind(out _checkedAssetFiles)
+                         .Subscribe();
         Assets = new ReactiveList<AssetInfo>();
-        AssetFiles = new ObservableCollection<AssetFileViewModel>();
 
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
@@ -79,16 +90,15 @@ public class MainViewModel : ViewModelBase
             AllowMultiple = true,
             FileTypeFilter = fileTypeFilter
         });
-        IEnumerable<string> assetFiles = files.Select(x => x.Path.LocalPath)
-                                              .Except(AssetFiles.Select(x => x.FullName));
-
-        foreach (string path in assetFiles)
-        {
-            AssetFileViewModel assetFile = new(path, assetType);
-            assetFile.WhenAnyValue(x => x.IsChecked)
-                     .Subscribe(_ => UpdateAssets(assetFile));
-            AssetFiles.Add(assetFile);
-        }
+        _sourceAssetFiles.AddRange(files.Select(x => x.Path.LocalPath)
+                                        .Except(AssetFiles.Select(x => x.FullName))
+                                        .Select(x =>
+                                        {
+                                            AssetFileViewModel assetFile = new(x, assetType);
+                                            assetFile.WhenAnyValue(x => x.IsChecked)
+                                                     .Subscribe(_ => UpdateAssets(assetFile));
+                                            return assetFile;
+                                        }));
     }
 
     public async Task AddDataFiles()
@@ -174,7 +184,7 @@ public class MainViewModel : ViewModelBase
                 if (assetFile.IsChecked)
                 {
                     assetFile.IsChecked = false;
-                    AssetFiles.RemoveAt(index);
+                    _sourceAssetFiles.RemoveAt(index);
                 }
                 else
                 {

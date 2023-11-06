@@ -198,7 +198,7 @@
                                VerticalAlignment="Center">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="Unknown" FallbackValue="0"/>
+                                <Binding Path="CheckedAssetFiles.Count" FallbackValue="0"/>
                                 <Binding Path="AssetFiles.Count" FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
