@@ -4,6 +4,7 @@ using DynamicData;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -18,9 +19,10 @@ namespace UnpackerGui.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    public static string Unknown => "?";
+
     public ReactiveList<AssetInfo> Assets { get; }
-    public ReactiveList<AssetInfo> SelectedAssets { get; }
-    public ReactiveList<AssetFileViewModel> AssetFiles { get; }
+    public ObservableCollection<AssetFileViewModel> AssetFiles { get; }
 
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
@@ -36,8 +38,7 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         Assets = new ReactiveList<AssetInfo>();
-        SelectedAssets = new ReactiveList<AssetInfo>();
-        AssetFiles = new ReactiveList<AssetFileViewModel>();
+        AssetFiles = new ObservableCollection<AssetFileViewModel>();
 
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);

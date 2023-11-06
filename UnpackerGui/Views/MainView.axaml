@@ -13,12 +13,16 @@
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
     </UserControl.Resources>
-    <Grid ColumnDefinitions="Auto,*"
+    <!--Base Grid-->
+    <Grid Grid.Row="0"
+          ColumnDefinitions="Auto,*"
           Margin="5">
-        <Grid RowDefinitions="Auto,*,Auto"
-              MaxWidth="220"
-              Margin="5"
-              Grid.Column="0">
+        <!--Buttons, Asset Files, Property Grid-->
+        <Grid Grid.Column="0"
+              RowDefinitions="Auto,*,Auto"
+              Width="220"
+              Margin="5">
+            <!--Buttons-->
             <Grid Grid.Row="0"
                   MaxHeight="32"
                   ColumnDefinitions="*,*,*,*,*,*">
@@ -60,9 +64,10 @@
                     <Image Source="/Assets/ui_dialog_exit.png"/>
                 </Button>
             </Grid>
+            <!--Asset Files-->
             <TreeView ItemsSource="{Binding AssetFiles}"
                       Grid.Row="1"
-                      Margin="0 5 0 5"
+                      Margin="0 5 0 0"
                       SelectionMode="Toggle"
                       SelectedItem="{Binding SelectedAssetFile}"
                       BorderThickness="1"
@@ -76,10 +81,13 @@
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
+            <!--Property Grid-->
             <Grid Grid.Row="2"
+                  Margin="0 5 0 0"
                   RowDefinitions="*,*,*"
                   ColumnDefinitions="*,2.5*"
                   IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <!--Path-->
                 <TextBox Grid.Row="0"
                          Grid.Column="0"
                          CornerRadius="0"
@@ -98,6 +106,7 @@
                          VerticalAlignment="Center"
                          Text="{Binding SelectedAssetFile.FullName}"
                          ToolTip.Tip="{Binding SelectedAssetFile.FullName}"/>
+                <!--Count-->
                 <TextBox Grid.Row="1"
                          Grid.Column="0"
                          CornerRadius="0"
@@ -116,6 +125,7 @@
                          VerticalAlignment="Center"
                          Text="{Binding SelectedAssetFile.Count}"
                          ToolTip.Tip="{Binding SelectedAssetFile.Count}"/>
+                <!--Size-->
                 <TextBox Grid.Row="2"
                          Grid.Column="0"
                          CornerRadius="0"
@@ -136,37 +146,99 @@
                          ToolTip.Tip="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"/>
             </Grid>
         </Grid>
-        <DataGrid Grid.Column="1"
-                  Margin="5"
-                  ItemsSource="{Binding Assets}"
-                  IsReadOnly="True"
-                  SelectionMode="Extended"
-                  CanUserReorderColumns="True"
-                  CanUserResizeColumns="True"
-                  GridLinesVisibility="All"
-                  BorderThickness="1"
-                  BorderBrush="Gray">
-            <DataGrid.Columns>
-                <DataGridTextColumn FontSize="12"
-                                    Width="2*"
-                                    Header="Name"
-                                    Binding="{Binding Name}"/>
-                <DataGridTextColumn FontSize="12"
-                                    Width="*"
-                                    MaxWidth="150"
-                                    Header="Offset"
-                                    Binding="{Binding Offset}"/>
-                <DataGridTextColumn FontSize="12"
-                                    Width="*"
-                                    MaxWidth="150"
-                                    Header="Size"
-                                    Binding="{Binding Size}"/>
-                <DataGridTextColumn FontSize="12"
-                                    Width="*"
-                                    MaxWidth="150"
-                                    Header="CRC-32"
-                                    Binding="{Binding Crc32}"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
+        <Grid Grid.Column="1"
+              RowDefinitions="*,24"
+              Margin="5">
+            <!--Asset DataGrid-->
+            <DataGrid Grid.Row="0"
+                      ItemsSource="{Binding Assets}"
+                      IsReadOnly="True"
+                      SelectionMode="Extended"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      GridLinesVisibility="All"
+                      BorderThickness="1"
+                      BorderBrush="Gray">
+                <DataGrid.Columns>
+                    <!--TODO: Bind IsVisible From Options-->
+                    <DataGridTextColumn FontSize="12"
+                                        Width="2*"
+                                        Header="Name"
+                                        Binding="{Binding Name}"/>
+                    <DataGridTextColumn FontSize="12"
+                                        Width="*"
+                                        MaxWidth="150"
+                                        Header="Offset"
+                                        Binding="{Binding Offset}"/>
+                    <DataGridTextColumn FontSize="12"
+                                        Width="*"
+                                        MaxWidth="150"
+                                        Header="Size"
+                                        Binding="{Binding Size}"/>
+                    <DataGridTextColumn FontSize="12"
+                                        Width="*"
+                                        MaxWidth="150"
+                                        Header="CRC-32"
+                                        Binding="{Binding Crc32}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <!--#/# Info Bar-->
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        Margin="0 5 0 0">
+                <!--#/# Files Selected-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            ToolTip.Tip="Number of Files Selected">
+                    <Image Source="/Assets/icon_questlist.png"
+                           Margin="0 0 5 0"/>
+                    <TextBlock FontFamily="Tahoma"
+                               FontSize="12"
+                               VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="Unknown" FallbackValue="0"/>
+                                <Binding Path="AssetFiles.Count" FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# Assets Shown-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            ToolTip.Tip="Number of Assets Shown">
+                    <Image Source="/Assets/Broker_IE2.png"
+                           Margin="0 0 5 0"/>
+                    <TextBlock FontFamily="Tahoma"
+                               FontSize="12"
+                               VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="Assets.Count" FallbackValue="0"/>
+                                <Binding Path="Unknown" FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# Assets Selected-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            ToolTip.Tip="Number of Assets Selected">
+                    <Image Source="/Assets/icon_ui_activityfinder_128.png"
+                           Margin="0 0 5 0"/>
+                    <TextBlock FontFamily="Tahoma"
+                               FontSize="12"
+                               VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="Unknown" FallbackValue="0"/>
+                                <Binding Path="Assets.Count" FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>
