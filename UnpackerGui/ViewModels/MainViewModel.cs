@@ -56,6 +56,7 @@ public class MainViewModel : ViewModelBase
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
 
+        // Observe any changes in the asset files.
         var source = _sourceAssetFiles.Connect();
 
         // Update asset files when changed/checked asset files when checked.
@@ -69,6 +70,10 @@ public class MainViewModel : ViewModelBase
         source.ForAggregation()
               .Sum(x => x.Count)
               .BindTo(this, x => x.NumAssets);
+
+        // Update assets shown when asset files are checked.
+        source.WhenPropertyChanged(x => x.IsChecked)
+              .Subscribe(x => UpdateAssets(x.Sender));
 
         // Keep track of whether the selected asset file is a manifest file.
         this.WhenAnyValue(x => x.SelectedAssetFile)
@@ -110,13 +115,7 @@ public class MainViewModel : ViewModelBase
         });
         _sourceAssetFiles.AddRange(files.Select(x => x.Path.LocalPath)
                                         .Except(AssetFiles.Select(x => x.FullName))
-                                        .Select(x =>
-                                        {
-                                            AssetFileViewModel assetFile = new(x, assetType);
-                                            assetFile.WhenAnyValue(x => x.IsChecked)
-                                                     .Subscribe(_ => UpdateAssets(assetFile));
-                                            return assetFile;
-                                        }));
+                                        .Select(x => new AssetFileViewModel(x, assetType)));
     }
 
     public async Task AddDataFiles()
@@ -145,12 +144,12 @@ public class MainViewModel : ViewModelBase
 
     private async Task ExtractFiles()
     {
-        if (!AssetFiles.Any(x => x.IsChecked)) return;
+        if (CheckedAssetFiles.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
         ExtractionWindow extractionWindow = new()
         {
-            DataContext = new ExtractionViewModel(folder.Path.LocalPath, AssetFiles.Where(x => x.IsChecked))
+            DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles)
         };
         IDialogService dialogService = App.GetService<IDialogService>();
         await dialogService.ShowDialog(extractionWindow);
@@ -195,20 +194,7 @@ public class MainViewModel : ViewModelBase
         else
         {
             Assets.Clear();
-            int index = 0;
-
-            foreach (AssetFileViewModel assetFile in AssetFiles.ToArray())
-            {
-                if (assetFile.IsChecked)
-                {
-                    assetFile.IsChecked = false;
-                    _sourceAssetFiles.RemoveAt(index);
-                }
-                else
-                {
-                    index++;
-                }
-            }
+            _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToArray());
         }
     }
 }
