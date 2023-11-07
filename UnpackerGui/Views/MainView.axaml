@@ -4,12 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
              xmlns:conv="clr-namespace:UnpackerGui.Converters"
+             xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="450"
              x:Class="UnpackerGui.Views.MainView"
              FontFamily="Tahoma"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:MainViewModel"
+             Loaded="MainView_Loaded">
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
     </UserControl.Resources>
@@ -152,6 +154,7 @@
               Margin="5">
             <!--Asset DataGrid-->
             <DataGrid Grid.Row="0"
+                      x:Name="assetGrid"
                       ItemsSource="{Binding Assets}"
                       IsReadOnly="True"
                       SelectionMode="Extended"
@@ -232,7 +235,7 @@
                                VerticalAlignment="Center">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="Unknown" FallbackValue="0"/>
+                                <Binding Path="SelectedAssets.Count" FallbackValue="0"/>
                                 <Binding Path="Assets.Count" FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>

@@ -21,9 +21,8 @@ namespace UnpackerGui.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    public static string Unknown => "?";
-
     public ReactiveList<AssetInfo> Assets { get; }
+    public ObservableList SelectedAssets { get; }
     public ReadOnlyObservableCollection<AssetFileViewModel> AssetFiles => _assetFiles;
     public ReadOnlyObservableCollection<AssetFileViewModel> CheckedAssetFiles => _checkedAssetFiles;
 
@@ -46,6 +45,7 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
+        SelectedAssets = new ObservableList();
         Assets = new ReactiveList<AssetInfo>();
 
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);

@@ -5,14 +5,8 @@ namespace UnpackerGui.Collections;
 
 internal static class EventArgsCache
 {
-    public static readonly PropertyChangedEventArgs CountPropertyChanged;
-    public static readonly PropertyChangedEventArgs IndexerPropertyChanged;
-    public static readonly NotifyCollectionChangedEventArgs ResetCollectionChanged;
-
-    static EventArgsCache()
-    {
-        CountPropertyChanged = new PropertyChangedEventArgs("Count");
-        IndexerPropertyChanged = new PropertyChangedEventArgs("Item[]");
-        ResetCollectionChanged = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
-    }
+    public static readonly PropertyChangedEventArgs CountPropertyChanged = new("Count");
+    public static readonly PropertyChangedEventArgs IndexerPropertyChanged = new("Item[]");
+    public static readonly NotifyCollectionChangedEventArgs ResetCollectionChanged
+        = new(NotifyCollectionChangedAction.Reset);
 }
