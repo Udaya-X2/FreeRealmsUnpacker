@@ -30,9 +30,9 @@ public class ExtractionViewModel : ViewModelBase
         _extractionAssetFiles = assetFiles.Select(x => new ExtractionAssetFile(x.Info, x.OpenRead, x.Assets));
     }
 
-    public ExtractionViewModel(string outputDir, IEnumerable<AssetInfo> assets)
+    public ExtractionViewModel(string outputDir, IEnumerable<AssetInfo> assets, int? count = null)
     {
-        AssetCount = assets.Count();
+        AssetCount = count ?? assets.Count();
         _outputDir = outputDir;
         _extractionAssetFiles = assets.GroupBy(x => x.AssetFile)
                                       .Select(x => new ExtractionAssetFile(x.Key.Info, x.Key.OpenRead, x));

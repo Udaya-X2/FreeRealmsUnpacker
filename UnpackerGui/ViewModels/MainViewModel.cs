@@ -5,10 +5,13 @@ using DynamicData;
 using DynamicData.Aggregation;
 using ReactiveUI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UnpackerGui.Collections;
@@ -30,6 +33,7 @@ public class MainViewModel : ViewModelBase
     public ICommand AddManifestFilesCommand { get; }
     public ICommand AddDataFilesCommand { get; }
     public ICommand ExtractFilesCommand { get; }
+    public ICommand ExtractAssetsCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
     public ICommand RemoveSelectedCommand { get; }
@@ -52,6 +56,7 @@ public class MainViewModel : ViewModelBase
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
+        ExtractAssetsCommand = ReactiveCommand.CreateFromTask(ExtractAssets);
         SelectAllCommand = ReactiveCommand.Create(SelectAll);
         DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
@@ -59,7 +64,7 @@ public class MainViewModel : ViewModelBase
         // Observe any changes in the asset files.
         var source = _sourceAssetFiles.Connect();
 
-        // Update asset files when changed/checked asset files when checked.
+        // Update asset files when changed; update checked asset files when checked.
         source.Bind(out _assetFiles)
               .AutoRefresh(x => x.IsChecked)
               .Filter(x => x.IsChecked)
@@ -150,6 +155,21 @@ public class MainViewModel : ViewModelBase
         ExtractionWindow extractionWindow = new()
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles)
+        };
+        IDialogService dialogService = App.GetService<IDialogService>();
+        await dialogService.ShowDialog(extractionWindow);
+    }
+
+    private async Task ExtractAssets()
+    {
+        if (SelectedAssets.Count == 0) return;
+        if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
+
+        ExtractionWindow extractionWindow = new()
+        {
+            DataContext = new ExtractionViewModel(folder.Path.LocalPath,
+                                                  SelectedAssets.Cast<AssetInfo>(),
+                                                  SelectedAssets.Count)
         };
         IDialogService dialogService = App.GetService<IDialogService>();
         await dialogService.ShowDialog(extractionWindow);

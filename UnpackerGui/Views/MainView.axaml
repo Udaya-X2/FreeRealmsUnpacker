@@ -150,10 +150,28 @@
         </Grid>
         <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
         <Grid Grid.Column="1"
-              RowDefinitions="*,24"
-              Margin="5">
+              RowDefinitions="Auto,*,Auto"
+              Margin="5 0 5 5">
+            <!--Search Bar & Options-->
+            <StackPanel Orientation="Horizontal"
+                        Margin="0 5 0 0"
+                        MaxHeight="32">
+                <Image Source="/Assets/icon_interaction_player_inspect_64.png"
+                       Margin="5 2.5 5 2.5"
+                       ToolTip.Tip="Search"/>
+                <TextBox Margin="0 0 5 0"
+                         Width="100"
+                         FontFamily="Tahoma"
+                         FontSize="12"/>
+                <Button Command="{Binding ExtractAssetsCommand}"
+                        Margin="0 0 5 0"
+                        ToolTip.Tip="Extract Selected Assets...">
+                    <Image Source="/Assets/downloadIcon.png"/>
+                </Button>
+            </StackPanel>
             <!--Asset DataGrid-->
-            <DataGrid Grid.Row="0"
+            <DataGrid Grid.Row="1"
+                      Margin="0 5 0 5"
                       x:Name="assetGrid"
                       ItemsSource="{Binding Assets}"
                       IsReadOnly="True"
@@ -187,9 +205,9 @@
                 </DataGrid.Columns>
             </DataGrid>
             <!--#/# Info Bar-->
-            <StackPanel Grid.Row="1"
+            <StackPanel Grid.Row="2"
                         Orientation="Horizontal"
-                        Margin="0 5 0 0">
+                        MaxHeight="20">
                 <!--#/# Files Selected-->
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
@@ -201,8 +219,10 @@
                                VerticalAlignment="Center">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="CheckedAssetFiles.Count" FallbackValue="0"/>
-                                <Binding Path="AssetFiles.Count" FallbackValue="0"/>
+                                <Binding Path="CheckedAssetFiles.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="AssetFiles.Count"
+                                         FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
@@ -218,8 +238,10 @@
                                VerticalAlignment="Center">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="Assets.Count" FallbackValue="0"/>
-                                <Binding Path="NumAssets" FallbackValue="0"/>
+                                <Binding Path="Assets.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="NumAssets"
+                                         FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
@@ -235,8 +257,10 @@
                                VerticalAlignment="Center">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="SelectedAssets.Count" FallbackValue="0"/>
-                                <Binding Path="Assets.Count" FallbackValue="0"/>
+                                <Binding Path="SelectedAssets.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="Assets.Count"
+                                         FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
                     </TextBlock>
