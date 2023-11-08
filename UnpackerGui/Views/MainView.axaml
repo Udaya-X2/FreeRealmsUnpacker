@@ -153,22 +153,28 @@
               RowDefinitions="Auto,*,Auto"
               Margin="5 0 5 5">
             <!--Search Bar & Options-->
-            <StackPanel Orientation="Horizontal"
-                        Margin="0 5 0 0"
-                        MaxHeight="32">
-                <Image Source="/Assets/icon_interaction_player_inspect_64.png"
+            <Grid Margin="0 5 0 0"
+                  ColumnDefinitions="Auto,*,Auto,Auto"
+                  MaxHeight="32">
+                <Image Grid.Column="0"
+                       Source="/Assets/icon_interaction_player_inspect_64.png"
                        Margin="5 2.5 5 2.5"
                        ToolTip.Tip="Search"/>
-                <TextBox Margin="0 0 5 0"
-                         Width="100"
+                <TextBox Grid.Column="1"
+                         MinWidth="0"
                          FontFamily="Tahoma"
                          FontSize="12"/>
-                <Button Command="{Binding ExtractAssetsCommand}"
-                        Margin="0 0 5 0"
+                <Button Grid.Column="2"
+                        Command="{Binding ExtractAssetsCommand}"
+                        Margin="5 0 5 0"
                         ToolTip.Tip="Extract Selected Assets...">
                     <Image Source="/Assets/downloadIcon.png"/>
                 </Button>
-            </StackPanel>
+                <DropDownButton Grid.Column="3"
+                                ToolTip.Tip="Options">
+                    <Image Source="/Assets/icon_achievement_02_128.png"/>
+                </DropDownButton>
+            </Grid>
             <!--Asset DataGrid-->
             <DataGrid Grid.Row="1"
                       Margin="0 5 0 5"
@@ -180,7 +186,8 @@
                       CanUserResizeColumns="True"
                       GridLinesVisibility="All"
                       BorderThickness="1"
-                      BorderBrush="Gray">
+                      BorderBrush="Gray"
+                      DoubleTapped="AssetGrid_DoubleTapped">
                 <DataGrid.Columns>
                     <!--TODO: Bind IsVisible From Options-->
                     <DataGridTextColumn FontSize="12"
