@@ -21,10 +21,8 @@ namespace UnpackerGui.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
-    public ReactiveList<AssetInfo> Assets { get; }
-    public ObservableList SelectedAssets { get; }
-    public ReadOnlyObservableCollection<AssetFileViewModel> AssetFiles => _assetFiles;
-    public ReadOnlyObservableCollection<AssetFileViewModel> CheckedAssetFiles => _checkedAssetFiles;
+    public ControlledObservableList SelectedAssets { get; }
+    public GroupedReactiveCollection<AssetFileViewModel, AssetInfo> Assets { get; }
 
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
@@ -40,15 +38,14 @@ public class MainViewModel : ViewModelBase
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _checkedAssetFiles;
 
     private int _numAssets;
+    private int _numCheckedAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private bool _manifestFileSelected;
+    private string _searchText;
 
     public MainViewModel()
     {
-        _sourceAssetFiles = new SourceList<AssetFileViewModel>();
-        SelectedAssets = new ObservableList();
-        Assets = new ReactiveList<AssetInfo>();
-
+        // Initialize each command.
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
@@ -59,34 +56,52 @@ public class MainViewModel : ViewModelBase
         RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
 
         // Observe any changes in the asset files.
+        _sourceAssetFiles = new SourceList<AssetFileViewModel>();
+        _searchText = "";
         var source = _sourceAssetFiles.Connect();
 
-        // Update asset files when changed; update checked asset files when checked.
+        // Update asset files when changed.
         source.Bind(out _assetFiles)
+              // Update checked asset files when checked.
               .AutoRefresh(x => x.IsChecked)
               .Filter(x => x.IsChecked)
               .Bind(out _checkedAssetFiles)
-              .Subscribe();
+              // Refresh assets shown & update checked asset count.
+              .Subscribe(_ =>
+              {
+                  Assets?.Refresh();
+                  NumCheckedAssets = CheckedAssetFiles.Sum(x => x.Count);
+              });
 
         // Update total asset count when asset files change.
         source.ForAggregation()
               .Sum(x => x.Count)
               .BindTo(this, x => x.NumAssets);
 
-        // Update assets shown when asset files are checked.
-        source.WhenPropertyChanged(x => x.IsChecked)
-              .Subscribe(x => UpdateAssets(x.Sender));
-
-        // Keep track of whether the selected asset file is a manifest file.
+        // Keep track of whether selected asset file is a manifest file.
         this.WhenAnyValue(x => x.SelectedAssetFile)
             .Select(x => x?.FileType is AssetType.Dat)
             .BindTo(this, x => x.ManifestFileSelected);
+
+        // Initialize each observable collection.
+        SelectedAssets = new ControlledObservableList();
+        Assets = new GroupedReactiveCollection<AssetFileViewModel, AssetInfo>(CheckedAssetFiles);
     }
+
+    public ReadOnlyObservableCollection<AssetFileViewModel> AssetFiles => _assetFiles;
+
+    public ReadOnlyObservableCollection<AssetFileViewModel> CheckedAssetFiles => _checkedAssetFiles;
 
     public int NumAssets
     {
         get => _numAssets;
         set => this.RaiseAndSetIfChanged(ref _numAssets, value);
+    }
+
+    public int NumCheckedAssets
+    {
+        get => _numCheckedAssets;
+        set => this.RaiseAndSetIfChanged(ref _numCheckedAssets, value);
     }
 
     public AssetFileViewModel? SelectedAssetFile
@@ -99,6 +114,12 @@ public class MainViewModel : ViewModelBase
     {
         get => _manifestFileSelected;
         set => this.RaiseAndSetIfChanged(ref _manifestFileSelected, value);
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set => this.RaiseAndSetIfChanged(ref _searchText, value);
     }
 
     private async Task AddPackFiles()
@@ -130,18 +151,6 @@ public class MainViewModel : ViewModelBase
         });
         ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
         dataFiles?.AddRange(files.Select(x => x.Path.LocalPath).Except(dataFiles));
-    }
-
-    private void UpdateAssets(AssetFileViewModel assetFile)
-    {
-        if (assetFile.IsChecked)
-        {
-            Assets.AddRange(assetFile.Assets);
-        }
-        else
-        {
-            Assets.RemoveAll(assetFile.Contains);
-        }
     }
 
     private async Task ExtractFiles()
@@ -180,10 +189,8 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            using (Assets.SuspendNotifications())
-            {
-                AssetFiles.ForEach(x => x.IsChecked = true);
-            }
+            using IDisposable _ = Assets.SuspendNotifications();
+            AssetFiles.ForEach(x => x.IsChecked = true);
         }
     }
 
@@ -195,7 +202,7 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            Assets.Clear();
+            using IDisposable _ = Assets.SuspendNotifications();
             AssetFiles.ForEach(x => x.IsChecked = false);
         }
     }
@@ -210,7 +217,7 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            Assets.Clear();
+            using IDisposable _ = Assets.SuspendNotifications();
             _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToArray());
         }
     }

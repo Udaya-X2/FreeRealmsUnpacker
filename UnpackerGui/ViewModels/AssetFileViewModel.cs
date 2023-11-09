@@ -3,6 +3,7 @@ using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,7 +13,7 @@ using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
 
-public class AssetFileViewModel : ViewModelBase
+public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 {
     public List<AssetInfo> Assets { get; }
     public ReactiveList<string> DataFilePaths { get; }
@@ -70,9 +71,31 @@ public class AssetFileViewModel : ViewModelBase
 
     public AssetType FileType => _assetFile.FileType;
 
-    public int Count => Assets.Count;
-
     public AssetReader OpenRead() => _assetFile.OpenRead();
 
     public bool Contains(AssetInfo asset) => _assetFile == asset.AssetFile;
+
+    public int Count => Assets.Count;
+
+    public bool IsReadOnly => ((IList<AssetInfo>)Assets).IsReadOnly;
+
+    public AssetInfo this[int index] { get => Assets[index]; set => Assets[index] = value; }
+
+    public int IndexOf(AssetInfo item) => Assets.IndexOf(item);
+
+    public void Insert(int index, AssetInfo item) => Assets.Insert(index, item);
+
+    public void RemoveAt(int index) => Assets.RemoveAt(index);
+
+    public void Add(AssetInfo item) => Assets.Add(item);
+
+    public void Clear() => Assets.Clear();
+
+    public void CopyTo(AssetInfo[] array, int arrayIndex) => Assets.CopyTo(array, arrayIndex);
+
+    public bool Remove(AssetInfo item) => Assets.Remove(item);
+
+    public IEnumerator<AssetInfo> GetEnumerator() => Assets.GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

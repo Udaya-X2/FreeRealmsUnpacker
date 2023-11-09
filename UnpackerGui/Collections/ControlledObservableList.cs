@@ -8,10 +8,10 @@ namespace UnpackerGui.Collections;
 /// <summary>
 /// Represents an <see cref="IList"/> that provides notifications upon calls to <see cref="OnCollectionChanged"/>.
 /// </summary>
-public class ObservableList : IList, INotifyCollectionChanged, INotifyPropertyChanged
+public class ControlledObservableList : IList, INotifyCollectionChanged, INotifyPropertyChanged
 {
     /// <summary>
-    /// Gets or sets the items in the <see cref="ObservableList"/>.
+    /// Gets or sets the items in the <see cref="ControlledObservableList"/>.
     /// </summary>
     public IList Items { get; set; } = Array.Empty<object>();
 
