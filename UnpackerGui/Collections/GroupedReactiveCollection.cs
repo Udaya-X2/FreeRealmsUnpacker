@@ -21,6 +21,7 @@ public class GroupedReactiveCollection<TSource, TResult>
 {
     private readonly IEnumerable<TSource> _items;
 
+    private Lazy<int> _count;
     private int _notificationSuppressors;
     private bool _notificationSuppressed;
 
@@ -31,6 +32,7 @@ public class GroupedReactiveCollection<TSource, TResult>
     public GroupedReactiveCollection(IEnumerable<TSource> items)
     {
         _items = items;
+        _count = new Lazy<int>(() => _items.Sum(x => x.Count()));
     }
 
     /// <summary>
@@ -54,7 +56,7 @@ public class GroupedReactiveCollection<TSource, TResult>
     }
 
     /// <inheritdoc/>
-    public int Count => _items.Sum(x => x.Count());
+    public int Count => _count.Value;
 
     /// <inheritdoc/>
     public IEnumerator<TResult> GetEnumerator() => _items.SelectMany(x => x).GetEnumerator();
@@ -75,6 +77,7 @@ public class GroupedReactiveCollection<TSource, TResult>
     {
         if (NotificationsEnabled)
         {
+            _count = new Lazy<int>(() => _items.Sum(x => x.Count()));
             CollectionChanged?.Invoke(this, EventArgsCache.ResetCollectionChanged);
             PropertyChanged?.Invoke(this, EventArgsCache.CountPropertyChanged);
         }
