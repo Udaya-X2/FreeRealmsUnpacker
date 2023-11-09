@@ -67,13 +67,13 @@ public class MainViewModel : ViewModelBase
               .AutoRefresh(x => x.IsChecked)
               .Filter(x => x.IsChecked)
               .Bind(out _checkedAssetFiles)
-              // Refresh assets shown & update checked asset count.
               .Subscribe(_ =>
               {
                   // Need to clear selected assets to avoid the DataGrid freezing when a
                   // large number of rows are selected while more rows are added/removed.
                   SelectedAsset = null;
                   SelectedAssets?.Clear();
+                  // Refresh assets shown & update checked asset count.
                   Assets?.Refresh();
                   NumCheckedAssets = CheckedAssetFiles.Sum(x => x.Count);
               });

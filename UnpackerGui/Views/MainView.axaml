@@ -43,7 +43,7 @@
                         ToolTip.Tip="Add asset .dat Files..."
                         IsVisible="{Binding ManifestFileSelected}"
                         Grid.Column="1">
-                    <Image Source="/Assets/icon_minigame_mailsorting_box_64.png"/>
+                    <Image Source="/Assets/icon_minigame_mailsorting_box_32.png"/>
                 </Button>
                 <Button Command="{Binding ExtractFilesCommand}"
                         ToolTip.Tip="Extract Selected Files..."
@@ -53,17 +53,17 @@
                 <Button Command="{Binding SelectAllCommand}"
                         ToolTip.Tip="Select All Files"
                         Grid.Column="3">
-                    <Image Source="/Assets/ui_notify_objective_completed.png"/>
+                    <Image Source="/Assets/ui_dialog_greencheck.png"/>
                 </Button>
                 <Button Command="{Binding DeselectAllCommand}"
                         ToolTip.Tip="Deselect All Files"
                         Grid.Column="4">
-                    <Image Source="/Assets/icon_ui_none.png"/>
+                    <Image Source="/Assets/ps3_icon_ui_none_32.png"/>
                 </Button>
                 <Button Command="{Binding RemoveSelectedCommand}"
                         ToolTip.Tip="Remove Selected Files"
                         Grid.Column="5">
-                    <Image Source="/Assets/ui_dialog_exit.png"/>
+                    <Image Source="/Assets/video_new_IC8.png"/>
                 </Button>
             </Grid>
             <!--Asset Files-->
@@ -157,7 +157,7 @@
                   ColumnDefinitions="Auto,*,Auto,Auto"
                   MaxHeight="32">
                 <Image Grid.Column="0"
-                       Source="/Assets/icon_interaction_player_inspect_64.png"
+                       Source="/Assets/icon_interaction_player_inspect_32.png"
                        Margin="5 2.5 5 2.5"
                        ToolTip.Tip="Search"/>
                 <TextBox Grid.Column="1"
@@ -173,7 +173,7 @@
                 </Button>
                 <DropDownButton Grid.Column="3"
                                 ToolTip.Tip="Options">
-                    <Image Source="/Assets/icon_achievement_02_128.png"/>
+                    <Image Source="/Assets/icon_achievement_02_32.png"/>
                 </DropDownButton>
             </Grid>
             <!--Asset DataGrid-->
@@ -221,7 +221,7 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
                             ToolTip.Tip="Number of Files Selected">
-                    <Image Source="/Assets/icon_questlist.png"
+                    <Image Source="/Assets/questjournal_I50.png"
                            Margin="0 0 5 0"/>
                     <TextBlock FontFamily="Tahoma"
                                FontSize="12"
@@ -280,7 +280,7 @@
                             Margin="0 0 10 0"
                             IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                             ToolTip.Tip="Number of Search Hits">
-                    <Image Source="/Assets/icon_ui_activityfinder_128.png"
+                    <Image Source="/Assets/icon_ui_activityFinder_32.png"
                            Margin="0 0 5 0"/>
                     <TextBlock FontFamily="Tahoma"
                                FontSize="12"
