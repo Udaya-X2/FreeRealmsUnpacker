@@ -71,15 +71,17 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
     public AssetType FileType => _assetFile.FileType;
 
-    public AssetReader OpenRead() => _assetFile.OpenRead();
-
-    public bool Contains(AssetInfo asset) => _assetFile == asset.AssetFile;
-
     public int Count => Assets.Count;
 
     public bool IsReadOnly => ((IList<AssetInfo>)Assets).IsReadOnly;
 
-    public AssetInfo this[int index] { get => Assets[index]; set => Assets[index] = value; }
+    public AssetInfo this[int index]
+    {
+        get => Assets[index];
+        set => Assets[index] = value;
+    }
+
+    public AssetReader OpenRead() => _assetFile.OpenRead();
 
     public int IndexOf(AssetInfo item) => Assets.IndexOf(item);
 
@@ -91,11 +93,13 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
     public void Clear() => Assets.Clear();
 
+    public bool Contains(AssetInfo item) => Assets.Contains(item);
+
     public void CopyTo(AssetInfo[] array, int arrayIndex) => Assets.CopyTo(array, arrayIndex);
 
     public bool Remove(AssetInfo item) => Assets.Remove(item);
 
     public IEnumerator<AssetInfo> GetEnumerator() => Assets.GetEnumerator();
 
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => Assets.GetEnumerator();
 }

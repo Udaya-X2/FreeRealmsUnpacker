@@ -22,6 +22,7 @@ public class GroupedReactiveCollection<TSource, TResult>
     private readonly IEnumerable<TSource> _items;
 
     private int _notificationSuppressors;
+    private bool _notificationSuppressed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GroupedReactiveCollection{TSource, TResult}"/>
@@ -44,8 +45,9 @@ public class GroupedReactiveCollection<TSource, TResult>
             {
                 _notificationSuppressors++;
             }
-            else if (--_notificationSuppressors == 0)
+            else if (--_notificationSuppressors == 0 && _notificationSuppressed)
             {
+                _notificationSuppressed = false;
                 Refresh();
             }
         }
@@ -75,6 +77,10 @@ public class GroupedReactiveCollection<TSource, TResult>
         {
             CollectionChanged?.Invoke(this, EventArgsCache.ResetCollectionChanged);
             PropertyChanged?.Invoke(this, EventArgsCache.CountPropertyChanged);
+        }
+        else
+        {
+            _notificationSuppressed = true;
         }
     }
 
