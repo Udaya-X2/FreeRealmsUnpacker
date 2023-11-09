@@ -40,6 +40,7 @@ public class MainViewModel : ViewModelBase
     private int _numAssets;
     private int _numCheckedAssets;
     private AssetFileViewModel? _selectedAssetFile;
+    private AssetInfo? _selectedAsset;
     private bool _manifestFileSelected;
     private string _searchText;
 
@@ -69,6 +70,10 @@ public class MainViewModel : ViewModelBase
               // Refresh assets shown & update checked asset count.
               .Subscribe(_ =>
               {
+                  // Need to clear selected assets to avoid the DataGrid freezing when a
+                  // large number of rows are selected while more rows are added/removed.
+                  SelectedAsset = null;
+                  SelectedAssets?.Clear();
                   Assets?.Refresh();
                   NumCheckedAssets = CheckedAssetFiles.Sum(x => x.Count);
               });
@@ -108,6 +113,12 @@ public class MainViewModel : ViewModelBase
     {
         get => _selectedAssetFile;
         set => this.RaiseAndSetIfChanged(ref _selectedAssetFile, value);
+    }
+
+    public AssetInfo? SelectedAsset
+    {
+        get => _selectedAsset;
+        set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
     }
 
     public bool ManifestFileSelected
