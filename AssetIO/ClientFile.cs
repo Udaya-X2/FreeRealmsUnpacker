@@ -358,7 +358,7 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>The specified integer.</returns>
     /// <exception cref="ArgumentOutOfRangeException"/>
-    private static T ValidateRange<T>(T value, T minValue, T maxValue) where T : IBinaryInteger<T>
+    private static T ValidateRange<T>(T value, T minValue, T maxValue) where T : unmanaged, IBinaryInteger<T>
     {
         if (minValue <= value && value <= maxValue)
         {
@@ -367,7 +367,7 @@ public static partial class ClientFile
         else
         {
             string message = string.Format(SR.ArgumentOutOfRange_Integer, value, minValue, maxValue);
-            ArgumentOutOfRangeException exception = new(message, (Exception?)null);
+            ArgumentOutOfRangeException exception = new(message, innerException: null);
             exception.Data["BytesRead"] = Unsafe.SizeOf<T>();
             throw exception;
         }
