@@ -21,7 +21,14 @@ namespace UnpackerGui.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    /// <summary>
+    /// Gets the selected assets.
+    /// </summary>
     public ControlledObservableList SelectedAssets { get; }
+
+    /// <summary>
+    /// Gets the assets shown to the user.
+    /// </summary>
     public GroupedReactiveCollection<AssetFileViewModel, AssetInfo> Assets { get; }
 
     public ICommand AddPackFilesCommand { get; }
@@ -44,6 +51,9 @@ public class MainViewModel : ViewModelBase
     private bool _manifestFileSelected;
     private string _searchText;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MainViewModel"/> class.
+    /// </summary>
     public MainViewModel()
     {
         // Initialize each command.
@@ -93,52 +103,85 @@ public class MainViewModel : ViewModelBase
         Assets = new GroupedReactiveCollection<AssetFileViewModel, AssetInfo>(CheckedAssetFiles);
     }
 
+    /// <summary>
+    /// Gets the asset files.
+    /// </summary>
     public ReadOnlyObservableCollection<AssetFileViewModel> AssetFiles => _assetFiles;
 
+    /// <summary>
+    /// Gets the checked asset files.
+    /// </summary>
     public ReadOnlyObservableCollection<AssetFileViewModel> CheckedAssetFiles => _checkedAssetFiles;
 
+    /// <summary>
+    /// Gets or sets the total number of assets.
+    /// </summary>
     public int NumAssets
     {
         get => _numAssets;
         set => this.RaiseAndSetIfChanged(ref _numAssets, value);
     }
 
+    /// <summary>
+    /// Gets or sets the number of assets in all checked files.
+    /// </summary>
     public int NumCheckedAssets
     {
         get => _numCheckedAssets;
         set => this.RaiseAndSetIfChanged(ref _numCheckedAssets, value);
     }
 
+    /// <summary>
+    /// Gets or sets the selected asset file.
+    /// </summary>
     public AssetFileViewModel? SelectedAssetFile
     {
         get => _selectedAssetFile;
         set => this.RaiseAndSetIfChanged(ref _selectedAssetFile, value);
     }
 
+    /// <summary>
+    /// Gets or sets the selected asset.
+    /// </summary>
     public AssetInfo? SelectedAsset
     {
         get => _selectedAsset;
         set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether a manifest.dat file is selected.
+    /// </summary>
     public bool ManifestFileSelected
     {
         get => _manifestFileSelected;
         set => this.RaiseAndSetIfChanged(ref _manifestFileSelected, value);
     }
 
+    /// <summary>
+    /// Gets or sets the search text.
+    /// </summary>
     public string SearchText
     {
         get => _searchText;
         set => this.RaiseAndSetIfChanged(ref _searchText, value);
     }
 
+    /// <summary>
+    /// Opens a file dialog that allows the user to add .pack files to the asset files.
+    /// </summary>
     private async Task AddPackFiles()
         => await AddAssetFiles(AssetType.Game | AssetType.Pack, FileTypeFilters.PackFiles);
 
+    /// <summary>
+    /// Opens a file dialog that allows the user to add manifest.dat files to the asset files.
+    /// </summary>
     private async Task AddManifestFiles()
         => await AddAssetFiles(AssetType.Game | AssetType.Dat, FileTypeFilters.ManifestFiles);
 
+    /// <summary>
+    /// Opens a file dialog that allows the user to add asset files of the specified type.
+    /// </summary>
     private async Task AddAssetFiles(AssetType assetType, FilePickerFileType[] fileTypeFilter)
     {
         IFilesService filesService = App.GetService<IFilesService>();
@@ -152,6 +195,9 @@ public class MainViewModel : ViewModelBase
                                         .Select(x => new AssetFileViewModel(x, assetType)));
     }
 
+    /// <summary>
+    /// Opens a file dialog that allows the user to add asset .dat files to the selected manifest.dat file.
+    /// </summary>
     public async Task AddDataFiles()
     {
         IFilesService filesService = App.GetService<IFilesService>();
@@ -164,6 +210,9 @@ public class MainViewModel : ViewModelBase
         dataFiles?.AddRange(files.Select(x => x.Path.LocalPath).Except(dataFiles));
     }
 
+    /// <summary>
+    /// Opens a folder dialog that allows the user to extract the selected asset files to a directory.
+    /// </summary>
     private async Task ExtractFiles()
     {
         if (CheckedAssetFiles.Count == 0) return;
@@ -177,6 +226,9 @@ public class MainViewModel : ViewModelBase
         await dialogService.ShowDialog(extractionWindow);
     }
 
+    /// <summary>
+    /// Opens a folder dialog that allows the user to extract the selected assets to a directory.
+    /// </summary>
     private async Task ExtractAssets()
     {
         if (SelectedAssets.Count == 0) return;
@@ -192,6 +244,9 @@ public class MainViewModel : ViewModelBase
         await dialogService.ShowDialog(extractionWindow);
     }
 
+    /// <summary>
+    /// Checks all asset files, or checks the data files under the selected manifest.dat file.
+    /// </summary>
     private void SelectAll()
     {
         if (ManifestFileSelected)
@@ -205,6 +260,9 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Unchecks all asset files, or unchecks the data files under the selected manifest.dat file.
+    /// </summary>
     private void DeselectAll()
     {
         if (ManifestFileSelected)
@@ -218,6 +276,9 @@ public class MainViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Removes all checked asset files, or removes the checked data files under the selected manifest.dat file.
+    /// </summary>
     private void RemoveSelected()
     {
         if (ManifestFileSelected)
