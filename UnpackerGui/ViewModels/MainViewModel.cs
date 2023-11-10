@@ -31,6 +31,11 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     public FilteredReactiveCollection<AssetInfo> Assets { get; }
 
+    /// <summary>
+    /// Gets the search options to filter the assets shown.
+    /// </summary>
+    public SearchOptionsViewModel<AssetInfo> SearchOptions { get; }
+
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
     public ICommand AddDataFilesCommand { get; }
@@ -49,7 +54,6 @@ public class MainViewModel : ViewModelBase
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
     private bool _manifestFileSelected;
-    private string _searchText;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -68,7 +72,6 @@ public class MainViewModel : ViewModelBase
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
-        _searchText = "";
         var source = _sourceAssetFiles.Connect();
 
         // Update asset files when changed.
@@ -93,24 +96,16 @@ public class MainViewModel : ViewModelBase
               .Sum(x => x.Count)
               .BindTo(this, x => x.NumAssets);
 
-        // Initialize each observable collection.
-        SearchOptions<AssetInfo> searchOptions = new(x => x.Name);
-        SelectedAssets = new ControlledObservableList();
-        Assets = new FilteredReactiveCollection<AssetInfo>(new GroupedReactiveCollection<AssetInfo>(CheckedAssetFiles),
-                                                           searchOptions);
-
         // Keep track of whether selected asset file is a manifest file.
         this.WhenAnyValue(x => x.SelectedAssetFile)
             .Select(x => x?.FileType is AssetType.Dat)
             .BindTo(this, x => x.ManifestFileSelected);
 
-        // Update search options and assets shown when search text is changed.
-        this.WhenAnyValue(x => x.SearchText)
-            .Subscribe(x =>
-            {
-                searchOptions.Pattern = x;
-                Assets.Refresh();
-            });
+        // Initialize each observable collection.
+        SearchOptions = new SearchOptionsViewModel<AssetInfo>(x => x.Name);
+        SelectedAssets = new ControlledObservableList();
+        Assets = new FilteredReactiveCollection<AssetInfo>(new GroupedReactiveCollection<AssetInfo>(CheckedAssetFiles),
+                                                           SearchOptions);
     }
 
     /// <summary>
@@ -166,15 +161,6 @@ public class MainViewModel : ViewModelBase
     {
         get => _manifestFileSelected;
         set => this.RaiseAndSetIfChanged(ref _manifestFileSelected, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the search text.
-    /// </summary>
-    public string SearchText
-    {
-        get => _searchText;
-        set => this.RaiseAndSetIfChanged(ref _searchText, value);
     }
 
     /// <summary>

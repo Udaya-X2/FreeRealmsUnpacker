@@ -161,9 +161,9 @@
               Margin="5 0 5 5">
             <!--Search Bar & Options-->
             <Grid Margin="0 5 0 0"
-                  ColumnDefinitions="Auto,*,Auto,Auto"
+                  ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto"
                   MaxHeight="32">
-                <!--Search Bar Icon-->
+                <!--Icon-->
                 <Image Grid.Column="0"
                        Source="/Assets/icon_interaction_player_inspect_32.png"
                        Margin="5 2.5 5 2.5"
@@ -171,18 +171,31 @@
                 <!--Search Bar-->
                 <TextBox Grid.Column="1"
                          MinWidth="0"
-                         Text="{Binding SearchText}"
+                         Text="{Binding SearchOptions.Pattern}"
                          FontFamily="Tahoma"
                          FontSize="12"/>
+                <!--Match Case Option-->
+                <ToggleButton Grid.Column="2"
+                              Margin="5 0 0 0"
+                              ToolTip.Tip="Match Case"
+                              IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
+                              Content="Aa"/>
+                <!--Use Regular Expressions Option-->
+                <ToggleButton Grid.Column="3"
+                              Margin="5 0 0 0"
+                              ToolTip.Tip="Use Regular Expressions"
+                              IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
+                              Content=".*"/>
                 <!--Extract Selected Assets Button-->
-                <Button Grid.Column="2"
+                <Button Grid.Column="4"
                         Command="{Binding ExtractAssetsCommand}"
-                        Margin="5 0 5 0"
+                        Margin="5 0 0 0"
                         ToolTip.Tip="Extract Selected Assets...">
                     <Image Source="/Assets/downloadIcon.png"/>
                 </Button>
-                <!--Options-->
-                <DropDownButton Grid.Column="3"
+                <!--Options Dropdown Menu-->
+                <DropDownButton Grid.Column="5"
+                                Margin="5 0 0 0"
                                 ToolTip.Tip="Options">
                     <Image Source="/Assets/icon_achievement_02_32.png"/>
                 </DropDownButton>
@@ -289,7 +302,7 @@
                 <!--#/# Search Hits-->
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
-                            IsVisible="{Binding SearchText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            IsVisible="{Binding SearchOptions.Pattern, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                             ToolTip.Tip="Number of Search Hits">
                     <Image Source="/Assets/icon_ui_activityFinder_32.png"
                            Margin="0 0 5 0"/>

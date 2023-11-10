@@ -1,6 +1,9 @@
-﻿using System;
+﻿using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
+using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Collections;
 
@@ -11,22 +14,29 @@ namespace UnpackerGui.Collections;
 /// <typeparam name="T">The type of the item.</typeparam>
 public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
 {
+    public SearchOptionsViewModel<T> SearchOptions { get; }
+
     private readonly IEnumerable<T> _items;
-    private readonly SearchOptions<T> _searchOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilteredReactiveCollection{T}"/> class from the specified sequence.
     /// </summary>
-    public FilteredReactiveCollection(IEnumerable<T> items, SearchOptions<T> searchOptions)
+    public FilteredReactiveCollection(IEnumerable<T> items, SearchOptionsViewModel<T> searchOptions)
     {
         _items = items ?? throw new ArgumentNullException(nameof(items));
-        _searchOptions = searchOptions ?? throw new ArgumentNullException(nameof(searchOptions));
+        SearchOptions = searchOptions ?? throw new ArgumentNullException(nameof(searchOptions));
+
+        // Refresh the collection when the search options change.
+        this.WhenAnyValue(x => x.SearchOptions.Pattern, x => x.SearchOptions.MatchCase, x => x.SearchOptions.UseRegex)
+            .Subscribe(_ => Refresh());
     }
 
-    public override int Count => _searchOptions.IsAlwaysMatch
+    public override int Count => SearchOptions.IsAlwaysMatch
         ? _items.Count()
-        : _items.Where(_searchOptions.IsMatch).Count();
+        : _items.Count(SearchOptions.IsMatch);
 
-    public override IEnumerator<T> GetEnumerator() => _items.Where(_searchOptions.IsMatch)
-                                                            .GetEnumerator();
+    public override IEnumerator<T> GetEnumerator() => SearchOptions.IsAlwaysMatch
+        ? _items.GetEnumerator()
+        : _items.Where(SearchOptions.IsMatch)
+                .GetEnumerator();
 }

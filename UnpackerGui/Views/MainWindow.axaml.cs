@@ -21,7 +21,6 @@ public partial class MainWindow : Window
                 Debug.WriteLine($"[{DateTime.Now}] Assets.Count = {data.Assets.Count}");
                 Debug.WriteLine($"[{DateTime.Now}] SelectedAssetFile = {data.SelectedAssetFile?.GetType()}");
                 Debug.WriteLine($"[{DateTime.Now}] CheckedAssetFiles.Count = {data.CheckedAssetFiles.Count}");
-                Debug.WriteLine($"[{DateTime.Now}] SearchText = {data.SearchText}");
                 Debug.WriteLine(new string('-', 80));
             }
         };
