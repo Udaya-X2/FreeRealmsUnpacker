@@ -29,7 +29,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Gets the assets shown to the user.
     /// </summary>
-    public GroupedReactiveCollection<AssetFileViewModel, AssetInfo> Assets { get; }
+    public FilteredReactiveCollection<AssetInfo> Assets { get; }
 
     public ICommand AddPackFilesCommand { get; }
     public ICommand AddManifestFilesCommand { get; }
@@ -93,14 +93,24 @@ public class MainViewModel : ViewModelBase
               .Sum(x => x.Count)
               .BindTo(this, x => x.NumAssets);
 
+        // Initialize each observable collection.
+        SearchOptions<AssetInfo> searchOptions = new(x => x.Name);
+        SelectedAssets = new ControlledObservableList();
+        Assets = new FilteredReactiveCollection<AssetInfo>(new GroupedReactiveCollection<AssetInfo>(CheckedAssetFiles),
+                                                           searchOptions);
+
         // Keep track of whether selected asset file is a manifest file.
         this.WhenAnyValue(x => x.SelectedAssetFile)
             .Select(x => x?.FileType is AssetType.Dat)
             .BindTo(this, x => x.ManifestFileSelected);
 
-        // Initialize each observable collection.
-        SelectedAssets = new ControlledObservableList();
-        Assets = new GroupedReactiveCollection<AssetFileViewModel, AssetInfo>(CheckedAssetFiles);
+        // Update search options and assets shown when search text is changed.
+        this.WhenAnyValue(x => x.SearchText)
+            .Subscribe(x =>
+            {
+                searchOptions.Pattern = x;
+                Assets.Refresh();
+            });
     }
 
     /// <summary>

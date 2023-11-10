@@ -61,6 +61,15 @@ namespace UnpackerGui {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection..
+        /// </summary>
+        internal static string Argument_InvalidOffLen {
+            get {
+                return ResourceManager.GetString("Argument_InvalidOffLen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The specified range of items was not found in the collection..
         /// </summary>
         internal static string Argument_RangeNotFound {
