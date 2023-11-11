@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Aggregation;
+using DynamicData.Binding;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -82,10 +83,6 @@ public class MainViewModel : ViewModelBase
               .Bind(out _checkedAssetFiles)
               .Subscribe(_ =>
               {
-                  // Need to clear selected assets to avoid the DataGrid freezing when a
-                  // large number of rows are selected while more rows are added/removed.
-                  SelectedAsset = null;
-                  SelectedAssets?.Clear();
                   // Refresh assets shown & update checked asset count.
                   Assets?.Refresh();
                   NumCheckedAssets = CheckedAssetFiles.Sum(x => x.Count);
@@ -106,6 +103,15 @@ public class MainViewModel : ViewModelBase
         SelectedAssets = new ControlledObservableList();
         Assets = new FilteredReactiveCollection<AssetInfo>(new GroupedReactiveCollection<AssetInfo>(CheckedAssetFiles),
                                                            SearchOptions);
+
+        // Need to clear selected assets to avoid the UI freezing when a large
+        // number of assets are selected while more assets are added/removed.
+        Assets.ToObservableChangeSet<FilteredReactiveCollection<AssetInfo>, AssetInfo>()
+              .Subscribe(_ =>
+              {
+                  SelectedAsset = null;
+                  SelectedAssets?.Clear();
+              });
     }
 
     /// <summary>
