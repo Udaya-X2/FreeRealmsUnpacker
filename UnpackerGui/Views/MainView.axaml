@@ -15,6 +15,23 @@
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
     </UserControl.Resources>
+    <UserControl.Styles>
+        <!--Hide Validation Error Messages-->
+        <Style Selector="DataValidationErrors">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Background="{TemplateBinding Background}"
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      BorderThickness="{TemplateBinding BorderThickness}"
+                                      CornerRadius="{TemplateBinding CornerRadius}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Content="{TemplateBinding Content}"
+                                      Padding="{TemplateBinding Padding}"/>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </UserControl.Styles>
     <!--Base Grid-->
     <Grid Grid.Row="0"
           ColumnDefinitions="Auto,*"

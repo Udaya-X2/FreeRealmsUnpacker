@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 using System;
-using System.Reactive.Linq;
+using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
 namespace UnpackerGui.ViewModels;
@@ -19,28 +19,36 @@ public class SearchOptionsViewModel<T> : ViewModelBase
         _converter = converter ?? throw new ArgumentNullException(nameof(converter));
         _pattern = "";
         _isMatch = _ => true;
-
-        // Update the match predicate whenever the search options change.
-        this.WhenAnyValue(x => x.MatchCase, x => x.UseRegex, x => x.Pattern)
-            .Subscribe(_ => UpdateMatchPredicate());
     }
 
     public bool MatchCase
     {
         get => _matchCase;
-        set => this.RaiseAndSetIfChanged(ref _matchCase, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _matchCase, value);
+            UpdateMatchPredicate();
+        }
     }
 
     public bool UseRegex
     {
         get => _useRegex;
-        set => this.RaiseAndSetIfChanged(ref _useRegex, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _useRegex, value);
+            UpdateMatchPredicate();
+        }
     }
 
     public string Pattern
     {
         get => _pattern;
-        set => this.RaiseAndSetIfChanged(ref _pattern, value);
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _pattern, value);
+            UpdateMatchPredicate();
+        }
     }
 
     public Func<T, bool> IsMatch
@@ -61,9 +69,9 @@ public class SearchOptionsViewModel<T> : ViewModelBase
                 Regex regex = new(Pattern, RegexOptions.Compiled | caseOption);
                 IsMatch = x => regex.IsMatch(_converter(x));
             }
-            catch (ArgumentException)
+            catch (ArgumentException ex)
             {
-                // TODO: add validation effect here
+                throw new ValidationException(ex.Message);
             }
         }
         else
