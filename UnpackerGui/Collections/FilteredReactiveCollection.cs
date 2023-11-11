@@ -27,7 +27,7 @@ public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
         SearchOptions = searchOptions ?? throw new ArgumentNullException(nameof(searchOptions));
 
         // Refresh the collection when the search options change.
-        this.WhenAnyValue(x => x.SearchOptions.Pattern, x => x.SearchOptions.MatchCase, x => x.SearchOptions.UseRegex)
+        this.WhenAnyValue(x => x.SearchOptions.IsMatch)
             .Subscribe(_ => Refresh());
     }
 

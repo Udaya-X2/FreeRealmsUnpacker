@@ -1,5 +1,6 @@
 ﻿using ReactiveUI;
 using System;
+using System.Reactive.Linq;
 using System.Text.RegularExpressions;
 
 namespace UnpackerGui.ViewModels;
@@ -11,11 +12,17 @@ public class SearchOptionsViewModel<T> : ViewModelBase
     private bool _matchCase;
     private bool _useRegex;
     private string _pattern;
+    private Func<T, bool> _isMatch;
 
     public SearchOptionsViewModel(Func<T, string> converter)
     {
         _converter = converter ?? throw new ArgumentNullException(nameof(converter));
         _pattern = "";
+        _isMatch = _ => true;
+
+        // Update the match predicate whenever the search options change.
+        this.WhenAnyValue(x => x.MatchCase, x => x.UseRegex, x => x.Pattern)
+            .Subscribe(_ => UpdateMatchPredicate());
     }
 
     public bool MatchCase
@@ -36,13 +43,33 @@ public class SearchOptionsViewModel<T> : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _pattern, value);
     }
 
+    public Func<T, bool> IsMatch
+    {
+        get => _isMatch;
+        set => this.RaiseAndSetIfChanged(ref _isMatch, value);
+    }
+
     public bool IsAlwaysMatch => Pattern is "" || (UseRegex && Pattern is "^" or "$" or "^$");
 
-    public bool IsMatch(T input) => (UseRegex, MatchCase) switch
+    private void UpdateMatchPredicate()
     {
-        (true, true) => Regex.IsMatch(_converter(input), Pattern),
-        (true, false) => Regex.IsMatch(_converter(input), Pattern, RegexOptions.IgnoreCase),
-        (false, true) => _converter(input).Contains(Pattern, StringComparison.Ordinal),
-        (false, false) => _converter(input).Contains(Pattern, StringComparison.OrdinalIgnoreCase)
-    };
+        if (UseRegex)
+        {
+            try
+            {
+                RegexOptions caseOption = MatchCase ? 0 : RegexOptions.IgnoreCase;
+                Regex regex = new(Pattern, RegexOptions.Compiled | caseOption);
+                IsMatch = x => regex.IsMatch(_converter(x));
+            }
+            catch (ArgumentException)
+            {
+                // TODO: add validation effect here
+            }
+        }
+        else
+        {
+            StringComparison cmpType = MatchCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+            IsMatch = x => _converter(x).Contains(Pattern, cmpType);
+        }
+    }
 }

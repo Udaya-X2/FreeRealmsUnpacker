@@ -171,7 +171,7 @@
                 <!--Search Bar-->
                 <TextBox Grid.Column="1"
                          MinWidth="0"
-                         Text="{Binding SearchOptions.Pattern}"
+                         Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"
                          FontFamily="Tahoma"
                          FontSize="12"/>
                 <!--Match Case Option-->
