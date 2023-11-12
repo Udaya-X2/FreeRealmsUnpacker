@@ -219,6 +219,27 @@
                                 Margin="5 0 0 0"
                                 ToolTip.Tip="Options">
                     <Image Source="/Assets/icon_achievement_02_32.png"/>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <CheckBox FontSize="12"
+                                      FontFamily="Tahoma"
+                                      Content="Name"
+                                      IsChecked="{Binding ShowName}"/>
+                            <CheckBox FontSize="12"
+                                      FontFamily="Tahoma"
+                                      Content="Offset"
+                                      IsChecked="{Binding ShowOffset}"/>
+                            <CheckBox FontSize="12"
+                                      FontFamily="Tahoma"
+                                      Content="Size"
+                                      IsChecked="{Binding ShowSize}"/>
+                            <CheckBox FontSize="12"
+                                      FontFamily="Tahoma"
+                                      Content="CRC-32"
+                                      IsChecked="{Binding ShowCrc32}"/>
+
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
                 </DropDownButton>
             </Grid>
             <!--Asset DataGrid-->
@@ -236,24 +257,27 @@
                       BorderBrush="Gray"
                       DoubleTapped="AssetGrid_DoubleTapped">
                 <DataGrid.Columns>
-                    <!--TODO: Bind IsVisible From Options-->
                     <DataGridTextColumn FontSize="12"
                                         Width="2*"
+                                        IsVisible="{Binding ShowName}"
                                         Header="Name"
                                         Binding="{Binding Name}"/>
                     <DataGridTextColumn FontSize="12"
                                         Width="*"
                                         MaxWidth="150"
+                                        IsVisible="{Binding ShowOffset}"
                                         Header="Offset"
                                         Binding="{Binding Offset}"/>
                     <DataGridTextColumn FontSize="12"
                                         Width="*"
                                         MaxWidth="150"
+                                        IsVisible="{Binding ShowSize}"
                                         Header="Size"
                                         Binding="{Binding Size}"/>
                     <DataGridTextColumn FontSize="12"
                                         Width="*"
                                         MaxWidth="150"
+                                        IsVisible="{Binding ShowCrc32}"
                                         Header="CRC-32"
                                         Binding="{Binding Crc32}"/>
                 </DataGrid.Columns>

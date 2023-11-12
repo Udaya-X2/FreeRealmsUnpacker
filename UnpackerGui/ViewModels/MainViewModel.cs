@@ -55,6 +55,10 @@ public class MainViewModel : ViewModelBase
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
     private bool _manifestFileSelected;
+    private bool _showName;
+    private bool _showOffset;
+    private bool _showSize;
+    private bool _showCrc32;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -110,6 +114,12 @@ public class MainViewModel : ViewModelBase
                   SelectedAsset = null;
                   SelectedAssets?.Clear();
               });
+
+        // Show each asset property by default.
+        _showName = true;
+        _showOffset = true;
+        _showSize = true;
+        _showCrc32 = true;
     }
 
     /// <summary>
@@ -165,6 +175,42 @@ public class MainViewModel : ViewModelBase
     {
         get => _manifestFileSelected;
         set => this.RaiseAndSetIfChanged(ref _manifestFileSelected, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show the asset's name.
+    /// </summary>
+    public bool ShowName
+    {
+        get => _showName;
+        set => this.RaiseAndSetIfChanged(ref _showName, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show the asset's offset.
+    /// </summary>
+    public bool ShowOffset
+    {
+        get => _showOffset;
+        set => this.RaiseAndSetIfChanged(ref _showOffset, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show the asset's size.
+    /// </summary>
+    public bool ShowSize
+    {
+        get => _showSize;
+        set => this.RaiseAndSetIfChanged(ref _showSize, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show the asset's CRC-32.
+    /// </summary>
+    public bool ShowCrc32
+    {
+        get => _showCrc32;
+        set => this.RaiseAndSetIfChanged(ref _showCrc32, value);
     }
 
     /// <summary>
