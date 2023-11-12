@@ -300,26 +300,6 @@
                         </TextBlock.Text>
                     </TextBlock>
                 </StackPanel>
-                <!--#/# Assets Selected-->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0 0 10 0"
-                            IsVisible="{Binding !!SelectedAssets.Count}"
-                            ToolTip.Tip="Number of Assets Selected">
-                    <Image Source="/Assets/cursor_interaction_default_use.png"
-                           Margin="0 0 5 0"/>
-                    <TextBlock FontFamily="Tahoma"
-                               FontSize="12"
-                               VerticalAlignment="Center">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="SelectedAssets.Count"
-                                         FallbackValue="0"/>
-                                <Binding Path="NumCheckedAssets"
-                                         FallbackValue="0"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
                 <!--#/# Search Hits-->
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
@@ -335,6 +315,26 @@
                                 <Binding Path="Assets.Count"
                                          FallbackValue="0"/>
                                 <Binding Path="NumCheckedAssets"
+                                         FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# Assets Selected-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            IsVisible="{Binding !!SelectedAssets.Count}"
+                            ToolTip.Tip="Number of Assets Selected">
+                    <Image Source="/Assets/cursor_interaction_default_use.png"
+                           Margin="0 0 5 0"/>
+                    <TextBlock FontFamily="Tahoma"
+                               FontSize="12"
+                               VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="SelectedAssets.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="Assets.Count"
                                          FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
