@@ -1,6 +1,8 @@
-﻿using ReactiveUI;
+﻿using DynamicData.Binding;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using UnpackerGui.ViewModels;
@@ -18,6 +20,8 @@ public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
 
     private readonly IEnumerable<T> _items;
 
+    private Lazy<int> _count;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FilteredReactiveCollection{T}"/> class from the specified sequence.
     /// </summary>
@@ -25,18 +29,41 @@ public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
     {
         _items = items ?? throw new ArgumentNullException(nameof(items));
         SearchOptions = searchOptions ?? throw new ArgumentNullException(nameof(searchOptions));
+        _count = new Lazy<int>(CountMatches);
+
+        // Refresh the collection when the underlying collection changes.
+        (items as INotifyCollectionChanged)?.ObserveCollectionChanges()
+                                            .Subscribe(_ => Refresh());
 
         // Refresh the collection when the search options change.
         this.WhenAnyValue(x => x.SearchOptions.IsMatch)
             .Subscribe(_ => Refresh());
     }
 
-    public override int Count => SearchOptions.IsAlwaysMatch
-        ? _items.Count()
-        : _items.Count(SearchOptions.IsMatch);
+    /// <inheritdoc/>
+    public override int Count => _count.Value;
 
-    public override IEnumerator<T> GetEnumerator() => SearchOptions.IsAlwaysMatch
-        ? _items.GetEnumerator()
-        : _items.Where(SearchOptions.IsMatch)
-                .GetEnumerator();
+    /// <inheritdoc/>
+    public override IEnumerator<T> GetEnumerator()
+    {
+        return SearchOptions.IsAlwaysMatch ? _items.GetEnumerator() : _items.Where(SearchOptions.IsMatch)
+                                                                            .GetEnumerator();
+    }
+
+    /// <inheritdoc/>
+    public override void Refresh()
+    {
+        if (NotificationsEnabled)
+        {
+            _count = new Lazy<int>(CountMatches);
+        }
+
+        base.Refresh();
+    }
+
+    /// <summary>
+    /// Returns the number of items that match the search options.
+    /// </summary>
+    /// <returns>The number of items that match the search options.</returns>
+    private int CountMatches() => SearchOptions.IsAlwaysMatch ? _items.Count() : _items.Count(SearchOptions.IsMatch);
 }

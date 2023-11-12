@@ -106,7 +106,7 @@ public class MainViewModel : ViewModelBase
 
         // Need to clear selected assets to avoid the UI freezing when a large
         // number of assets are selected while more assets are added/removed.
-        Assets.ToObservableChangeSet<FilteredReactiveCollection<AssetInfo>, AssetInfo>()
+        Assets.ObserveCollectionChanges()
               .Subscribe(_ =>
               {
                   SelectedAsset = null;
