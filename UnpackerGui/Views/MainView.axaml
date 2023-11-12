@@ -12,7 +12,7 @@
              FontFamily="Tahoma"
              x:DataType="vm:MainViewModel"
              Loaded="MainView_Loaded"
-             KeyDown="MainView_KeyDown">
+             Unloaded="MainView_Unloaded">
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
     </UserControl.Resources>

@@ -12,6 +12,8 @@ namespace UnpackerGui.Views;
 
 public partial class MainView : UserControl
 {
+    private IDisposable? _keyDownHandler;
+
     public MainView()
     {
         InitializeComponent();
@@ -27,8 +29,18 @@ public partial class MainView : UserControl
             assetGrid.SelectionChanged += mainViewModel.SelectedAssets.OnCollectionChanged;
         }
 
-        // Globally handle key events from the window in this view.
-        KeyDownEvent.AddClassHandler<TopLevel>(MainView_KeyDown, handledEventsToo: true);
+        // Handle key events from the main window in this view.
+        _keyDownHandler = KeyDownEvent.AddClassHandler<MainWindow>(OnKeyDown);
+    }
+
+    private void MainView_Unloaded(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is MainViewModel mainViewModel)
+        {
+            assetGrid.SelectionChanged -= mainViewModel.SelectedAssets.OnCollectionChanged;
+        }
+
+        _keyDownHandler?.Dispose();
     }
 
     private void AssetGrid_DoubleTapped(object? sender, TappedEventArgs e)
@@ -50,10 +62,8 @@ public partial class MainView : UserControl
         }
     }
 
-    private void MainView_KeyDown(object? sender, KeyEventArgs e)
+    private void OnKeyDown(MainWindow sender, KeyEventArgs e)
     {
-        if (this == sender) return;
-
         switch (e.KeyModifiers, e.Key)
         {
             case (KeyModifiers.Alt, Key.C):
