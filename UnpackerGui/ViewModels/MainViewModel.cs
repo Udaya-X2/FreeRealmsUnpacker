@@ -42,9 +42,9 @@ public class MainViewModel : ViewModelBase
     public ICommand AddDataFilesCommand { get; }
     public ICommand ExtractFilesCommand { get; }
     public ICommand ExtractAssetsCommand { get; }
-    public ICommand SelectAllCommand { get; }
-    public ICommand DeselectAllCommand { get; }
-    public ICommand RemoveSelectedCommand { get; }
+    public ICommand CheckAllCommand { get; }
+    public ICommand UncheckAllCommand { get; }
+    public ICommand RemoveCheckedCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
@@ -67,9 +67,9 @@ public class MainViewModel : ViewModelBase
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
         ExtractAssetsCommand = ReactiveCommand.CreateFromTask(ExtractAssets);
-        SelectAllCommand = ReactiveCommand.Create(SelectAll);
-        DeselectAllCommand = ReactiveCommand.Create(DeselectAll);
-        RemoveSelectedCommand = ReactiveCommand.Create(RemoveSelected);
+        CheckAllCommand = ReactiveCommand.Create(CheckAll);
+        UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
+        RemoveCheckedCommand = ReactiveCommand.Create(RemoveChecked);
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
@@ -247,7 +247,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Checks all asset files, or checks the data files under the selected manifest.dat file.
     /// </summary>
-    private void SelectAll()
+    private void CheckAll()
     {
         if (ManifestFileSelected)
         {
@@ -263,7 +263,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Unchecks all asset files, or unchecks the data files under the selected manifest.dat file.
     /// </summary>
-    private void DeselectAll()
+    private void UncheckAll()
     {
         if (ManifestFileSelected)
         {
@@ -279,7 +279,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Removes all checked asset files, or removes the checked data files under the selected manifest.dat file.
     /// </summary>
-    private void RemoveSelected()
+    private void RemoveChecked()
     {
         if (ManifestFileSelected)
         {

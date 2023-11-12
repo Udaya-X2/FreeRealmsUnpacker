@@ -68,25 +68,25 @@
                 </Button>
                 <!--Extract Files Button-->
                 <Button Command="{Binding ExtractFilesCommand}"
-                        ToolTip.Tip="Extract Selected Files..."
+                        ToolTip.Tip="Extract Checked Files..."
                         Grid.Column="2">
                     <Image Source="/Assets/downloadIcon.png"/>
                 </Button>
-                <!--Select All Button-->
-                <Button Command="{Binding SelectAllCommand}"
-                        ToolTip.Tip="Select All Files"
+                <!--Check All Button-->
+                <Button Command="{Binding CheckAllCommand}"
+                        ToolTip.Tip="Check All Files"
                         Grid.Column="3">
                     <Image Source="/Assets/ui_dialog_greencheck.png"/>
                 </Button>
-                <!--Deselect All Button-->
-                <Button Command="{Binding DeselectAllCommand}"
-                        ToolTip.Tip="Deselect All Files"
+                <!--Uncheck All Button-->
+                <Button Command="{Binding UncheckAllCommand}"
+                        ToolTip.Tip="Uncheck All Files"
                         Grid.Column="4">
                     <Image Source="/Assets/ps3_icon_ui_none_32.png"/>
                 </Button>
-                <!--Remove Selected Button-->
-                <Button Command="{Binding RemoveSelectedCommand}"
-                        ToolTip.Tip="Remove Selected Files"
+                <!--Remove Checked Button-->
+                <Button Command="{Binding RemoveCheckedCommand}"
+                        ToolTip.Tip="Remove Checked Files"
                         Grid.Column="5">
                     <Image Source="/Assets/video_new_IC8.png"/>
                 </Button>
