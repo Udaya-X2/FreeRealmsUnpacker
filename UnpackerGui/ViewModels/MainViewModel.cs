@@ -81,12 +81,10 @@ public class MainViewModel : ViewModelBase
               .AutoRefresh(x => x.IsChecked)
               .Filter(x => x.IsChecked)
               .Bind(out _checkedAssetFiles)
-              .Subscribe(_ =>
-              {
-                  // Refresh assets shown & update checked asset count.
-                  Assets?.Refresh();
-                  NumCheckedAssets = CheckedAssetFiles.Sum(x => x.Count);
-              });
+              // Update total checked asset count when checked.
+              .ForAggregation()
+              .Sum(x => x.Count)
+              .BindTo(this, x => x.NumCheckedAssets);
 
         // Update total asset count when asset files change.
         source.ForAggregation()

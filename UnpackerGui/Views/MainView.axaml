@@ -265,7 +265,7 @@
                 <!--#/# Files Selected-->
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
-                            ToolTip.Tip="Number of Files Selected">
+                            ToolTip.Tip="Files Selected">
                     <Image Source="/Assets/questjournal_I50.png"
                            Margin="0 0 5 0"/>
                     <TextBlock FontFamily="Tahoma"
@@ -284,7 +284,7 @@
                 <!--#/# Assets Shown-->
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
-                            ToolTip.Tip="Number of Assets Shown">
+                            ToolTip.Tip="Assets Shown">
                     <Image Source="/Assets/Broker_IE2.png"
                            Margin="0 0 5 0"/>
                     <TextBlock FontFamily="Tahoma"
@@ -304,7 +304,7 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
                             IsVisible="{Binding SearchOptions.Pattern, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                            ToolTip.Tip="Number of Search Hits">
+                            ToolTip.Tip="Search Hits">
                     <Image Source="/Assets/icon_ui_activityFinder_32.png"
                            Margin="0 0 5 0"/>
                     <TextBlock FontFamily="Tahoma"
@@ -324,7 +324,7 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
                             IsVisible="{Binding !!SelectedAssets.Count}"
-                            ToolTip.Tip="Number of Assets Selected">
+                            ToolTip.Tip="Assets Selected">
                     <Image Source="/Assets/cursor_interaction_default_use.png"
                            Margin="0 0 5 0"/>
                     <TextBlock FontFamily="Tahoma"
