@@ -11,7 +11,8 @@
              x:Class="UnpackerGui.Views.MainView"
              FontFamily="Tahoma"
              x:DataType="vm:MainViewModel"
-             Loaded="MainView_Loaded">
+             Loaded="MainView_Loaded"
+             KeyDown="MainView_KeyDown">
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
     </UserControl.Resources>
@@ -184,23 +185,26 @@
                 <Image Grid.Column="0"
                        Source="/Assets/icon_interaction_player_inspect_32.png"
                        Margin="5 2.5 5 2.5"
-                       ToolTip.Tip="Search"/>
+                       ToolTip.Tip="Search (CTRL+F)"/>
                 <!--Search Bar-->
                 <TextBox Grid.Column="1"
+                         Name="searchBarTextBox"
                          MinWidth="0"
                          Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"
                          FontFamily="Tahoma"
                          FontSize="12"/>
                 <!--Match Case Option-->
                 <ToggleButton Grid.Column="2"
+                              Name="matchCaseButton"
                               Margin="5 0 0 0"
-                              ToolTip.Tip="Match Case"
+                              ToolTip.Tip="Match Case (ALT+C)"
                               IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
                               Content="Aa"/>
                 <!--Use Regular Expressions Option-->
                 <ToggleButton Grid.Column="3"
+                              Name="useRegexButton"
                               Margin="5 0 0 0"
-                              ToolTip.Tip="Use Regular Expressions"
+                              ToolTip.Tip="Use Regular Expressions (ALT+E)"
                               IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
                               Content=".*"/>
                 <!--Extract Selected Assets Button-->
