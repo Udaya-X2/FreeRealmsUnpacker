@@ -6,7 +6,7 @@ using System.ComponentModel;
 namespace UnpackerGui.Collections;
 
 /// <summary>
-/// Represents an <see cref="IList"/> that provides notifications upon calls to <see cref="OnCollectionChanged"/>.
+/// Represents an <see cref="IList"/> that provides notifications upon calls to <see cref="Refresh"/>.
 /// </summary>
 public class ControlledObservableList : IList, INotifyCollectionChanged, INotifyPropertyChanged
 {
@@ -46,7 +46,7 @@ public class ControlledObservableList : IList, INotifyCollectionChanged, INotify
     /// <summary>
     /// Fires a notification indicating the collection and its properties were changed.
     /// </summary>
-    public void OnCollectionChanged(object? sender, EventArgs args)
+    public void Refresh(object? sender, EventArgs args)
     {
         CollectionChanged?.Invoke(this, EventArgsCache.ResetCollectionChanged);
         PropertyChanged?.Invoke(this, EventArgsCache.CountPropertyChanged);

@@ -98,7 +98,8 @@
                       SelectionMode="Toggle"
                       SelectedItem="{Binding SelectedAssetFile}"
                       BorderThickness="1"
-                      BorderBrush="Gray">
+                      BorderBrush="Gray"
+                      DragDrop.AllowDrop="True">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding DataFiles}">
                         <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">

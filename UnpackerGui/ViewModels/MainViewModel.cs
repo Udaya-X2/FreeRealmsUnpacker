@@ -214,19 +214,42 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Opens a file dialog that allows the user to add .pack files to the asset files.
+    /// Adds the specified asset files to the source asset files or asset .dat files to the selected manifest.dat file.
+    /// </summary>
+    internal void AddFiles(IEnumerable<string> files)
+    {
+        if (ManifestFileSelected)
+        {
+            ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
+            dataFiles?.AddRange(files.Except(dataFiles));
+        }
+        else
+        {
+            _sourceAssetFiles.AddRange(files.Except(AssetFiles.Select(x => x.FullName))
+                                            .Select(x =>
+                                            {
+                                                // Discard the file if we cannot infer its asset type from its name.
+                                                AssetType type = AssetType.Game | ClientFile.InferAssetFileType(x);
+                                                return type.IsValid() ? new AssetFileViewModel(x, type) : null;
+                                            })
+                                            .WhereNotNull());
+        }
+    }
+
+    /// <summary>
+    /// Opens a file dialog that allows the user to add .pack files to the source asset files.
     /// </summary>
     private async Task AddPackFiles()
         => await AddAssetFiles(AssetType.Game | AssetType.Pack, FileTypeFilters.PackFiles);
 
     /// <summary>
-    /// Opens a file dialog that allows the user to add manifest.dat files to the asset files.
+    /// Opens a file dialog that allows the user to add manifest.dat files to the source asset files.
     /// </summary>
     private async Task AddManifestFiles()
         => await AddAssetFiles(AssetType.Game | AssetType.Dat, FileTypeFilters.ManifestFiles);
 
     /// <summary>
-    /// Opens a file dialog that allows the user to add asset files of the specified type.
+    /// Opens a file dialog that allows the user to add asset files of the specified type to the source asset files.
     /// </summary>
     private async Task AddAssetFiles(AssetType assetType, FilePickerFileType[] fileTypeFilter)
     {
@@ -244,7 +267,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Opens a file dialog that allows the user to add asset .dat files to the selected manifest.dat file.
     /// </summary>
-    public async Task AddDataFiles()
+    private async Task AddDataFiles()
     {
         IFilesService filesService = App.GetService<IFilesService>();
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
