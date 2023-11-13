@@ -33,5 +33,5 @@ public static class EnumExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsValid(this AssetType assetType)
         => BitOperations.IsPow2((uint)assetType.GetFileType())
-        || BitOperations.IsPow2((uint)assetType.GetDirectoryType());
+        && BitOperations.IsPow2((uint)assetType.GetDirectoryType());
 }
