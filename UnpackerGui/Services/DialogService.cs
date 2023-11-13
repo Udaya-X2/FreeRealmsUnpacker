@@ -12,5 +12,10 @@ public class DialogService : IDialogService
         _owner = window;
     }
 
-    public async Task ShowDialog(Window window) => await window.ShowDialog(_owner);
+    public async Task ShowDialog(Window window)
+    {
+        _owner.IsEnabled = false;
+        await window.ShowDialog(_owner);
+        _owner.IsEnabled = true;
+    }
 }
