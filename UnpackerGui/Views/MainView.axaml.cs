@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
 using UnpackerGui.Models;
+using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -72,6 +73,22 @@ public partial class MainView : UserControl
             case (KeyModifiers.Control, Key.F):
                 searchBarTextBox.Focus();
                 break;
+#if DEBUG
+            case (KeyModifiers.Control, Key.D):
+                try
+                {
+                    Directory.GetFiles("");
+                }
+                catch (Exception ex)
+                {
+                    ErrorWindow errorWindow = new()
+                    {
+                        DataContext = new ErrorViewModel(ex)
+                    };
+                    App.GetService<IDialogService>().ShowDialog(errorWindow);
+                }
+                break;
+#endif
         }
     }
 

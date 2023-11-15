@@ -1,0 +1,62 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+        xmlns:conv="clr-namespace:UnpackerGui.Converters"
+        x:Class="UnpackerGui.Views.ErrorWindow"
+        mc:Ignorable="d"
+        Icon="avares://UnpackerGui/Assets/info.ico"
+        Width="450"
+        Height="150"
+        x:DataType="vm:ErrorViewModel"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="Height"
+        CanResize="False">
+    <Window.Resources>
+        <conv:BooleanToRotationConverter x:Key="booleanToRotationConverter"/>
+    </Window.Resources>
+    <StackPanel Margin="20">
+        <Grid ColumnDefinitions="Auto,*"
+              HorizontalAlignment="Left"
+              Margin="0 0 0 15">
+            <Image Source="/Assets/icon_UI_objective_task_64.png"
+                   Width="64"
+                   Grid.Column="0"
+                   Margin="0 0 15 0"/>
+            <TextBlock HorizontalAlignment="Left"
+                       MaxHeight="128"
+                       Text="{Binding Exception.Message, StringFormat=Error: {0}}"
+                       FontFamily="Tahoma"
+                       FontSize="12"
+                       TextWrapping="Wrap"
+                       TextTrimming="CharacterEllipsis"
+                       Grid.Column="1"/>
+        </Grid>
+        <Button Command="{Binding ShowDetailsCommand}"
+                Margin="0 0 0 10">
+            <StackPanel Orientation="Horizontal">
+                <Image Source="/Assets/itemdock_PS3_I1C.png"
+                       Width="16"
+                       Margin="0 0 5 0">
+                    <Image.RenderTransform>
+                        <RotateTransform Angle="{Binding !ShowDetails, Converter={StaticResource booleanToRotationConverter}}"/>
+                    </Image.RenderTransform>
+                </Image>
+                <TextBlock Text="Details"
+                           FontFamily="Tahoma"
+                           FontSize="12"/>
+            </StackPanel>
+        </Button>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto"
+                      IsVisible="{Binding ShowDetails}">
+            <TextBox IsReadOnly="True"
+                     MaxHeight="128"
+                     FontFamily="Tahoma"
+                     FontSize="12"
+                     Text="{Binding Exception, StringFormat='{}{0}&#x0a;'}"/>
+        </ScrollViewer>
+    </StackPanel>
+</Window>
