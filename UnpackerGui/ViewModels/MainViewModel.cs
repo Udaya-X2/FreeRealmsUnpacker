@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -47,6 +48,8 @@ public class MainViewModel : ViewModelBase
     public ICommand CheckAllCommand { get; }
     public ICommand UncheckAllCommand { get; }
     public ICommand RemoveCheckedCommand { get; }
+    public ICommand OpenSelectedAssetCommand { get; }
+    public ICommand AddFilesCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
@@ -76,6 +79,8 @@ public class MainViewModel : ViewModelBase
         CheckAllCommand = ReactiveCommand.Create(CheckAll);
         UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
         RemoveCheckedCommand = ReactiveCommand.Create(RemoveChecked);
+        OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
+        AddFilesCommand = ReactiveCommand.Create<IEnumerable<string>>(AddFiles);
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
@@ -216,49 +221,6 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Extracts the selected asset to a temporary location and opens it.
-    /// </summary>
-    internal void OpenSelectedAsset()
-    {
-        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
-
-        string tempDir = Path.GetTempPath();
-        FileInfo file = new(Path.Combine(tempDir, Guid.NewGuid().ToString(), SelectedAsset.Name));
-        using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
-        file.Directory?.Create();
-        using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
-        reader.CopyTo(SelectedAsset, fs);
-        Process.Start(new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            FileName = file.FullName
-        });
-    }
-
-    /// <summary>
-    /// Adds the specified files to either the selected manifest.dat file or source asset files.
-    /// </summary>
-    internal void AddFiles(IEnumerable<string> files)
-    {
-        if (ManifestFileSelected)
-        {
-            ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
-            dataFiles?.AddRange(files.Except(dataFiles));
-        }
-        else
-        {
-            _sourceAssetFiles.AddRange(files.Except(AssetFiles.Select(x => x.FullName))
-                                            .Select(x =>
-                                            {
-                                                // Discard the file if we cannot infer its asset type from its name.
-                                                AssetType type = AssetType.Game | ClientFile.InferAssetFileType(x);
-                                                return type.IsValid() ? new AssetFileViewModel(x, type) : null;
-                                            })
-                                            .WhereNotNull());
-        }
-    }
-
-    /// <summary>
     /// Opens a file dialog that allows the user to add .pack files to the source asset files.
     /// </summary>
     private async Task AddPackFiles()
@@ -374,6 +336,7 @@ public class MainViewModel : ViewModelBase
     {
         if (ManifestFileSelected)
         {
+            // TODO: fix this to prevent errors w/asset.dat file selected instead of manifest.dat file
             SelectedAssetFile?.DataFilePaths.RemoveMany(SelectedAssetFile!.DataFiles!.Where(x => x.IsChecked)
                                                                                      .Select(x => x.FullName)
                                                                                      .ToList());
@@ -382,6 +345,49 @@ public class MainViewModel : ViewModelBase
         {
             using IDisposable _ = Assets.SuspendNotifications();
             _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToArray());
+        }
+    }
+
+    /// <summary>
+    /// Extracts the selected asset to a temporary location and opens it.
+    /// </summary>
+    private void OpenSelectedAsset()
+    {
+        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
+
+        string tempDir = Path.GetTempPath();
+        FileInfo file = new(Path.Combine(tempDir, Guid.NewGuid().ToString(), SelectedAsset.Name));
+        using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
+        file.Directory?.Create();
+        using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
+        reader.CopyTo(SelectedAsset, fs);
+        Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = true,
+            FileName = file.FullName
+        });
+    }
+
+    /// <summary>
+    /// Adds the specified files to either the selected manifest.dat file or source asset files.
+    /// </summary>
+    private void AddFiles(IEnumerable<string> files)
+    {
+        if (ManifestFileSelected)
+        {
+            ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
+            dataFiles?.AddRange(files.Except(dataFiles));
+        }
+        else
+        {
+            _sourceAssetFiles.AddRange(files.Except(AssetFiles.Select(x => x.FullName))
+                                            .Select(x =>
+                                            {
+                                                // Discard the file if we cannot infer its asset type from its name.
+                                                AssetType type = AssetType.Game | ClientFile.InferAssetFileType(x);
+                                                return type.IsValid() ? new AssetFileViewModel(x, type) : null;
+                                            })
+                                            .WhereNotNull());
         }
     }
 }

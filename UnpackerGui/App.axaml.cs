@@ -3,8 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using ReactiveUI;
 using System;
 using System.Threading.Tasks;
+using UnpackerGui.Observers;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -33,6 +35,7 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            RxApp.DefaultExceptionHandler = GlobalErrorHandler.Instance;
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()

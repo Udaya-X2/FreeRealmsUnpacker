@@ -18,4 +18,11 @@ public class DialogService : IDialogService
         await window.ShowDialog(_owner);
         _owner.IsEnabled = true;
     }
+
+    public async Task ShowTerminalDialog(Window window)
+    {
+        _owner.IsEnabled = false;
+        await window.ShowDialog(_owner);
+        _owner.Close();
+    }
 }

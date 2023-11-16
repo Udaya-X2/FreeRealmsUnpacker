@@ -56,7 +56,7 @@ public partial class MainView : UserControl
     {
         if (DataContext is not MainViewModel mainViewModel) return;
 
-        mainViewModel.OpenSelectedAsset();
+        mainViewModel.OpenSelectedAssetCommand.Execute(null);
     }
 
     private void TreeView_Drop(TreeView sender, DragEventArgs e)
@@ -64,6 +64,6 @@ public partial class MainView : UserControl
         if (DataContext is not MainViewModel mainViewModel) return;
         if (e.Data.Get(DataFormats.Files) is not IEnumerable<IStorageItem> files) return;
 
-        mainViewModel.AddFiles(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
+        mainViewModel.AddFilesCommand.Execute(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
     }
 }

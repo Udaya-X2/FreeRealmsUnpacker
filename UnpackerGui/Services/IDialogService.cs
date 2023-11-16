@@ -5,5 +5,6 @@ namespace UnpackerGui.Services;
 
 public interface IDialogService
 {
-    public Task ShowDialog(Window window);
+    Task ShowDialog(Window window);
+    Task ShowTerminalDialog(Window window);
 }
