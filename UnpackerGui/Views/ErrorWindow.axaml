@@ -7,6 +7,7 @@
         x:Class="UnpackerGui.Views.ErrorWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
+        Title="Error"
         Width="450"
         Height="150"
         x:DataType="vm:ErrorViewModel"
@@ -23,11 +24,17 @@
               Margin="0 0 0 15">
             <Image Source="/Assets/icon_UI_objective_task_64.png"
                    Width="64"
+                   IsVisible="{Binding Handled}"
+                   Grid.Column="0"
+                   Margin="0 0 15 0"/>
+            <Image Source="/Assets/ui_web_stop.png"
+                   Width="64"
+                   IsVisible="{Binding !Handled}"
                    Grid.Column="0"
                    Margin="0 0 15 0"/>
             <TextBlock HorizontalAlignment="Left"
                        MaxHeight="128"
-                       Text="{Binding Exception.Message, StringFormat=Error: {0}}"
+                       Text="{Binding Message}"
                        FontFamily="Tahoma"
                        FontSize="12"
                        TextWrapping="Wrap"
@@ -56,7 +63,7 @@
                      MaxHeight="128"
                      FontFamily="Tahoma"
                      FontSize="12"
-                     Text="{Binding Exception, StringFormat='{}{0}&#x0a;'}"/>
+                     Text="{Binding DetailsMessage}"/>
         </ScrollViewer>
     </StackPanel>
 </Window>

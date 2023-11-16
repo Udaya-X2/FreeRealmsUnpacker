@@ -1,16 +1,10 @@
-﻿using AssetIO;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reactive.Disposables;
-using UnpackerGui.Models;
-using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -42,24 +36,6 @@ public partial class MainView : UserControl
 
     private void MainView_Unloaded(object? sender, RoutedEventArgs e) => _cleanUp.Dispose();
 
-    private void AssetGrid_DoubleTapped(object? sender, TappedEventArgs e)
-    {
-        if (assetGrid.SelectedItem is not AssetInfo asset) return;
-
-        // Extract the double-clicked asset to a temporary location and open it.
-        string tempDir = Path.GetTempPath();
-        FileInfo file = new(Path.Combine(tempDir, Guid.NewGuid().ToString(), asset.Name));
-        using AssetReader reader = asset.AssetFile.OpenRead();
-        file.Directory?.Create();
-        using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
-        reader.CopyTo(asset, fs);
-        Process.Start(new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            FileName = file.FullName
-        });
-    }
-
     private void MainWindow_OnKeyDown(MainWindow sender, KeyEventArgs e)
     {
         switch (e.KeyModifiers, e.Key)
@@ -73,23 +49,14 @@ public partial class MainView : UserControl
             case (KeyModifiers.Control, Key.F):
                 searchBarTextBox.Focus();
                 break;
-#if DEBUG
-            case (KeyModifiers.Control, Key.D):
-                try
-                {
-                    Directory.GetFiles("");
-                }
-                catch (Exception ex)
-                {
-                    ErrorWindow errorWindow = new()
-                    {
-                        DataContext = new ErrorViewModel(ex)
-                    };
-                    App.GetService<IDialogService>().ShowDialog(errorWindow);
-                }
-                break;
-#endif
         }
+    }
+
+    private void AssetGrid_DoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (DataContext is not MainViewModel mainViewModel) return;
+
+        mainViewModel.OpenSelectedAsset();
     }
 
     private void TreeView_Drop(TreeView sender, DragEventArgs e)

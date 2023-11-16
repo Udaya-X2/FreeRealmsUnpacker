@@ -8,6 +8,8 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -112,7 +114,7 @@ public class MainViewModel : ViewModelBase
               .Subscribe(_ =>
               {
                   SelectedAsset = null;
-                  SelectedAssets?.Clear();
+                  SelectedAssets.Clear();
               });
 
         // Show each asset property by default.
@@ -214,7 +216,27 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Adds the specified asset files to the source asset files or asset .dat files to the selected manifest.dat file.
+    /// Extracts the selected asset to a temporary location and opens it.
+    /// </summary>
+    internal void OpenSelectedAsset()
+    {
+        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
+
+        string tempDir = Path.GetTempPath();
+        FileInfo file = new(Path.Combine(tempDir, Guid.NewGuid().ToString(), SelectedAsset.Name));
+        using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
+        file.Directory?.Create();
+        using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
+        reader.CopyTo(SelectedAsset, fs);
+        Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = true,
+            FileName = file.FullName
+        });
+    }
+
+    /// <summary>
+    /// Adds the specified files to either the selected manifest.dat file or source asset files.
     /// </summary>
     internal void AddFiles(IEnumerable<string> files)
     {

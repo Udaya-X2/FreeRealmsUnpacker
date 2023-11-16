@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Threading.Tasks;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -58,4 +59,15 @@ public partial class App : Application
     public static T GetService<T>() where T : class
         => Current?.Services?.GetService<T>()
         ?? throw new InvalidOperationException($"Missing {typeof(T).Name} instance.");
+
+    /// <summary>
+    /// Displays an error dialog with the specified exception.
+    /// </summary>
+    public static async Task ShowErrorDialog(Exception ex, bool handled)
+    {
+        await GetService<IDialogService>().ShowDialog(new ErrorWindow
+        {
+            DataContext = new ErrorViewModel(ex, handled)
+        });
+    }
 }
