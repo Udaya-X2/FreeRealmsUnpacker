@@ -11,6 +11,7 @@ namespace UnpackerGui.Views;
 public partial class ExtractionWindow : Window
 {
     private readonly CancellationTokenSource _cts;
+
     private Task _task;
 
     public ExtractionWindow()
@@ -22,39 +23,36 @@ public partial class ExtractionWindow : Window
 
     private async void Window_Loaded(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is ExtractionViewModel extraction)
+        if (DataContext is not ExtractionViewModel extraction) return;
+
+        // TODO: make extraction window the 'owner' so it gets disabled
+        // TODO: make sure canceled exception doesn't cause error
+        await (_task = Task.Run(() =>
         {
-            _task = Task.Run(() => extraction.ExtractAssets(_cts.Token), _cts.Token);
-            await ExtractionTask();
-        }
+            try
+            {
+                extraction.ExtractAssets(_cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.WriteLine($"Extraction stopped at asset {extraction.AssetIndex}/{extraction.AssetCount}.");
+            }
+        }, _cts.Token));
     }
 
     private async void Window_Closing(object? sender, WindowClosingEventArgs e)
     {
-        if (!_task.IsCompleted && DataContext is ExtractionViewModel extraction)
-        {
-            // Disable UI interaction and wait for the extraction to stop before closing the window.
-            Closing -= Window_Closing;
-            IsEnabled = false;
-            e.Cancel = true;
-            extraction.ExtractionMessage = "Stopping extraction...";
-            _cts.Cancel();
-            await ExtractionTask();
-            Close();
-        }
+        if (_task.IsCompleted || DataContext is not ExtractionViewModel extraction) return;
+
+        // Disable user interaction and delay closing the window until the extraction is stopped.
+        Closing -= Window_Closing;
+        IsEnabled = false;
+        e.Cancel = true;
+        extraction.ExtractionMessage = "Stopping extraction...";
+        _cts.Cancel();
+        await _task;
+        Close();
     }
 
     private void Window_Closed(object? sender, EventArgs e) => _cts.Dispose();
-
-    private async Task ExtractionTask()
-    {
-        try
-        {
-            await _task;
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.WriteLine("Extraction canceled.");
-        }
-    }
 }
