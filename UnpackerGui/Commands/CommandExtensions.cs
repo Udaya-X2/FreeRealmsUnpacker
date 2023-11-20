@@ -3,9 +3,9 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 
-namespace UnpackerGui.Observers;
+namespace UnpackerGui.Commands;
 
-public static class ObservableExtensions
+public static class CommandExtensions
 {
     /// <summary>
     /// Executes the specified command, if possible.

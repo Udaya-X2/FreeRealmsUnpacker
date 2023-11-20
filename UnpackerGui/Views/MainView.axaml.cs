@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using UnpackerGui.Observers;
+using UnpackerGui.Commands;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;

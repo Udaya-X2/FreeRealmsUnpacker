@@ -5,7 +5,7 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
-using UnpackerGui.Observers;
+using System.Reactive;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -34,7 +34,10 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            RxApp.DefaultExceptionHandler = GlobalErrorHandler.Instance;
+            RxApp.DefaultExceptionHandler = Observer.Create<Exception>(async x =>
+            {
+                await GetService<IDialogService>().ShowErrorDialog(x);
+            });
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()
