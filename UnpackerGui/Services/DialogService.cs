@@ -12,17 +12,21 @@ public class DialogService : IDialogService
         _owner = window;
     }
 
-    public async Task ShowDialog(Window window)
+    public async Task ShowDialog(Window window) => await ShowDialog(_owner, window);
+
+    public async Task ShowDialog(Window owner, Window window)
     {
         _owner.IsEnabled = false;
-        await window.ShowDialog(_owner);
+        await window.ShowDialog(owner);
         _owner.IsEnabled = true;
     }
 
-    public async Task ShowTerminalDialog(Window window)
+    public async Task ShowTerminalDialog(Window window) => await ShowTerminalDialog(_owner, window);
+
+    public async Task ShowTerminalDialog(Window owner, Window window)
     {
         _owner.IsEnabled = false;
-        await window.ShowDialog(_owner);
+        await window.ShowDialog(owner);
         _owner.Close();
     }
 }

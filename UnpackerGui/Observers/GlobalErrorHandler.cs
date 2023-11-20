@@ -1,6 +1,4 @@
-﻿using ReactiveUI;
-using System;
-using System.Reactive.Concurrency;
+﻿using System;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -8,7 +6,7 @@ using UnpackerGui.Views;
 namespace UnpackerGui.Observers;
 
 /// <summary>
-/// A global error handler that displays a message box when unhandled errors occur.
+/// A global error handler that displays a message box when exceptions occur.
 /// </summary>
 public class GlobalErrorHandler : IObserver<Exception>
 {
@@ -25,10 +23,10 @@ public class GlobalErrorHandler : IObserver<Exception>
 
     private static async void ShowError(Exception error)
     {
-        await App.GetService<IDialogService>().ShowTerminalDialog(new ErrorWindow()
+        ErrorWindow errorWindow = new()
         {
-            DataContext = new ErrorViewModel(error, false)
-        });
-        RxApp.MainThreadScheduler.Schedule(() => { throw error; });
+            DataContext = new ErrorViewModel(error, true)
+        };
+        await App.GetService<IDialogService>().ShowDialog(errorWindow);
     }
 }

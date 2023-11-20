@@ -6,8 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
@@ -19,12 +22,15 @@ public class ExtractionViewModel : ViewModelBase
     /// </summary>
     public int AssetCount { get; }
 
+    public ReactiveCommand<Unit, Unit> ExtractAssetsCommand { get; }
+
     private readonly IEnumerable<ExtractionAssetFile> _extractionAssetFiles;
     private readonly string _outputDir;
 
     private string _extractionMessage = "";
     private string _elapsedTime = $@"{TimeSpan.Zero:hh\:mm\:ss}";
     private int _assetIndex;
+    private bool _extractionComplete;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtractionViewModel"/>
@@ -35,6 +41,7 @@ public class ExtractionViewModel : ViewModelBase
         AssetCount = assetFiles.Sum(x => x.Count);
         _outputDir = outputDir;
         _extractionAssetFiles = assetFiles.Select(x => new ExtractionAssetFile(x.Info, x.OpenRead, x.Assets));
+        ExtractAssetsCommand = ReactiveCommand.CreateFromTask(token => Task.Run(() => ExtractAssets(token), token));
     }
 
     /// <summary>
@@ -47,6 +54,7 @@ public class ExtractionViewModel : ViewModelBase
         _outputDir = outputDir;
         _extractionAssetFiles = assets.GroupBy(x => x.AssetFile)
                                       .Select(x => new ExtractionAssetFile(x.Key.Info, x.Key.OpenRead, x));
+        ExtractAssetsCommand = ReactiveCommand.CreateFromTask(token => Task.Run(() => ExtractAssets(token), token));
     }
 
     /// <summary>
@@ -77,9 +85,18 @@ public class ExtractionViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Gets whether the extraction operation has completed.
+    /// </summary>
+    public bool ExtractionComplete
+    {
+        get => _extractionComplete;
+        set => this.RaiseAndSetIfChanged(ref _extractionComplete, value);
+    }
+
+    /// <summary>
     /// Extracts the assets from each extraction asset file to the output directory.
     /// </summary>
-    public void ExtractAssets(CancellationToken token)
+    private void ExtractAssets(CancellationToken token)
     {
         using IDisposable _ = Timer();
 
@@ -90,7 +107,11 @@ public class ExtractionViewModel : ViewModelBase
 
             foreach (AssetInfo asset in assetFile.Assets)
             {
-                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+                if (token.IsCancellationRequested)
+                {
+                    ExtractionComplete = true;
+                    token.ThrowIfCancellationRequested();
+                }
 
                 FileInfo file = new(Path.Combine(_outputDir, asset.Name));
                 file.Directory?.Create();
@@ -101,6 +122,7 @@ public class ExtractionViewModel : ViewModelBase
         }
 
         ExtractionMessage = "Extraction Complete";
+        ExtractionComplete = true;
     }
 
     /// <summary>

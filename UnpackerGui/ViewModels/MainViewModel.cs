@@ -14,7 +14,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using UnpackerGui.Collections;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
@@ -40,16 +39,16 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     public SearchOptionsViewModel<AssetInfo> SearchOptions { get; }
 
-    public ICommand AddPackFilesCommand { get; }
-    public ICommand AddManifestFilesCommand { get; }
-    public ICommand AddDataFilesCommand { get; }
-    public ICommand ExtractFilesCommand { get; }
-    public ICommand ExtractAssetsCommand { get; }
-    public ICommand CheckAllCommand { get; }
-    public ICommand UncheckAllCommand { get; }
-    public ICommand RemoveCheckedCommand { get; }
-    public ICommand OpenSelectedAssetCommand { get; }
-    public ICommand AddFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExtractFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExtractAssetsCommand { get; }
+    public ReactiveCommand<Unit, Unit> CheckAllCommand { get; }
+    public ReactiveCommand<Unit, Unit> UncheckAllCommand { get; }
+    public ReactiveCommand<Unit, Unit> RemoveCheckedCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
+    public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
@@ -245,7 +244,8 @@ public class MainViewModel : ViewModelBase
         });
         _sourceAssetFiles.AddRange(files.Select(x => x.Path.LocalPath)
                                         .Except(AssetFiles.Select(x => x.FullName))
-                                        .Select(x => new AssetFileViewModel(x, assetType)));
+                                        .Select(x => new AssetFileViewModel(x, assetType))
+                                        .ToList());
     }
 
     /// <summary>
@@ -260,7 +260,9 @@ public class MainViewModel : ViewModelBase
             FileTypeFilter = FileTypeFilters.AssetDatFiles
         });
         ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
-        dataFiles?.AddRange(files.Select(x => x.Path.LocalPath).Except(dataFiles));
+        dataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
+                                 .Except(dataFiles)
+                                 .ToList());
     }
 
     /// <summary>
@@ -271,12 +273,10 @@ public class MainViewModel : ViewModelBase
         if (CheckedAssetFiles.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
-        ExtractionWindow extractionWindow = new()
+        await App.GetService<IDialogService>().ShowDialog(new ExtractionWindow()
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles)
-        };
-        IDialogService dialogService = App.GetService<IDialogService>();
-        await dialogService.ShowDialog(extractionWindow);
+        });
     }
 
     /// <summary>
@@ -287,14 +287,12 @@ public class MainViewModel : ViewModelBase
         if (SelectedAssets.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
-        ExtractionWindow extractionWindow = new()
+        await App.GetService<IDialogService>().ShowDialog(new ExtractionWindow()
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath,
                                                   SelectedAssets.Cast<AssetInfo>(),
                                                   SelectedAssets.Count)
-        };
-        IDialogService dialogService = App.GetService<IDialogService>();
-        await dialogService.ShowDialog(extractionWindow);
+        });
     }
 
     /// <summary>
@@ -373,10 +371,12 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private void AddFiles(IEnumerable<string> files)
     {
+        if (files == null) throw new ArgumentNullException(nameof(files));
+
         if (ManifestFileSelected)
         {
             ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
-            dataFiles?.AddRange(files.Except(dataFiles));
+            dataFiles?.AddRange(files.Except(dataFiles).ToList());
         }
         else
         {
@@ -387,7 +387,8 @@ public class MainViewModel : ViewModelBase
                                                 AssetType type = AssetType.Game | ClientFile.InferAssetFileType(x);
                                                 return type.IsValid() ? new AssetFileViewModel(x, type) : null;
                                             })
-                                            .WhereNotNull());
+                                            .WhereNotNull()
+                                            .ToList());
         }
     }
 }

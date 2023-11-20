@@ -5,6 +5,8 @@ using Avalonia.Platform.Storage;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using UnpackerGui.Observers;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -56,7 +58,7 @@ public partial class MainView : UserControl
     {
         if (DataContext is not MainViewModel mainViewModel) return;
 
-        mainViewModel.OpenSelectedAssetCommand.Execute(null);
+        mainViewModel.OpenSelectedAssetCommand.Invoke();
     }
 
     private void TreeView_Drop(TreeView sender, DragEventArgs e)
@@ -64,6 +66,6 @@ public partial class MainView : UserControl
         if (DataContext is not MainViewModel mainViewModel) return;
         if (e.Data.Get(DataFormats.Files) is not IEnumerable<IStorageItem> files) return;
 
-        mainViewModel.AddFilesCommand.Execute(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
+        mainViewModel.AddFilesCommand.Invoke(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
     }
 }

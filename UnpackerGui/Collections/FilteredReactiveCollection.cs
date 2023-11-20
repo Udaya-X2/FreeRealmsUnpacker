@@ -44,11 +44,9 @@ public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
     public override int Count => _count.Value;
 
     /// <inheritdoc/>
-    public override IEnumerator<T> GetEnumerator()
-    {
-        return SearchOptions.IsAlwaysMatch ? _items.GetEnumerator() : _items.Where(SearchOptions.IsMatch)
-                                                                            .GetEnumerator();
-    }
+    public override IEnumerator<T> GetEnumerator() => SearchOptions.IsAlwaysMatch
+        ? _items.GetEnumerator()
+        : _items.Where(SearchOptions.IsMatch).GetEnumerator();
 
     /// <inheritdoc/>
     public override void Refresh()

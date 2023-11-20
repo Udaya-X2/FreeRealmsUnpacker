@@ -1,6 +1,6 @@
 ﻿using ReactiveUI;
 using System;
-using System.Windows.Input;
+using System.Reactive;
 
 namespace UnpackerGui.ViewModels;
 
@@ -9,7 +9,7 @@ public class ErrorViewModel : ViewModelBase
     public Exception Exception { get; }
     public bool Handled { get; }
 
-    public ICommand ShowDetailsCommand { get; }
+    public ReactiveCommand<Unit, bool> ShowDetailsCommand { get; }
 
     private bool _showDetails;
 
@@ -27,8 +27,8 @@ public class ErrorViewModel : ViewModelBase
     }
 
     public string Message => Handled
-        ? $"A handled exception has occurred.{Environment.NewLine}{Environment.NewLine}{Exception.Message}"
-        : $"An unhandled exception has occurred.{Environment.NewLine}{Environment.NewLine}{Exception.Message}";
+        ? $"An exception has occurred.{Environment.NewLine}{Environment.NewLine}{Exception.Message}"
+        : $"A fatal exception has occurred.{Environment.NewLine}{Environment.NewLine}{Exception.Message}";
 
     public string DetailsMessage => $"{Exception}{Environment.NewLine}";
 }
