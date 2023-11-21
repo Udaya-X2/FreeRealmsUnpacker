@@ -34,14 +34,14 @@ public partial class ExtractionWindow : Window
         extraction.ExtractAssetsCommand.ThrownExceptions.Subscribe(async x =>
         {
             _cleanUp.Dispose();
-            await _dialogService.ShowErrorDialog(x, true);
+            await _dialogService.ShowErrorDialog(x, terminal: true);
         });
         _cleanUp.Add(extraction.ExtractAssetsCommand.Invoke());
     }
 
     private void Window_Closing(object? sender, WindowClosingEventArgs e)
     {
-        if (DataContext is not ExtractionViewModel extraction || extraction.ExtractionComplete) return;
+        if (!IsEnabled || DataContext is not ExtractionViewModel extraction || extraction.ExtractionComplete) return;
 
         // Disable user interaction and delay closing the window until the extraction is completed.
         IsEnabled = false;

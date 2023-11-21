@@ -19,27 +19,22 @@ public class DialogService : IDialogService
 
     public async Task ShowDialog(Window owner, Window window, bool terminal = false)
     {
-        owner.IsEnabled = false;
         await window.ShowDialog(owner);
 
         if (terminal)
         {
             owner.Close();
         }
-        else
-        {
-            owner.IsEnabled = true;
-        }
     }
 
-    public async Task ShowErrorDialog(Exception exception, bool terminal = false)
-        => await ShowErrorDialog(_owner, exception, terminal);
+    public async Task ShowErrorDialog(Exception exception, bool terminal = false, bool unhandled = false)
+        => await ShowErrorDialog(_owner, exception, terminal, unhandled);
 
-    public async Task ShowErrorDialog(Window owner, Exception exception, bool terminal = false)
+    public async Task ShowErrorDialog(Window owner, Exception exception, bool terminal = false, bool unhandled = false)
     {
         ErrorWindow errorWindow = new()
         {
-            DataContext = new ErrorViewModel(exception, true)
+            DataContext = new ErrorViewModel(exception, !unhandled)
         };
         await ShowDialog(errorWindow, terminal);
     }

@@ -2,10 +2,13 @@
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
 using System.Reactive;
+using System.Threading;
+using UnpackerGui.Collections;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -34,10 +37,8 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            RxApp.DefaultExceptionHandler = Observer.Create<Exception>(async x =>
-            {
-                await GetService<IDialogService>().ShowErrorDialog(x);
-            });
+            AppDomain.CurrentDomain.UnhandledException += OnFatalException;
+            RxApp.DefaultExceptionHandler = Observer.Create<Exception>(OnRecoverableException);
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()
@@ -64,4 +65,33 @@ public partial class App : Application
     public static T GetService<T>() where T : class
         => Current?.Services?.GetService<T>()
         ?? throw new InvalidOperationException($"Missing {typeof(T).Name} instance.");
+
+    /// <summary>
+    /// Displays a fatal error message with the specified exception.
+    /// </summary>
+    private static void OnFatalException(object sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is not Exception exception) return;
+        if (Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
+
+        // Disable all open windows.
+        desktop.Windows.ForEach(x => x.IsEnabled = false);
+
+        // Shut down the application after the error dialog is closed.
+        using CancellationTokenSource cts = new();
+        GetService<IDialogService>().ShowErrorDialog(exception, unhandled: true)
+                                    .ContinueWith(x =>
+                                    {
+                                        // Hide all open windows prior to shutdown.
+                                        Dispatcher.UIThread.Invoke(() => desktop.Windows.ForEach(x => x.Hide()));
+                                        cts.Cancel();
+                                    });
+        Dispatcher.UIThread.MainLoop(cts.Token);
+    }
+
+    /// <summary>
+    /// Displays an error message with the specified exception.
+    /// </summary>
+    private static async void OnRecoverableException(Exception exception)
+        => await GetService<IDialogService>().ShowErrorDialog(exception);
 }
