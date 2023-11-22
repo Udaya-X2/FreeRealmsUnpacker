@@ -273,7 +273,7 @@ public class MainViewModel : ViewModelBase
         if (CheckedAssetFiles.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
-        await App.GetService<IDialogService>().ShowDialog(new ExtractionWindow()
+        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow()
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles)
         });
@@ -287,7 +287,7 @@ public class MainViewModel : ViewModelBase
         if (SelectedAssets.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
-        await App.GetService<IDialogService>().ShowDialog(new ExtractionWindow()
+        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow()
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath,
                                                   SelectedAssets.Cast<AssetInfo>(),
@@ -306,8 +306,10 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            using IDisposable _ = Assets.SuspendNotifications();
-            AssetFiles.ForEach(x => x.IsChecked = true);
+            using (Assets.SuspendNotifications())
+            {
+                AssetFiles.ForEach(x => x.IsChecked = true);
+            }
         }
     }
 
@@ -322,8 +324,10 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            using IDisposable _ = Assets.SuspendNotifications();
-            AssetFiles.ForEach(x => x.IsChecked = false);
+            using (Assets.SuspendNotifications())
+            {
+                AssetFiles.ForEach(x => x.IsChecked = false);
+            }
         }
     }
 
@@ -341,8 +345,10 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            using IDisposable _ = Assets.SuspendNotifications();
-            _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToArray());
+            using (Assets.SuspendNotifications())
+            {
+                _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToArray());
+            }
         }
     }
 
