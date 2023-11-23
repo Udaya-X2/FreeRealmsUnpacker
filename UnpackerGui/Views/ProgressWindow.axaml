@@ -14,8 +14,7 @@
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Loaded="Window_Loaded"
-        Closing="Window_Closing"
-        Closed="Window_Closed">
+        Closing="Window_Closing">
     <StackPanel Margin="20"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">

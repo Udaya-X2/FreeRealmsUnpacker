@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
@@ -46,7 +47,7 @@ public class ExtractionViewModel : ProgressViewModel
     {
         token.Register(() =>
         {
-            if (!IsComplete)
+            if (!Status.IsCompleted())
             {
                 Message = "Stopping Extraction...";
             }
@@ -54,7 +55,7 @@ public class ExtractionViewModel : ProgressViewModel
         return Task.Run(() => ExtractAssets(token), token)
                    .ContinueWith(x =>
                    {
-                       IsComplete = true;
+                       Status = x.Status;
 
                        if (x.IsFaulted)
                        {

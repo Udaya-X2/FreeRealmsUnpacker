@@ -14,8 +14,11 @@ public abstract class ProgressViewModel : ViewModelBase
     private int _value;
     private string _message = "";
     private string _elapsedTime = $@"{TimeSpan.Zero:hh\:mm\:ss}";
-    private bool _isComplete;
+    private TaskStatus _taskStatus;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProgressViewModel"/> class.
+    /// </summary>
     public ProgressViewModel()
     {
         Command = ReactiveCommand.CreateFromTask(CommandTask);
@@ -59,12 +62,12 @@ public abstract class ProgressViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Gets or sets whether the task is complete.
+    /// Gets or sets the status of the task.
     /// </summary>
-    public bool IsComplete
+    public TaskStatus Status
     {
-        get => _isComplete;
-        set => this.RaiseAndSetIfChanged(ref _isComplete, value);
+        get => _taskStatus;
+        set => this.RaiseAndSetIfChanged(ref _taskStatus, value);
     }
 
     /// <summary>

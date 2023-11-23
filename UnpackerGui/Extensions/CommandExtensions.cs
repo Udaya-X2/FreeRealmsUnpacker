@@ -3,8 +3,11 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 
-namespace UnpackerGui.Commands;
+namespace UnpackerGui.Extensions;
 
+/// <summary>
+/// Provides extension methods for <see cref="ReactiveCommandBase{TParam, TResult}"/>.
+/// </summary>
 public static class CommandExtensions
 {
     /// <summary>
