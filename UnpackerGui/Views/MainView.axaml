@@ -15,6 +15,7 @@
              Unloaded="MainView_Unloaded">
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
+        <conv:BooleanToRotationConverter x:Key="booleanToRotationConverter"/>
     </UserControl.Resources>
     <UserControl.Styles>
         <!--Hide Validation Error Messages-->
@@ -91,24 +92,65 @@
                     <Image Source="/Assets/video_new_IC8.png"/>
                 </Button>
             </Grid>
-            <!--Asset Files-->
-            <TreeView ItemsSource="{Binding AssetFiles}"
-                      Grid.Row="1"
-                      Margin="0 5 0 0"
-                      SelectionMode="Toggle"
-                      SelectedItem="{Binding SelectedAssetFile}"
-                      BorderThickness="1"
-                      BorderBrush="Gray"
-                      DragDrop.AllowDrop="True">
-                <TreeView.ItemTemplate>
-                    <TreeDataTemplate ItemsSource="{Binding DataFiles}">
-                        <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">
-                            <TextBlock FontSize="12"
-                                       Text="{Binding Name}"/>
-                        </CheckBox>
-                    </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
+            <!--Asset File List-->
+            <ListBox Grid.Row="1"
+                     ItemsSource="{Binding AssetFiles}"
+                     Margin="0 5 0 0"
+                     SelectionMode="Toggle"
+                     SelectedItem="{Binding SelectedAssetFile}"
+                     DragDrop.AllowDrop="True">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="vm:AssetFileViewModel">
+                        <StackPanel Orientation="Vertical">
+                            <!--Asset File-->
+                            <StackPanel Orientation="Horizontal"
+                                        Height="14">
+                                <Button IsVisible="{Binding IsManifestFile}"
+                                        Command="{Binding ShowDataFilesCommand}">
+                                    <Button.Template>
+                                        <ControlTemplate>
+                                            <Image Source="/Assets/Broker_ID.png"
+                                                   Margin="0 0 10 0">
+                                                <Image.RenderTransform>
+                                                    <RotateTransform Angle="{Binding ShowDataFiles, Converter={StaticResource booleanToRotationConverter}, ConverterParameter=90}"/>
+                                                </Image.RenderTransform>
+                                            </Image>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
+                                          VerticalAlignment="Center"/>
+                                <TextBlock FontSize="12"
+                                           Text="{Binding Name}"
+                                           ToolTip.Tip="{Binding FullName}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <!--Data Files-->
+                            <ItemsControl ItemsSource="{Binding DataFiles}"
+                                          Margin="23 9 0 0">
+                                <ItemsControl.IsVisible>
+                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                        <Binding Path="ShowDataFiles"/>
+                                        <Binding Path="!!DataFiles.Count"/>
+                                    </MultiBinding>
+                                </ItemsControl.IsVisible>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:DataFileViewModel">
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
+                                                      VerticalAlignment="Center"/>
+                                            <TextBlock FontSize="12"
+                                                       Text="{Binding Name}"
+                                                       ToolTip.Tip="{Binding FullName}"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
             <!--Property Grid-->
             <Grid Grid.Row="2"
                   Margin="0 5 0 0"
@@ -238,7 +280,6 @@
                                       FontFamily="Tahoma"
                                       Content="CRC-32"
                                       IsChecked="{Binding ShowCrc32}"/>
-
                         </MenuFlyout>
                     </DropDownButton.Flyout>
                 </DropDownButton>

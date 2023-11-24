@@ -33,7 +33,7 @@ public partial class MainView : UserControl
         }
 
         _cleanUp.Add(KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown));
-        _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<TreeView>(TreeView_Drop));
+        _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop));
     }
 
     private void MainView_Unloaded(object? sender, RoutedEventArgs e) => _cleanUp.Dispose();
@@ -61,7 +61,7 @@ public partial class MainView : UserControl
         mainViewModel.OpenSelectedAssetCommand.Invoke();
     }
 
-    private void TreeView_Drop(TreeView sender, DragEventArgs e)
+    private void ListBox_Drop(ListBox sender, DragEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;
         if (e.Data.Get(DataFormats.Files) is not IEnumerable<IStorageItem> files) return;

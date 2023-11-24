@@ -1,18 +1,26 @@
-﻿using System.IO;
+﻿using ReactiveUI;
+using System.IO;
 
 namespace UnpackerGui.ViewModels;
 
-public class DataFileViewModel : AssetFileViewModel
+public class DataFileViewModel : ViewModelBase
 {
     public AssetFileViewModel Parent { get; }
-    public override string FullName { get; }
-    public override string Name { get; }
+    public string FullName { get; }
+    public string Name { get; }
+
+    private bool _isChecked;
 
     public DataFileViewModel(string path, AssetFileViewModel assetFile)
-        : base(assetFile)
     {
         Parent = assetFile;
         FullName = path;
         Name = Path.GetFileName(path);
+    }
+
+    public bool IsChecked
+    {
+        get => _isChecked;
+        set => this.RaiseAndSetIfChanged(ref _isChecked, value);
     }
 }

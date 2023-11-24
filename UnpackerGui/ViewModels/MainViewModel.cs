@@ -338,7 +338,6 @@ public class MainViewModel : ViewModelBase
     {
         if (ManifestFileSelected)
         {
-            // TODO: fix this to prevent errors w/asset.dat file selected instead of manifest.dat file
             SelectedAssetFile?.DataFilePaths.RemoveMany(SelectedAssetFile!.DataFiles!.Where(x => x.IsChecked)
                                                                                      .Select(x => x.FullName)
                                                                                      .ToList());
