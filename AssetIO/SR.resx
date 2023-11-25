@@ -145,7 +145,7 @@
     <value>Too many manifest files in the client directory.</value>
   </data>
   <data name="EndOfStream_AssetFile" xml:space="preserve">
-    <value>End of file reached before assets were parsed: '{1}'.</value>
+    <value>End of file reached before assets were parsed: '{0}'.</value>
   </data>
   <data name="EndOfStream_Stream" xml:space="preserve">
     <value>Unable to read beyond the end of the stream.</value>

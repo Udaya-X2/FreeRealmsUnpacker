@@ -142,7 +142,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to End of file reached before assets were parsed: &apos;{1}&apos;..
+        ///   Looks up a localized string similar to End of file reached before assets were parsed: &apos;{0}&apos;..
         /// </summary>
         internal static string EndOfStream_AssetFile {
             get {
