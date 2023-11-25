@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Threading;
 using UnpackerGui.Collections;
 using UnpackerGui.Models;
 
@@ -29,7 +30,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     private bool _isChecked;
     private bool _showDataFiles;
 
-    public AssetFileViewModel(string path, AssetType assetType)
+    public AssetFileViewModel(string path, AssetType assetType, CancellationToken token = default)
     {
         Assets = new List<AssetInfo>();
         DataFilePaths = new ReactiveList<string>();
@@ -37,6 +38,8 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
         foreach (Asset asset in _assetFile)
         {
+            if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+
             Assets.Add(new AssetInfo(asset, _assetFile));
             Size += asset.Size;
         }

@@ -79,7 +79,7 @@ public class MainViewModel : ViewModelBase
         UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
         RemoveCheckedCommand = ReactiveCommand.Create(RemoveChecked);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
-        AddFilesCommand = ReactiveCommand.Create<IEnumerable<string>>(AddFiles);
+        AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
@@ -242,10 +242,13 @@ public class MainViewModel : ViewModelBase
             AllowMultiple = true,
             FileTypeFilter = fileTypeFilter
         });
-        _sourceAssetFiles.AddRange(files.Select(x => x.Path.LocalPath)
-                                        .Except(AssetFiles.Select(x => x.FullName))
-                                        .Select(x => new AssetFileViewModel(x, assetType))
-                                        .ToList());
+        IEnumerable<string> assetFiles = files.Select(x => x.Path.LocalPath)
+                                              .Except(AssetFiles.Select(x => x.FullName));
+        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+        {
+            DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles, assetType),
+            AutoClose = true
+        });
     }
 
     /// <summary>
@@ -273,7 +276,7 @@ public class MainViewModel : ViewModelBase
         if (CheckedAssetFiles.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
-        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow()
+        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles)
         });
@@ -287,7 +290,7 @@ public class MainViewModel : ViewModelBase
         if (SelectedAssets.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
-        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow()
+        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath,
                                                   SelectedAssets.Cast<AssetInfo>(),
@@ -374,7 +377,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Adds the specified files to either the selected manifest.dat file or source asset files.
     /// </summary>
-    private void AddFiles(IEnumerable<string> files)
+    private async Task AddFiles(IEnumerable<string> files)
     {
         if (files == null) throw new ArgumentNullException(nameof(files));
 
@@ -385,15 +388,11 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            _sourceAssetFiles.AddRange(files.Except(AssetFiles.Select(x => x.FullName))
-                                            .Select(x =>
-                                            {
-                                                // Discard the file if we cannot infer its asset type from its name.
-                                                AssetType type = AssetType.Game | ClientFile.InferAssetFileType(x);
-                                                return type.IsValid() ? new AssetFileViewModel(x, type) : null;
-                                            })
-                                            .WhereNotNull()
-                                            .ToList());
+            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+            {
+                DataContext = new ReaderViewModel(_sourceAssetFiles, files.Except(AssetFiles.Select(x => x.FullName))),
+                AutoClose = true
+            });
         }
     }
 }

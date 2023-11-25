@@ -104,6 +104,7 @@
                         <StackPanel Orientation="Vertical">
                             <!--Asset File-->
                             <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center"
                                         Height="14">
                                 <Button IsVisible="{Binding IsManifestFile}"
                                         Command="{Binding ShowDataFilesCommand}">
@@ -127,7 +128,7 @@
                             </StackPanel>
                             <!--Data Files-->
                             <ItemsControl ItemsSource="{Binding DataFiles}"
-                                          Margin="23 9 0 0">
+                                          Margin="23 9 0 -9">
                                 <ItemsControl.IsVisible>
                                     <MultiBinding Converter="{x:Static BoolConverters.And}">
                                         <Binding Path="ShowDataFiles"/>
