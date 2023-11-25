@@ -242,13 +242,19 @@ public class MainViewModel : ViewModelBase
             AllowMultiple = true,
             FileTypeFilter = fileTypeFilter
         });
-        IEnumerable<string> assetFiles = files.Select(x => x.Path.LocalPath)
-                                              .Except(AssetFiles.Select(x => x.FullName));
-        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+        List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
+                                          .Except(AssetFiles.Select(x => x.FullName))
+                                          .Select(x => new AssetFile(x, assetType))
+                                          .ToList();
+
+        if (assetFiles.Count > 0)
         {
-            DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles, assetType),
-            AutoClose = true
-        });
+            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+            {
+                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                AutoClose = true
+            });
+        }
     }
 
     /// <summary>
@@ -341,9 +347,9 @@ public class MainViewModel : ViewModelBase
     {
         if (ManifestFileSelected)
         {
-            SelectedAssetFile?.DataFilePaths.RemoveMany(SelectedAssetFile!.DataFiles!.Where(x => x.IsChecked)
-                                                                                     .Select(x => x.FullName)
-                                                                                     .ToList());
+            SelectedAssetFile?.DataFilePaths?.RemoveMany(SelectedAssetFile!.DataFiles!.Where(x => x.IsChecked)
+                                                                                      .Select(x => x.FullName)
+                                                                                      .ToList());
         }
         else
         {
@@ -388,11 +394,24 @@ public class MainViewModel : ViewModelBase
         }
         else
         {
-            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+            List<AssetFile> assetFiles = files.Except(AssetFiles.Select(x => x.FullName))
+                                              .Select(x =>
+                                              {
+                                                  // Discard the file if we cannot infer its asset type from its name.
+                                                  AssetType type = AssetType.Game | ClientFile.InferAssetFileType(x);
+                                                  return type.IsValid() ? new AssetFile(x, type) : null;
+                                              })
+                                              .WhereNotNull()
+                                              .ToList();
+
+            if (assetFiles.Count > 0)
             {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, files.Except(AssetFiles.Select(x => x.FullName))),
-                AutoClose = true
-            });
+                await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+                {
+                    DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                    AutoClose = true
+                });
+            }
         }
     }
 }

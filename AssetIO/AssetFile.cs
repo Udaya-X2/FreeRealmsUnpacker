@@ -19,10 +19,10 @@ public class AssetFile : IEnumerable<Asset>
     public AssetType Type { get; }
 
     /// <summary>
-    /// Gets the asset.dat files corresponding to the asset file.
+    /// Gets or sets the asset.dat files corresponding to the asset file.
     /// </summary>
     /// <remarks>This is only used by asset files with the <see cref="AssetType.Dat"/> flag set.</remarks>
-    public IEnumerable<string> DataFiles { get; }
+    public IEnumerable<string> DataFiles { get; set; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified asset .pack file or manifest.dat file.

@@ -18,7 +18,7 @@ namespace UnpackerGui.ViewModels;
 public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 {
     public List<AssetInfo> Assets { get; }
-    public ReactiveList<string> DataFilePaths { get; }
+    public ReactiveList<string>? DataFilePaths { get; }
     public long Size { get; }
     public bool IsManifestFile { get; }
 
@@ -30,11 +30,10 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     private bool _isChecked;
     private bool _showDataFiles;
 
-    public AssetFileViewModel(string path, AssetType assetType, CancellationToken token = default)
+    public AssetFileViewModel(AssetFile assetFile, CancellationToken token = default)
     {
         Assets = new List<AssetInfo>();
-        DataFilePaths = new ReactiveList<string>();
-        _assetFile = new AssetFile(path, assetType, DataFilePaths);
+        _assetFile = assetFile;
 
         foreach (Asset asset in _assetFile)
         {
@@ -47,12 +46,12 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         if (FileType == AssetType.Dat)
         {
             IsManifestFile = true;
-            ShowDataFilesCommand = ReactiveCommand.Create(() => ShowDataFiles ^= true);
-            DataFilePaths.AddRange(ClientDirectory.EnumerateDataFiles(Info));
+            assetFile.DataFiles = DataFilePaths = new ReactiveList<string>(assetFile.DataFiles);
             DataFilePaths.ToObservableChangeSet()
                          .Transform(x => new DataFileViewModel(x, this))
                          .Bind(out _dataFiles)
                          .Subscribe();
+            ShowDataFilesCommand = ReactiveCommand.Create(() => ShowDataFiles ^= true);
         }
     }
 

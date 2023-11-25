@@ -2,7 +2,6 @@
 using DynamicData;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,25 +12,21 @@ namespace UnpackerGui.ViewModels;
 public class ReaderViewModel : ProgressViewModel
 {
     private readonly ISourceList<AssetFileViewModel> _sourceAssetFiles;
-    private readonly List<string> _inputFilePaths;
-    private readonly AssetType? _assetType;
+    private readonly List<AssetFile> _inputAssetFiles;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ReaderViewModel"/> class from the
-    /// specified source asset file list, input file paths, and optional asset type.
+    /// Initializes a new instance of the <see cref="ReaderViewModel"/>
+    /// class from the specified source asset files and input asset files.
     /// </summary>
     public ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
-                           IEnumerable<string> inputAssetFiles,
-                           AssetType? assetType = null)
+                           List<AssetFile> inputAssetFiles)
     {
         _sourceAssetFiles = sourceAssetFiles ?? throw new ArgumentNullException(nameof(sourceAssetFiles));
-        _inputFilePaths = new(inputAssetFiles ?? throw new ArgumentNullException(nameof(inputAssetFiles)));
-        _assetType = assetType;
-        Maximum = _inputFilePaths.Count;
+        _inputAssetFiles = inputAssetFiles ?? throw new ArgumentNullException(nameof(inputAssetFiles));
     }
 
     /// <inheritdoc/>
-    public override int Maximum { get; }
+    public override int Maximum => _inputAssetFiles.Count;
 
     /// <inheritdoc/>
     protected override Task CommandTask(CancellationToken token)
@@ -68,26 +63,19 @@ public class ReaderViewModel : ProgressViewModel
 
         using (Timer())
         {
-            List<AssetFileViewModel> inputAssetFiles = new();
+            AssetFileViewModel[] assetFileViewModels = new AssetFileViewModel[Maximum];
 
-            foreach (string path in _inputFilePaths)
+            for (int i = 0; i < _inputAssetFiles.Count; i++)
             {
                 if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
 
-                Message = $"Reading {Path.GetFileName(path)}";
-                AssetType assetType = _assetType ?? (AssetType.Game | ClientFile.InferAssetType(path));
-
-                if (!assetType.IsValid())
-                {
-                    Tick();
-                    continue;
-                }
-
-                inputAssetFiles.Add(new(path, assetType, token));
+                AssetFile assetFile = _inputAssetFiles[i];
+                Message = $"Reading {assetFile.Name}";
+                assetFileViewModels[i] = new AssetFileViewModel(assetFile, token);
                 Tick();
             }
 
-            _sourceAssetFiles.AddRange(inputAssetFiles);
+            _sourceAssetFiles.AddRange(assetFileViewModels);
         }
     }
 }
