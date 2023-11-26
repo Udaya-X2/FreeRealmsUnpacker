@@ -6,7 +6,7 @@
         x:Class="UnpackerGui.Views.ProgressWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
-        Title="Extraction"
+        Title="{Binding Title}"
         Width="350"
         Height="150"
         x:DataType="vm:ProgressViewModel"

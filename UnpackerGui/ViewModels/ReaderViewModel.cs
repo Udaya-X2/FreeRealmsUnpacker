@@ -29,6 +29,9 @@ public class ReaderViewModel : ProgressViewModel
     public override int Maximum => _inputAssetFiles.Count;
 
     /// <inheritdoc/>
+    public override string Title => "Reading";
+
+    /// <inheritdoc/>
     protected override Task CommandTask(CancellationToken token)
     {
         token.Register(() =>

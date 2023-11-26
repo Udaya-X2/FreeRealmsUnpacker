@@ -43,6 +43,9 @@ public class ExtractionViewModel : ProgressViewModel
     public override int Maximum { get; }
 
     /// <inheritdoc/>
+    public override string Title => "Extraction";
+
+    /// <inheritdoc/>
     protected override Task CommandTask(CancellationToken token)
     {
         token.Register(() =>

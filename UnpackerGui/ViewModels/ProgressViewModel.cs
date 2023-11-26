@@ -25,17 +25,22 @@ public abstract class ProgressViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Gets the maximum value of the progress bar.
+    /// Gets the maximum progress value.
     /// </summary>
     public abstract int Maximum { get; }
 
     /// <summary>
-    /// Gets the command, which encapsulates the progress bar task.
+    /// Gets the title of the task.
+    /// </summary>
+    public abstract string Title { get; }
+
+    /// <summary>
+    /// Gets the command, which encapsulates the progress-based task.
     /// </summary>
     public ReactiveCommand<Unit, Unit> Command { get; }
 
     /// <summary>
-    /// Gets or sets the current value of the progress bar.
+    /// Gets or sets the progress value.
     /// </summary>
     public int Value
     {
@@ -71,7 +76,7 @@ public abstract class ProgressViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Moves the progress bar by one tick.
+    /// Increments the progress value.
     /// </summary>
     protected void Tick() => Value++;
 
