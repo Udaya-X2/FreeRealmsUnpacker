@@ -1,18 +1,20 @@
-﻿using ReactiveUI;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
 namespace UnpackerGui.ViewModels;
 
-public class SearchOptionsViewModel<T> : ViewModelBase
+/// <summary>
+/// Represents a set of string-based search options to filter a specified type.
+/// </summary>
+/// <typeparam name="T">The type of the item to filter.</typeparam>
+public class SearchOptionsViewModel<T> : FilterViewModel<T>
 {
     private readonly Func<T, string> _converter;
 
     private bool _matchCase;
     private bool _useRegex;
     private string _pattern;
-    private Func<T, bool> _isMatch;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SearchOptionsViewModel{T}"/> class
@@ -24,7 +26,6 @@ public class SearchOptionsViewModel<T> : ViewModelBase
     {
         _converter = converter ?? throw new ArgumentNullException(nameof(converter));
         _pattern = "";
-        _isMatch = _ => true;
     }
 
     /// <summary>
@@ -33,11 +34,7 @@ public class SearchOptionsViewModel<T> : ViewModelBase
     public bool MatchCase
     {
         get => _matchCase;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _matchCase, value);
-            UpdateMatchPredicate();
-        }
+        set => SetValue(ref _matchCase, value);
     }
 
     /// <summary>
@@ -46,11 +43,7 @@ public class SearchOptionsViewModel<T> : ViewModelBase
     public bool UseRegex
     {
         get => _useRegex;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _useRegex, value);
-            UpdateMatchPredicate();
-        }
+        set => SetValue(ref _useRegex, value);
     }
 
     /// <summary>
@@ -59,32 +52,19 @@ public class SearchOptionsViewModel<T> : ViewModelBase
     public string Pattern
     {
         get => _pattern;
-        set
-        {
-            this.RaiseAndSetIfChanged(ref _pattern, value);
-            UpdateMatchPredicate();
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the search predicate.
-    /// </summary>
-    public Func<T, bool> IsMatch
-    {
-        get => _isMatch;
-        set => this.RaiseAndSetIfChanged(ref _isMatch, value);
+        set => SetValue(ref _pattern, value);
     }
 
     /// <summary>
     /// Returns <see langword="true"/> if the search options always produce a match; otherwise, <see langword="false"/>.
     /// </summary>
-    public bool IsAlwaysMatch => Pattern is "" || (UseRegex && Pattern is "^" or "$" or "^$");
+    public override bool IsAlwaysMatch => Pattern is "" || (UseRegex && Pattern is "^" or "$" or "^$");
 
     /// <summary>
     /// Updates the match predicate according to the current search options.
     /// </summary>
     /// <exception cref="ValidationException">If the regular expression is invalid.</exception>
-    private void UpdateMatchPredicate()
+    protected override void UpdateMatchPredicate()
     {
         if (UseRegex)
         {

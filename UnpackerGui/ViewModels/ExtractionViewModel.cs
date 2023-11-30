@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Runtime.ExceptionServices;
 using System.Threading;
-using System.Threading.Tasks;
-using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
@@ -46,30 +43,7 @@ public class ExtractionViewModel : ProgressViewModel
     public override string Title => "Extraction";
 
     /// <inheritdoc/>
-    protected override Task CommandTask(CancellationToken token)
-    {
-        token.Register(() =>
-        {
-            if (!Status.IsCompleted())
-            {
-                Message = "Stopping Extraction...";
-            }
-        });
-        return Task.Run(() => ExtractAssets(token), token)
-                   .ContinueWith(x =>
-                   {
-                       Status = x.Status;
-
-                       if (x.IsFaulted)
-                       {
-                           ExceptionDispatchInfo.Throw(x.Exception!.InnerException!);
-                       }
-                       if (x.IsCompletedSuccessfully)
-                       {
-                           Message = "Extraction Complete";
-                       }
-                   }, CancellationToken.None);
-    }
+    protected override void CommandAction(CancellationToken token) => ExtractAssets(token);
 
     /// <summary>
     /// Extracts the assets from each extraction asset file to the output directory.
@@ -78,23 +52,20 @@ public class ExtractionViewModel : ProgressViewModel
     {
         if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
 
-        using (Timer())
+        foreach (ExtractionAssetFile assetFile in _extractionAssetFiles)
         {
-            foreach (ExtractionAssetFile assetFile in _extractionAssetFiles)
+            Message = $"Extracting {assetFile.Info.Name}";
+            using AssetReader reader = assetFile.OpenRead();
+
+            foreach (AssetInfo asset in assetFile.Assets)
             {
-                Message = $"Extracting {assetFile.Info.Name}";
-                using AssetReader reader = assetFile.OpenRead();
+                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
 
-                foreach (AssetInfo asset in assetFile.Assets)
-                {
-                    if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
-
-                    FileInfo file = new(Path.Combine(_outputDir, asset.Name));
-                    file.Directory?.Create();
-                    using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
-                    reader.CopyTo(asset, fs);
-                    Tick();
-                }
+                FileInfo file = new(Path.Combine(_outputDir, asset.Name));
+                file.Directory?.Create();
+                using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
+                reader.CopyTo(asset, fs);
+                Tick();
             }
         }
     }

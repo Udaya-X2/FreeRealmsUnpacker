@@ -13,6 +13,16 @@ namespace UnpackerGui.Models;
 public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFile AssetFile)
     : Asset(Name, Offset, Size, Crc32)
 {
+    /// <summary>
+    /// Gets or sets the CRC-32 value of the asset in the corresponding asset file.
+    /// </summary>
+    public uint FileCrc32 { get; set; }
+
+    /// <summary>
+    /// Gets whether the asset's CRC-32 value is correct.
+    /// </summary>
+    public bool IsValid => Crc32 == FileCrc32;
+
     public AssetInfo(Asset asset, AssetFile assetFile)
         : this(asset.Name, asset.Offset, asset.Size, asset.Crc32, assetFile)
     {

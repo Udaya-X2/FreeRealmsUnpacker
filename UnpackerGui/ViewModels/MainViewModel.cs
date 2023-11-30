@@ -15,6 +15,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
+using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
 using UnpackerGui.Storage;
@@ -35,15 +36,31 @@ public class MainViewModel : ViewModelBase
     public FilteredReactiveCollection<AssetInfo> Assets { get; }
 
     /// <summary>
+    /// Gets the assets in the checked asset files.
+    /// </summary>
+    public ReadOnlyReactiveCollection<AssetInfo> CheckedAssets { get; }
+
+    /// <summary>
+    /// Gets the validated assets in the checked asset files.
+    /// </summary>
+    public ReadOnlyReactiveCollection<AssetInfo> ValidatedAssets { get; }
+
+    /// <summary>
     /// Gets the search options to filter the assets shown.
     /// </summary>
     public SearchOptionsViewModel<AssetInfo> SearchOptions { get; }
+
+    /// <summary>
+    /// Gets the validation options to filter the assets shown.
+    /// </summary>
+    public ValidationOptionsViewModel<AssetInfo> ValidationOptions { get; }
 
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractAssetsCommand { get; }
+    public ReactiveCommand<Unit, Unit> ToggleValidationCommand { get; }
     public ReactiveCommand<Unit, Unit> CheckAllCommand { get; }
     public ReactiveCommand<Unit, Unit> UncheckAllCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveCheckedCommand { get; }
@@ -55,9 +72,10 @@ public class MainViewModel : ViewModelBase
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _checkedAssetFiles;
 
     private int _numAssets;
-    private int _numCheckedAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
+    private IDisposable? _validationHandler;
+    private bool _isValidatingAssets;
     private bool _manifestFileSelected;
     private bool _showName;
     private bool _showOffset;
@@ -75,6 +93,7 @@ public class MainViewModel : ViewModelBase
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
         ExtractAssetsCommand = ReactiveCommand.CreateFromTask(ExtractAssets);
+        ToggleValidationCommand = ReactiveCommand.CreateFromTask(ToggleValidation);
         CheckAllCommand = ReactiveCommand.Create(CheckAll);
         UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
         RemoveCheckedCommand = ReactiveCommand.Create(RemoveChecked);
@@ -91,26 +110,29 @@ public class MainViewModel : ViewModelBase
               .AutoRefresh(x => x.IsChecked)
               .Filter(x => x.IsChecked)
               .Bind(out _checkedAssetFiles)
-              // Update total checked asset count when checked.
-              .ForAggregation()
-              .Sum(x => x.Count)
-              .BindTo(this, x => x.NumCheckedAssets);
+              .Subscribe();
 
         // Update total asset count when asset files change.
         source.ForAggregation()
               .Sum(x => x.Count)
               .BindTo(this, x => x.NumAssets);
 
+        // Initialize each observable collection.
+        ValidationOptions = new ValidationOptionsViewModel<AssetInfo>(x => x.IsValid);
+        SearchOptions = new SearchOptionsViewModel<AssetInfo>(x => x.Name);
+        SelectedAssets = new ControlledObservableList();
+        CheckedAssets = CheckedAssetFiles.Flatten<ReadOnlyObservableCollection<AssetFileViewModel>, AssetInfo>();
+        ValidatedAssets = CheckedAssets.Filter(ValidationOptions);
+        Assets = ValidatedAssets.Filter(SearchOptions);
+
+        // Toggle asset validation when requested.
+        this.WhenAnyValue(x => x.IsValidatingAssets)
+            .Subscribe(_ => ToggleValidationCommand.Invoke());
+
         // Keep track of whether selected asset file is a manifest file.
         this.WhenAnyValue(x => x.SelectedAssetFile)
             .Select(x => x?.FileType is AssetType.Dat)
             .BindTo(this, x => x.ManifestFileSelected);
-
-        // Initialize each observable collection.
-        SearchOptions = new SearchOptionsViewModel<AssetInfo>(x => x.Name);
-        SelectedAssets = new ControlledObservableList();
-        Assets = new FilteredReactiveCollection<AssetInfo>(new GroupedReactiveCollection<AssetInfo>(CheckedAssetFiles),
-                                                           SearchOptions);
 
         // Need to clear selected assets to avoid the UI freezing when a large
         // number of assets are selected while more assets are added/removed.
@@ -148,15 +170,6 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Gets or sets the number of assets in all checked files.
-    /// </summary>
-    public int NumCheckedAssets
-    {
-        get => _numCheckedAssets;
-        set => this.RaiseAndSetIfChanged(ref _numCheckedAssets, value);
-    }
-
-    /// <summary>
     /// Gets or sets the selected asset file.
     /// </summary>
     public AssetFileViewModel? SelectedAssetFile
@@ -172,6 +185,15 @@ public class MainViewModel : ViewModelBase
     {
         get => _selectedAsset;
         set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to validate assets in checked files.
+    /// </summary>
+    public bool IsValidatingAssets
+    {
+        get => _isValidatingAssets;
+        set => this.RaiseAndSetIfChanged(ref _isValidatingAssets, value);
     }
 
     /// <summary>
@@ -305,6 +327,54 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Toggles whether to validate assets in checked asset files.
+    /// </summary>
+    private async Task ToggleValidation()
+    {
+        if (IsValidatingAssets)
+        {
+            using (ValidatedAssets.SuspendNotifications())
+            {
+                IEnumerable<AssetFileViewModel> unvalidatedAssetFiles = CheckedAssetFiles.Where(x => !x.IsValidated);
+
+                // Validate checked asset files that have not been validated yet.
+                if (unvalidatedAssetFiles.Any())
+                {
+                    ValidationViewModel validation = new(unvalidatedAssetFiles);
+                    await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+                    {
+                        DataContext = validation,
+                        AutoClose = true
+                    });
+
+                    // If the validation task ended abruptly, uncheck the remaining unvalidated asset files.
+                    if (!validation.Status.IsCompletedSuccessfully())
+                    {
+                        AssetFiles.Where(x => !x.IsValidated)
+                                  .ForEach(x => x.IsChecked = false);
+                    }
+
+                    ValidatedAssets.Refresh();
+                }
+                // Ensure future checked asset files are validated before shown.
+                if (_validationHandler == null)
+                {
+                    ValidationOptions.ShowValid = false;
+                    _validationHandler = Assets.ObserveCollectionChanges()
+                                               .Subscribe(x => ToggleValidationCommand.Invoke());
+                }
+            }
+        }
+        else
+        {
+            // Unsubscribe from the validation handler and reset the assets shown.
+            _validationHandler?.Dispose();
+            _validationHandler = null;
+            ValidationOptions.ShowValid = null;
+        }
+    }
+
+    /// <summary>
     /// Checks all asset files, or checks the data files under the selected manifest.dat file.
     /// </summary>
     private void CheckAll()
@@ -355,7 +425,7 @@ public class MainViewModel : ViewModelBase
         {
             using (Assets.SuspendNotifications())
             {
-                _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToArray());
+                _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToList());
             }
         }
     }

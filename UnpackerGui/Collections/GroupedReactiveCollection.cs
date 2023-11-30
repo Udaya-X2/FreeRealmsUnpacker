@@ -23,7 +23,7 @@ public class GroupedReactiveCollection<T> : ReadOnlyReactiveCollection<T>
     public GroupedReactiveCollection(IEnumerable<IEnumerable<T>> items)
     {
         _items = items ?? throw new ArgumentNullException(nameof(items));
-        _count = new Lazy<int>(CountGroups);
+        _count = new Lazy<int>(GetGroupedCount);
 
         // Refresh the collection when the underlying collection changes.
         (items as INotifyCollectionChanged)?.ObserveCollectionChanges()
@@ -41,7 +41,7 @@ public class GroupedReactiveCollection<T> : ReadOnlyReactiveCollection<T>
     {
         if (NotificationsEnabled)
         {
-            _count = new Lazy<int>(CountGroups);
+            _count = new Lazy<int>(GetGroupedCount);
         }
 
         base.Refresh();
@@ -51,5 +51,5 @@ public class GroupedReactiveCollection<T> : ReadOnlyReactiveCollection<T>
     /// Returns the number of items in each group.
     /// </summary>
     /// <returns>The number of items in each group.</returns>
-    private int CountGroups() => _items.Sum(x => x.Count());
+    private int GetGroupedCount() => _items.Sum(x => x.Count());
 }

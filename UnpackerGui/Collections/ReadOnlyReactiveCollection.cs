@@ -49,11 +49,41 @@ public abstract class ReadOnlyReactiveCollection<T>
         }
     }
 
-    /// <inheritdoc/>
-    public event NotifyCollectionChangedEventHandler? CollectionChanged;
+    /// <summary>
+    /// Occurs when the collection changes.
+    /// </summary>
+    private event NotifyCollectionChangedEventHandler? CollectionChanged;
 
     /// <inheritdoc/>
-    public event PropertyChangedEventHandler? PropertyChanged;
+    event NotifyCollectionChangedEventHandler? INotifyCollectionChanged.CollectionChanged
+    {
+        add => CollectionChanged += value;
+        remove => CollectionChanged -= value;
+    }
+
+    /// <summary>
+    /// Occurs when a property changes.
+    /// </summary>
+    protected event PropertyChangedEventHandler? PropertyChanged;
+    
+    /// <inheritdoc/>
+    event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
+    {
+        add => PropertyChanged += value;
+        remove => PropertyChanged -= value;
+    }
+
+    /// <summary>
+    /// Raises CollectionChanged event to any listeners.
+    /// </summary>
+    protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs args)
+        => CollectionChanged?.Invoke(this, args);
+
+    /// <summary>
+    /// Raises PropertyChanged event to any listeners.
+    /// </summary>
+    protected virtual void OnPropertyChanged(PropertyChangedEventArgs args)
+        => PropertyChanged?.Invoke(this, args);
 
     /// <inheritdoc/>
     public virtual bool Contains(T item) => item == null
@@ -85,8 +115,8 @@ public abstract class ReadOnlyReactiveCollection<T>
     {
         if (NotificationsEnabled)
         {
-            CollectionChanged?.Invoke(this, EventArgsCache.ResetCollectionChanged);
-            PropertyChanged?.Invoke(this, EventArgsCache.CountPropertyChanged);
+            OnCollectionChanged(EventArgsCache.ResetCollectionChanged);
+            OnPropertyChanged(EventArgsCache.CountPropertyChanged);
         }
         else
         {

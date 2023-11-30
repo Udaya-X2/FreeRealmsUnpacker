@@ -4,8 +4,10 @@ using System;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using UnpackerGui.Extensions;
 
 namespace UnpackerGui.ViewModels;
 
@@ -81,10 +83,58 @@ public abstract class ProgressViewModel : ViewModelBase
     protected void Tick() => Value++;
 
     /// <summary>
+    /// Represents the operation that will be performed upon command invocation.
+    /// </summary>
+    /// <returns>An operation that will be performed upon command invocation.</returns>
+    protected abstract void CommandAction(CancellationToken token);
+
+    /// <summary>
+    /// Represents the asynchronous operation that will be performed upon command invocation.
+    /// </summary>
+    /// <returns>An asynchronous operation that will be performed upon command invocation.</returns>
+    private Task CommandTask(CancellationToken token)
+    {
+        token.Register(() =>
+        {
+            if (!Status.IsCompleted())
+            {
+                Message = $"Stopping {Title}...";
+            }
+        });
+        return Task.Run(() => TimedCommandAction(token), token)
+                   .ContinueWith(x =>
+                   {
+                       Status = x.Status;
+
+                       if (x.IsFaulted)
+                       {
+                           ExceptionDispatchInfo.Throw(x.Exception!.InnerException!);
+                       }
+                       if (x.IsCompletedSuccessfully)
+                       {
+                           Message = $"{Title} Complete";
+                       }
+                   }, CancellationToken.None);
+    }
+
+    /// <summary>
+    /// Wraps the operation performed upon command invocation with a timer.
+    /// </summary>
+    private void TimedCommandAction(CancellationToken token)
+    {
+        if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+
+        using (Timer())
+        {
+            CommandAction(token);
+        }
+    }
+
+    /// <summary>
     /// Creates a timer that updates the elapsed time.
     /// </summary>
     /// <returns>A disposable that, when disposed, stops the timer.</returns>
-    protected IDisposable Timer()
+    private IDisposable Timer()
     {
         Stopwatch stopwatch = Stopwatch.StartNew();
         DispatcherTimer dispatchTimer = new(DispatcherPriority.Normal);
@@ -97,10 +147,4 @@ public abstract class ProgressViewModel : ViewModelBase
             dispatchTimer.Stop();
         });
     }
-
-    /// <summary>
-    /// Represents the asynchronous operation that will be performed upon command invocation.
-    /// </summary>
-    /// <returns>An asynchronous operation that will be performed upon command invocation.</returns>
-    protected abstract Task CommandTask(CancellationToken token);
 }

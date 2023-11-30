@@ -29,6 +29,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
     private bool _isChecked;
     private bool _showDataFiles;
+    private bool _isValidated;
 
     public AssetFileViewModel(AssetFile assetFile, CancellationToken token = default)
     {
@@ -67,6 +68,12 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         set => this.RaiseAndSetIfChanged(ref _showDataFiles, value);
     }
 
+    public bool IsValidated
+    {
+        get => _isValidated;
+        set => this.RaiseAndSetIfChanged(ref _isValidated, value);
+    }
+
     public ReadOnlyObservableCollection<DataFileViewModel>? DataFiles => _dataFiles;
 
     public string Name => _assetFile.Name;
@@ -79,8 +86,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
     public AssetType DirectoryType => _assetFile.DirectoryType;
 
-    public AssetReader OpenRead() => _assetFile.OpenRead();
-
     public int Count => Assets.Count;
 
     public bool IsReadOnly => ((IList<AssetInfo>)Assets).IsReadOnly;
@@ -90,6 +95,8 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         get => Assets[index];
         set => Assets[index] = value;
     }
+
+    public AssetReader OpenRead() => _assetFile.OpenRead();
 
     public int IndexOf(AssetInfo item) => Assets.IndexOf(item);
 

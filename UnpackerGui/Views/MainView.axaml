@@ -16,6 +16,7 @@
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
         <conv:BooleanToRotationConverter x:Key="booleanToRotationConverter"/>
+        <conv:BooleanToStringConverter x:Key="booleanToStringConverter"/>
     </UserControl.Resources>
     <UserControl.Styles>
         <!--Hide Validation Error Messages-->
@@ -223,7 +224,7 @@
               Margin="5 0 5 5">
             <!--Search Bar & Options-->
             <Grid Margin="0 5 0 0"
-                  ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto"
+                  ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
                   MaxHeight="32">
                 <!--Icon-->
                 <Image Grid.Column="0"
@@ -251,15 +252,23 @@
                               ToolTip.Tip="Use Regular Expressions (ALT+E)"
                               IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
                               Content=".*"/>
+                <!--Validate Assets Option-->
+                <ToggleButton Grid.Column="4"
+                              Name="validateAssetsButton"
+                              Margin="5 0 0 0"
+                              ToolTip.Tip="Validate Assets (ALT+V)"
+                              IsChecked="{Binding IsValidatingAssets, Mode=TwoWay}">
+                    <Image Source="/Assets/icon_ui_guild_content.png"/>
+                </ToggleButton>
                 <!--Extract Selected Assets Button-->
-                <Button Grid.Column="4"
+                <Button Grid.Column="5"
                         Command="{Binding ExtractAssetsCommand}"
                         Margin="5 0 0 0"
                         ToolTip.Tip="Extract Selected Assets...">
                     <Image Source="/Assets/downloadIcon.png"/>
                 </Button>
                 <!--Options Dropdown Menu-->
-                <DropDownButton Grid.Column="5"
+                <DropDownButton Grid.Column="6"
                                 Margin="5 0 0 0"
                                 ToolTip.Tip="Options">
                     <Image Source="/Assets/icon_achievement_02_32.png"/>
@@ -281,6 +290,12 @@
                                       FontFamily="Tahoma"
                                       Content="CRC-32"
                                       IsChecked="{Binding ShowCrc32}"/>
+                            <CheckBox FontSize="12"
+                                      FontFamily="Tahoma"
+                                      Content="Valid"
+                                      IsThreeState="True"
+                                      IsChecked="{Binding ValidationOptions.ShowValid}"
+                                      IsEnabled="{Binding IsValidatingAssets}"/>
                         </MenuFlyout>
                     </DropDownButton.Flyout>
                 </DropDownButton>
@@ -359,9 +374,33 @@
                                VerticalAlignment="Center">
                         <TextBlock.Text>
                             <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="NumCheckedAssets"
+                                <Binding Path="CheckedAssets.Count"
                                          FallbackValue="0"/>
                                 <Binding Path="NumAssets"
+                                         FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# In/valid Assets-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource booleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
+                    <Image Source="/Assets/ui_objective_list.png"
+                           Margin="0 0 5 0"
+                           IsVisible="{Binding !ValidationOptions.ShowValid}"/>
+                    <Image Source="/Assets/ui_objective_completed.png"
+                           Margin="0 0 5 0"
+                           IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
+                    <TextBlock FontFamily="Tahoma"
+                               FontSize="12"
+                               VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="Assets.UnfilteredCount"
+                                         FallbackValue="0"/>
+                                <Binding Path="CheckedAssets.Count"
                                          FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
@@ -381,7 +420,7 @@
                             <MultiBinding StringFormat="{}{0}/{1}">
                                 <Binding Path="Assets.Count"
                                          FallbackValue="0"/>
-                                <Binding Path="NumCheckedAssets"
+                                <Binding Path="Assets.UnfilteredCount"
                                          FallbackValue="0"/>
                             </MultiBinding>
                         </TextBlock.Text>
