@@ -1,5 +1,5 @@
 # FreeRealmsUnpacker
-A console application to extract assets from a Free Realms client directory to an output directory of your choice.
+An application that can extract assets from a Free Realms client directory to an output directory of your choice.
 
 ```
 Usage: FreeRealmsUnpackerCLI [options] <InputDirectory> <OutputDirectory>

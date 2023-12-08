@@ -48,6 +48,9 @@ public partial class MainView : UserControl
             case (KeyModifiers.Alt, Key.E):
                 useRegexButton.IsChecked ^= true;
                 break;
+            case (KeyModifiers.Alt, Key.V):
+                validateAssetsButton.IsChecked ^= true;
+                break;
             case (KeyModifiers.Control, Key.F):
                 searchBarTextBox.Focus();
                 break;
