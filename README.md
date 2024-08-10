@@ -19,6 +19,7 @@ Options:
   -f|--list-files        List the asset file paths without extracting them.
   -v|--validate-assets   Validate the assets without extracting them.
   -c|--count-assets      Count the assets without extracting them.
+  -C|--display-csv       Display listed information as comma-separated values.
   -#|--display-table     Display listed information in a table.
   -s|--skip-existing     Skip assets that already exist.
   -n|--no-progress-bars  Don't show progress bars.

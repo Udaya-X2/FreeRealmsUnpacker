@@ -24,23 +24,31 @@ public partial class Unpacker
         {
             if (!ValidateArguments()) return 1;
 
-            // Handle the asset types specified.
+            // Use UTF-8 encoding to display tables properly.
             Stopwatch sw = Stopwatch.StartNew();
             Console.OutputEncoding = Encoding.UTF8;
+
+            // Print the header line, if displaying information as a CSV file.
+            if (DisplayCsv)
+            {
+                Console.WriteLine(ListAssets ? "Name,Offset,Size,CRC-32" : "Name,Assets,Size");
+            }
+
+            // Handle the asset types specified.
             AssetType assetFilter = GetAssetFilter();
             IEnumerable<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(InputDirectory, assetFilter);
-            int numAssets = ListFiles ? ListFilesFormatted(assetFiles) : assetFiles.GroupBy(x => x.DirectoryType)
-                                                                                   .Sum(x => HandleAssets(x.Key, x));
+            int count = ListFiles ? ListFilesFormatted(assetFiles) : assetFiles.GroupBy(x => x.DirectoryType)
+                                                                               .Sum(x => HandleAssets(x.Key, x));
 
             // Print the number of assets or files found.
-            string message = (numAssets, ListFiles) switch
+            string message = (count, ListFiles) switch
             {
                 (0, false) => $"\nNo assets found.",
                 (0, true) => $"\nNo asset files found.",
                 (1, false) => $"\n1 asset found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
                 (1, true) => $"\n1 asset file found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
-                (_, false) => $"\n{numAssets} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
-                (_, true) => $"\n{numAssets} asset files found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}"
+                (_, false) => $"\n{count} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                (_, true) => $"\n{count} asset files found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}"
             };
 
             Console.Error.WriteLine(message);
@@ -91,7 +99,7 @@ public partial class Unpacker
     }
 
     /// <summary>
-    /// Lists the specified asset files in either tabular or
+    /// Lists the specified asset files in tabular, CSV, or
     /// line-based form, depending on the command-line options.
     /// </summary>
     /// <returns>The number of asset files.</returns>
@@ -115,7 +123,10 @@ public partial class Unpacker
 
             foreach (AssetFile assetFile in assetFiles)
             {
-                Console.WriteLine(assetFile.FullName);
+                string value = DisplayCsv
+                             ? $"{EscapeCsvString(assetFile.FullName)},{assetFile.Count},{assetFile.Info.Length}"
+                             : assetFile.FullName;
+                Console.WriteLine(value);
                 numAssets++;
             }
 
@@ -124,7 +135,7 @@ public partial class Unpacker
     }
 
     /// <summary>
-    /// Lists assets from the specified asset file in either tabular
+    /// Lists assets from the specified asset file in tabular, CSV,
     /// or line-based form, depending on the command-line options.
     /// </summary>
     /// <returns>The number of assets in the asset file.</returns>
@@ -150,12 +161,43 @@ public partial class Unpacker
 
             foreach (Asset asset in assetFile)
             {
-                Console.WriteLine(asset.Name);
+                string value = DisplayCsv
+                             ? $"{EscapeCsvString(asset.Name)},{asset.Offset},{asset.Size},{asset.Crc32}"
+                             : asset.Name;
+                Console.WriteLine(value);
                 numAssets++;
             }
 
             return numAssets;
         }
+    }
+
+    /// <summary>
+    /// Converts a string to a CSV-compatible cell.
+    /// </summary>
+    /// <returns>The CSV cell formatted string.</returns>
+    private static string EscapeCsvString(string value)
+    {
+        if (value.StartsWith(' ') || value.EndsWith(' ') || value.Any(x => x is ',' or '"' or '\r' or '\n'))
+        {
+            StringBuilder sb = new(2 * value.Length + 2);
+            sb.Append('"');
+
+            foreach (char c in value)
+            {
+                if (c == '"')
+                {
+                    sb.Append(c);
+                }
+
+                sb.Append(c);
+            }
+
+            sb.Append('"');
+            return sb.ToString();
+        }
+
+        return value;
     }
 
     /// <summary>
@@ -278,15 +320,19 @@ public partial class Unpacker
     /// </summary>
     /// <returns><see langword="true"/> if the arguments are valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="Exception"/>
-    private bool ValidateArguments() => (ListAssets, ListFiles, ValidateAssets, CountAssets) switch
+    private bool ValidateArguments() => (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable)
+        switch
     {
-        (true, true, _, _) => throw new Exception("Cannot both list assets and files."),
-        (true, _, true, _) => throw new Exception("Cannot both list and validate assets."),
-        (_, true, true, _) => throw new Exception("Cannot both list files and validate assets."),
-        (true, _, _, true) => throw new Exception("Cannot both list and count assets."),
-        (_, true, _, true) => throw new Exception("Cannot both list files and count assets."),
-        (_, _, true, true) => throw new Exception("Cannot both validate and count assets."),
-        (false, false, false, false) => SetupOutputDirectory(),
+        (true, true, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
+        (true, _, true, _, _, _) => throw new Exception("Cannot both list and validate assets."),
+        (_, true, true, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
+        (true, _, _, true, _, _) => throw new Exception("Cannot both list and count assets."),
+        (_, true, _, true, _, _) => throw new Exception("Cannot both list files and count assets."),
+        (_, _, true, true, _, _) => throw new Exception("Cannot both validate and count assets."),
+        (_, _, _, _, true, true) => throw new Exception("Cannot both display information as a CSV file and a table."),
+        (false, false, _, _, true, false) => throw new Exception("Must specify whether to display assets or files."),
+        (false, false, _, _, false, true) => throw new Exception("Must specify whether to display assets or files."),
+        (false, false, false, false, false, false) => SetupOutputDirectory(),
         _ => true,
     };
 

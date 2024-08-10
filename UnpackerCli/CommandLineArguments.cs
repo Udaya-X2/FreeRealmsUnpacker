@@ -76,6 +76,12 @@ public partial class Unpacker
     public bool CountAssets { get; }
 
     /// <summary>
+    /// Gets whether to display listed information as comma-separated values.
+    /// </summary>
+    [Option(ShortName = "C", Description = "Display listed information as comma-separated values.")]
+    public bool DisplayCsv { get; }
+
+    /// <summary>
     /// Gets whether to display listed information in a table.
     /// </summary>
     [Option(ShortName = "#", Description = "Display listed information in a table.")]
