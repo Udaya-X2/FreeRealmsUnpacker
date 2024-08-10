@@ -140,7 +140,7 @@ public partial class Unpacker
             }
 
             string plural = table.Count == 1 ? "" : "s";
-            Console.WriteLine($"\nFound {table.Count} asset{plural} in {assetFile}:\n");
+            Console.WriteLine($"\nFound {table.Count} asset{plural} in {assetFile.FullName}:\n");
             table.Print();
             return table.Count;
         }
