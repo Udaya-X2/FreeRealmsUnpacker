@@ -1,8 +1,10 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -60,6 +62,7 @@ public partial class MainView : UserControl
     private void AssetGrid_DoubleTapped(object? sender, TappedEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;
+        if ((e.Source as Control)?.Parent is not DataGridCell) return;
 
         mainViewModel.OpenSelectedAssetCommand.Invoke();
     }
