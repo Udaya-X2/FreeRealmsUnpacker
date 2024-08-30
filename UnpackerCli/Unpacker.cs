@@ -173,34 +173,6 @@ public partial class Unpacker
     }
 
     /// <summary>
-    /// Converts a string to a CSV-compatible cell.
-    /// </summary>
-    /// <returns>The CSV cell formatted string.</returns>
-    private static string EscapeCsvString(string value)
-    {
-        if (value.StartsWith(' ') || value.EndsWith(' ') || value.Any(x => x is ',' or '"' or '\r' or '\n'))
-        {
-            StringBuilder sb = new(2 * value.Length + 2);
-            sb.Append('"');
-
-            foreach (char c in value)
-            {
-                if (c == '"')
-                {
-                    sb.Append(c);
-                }
-
-                sb.Append(c);
-            }
-
-            sb.Append('"');
-            return sb.ToString();
-        }
-
-        return value;
-    }
-
-    /// <summary>
     /// Validates assets in the specified asset file by comparing their checksums.
     /// </summary>
     /// <returns>The number of assets in the asset file.</returns>
@@ -241,24 +213,181 @@ public partial class Unpacker
 
         foreach (Asset asset in assetFile)
         {
-            FileInfo file = new(Path.Combine(OutputDirectory, asset.Name));
-
-            if (SkipExisting && file.Exists)
+            if (TryGetExtractionPath(reader, asset, out string path))
+            {
+                FileInfo file = new(path);
+                file.Directory?.Create();
+                using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
+                reader.CopyTo(asset, fs);
+                pbar?.UpdateProgress($"Extracted {asset.Name}");
+            }
+            else if (HandleConflicts is ConflictOptions.Skip)
             {
                 pbar?.UpdateProgress($"Skipped {asset.Name}");
             }
             else
             {
-                file.Directory?.Create();
-                using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
-                reader.CopyTo(asset, fs);
-                pbar?.UpdateProgress($"Extracted {asset.Name}");
+                pbar?.UpdateProgress($"Skipped duplicate {asset.Name}");
             }
 
             numAssets++;
         }
 
         return numAssets;
+    }
+
+    /// <summary>
+    /// Determines where to extract the specified asset. A return value indicates
+    /// whether the path is valid, according to the command-line options.
+    /// </summary>
+    /// <returns>The path to extract the specified asset.</returns>
+    /// <exception cref="InvalidEnumArgumentException"/>
+    private bool TryGetExtractionPath(AssetReader reader, Asset asset, out string path)
+    {
+        path = Path.Combine(OutputDirectory, asset.Name);
+
+        switch (HandleConflicts)
+        {
+            case ConflictOptions.Overwrite:
+                break;
+            case ConflictOptions.Skip:
+                return !File.Exists(path);
+            case ConflictOptions.Rename:
+                {
+                    string? newPath = path, extension = null, pathWithoutExtension = null;
+
+                    for (int digit = 2; File.Exists(newPath); digit++)
+                    {
+                        if (AssetEquals(reader, asset, newPath)) return false;
+
+                        extension ??= Path.GetExtension(path);
+                        pathWithoutExtension ??= path[..^extension.Length];
+                        newPath = $"{pathWithoutExtension} ({digit}){extension}";
+                    }
+
+                    path = newPath;
+                }
+                break;
+            case ConflictOptions.MkDir:
+                for (int digit = 2; File.Exists(path); digit++)
+                {
+                    if (AssetEquals(reader, asset, path)) return false;
+
+                    path = Path.Combine($"{OutputDirectory} ({digit})", asset.Name);
+                }
+                break;
+            case ConflictOptions.MkSubdir:
+                if (File.Exists(path))
+                {
+                    if (AssetEquals(reader, asset, path)) return false;
+
+                    string extension = Path.GetExtension(asset.Name);
+                    MoveFileDown(path, $"1{extension}");
+                    path = Path.Combine(path, $"2{extension}");
+                }
+                else if (Directory.Exists(path))
+                {
+                    string extension = Path.GetExtension(asset.Name);
+                    string subdirAsset = Path.Combine(path, $"1{extension}");
+
+                    for (int digit = 2; File.Exists(subdirAsset); digit++)
+                    {
+                        if (AssetEquals(reader, asset, subdirAsset)) return false;
+
+                        subdirAsset = Path.Combine(path, $"{digit}{extension}");
+                    }
+
+                    path = subdirAsset;
+                }
+                break;
+            case ConflictOptions.MkTree:
+                if (File.Exists(path))
+                {
+                    if (AssetEquals(reader, asset, path)) return false;
+
+                    string fileName = Path.GetFileName(asset.Name);
+                    MoveFileDown(path, Path.Combine("1", fileName));
+                    path = Path.Combine(path, "2", fileName);
+                }
+                else if (Directory.Exists(path))
+                {
+                    string fileName = Path.GetFileName(asset.Name);
+                    string subdirAsset = Path.Combine(path, "1", fileName);
+
+                    for (int digit = 2; File.Exists(subdirAsset); digit++)
+                    {
+                        if (AssetEquals(reader, asset, subdirAsset)) return false;
+
+                        subdirAsset = Path.Combine(path, $"{digit}", fileName);
+                    }
+
+                    path = subdirAsset;
+                }
+                break;
+            default:
+                throw new InvalidEnumArgumentException(nameof(HandleConflicts),
+                                                       (int)HandleConflicts,
+                                                       HandleConflicts.GetType());
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether the specified asset is equal to the given file.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the specified asset equals the specified file; otherwise, <see langword="false"/>.
+    /// </returns>
+    private static bool AssetEquals(AssetReader reader, Asset asset, string path)
+    {
+        FileInfo file = new(path);
+
+        if (asset.Size != file.Length) return false;
+
+        using FileStream fs = file.OpenRead();
+        return reader.StreamEquals(asset, fs);
+    }
+
+    /// <summary>
+    /// Replaces the specified file with a directory and moves the
+    /// file inside of the directory with the specified name.
+    /// </summary>
+    private static void MoveFileDown(string path, string fileName)
+    {
+        string tempPath = Path.GetTempFileName();
+        File.Move(path, tempPath, overwrite: true);
+        FileInfo file = new(Path.Combine(path, fileName));
+        file.Directory?.Create();
+        File.Move(tempPath, file.FullName);
+    }
+
+    /// <summary>
+    /// Converts a string to a CSV-compatible cell.
+    /// </summary>
+    /// <returns>The CSV cell formatted string.</returns>
+    private static string EscapeCsvString(string value)
+    {
+        if (value.StartsWith(' ') || value.EndsWith(' ') || value.Any(x => x is ',' or '"' or '\r' or '\n'))
+        {
+            StringBuilder sb = new(2 * value.Length + 2);
+            sb.Append('"');
+
+            foreach (char c in value)
+            {
+                if (c == '"')
+                {
+                    sb.Append(c);
+                }
+
+                sb.Append(c);
+            }
+
+            sb.Append('"');
+            return sb.ToString();
+        }
+
+        return value;
     }
 
     /// <summary>
@@ -320,21 +449,24 @@ public partial class Unpacker
     /// </summary>
     /// <returns><see langword="true"/> if the arguments are valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="Exception"/>
-    private bool ValidateArguments() => (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable)
-        switch
+    private bool ValidateArguments()
     {
-        (true, true, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
-        (true, _, true, _, _, _) => throw new Exception("Cannot both list and validate assets."),
-        (_, true, true, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
-        (true, _, _, true, _, _) => throw new Exception("Cannot both list and count assets."),
-        (_, true, _, true, _, _) => throw new Exception("Cannot both list files and count assets."),
-        (_, _, true, true, _, _) => throw new Exception("Cannot both validate and count assets."),
-        (_, _, _, _, true, true) => throw new Exception("Cannot both display information as a CSV file and a table."),
-        (false, false, _, _, true, false) => throw new Exception("Must specify whether to display assets or files."),
-        (false, false, _, _, false, true) => throw new Exception("Must specify whether to display assets or files."),
-        (false, false, false, false, false, false) => SetupOutputDirectory(),
-        _ => true,
-    };
+        if (!Enum.IsDefined(HandleConflicts)) throw new Exception("Invalid value specified for handle-conflicts.");
+        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable) switch
+        {
+            (true, true, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
+            (true, _, true, _, _, _) => throw new Exception("Cannot both list and validate assets."),
+            (_, true, true, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
+            (true, _, _, true, _, _) => throw new Exception("Cannot both list and count assets."),
+            (_, true, _, true, _, _) => throw new Exception("Cannot both list files and count assets."),
+            (_, _, true, true, _, _) => throw new Exception("Cannot both validate and count assets."),
+            (_, _, _, _, true, true) => throw new Exception("Cannot display info as both a CSV file and a table."),
+            (false, false, _, _, true, false) => throw new Exception("Cannot display CSV without a list option."),
+            (false, false, _, _, false, true) => throw new Exception("Cannot display table without a list option."),
+            (false, false, false, false, false, false) => SetupOutputDirectory(),
+            _ => true,
+        };
+    }
 
     /// <summary>
     /// Prompts the user to create the output directory if it does not exist.

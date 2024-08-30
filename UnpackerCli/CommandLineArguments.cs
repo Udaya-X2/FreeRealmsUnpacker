@@ -88,10 +88,10 @@ public partial class Unpacker
     public bool DisplayTable { get; }
 
     /// <summary>
-    /// Gets whether to skip assets that already exist.
+    /// Gets how to handle assets with conflicting names.
     /// </summary>
-    [Option(ShortName = "s", Description = "Skip assets that already exist.")]
-    public bool SkipExisting { get; }
+    [Option(ShortName = "H", ValueName = "MODE", Description = "Specify how to handle assets with conflicting names.")]
+    public ConflictOptions HandleConflicts { get; }
 
     /// <summary>
     /// Gets whether to disable progress bars.

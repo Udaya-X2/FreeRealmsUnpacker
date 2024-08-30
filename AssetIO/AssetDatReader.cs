@@ -100,6 +100,56 @@ public class AssetDatReader : AssetReader
         return crc32;
     }
 
+    /// <inheritdoc/>
+    public override bool StreamEquals(Asset asset, Stream stream)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+
+        // Determine which .dat file to read and where to start reading from based on the offset.
+        long file = asset.Offset / MaxAssetDatSize;
+        long address = asset.Offset % MaxAssetDatSize;
+        FileStream assetStream = GetAssetStream(file, asset);
+        assetStream.Position = address;
+        uint bytes = asset.Size;
+        byte[] buffer2 = ArrayPool<byte>.Shared.Rent(BufferSize);
+
+        while (bytes > 0u)
+        {
+            int count = BufferSize <= bytes ? BufferSize : (int)bytes;
+            Task<int> task1 = assetStream.ReadAsync(_buffer, 0, count);
+            Task<int> task2 = stream.ReadAsync(buffer2, 0, count);
+            int[] bytesRead = Task.WhenAll(task1, task2).Result;
+            int bytesRead1 = bytesRead[0];
+            int bytesRead2 = bytesRead[1];
+
+            // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
+            while (bytesRead1 != count)
+            {
+                assetStream = GetAssetStream(++file, asset);
+                assetStream.Position = 0;
+                bytesRead1 += assetStream.Read(_buffer, bytesRead1, count - bytesRead1);
+            }
+            while (bytesRead2 != count)
+            {
+                int read = stream.Read(buffer2, bytesRead2, count - bytesRead2);
+
+                if (read == 0) return false;
+
+                bytesRead2 += read;
+            }
+
+            if (!_buffer.AsSpan(0, count).SequenceEqual(buffer2.AsSpan(0, count))) return false;
+
+            bytes -= (uint)count;
+        }
+
+        ArrayPool<byte>.Shared.Return(buffer2);
+        return true;
+    }
+
     /// <summary>
     /// Incrementally reads blocks of bytes of the specified asset from the .dat file(s) into the internal buffer.
     /// </summary>
