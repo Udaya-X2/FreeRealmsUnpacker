@@ -38,7 +38,7 @@ public static partial class ClientDirectory
         {
             AssetType assetType = ClientFile.InferAssetType(file);
 
-            if (assetType != 0 && assetFilter.HasFlag(assetType))
+            if (assetType != 0 && ((assetFilter & assetType) == assetType))
             {
                 yield return new AssetFile(file, assetType);
             }
@@ -73,7 +73,7 @@ public static partial class ClientDirectory
         {
             AssetType assetType = ClientFile.InferDataType(file);
 
-            if (assetType != 0 && assetFilter.HasFlag(assetType))
+            if (assetType != 0 && ((assetFilter & assetType) == assetType))
             {
                 yield return file;
             }
