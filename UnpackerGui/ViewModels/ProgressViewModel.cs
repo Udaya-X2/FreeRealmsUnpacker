@@ -122,7 +122,7 @@ public abstract class ProgressViewModel : ViewModelBase
     /// </summary>
     private void TimedCommandAction(CancellationToken token)
     {
-        if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+        token.ThrowIfCancellationRequested();
 
         using (Timer())
         {

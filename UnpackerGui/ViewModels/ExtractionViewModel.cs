@@ -50,7 +50,7 @@ public class ExtractionViewModel : ProgressViewModel
     /// </summary>
     private void ExtractAssets(CancellationToken token)
     {
-        if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+        token.ThrowIfCancellationRequested();
 
         foreach (ExtractionAssetFile assetFile in _extractionAssetFiles)
         {
@@ -59,8 +59,7 @@ public class ExtractionViewModel : ProgressViewModel
 
             foreach (AssetInfo asset in assetFile.Assets)
             {
-                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
-
+                token.ThrowIfCancellationRequested();
                 FileInfo file = new(Path.Combine(_outputDir, asset.Name));
                 file.Directory?.Create();
                 using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);

@@ -36,14 +36,13 @@ public class ReaderViewModel : ProgressViewModel
     /// </summary>
     private void ReadAssets(CancellationToken token)
     {
-        if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+        token.ThrowIfCancellationRequested();
 
         AssetFileViewModel[] assetFileViewModels = new AssetFileViewModel[Maximum];
 
         for (int i = 0; i < _inputAssetFiles.Count; i++)
         {
-            if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
-
+            token.ThrowIfCancellationRequested();
             AssetFile assetFile = _inputAssetFiles[i];
             Message = $"Reading {assetFile.Name}";
             assetFileViewModels[i] = new AssetFileViewModel(assetFile, token);

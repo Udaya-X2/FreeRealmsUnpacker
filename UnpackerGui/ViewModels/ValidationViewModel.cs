@@ -30,7 +30,7 @@ public class ValidationViewModel : ProgressViewModel
     /// </summary>
     private void ValidateAssets(CancellationToken token)
     {
-        if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
+        token.ThrowIfCancellationRequested();
 
         foreach (AssetFileViewModel assetFile in _assetFiles)
         {
@@ -39,8 +39,7 @@ public class ValidationViewModel : ProgressViewModel
 
             foreach (AssetInfo asset in assetFile)
             {
-                if (token.IsCancellationRequested) token.ThrowIfCancellationRequested();
-
+                token.ThrowIfCancellationRequested();
                 asset.FileCrc32 = reader.GetCrc32(asset);
                 Tick();
             }
