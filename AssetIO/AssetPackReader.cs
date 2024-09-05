@@ -99,38 +99,77 @@ public class AssetPackReader : AssetReader
         if (stream == null) throw new ArgumentNullException(nameof(stream));
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
 
-        _assetStream.Position = asset.Offset;
-        uint bytes = asset.Size;
-        byte[] buffer2 = ArrayPool<byte>.Shared.Rent(BufferSize);
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
 
-        while (bytes > 0u)
+        try
         {
-            int count = BufferSize <= bytes ? BufferSize : (int)bytes;
-            Task<int> task1 = _assetStream.ReadAsync(_buffer, 0, count);
-            Task<int> task2 = stream.ReadAsync(buffer2, 0, count);
-            int[] bytesRead = Task.WhenAll(task1, task2).Result;
-            int bytesRead1 = bytesRead[0];
-            int bytesRead2 = bytesRead[1];
-
-            if (bytesRead1 != count)
+            foreach (int count in InternalRead(asset))
             {
-                throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
+                int bytesRead = stream.Read(buffer, 0, count);
+
+                while (bytesRead != count)
+                {
+                    int read = stream.Read(buffer, bytesRead, count - bytesRead);
+
+                    if (read == 0) return false;
+
+                    bytesRead += read;
+                }
+
+                if (!_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
             }
-            while (bytesRead2 != count)
-            {
-                int read = stream.Read(buffer2, bytesRead2, count - bytesRead2);
-
-                if (read == 0) return false;
-
-                bytesRead2 += read;
-            }
-
-            if (!_buffer.AsSpan(0, count).SequenceEqual(buffer2.AsSpan(0, count))) return false;
-
-            bytes -= (uint)count;
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
         }
 
-        ArrayPool<byte>.Shared.Return(buffer2);
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public override async Task<bool> StreamEqualsAsync(Asset asset, Stream stream, CancellationToken token = default)
+    {
+        if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
+        if (asset == null) throw new ArgumentNullException(nameof(asset));
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        token.ThrowIfCancellationRequested();
+
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+
+        try
+        {
+            uint bytes = asset.Size;
+
+            foreach (Task<int> task1 in InternalReadAsync(asset, token))
+            {
+                token.ThrowIfCancellationRequested();
+                int count = BufferSize <= bytes ? BufferSize : (int)bytes;
+                Task<int> task2 = stream.ReadAsync(buffer, 0, count, token);
+                int[] bytesRead = await Task.WhenAll(task1, task2);
+                int bytesRead1 = bytesRead[0];
+                int bytesRead2 = bytesRead[1];
+
+                while (bytesRead2 != count)
+                {
+                    int read = stream.Read(buffer, bytesRead2, count - bytesRead2);
+
+                    if (read == 0) return false;
+
+                    bytesRead2 += read;
+                }
+
+                if (!_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
+
+                bytes -= (uint)count;
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+
         return true;
     }
 
@@ -154,6 +193,38 @@ public class AssetPackReader : AssetReader
             }
 
             yield return count;
+            bytes -= (uint)count;
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously reads blocks of bytes of the specified asset from the .dat file(s) into the internal buffer.
+    /// </summary>
+    /// <returns>
+    /// An enumerable sequence of the number of bytes read into the buffer at each asynchronous read.
+    /// </returns>
+    private IEnumerable<Task<int>> InternalReadAsync(Asset asset, CancellationToken token = default)
+    {
+        token.ThrowIfCancellationRequested();
+        _assetStream.Position = asset.Offset;
+        uint bytes = asset.Size;
+
+        // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
+        while (bytes > 0u)
+        {
+            token.ThrowIfCancellationRequested();
+            int count = BufferSize <= bytes ? BufferSize : (int)bytes;
+            yield return Task.Run(async () =>
+            {
+                int bytesRead = await _assetStream.ReadAsync(_buffer.AsMemory(0, count), token);
+
+                if (bytesRead != count)
+                {
+                    throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
+                }
+
+                return bytesRead;
+            });
             bytes -= (uint)count;
         }
     }

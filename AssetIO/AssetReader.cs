@@ -9,7 +9,6 @@ public abstract class AssetReader : IDisposable
     /// Reads the bytes of the specified asset from the asset file(s) into a byte array.
     /// </summary>
     /// <returns>A byte array containing data read from the asset file(s).</returns>
-    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
@@ -58,6 +57,15 @@ public abstract class AssetReader : IDisposable
     /// the stream are the same, otherwise <see langword="false"/>.
     /// </returns>
     public abstract bool StreamEquals(Asset asset, Stream stream);
+
+    /// <summary>
+    /// Asynchronously determines whether the contents of the given asset matches the specified stream.
+    /// </summary>
+    /// <returns>
+    /// A task that represents the stream comparison. The result of the task is <see langword="true"/>
+    /// if the contents of the asset and the stream are the same, otherwise <see langword="false"/>.
+    /// </returns>
+    public abstract Task<bool> StreamEqualsAsync(Asset asset, Stream stream, CancellationToken token = default);
 
     /// <inheritdoc cref="Dispose()"/>
     protected abstract void Dispose(bool disposing);

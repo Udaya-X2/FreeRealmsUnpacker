@@ -346,12 +346,12 @@ public partial class Unpacker
         if (asset.Size != file.Length) return false;
 
         using FileStream fs = file.OpenRead();
-        return reader.StreamEquals(asset, fs);
+        return reader.StreamEqualsAsync(asset, fs).Result;
     }
 
     /// <summary>
-    /// Replaces the specified file with a directory and moves the
-    /// file inside of the directory with the specified name.
+    /// Replaces the specified file with a directory and moves
+    /// the file inside of the directory with the given name.
     /// </summary>
     private static void MoveFileDown(string path, string fileName)
     {
