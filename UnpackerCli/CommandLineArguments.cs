@@ -9,7 +9,7 @@ public partial class Unpacker
     /// Gets the Free Realms client directory.
     /// </summary>
     [Argument(0, Description = "The Free Realms client directory.")]
-    [Required(AllowEmptyStrings = false)]
+    [Required]
     [DirectoryExists]
     public string InputDirectory { get; } = "";
 
@@ -17,7 +17,7 @@ public partial class Unpacker
     /// Gets the destination for extracted assets.
     /// </summary>
     [Argument(1, Description = "The destination for extracted assets.")]
-    [Required(AllowEmptyStrings = false)]
+    [Required]
     [FileNotExists]
     public string OutputDirectory { get; } = "./assets";
 
