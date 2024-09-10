@@ -194,7 +194,7 @@ public partial class Unpacker
             }
             else
             {
-                Console.WriteLine($"'{asset.Name}' in '{assetFile}' does not match the expected CRC.");
+                Console.WriteLine($"'{asset.Name}' in '{assetFile.FullName}' does not match the expected CRC.");
             }
 
             numAssets++;
