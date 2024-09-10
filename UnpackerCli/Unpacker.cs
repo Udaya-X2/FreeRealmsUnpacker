@@ -37,7 +37,8 @@ public partial class Unpacker
             // Handle the asset types specified.
             AssetType assetFilter = GetAssetFilter();
             IEnumerable<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(InputDirectory, assetFilter);
-            int count = ListFiles ? ListFilesFormatted(assetFiles) : assetFiles.GroupBy(x => x.DirectoryType)
+            int count = ListFiles ? ListFilesFormatted(assetFiles) : assetFiles.OrderBy(x => x.DirectoryType)
+                                                                               .GroupBy(x => x.DirectoryType)
                                                                                .Sum(x => HandleAssets(x.Key, x));
 
             // Print the number of assets or files found.
