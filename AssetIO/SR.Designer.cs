@@ -61,6 +61,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to infer asset type from the specified file name: &apos;{0}&apos;..
+        /// </summary>
+        internal static string Argument_CantInferAssetType {
+            get {
+                return ResourceManager.GetString("Argument_CantInferAssetType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset size exceeds the length of the buffer..
         /// </summary>
         internal static string Argument_InvalidAssetLen {

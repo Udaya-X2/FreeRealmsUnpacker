@@ -263,16 +263,17 @@ public static partial class ClientFile
     /// Gets an enum value corresponding to the name of the specified asset file.
     /// </summary>
     /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferAssetType(string assetFile)
+    public static AssetType InferAssetType(string assetFile, bool strict = false)
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
-        AssetType assetFileType = InferAssetFileType(assetFile);
+        AssetType assetFileType = InferAssetFileType(assetFile, strict);
 
         if (assetFileType == 0) return 0;
 
-        AssetType assetDirType = InferAssetDirectoryType(assetFile);
+        AssetType assetDirType = InferAssetDirectoryType(assetFile, strict);
 
         return assetDirType == 0 ? 0 : assetFileType | assetDirType;
     }
@@ -281,8 +282,9 @@ public static partial class ClientFile
     /// Gets an enum value corresponding to the suffix of the specified asset file.
     /// </summary>
     /// <returns>An enum value corresponding to the suffix of the specified asset file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferAssetFileType(string assetFile)
+    public static AssetType InferAssetFileType(string assetFile, bool strict = false)
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
@@ -294,6 +296,10 @@ public static partial class ClientFile
         {
             return AssetType.Dat;
         }
+        if (strict)
+        {
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile));
+        }
 
         return 0;
     }
@@ -302,8 +308,9 @@ public static partial class ClientFile
     /// Gets an enum value corresponding to the prefix of the specified asset file.
     /// </summary>
     /// <returns>An enum value corresponding to the prefix of the specified asset file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferAssetDirectoryType(string assetFile)
+    public static AssetType InferAssetDirectoryType(string assetFile, bool strict = false)
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
@@ -320,6 +327,10 @@ public static partial class ClientFile
         if (ResourceAssetRegex().IsMatch(filename))
         {
             return AssetType.Resource;
+        }
+        if (strict)
+        {
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile));
         }
 
         return 0;

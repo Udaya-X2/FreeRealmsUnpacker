@@ -174,4 +174,7 @@
   <data name="Overflow_TooManyAssets" xml:space="preserve">
     <value>Number of assets exceeds the maximum integer value: '{0}'.</value>
   </data>
+  <data name="Argument_CantInferAssetType" xml:space="preserve">
+    <value>Unable to infer asset type from the specified file name: '{0}'.</value>
+  </data>
 </root>

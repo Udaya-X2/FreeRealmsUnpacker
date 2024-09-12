@@ -30,7 +30,7 @@ public class AssetFile : IEnumerable<Asset>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
     public AssetFile(string path)
-        : this(path, ClientFile.InferAssetType(path))
+        : this(path, ClientFile.InferAssetType(path, strict: true))
     {
     }
 
@@ -52,7 +52,7 @@ public class AssetFile : IEnumerable<Asset>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
     public AssetFile(string path, IEnumerable<string> dataFiles)
-        : this(path, ClientFile.InferAssetType(path), dataFiles)
+        : this(path, ClientFile.InferAssetType(path, strict: true), dataFiles)
     {
     }
 
