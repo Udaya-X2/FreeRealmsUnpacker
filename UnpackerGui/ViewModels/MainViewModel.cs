@@ -245,13 +245,13 @@ public class MainViewModel : ViewModelBase
     /// Opens a file dialog that allows the user to add .pack files to the source asset files.
     /// </summary>
     private async Task AddPackFiles()
-        => await AddAssetFiles(AssetType.Game | AssetType.Pack, FileTypeFilters.PackFiles);
+        => await AddAssetFiles(AssetType.Pack, FileTypeFilters.PackFiles);
 
     /// <summary>
     /// Opens a file dialog that allows the user to add manifest.dat files to the source asset files.
     /// </summary>
     private async Task AddManifestFiles()
-        => await AddAssetFiles(AssetType.Game | AssetType.Dat, FileTypeFilters.ManifestFiles);
+        => await AddAssetFiles(AssetType.Dat, FileTypeFilters.ManifestFiles);
 
     /// <summary>
     /// Opens a file dialog that allows the user to add asset files of the specified type to the source asset files.
@@ -468,7 +468,7 @@ public class MainViewModel : ViewModelBase
                                               .Select(x =>
                                               {
                                                   // Discard the file if we cannot infer its asset type from its name.
-                                                  AssetType type = AssetType.Game | ClientFile.InferAssetFileType(x);
+                                                  AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
                                                   return type.IsValid() ? new AssetFile(x, type) : null;
                                               })
                                               .WhereNotNull()

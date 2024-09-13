@@ -79,7 +79,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and one directory flag must be set: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and at most one directory flag must be set: &apos;{0}&apos;..
         /// </summary>
         internal static string Argument_InvalidAssetType {
             get {

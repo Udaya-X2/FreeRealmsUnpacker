@@ -431,7 +431,7 @@ public partial class Unpacker
             AssetType.Game => ("Reading game assets...", ConsoleColor.Green),
             AssetType.Tcg => ("Reading TCG assets...", ConsoleColor.Blue),
             AssetType.Resource => ("Reading resource assets...", ConsoleColor.DarkYellow),
-            _ => throw new InvalidEnumArgumentException(nameof(assetType), (int)assetType, assetType.GetType())
+            _ => ("Reading unknown assets...", ConsoleColor.Magenta)
         };
         int numAssets = assetFiles.Sum(x => x.Count);
         ProgressBarOptions options = new() { ForegroundColor = color, ProgressCharacter = '─' };

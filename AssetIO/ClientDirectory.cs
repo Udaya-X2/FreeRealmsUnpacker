@@ -23,6 +23,10 @@ public static partial class ClientDirectory
     /// One of the enumeration values that specifies whether the search operation
     /// should include only the current directory or should include all subdirectories.
     /// </param>
+    /// <param name="requireFullType">
+    /// <see langword="true"/> to exclude asset files without a full asset type;
+    /// <see langword="false"/> to include asset files with only a file type.
+    /// </param>
     /// <returns>
     /// An enumerable collection of the asset files in the directory specified
     /// by <paramref name="path"/> that match the specified filter.
@@ -30,13 +34,14 @@ public static partial class ClientDirectory
     /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<AssetFile> EnumerateAssetFiles(string path,
                                                              AssetType assetFilter = AssetType.All,
-                                                             SearchOption searchOption = SearchOption.AllDirectories)
+                                                             SearchOption searchOption = SearchOption.AllDirectories,
+                                                             bool requireFullType = true)
     {
         if (path == null) throw new ArgumentNullException(nameof(path));
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
-            AssetType assetType = ClientFile.InferAssetType(file);
+            AssetType assetType = ClientFile.InferAssetType(file, requireFullType);
 
             if (assetType != 0 && ((assetFilter & assetType) == assetType))
             {

@@ -1,18 +1,18 @@
 # FreeRealmsUnpacker
-An application that can extract assets from a Free Realms client directory to an output directory of your choice.
+An application that can extract assets from a Free Realms client directory or asset file to an output directory of your choice.
 
 ```
-Usage: FreeRealmsUnpackerCLI [options] <InputDirectory> <OutputDirectory>
+Usage: FreeRealmsUnpackerCLI [options] <InputDirectory/AssetFile> <OutputDirectory>
 
 Arguments:
-  InputDirectory                The Free Realms client directory.
+  InputDirectory/AssetFile      The Free Realms client directory or asset file.
   OutputDirectory               The destination for extracted assets.
                                 Default value is: ./assets.
 
 Options:
-  -g|--extract-game             Extract game assets only (in 'Free Realms/')
-  -t|--extract-tcg              Extract TCG assets only (in 'Free Realms/assets/')
-  -r|--extract-resource         Extract resource assets only (in 'Free Realms/tcg/')
+  -g|--extract-game             Extract game assets only (in 'Free Realms/').
+  -t|--extract-tcg              Extract TCG assets only (in 'Free Realms/assets/').
+  -r|--extract-resource         Extract resource assets only (in 'Free Realms/tcg/').
   -d|--extract-dat              Extract .dat assets only.
   -p|--extract-pack             Extract .pack assets only.
   -l|--list-assets              List the assets without extracting them.

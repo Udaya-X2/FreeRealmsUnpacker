@@ -130,7 +130,7 @@
     <value>Asset size exceeds the length of the buffer.</value>
   </data>
   <data name="Argument_InvalidAssetType" xml:space="preserve">
-    <value>Invalid asset type; exactly one file flag and one directory flag must be set: '{0}'.</value>
+    <value>Invalid asset type; exactly one file flag and at most one directory flag must be set: '{0}'.</value>
   </data>
   <data name="Argument_InvalidOffLen" xml:space="preserve">
     <value>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</value>

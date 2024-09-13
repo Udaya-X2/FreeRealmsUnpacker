@@ -24,19 +24,19 @@ public partial class Unpacker
     /// <summary>
     /// Gets whether to extract game assets.
     /// </summary>
-    [Option(ShortName = "g", Description = "Extract game assets only (in 'Free Realms/')")]
+    [Option(ShortName = "g", Description = "Extract game assets only (in 'Free Realms/').")]
     public bool ExtractGame { get; }
 
     /// <summary>
     /// Gets whether to extract TCG assets.
     /// </summary>
-    [Option(ShortName = "t", Description = "Extract TCG assets only (in 'Free Realms/assets/')")]
+    [Option(ShortName = "t", Description = "Extract TCG assets only (in 'Free Realms/assets/').")]
     public bool ExtractTcg { get; }
 
     /// <summary>
     /// Gets whether to extract resource assets.
     /// </summary>
-    [Option(ShortName = "r", Description = "Extract resource assets only (in 'Free Realms/tcg/')")]
+    [Option(ShortName = "r", Description = "Extract resource assets only (in 'Free Realms/tcg/').")]
     public bool ExtractResource { get; }
 
     /// <summary>

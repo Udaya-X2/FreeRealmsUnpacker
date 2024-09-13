@@ -265,7 +265,7 @@ public static partial class ClientFile
     /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferAssetType(string assetFile, bool strict = false)
+    public static AssetType InferAssetType(string assetFile, bool requireFullType = true, bool strict = false)
     {
         if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
 
@@ -273,9 +273,19 @@ public static partial class ClientFile
 
         if (assetFileType == 0) return 0;
 
-        AssetType assetDirType = InferAssetDirectoryType(assetFile, strict);
+        AssetType assetDirType = InferAssetDirectoryType(assetFile);
 
-        return assetDirType == 0 ? 0 : assetFileType | assetDirType;
+        if (requireFullType && assetDirType == 0)
+        {
+            if (strict)
+            {
+                throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile));
+            }
+
+            return 0;
+        }
+
+        return assetFileType | assetDirType;
     }
 
     /// <summary>
@@ -341,7 +351,7 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>An enum value corresponding to the name of the specified asset .dat file.</returns>
     /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferDataType(string assetDataFile)
+    public static AssetType InferDataType(string assetDataFile, bool strict = false)
     {
         if (assetDataFile == null) throw new ArgumentNullException(nameof(assetDataFile));
         if (!assetDataFile.EndsWith(".dat", StringComparison.OrdinalIgnoreCase)) return 0;
@@ -359,6 +369,10 @@ public static partial class ClientFile
         if (ResourceDataRegex().IsMatch(filename))
         {
             return AssetType.Resource;
+        }
+        if (strict)
+        {
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetDataFile));
         }
 
         return 0;
