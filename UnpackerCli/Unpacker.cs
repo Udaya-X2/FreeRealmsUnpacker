@@ -31,7 +31,7 @@ public partial class Unpacker
             // Print the header line, if displaying information as a CSV file.
             if (DisplayCsv)
             {
-                Console.WriteLine(ListAssets ? "Name,Offset,Size,CRC-32" : "Name,Assets,Size");
+                Console.WriteLine(ListAssets ? "Name,Offset,Size,CRC-32" : "Name,Count,Size");
             }
 
             // Handle the asset types specified.
@@ -112,11 +112,12 @@ public partial class Unpacker
     {
         if (DisplayTable)
         {
-            Table table = new("Name", "Assets", "Size");
+            Table table = new("Name", "Count", "Size");
 
             foreach (AssetFile assetFile in assetFiles)
             {
-                table.AddRow(assetFile.FullName, assetFile.Count, assetFile.Info.Length);
+                string size = FormatFileSize(assetFile.Info.Length);
+                table.AddRow(assetFile.FullName, assetFile.Count, size);
             }
 
             table.Print();
@@ -128,8 +129,9 @@ public partial class Unpacker
 
             foreach (AssetFile assetFile in assetFiles)
             {
+                string size = FormatFileSize(assetFile.Info.Length);
                 string value = DisplayCsv
-                             ? $"{EscapeCsvString(assetFile.FullName)},{assetFile.Count},{assetFile.Info.Length}"
+                             ? $"{EscapeCsvString(assetFile.FullName)},{assetFile.Count},{size}"
                              : assetFile.FullName;
                 Console.WriteLine(value);
                 numAssets++;
@@ -394,6 +396,21 @@ public partial class Unpacker
 
         return value;
     }
+
+    /// <summary>
+    /// Formats the specified number as a file size string.
+    /// </summary>
+    /// <returns>The formatted string.</returns>
+    private static string FormatFileSize(long i) => (i < 0 ? -i : i) switch
+    {
+        >= 1L << 60 => $"{(i >> 50) / 1024.0:0.##} EB",
+        >= 1L << 50 => $"{(i >> 40) / 1024.0:0.##} PB",
+        >= 1L << 40 => $"{(i >> 30) / 1024.0:0.##} TB",
+        >= 1L << 30 => $"{(i >> 20) / 1024.0:0.##} GB",
+        >= 1L << 20 => $"{(i >> 10) / 1024.0:0.##} MB",
+        >= 1L << 10 => $"{i / 1024.0:0.##} KB",
+        _ => $"{i} B"
+    };
 
     /// <summary>
     /// Creates a <see cref="ProgressBar"/> to display the number of
