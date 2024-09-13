@@ -6,12 +6,12 @@ namespace UnpackerCli;
 public partial class Unpacker
 {
     /// <summary>
-    /// Gets the Free Realms client directory.
+    /// Gets the Free Realms client directory or asset file.
     /// </summary>
-    [Argument(0, Description = "The Free Realms client directory.")]
+    [Argument(0, Name = "InputDirectory/AssetFile", Description = "The Free Realms client directory or asset file.")]
     [Required]
-    [DirectoryExists]
-    public string InputDirectory { get; } = "";
+    [FileOrDirectoryExists]
+    public string InputFile { get; } = "";
 
     /// <summary>
     /// Gets the destination for extracted assets.

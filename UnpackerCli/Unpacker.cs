@@ -36,10 +36,14 @@ public partial class Unpacker
 
             // Handle the asset types specified.
             AssetType assetFilter = GetAssetFilter();
-            IEnumerable<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(InputDirectory, assetFilter);
-            int count = ListFiles ? ListFilesFormatted(assetFiles) : assetFiles.OrderBy(x => x.DirectoryType)
-                                                                               .GroupBy(x => x.DirectoryType)
-                                                                               .Sum(x => HandleAssets(x.Key, x));
+            IEnumerable<AssetFile> assetFiles = Directory.Exists(InputFile)
+                                              ? ClientDirectory.EnumerateAssetFiles(InputFile, assetFilter)
+                                              : new[] { new AssetFile(InputFile) };
+            int count = ListFiles
+                      ? ListFilesFormatted(assetFiles)
+                      : assetFiles.OrderBy(x => x.DirectoryType)
+                                  .GroupBy(x => x.DirectoryType)
+                                  .Sum(x => HandleAssets(x.Key, x));
 
             // Print the number of assets or files found.
             string message = (count, ListFiles) switch
