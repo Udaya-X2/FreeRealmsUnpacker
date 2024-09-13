@@ -34,11 +34,14 @@ public partial class Unpacker
                 Console.WriteLine(ListAssets ? "Name,Offset,Size,CRC-32" : "Name,Count,Size");
             }
 
-            // Handle the asset types specified.
-            AssetType assetFilter = GetAssetFilter();
+            // Get the asset files to process from the input directory or file.
             IEnumerable<AssetFile> assetFiles = Directory.Exists(InputFile)
-                                              ? ClientDirectory.EnumerateAssetFiles(InputFile, assetFilter)
+                                              ? ClientDirectory.EnumerateAssetFiles(InputFile,
+                                                                                    GetAssetFilter(),
+                                                                                    requireFullType: !ExtractUnknown)
                                               : new[] { new AssetFile(InputFile) };
+            
+            // Handle the asset types specified.
             int count = ListFiles
                       ? ListFilesFormatted(assetFiles)
                       : assetFiles.OrderBy(x => x.DirectoryType)
@@ -454,7 +457,7 @@ public partial class Unpacker
         if (ExtractPack) assetType |= AssetType.Pack;
 
         // By default (no options are set), extract all asset types.
-        if (assetType.GetDirectoryType() == 0)
+        if (assetType.GetDirectoryType() == 0 && !ExtractUnknown)
         {
             assetType |= AssetType.AllDirectories;
         }

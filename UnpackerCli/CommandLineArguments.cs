@@ -40,6 +40,12 @@ public partial class Unpacker
     public bool ExtractResource { get; }
 
     /// <summary>
+    /// Gets whether to extract unknown assets.
+    /// </summary>
+    [Option(ShortName = "u", Description = "Extract unknown assets only (disabled by default).")]
+    public bool ExtractUnknown { get; }
+
+    /// <summary>
     /// Gets whether to extract .dat assets only.
     /// </summary>
     [Option(ShortName = "d", Description = "Extract .dat assets only.")]
