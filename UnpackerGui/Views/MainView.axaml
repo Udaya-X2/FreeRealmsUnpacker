@@ -7,7 +7,7 @@
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              mc:Ignorable="d"
              d:DesignWidth="800"
-             d:DesignHeight="450"
+             d:DesignHeight="470"
              x:Class="UnpackerGui.Views.MainView"
              FontFamily="Tahoma"
              x:DataType="vm:MainViewModel"

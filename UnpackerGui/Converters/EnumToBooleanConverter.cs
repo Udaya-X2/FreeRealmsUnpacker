@@ -17,7 +17,8 @@ public class EnumToBooleanConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
-        bool x when Enum.TryParse(targetType, parameter as string, out object? result) => x ? result : BindingOperations.DoNothing,
-        _ => new BindingNotification(new InvalidCastException(), BindingErrorType.Error),
+        true when Enum.TryParse(targetType, parameter as string, out object? result) => result,
+        false => BindingOperations.DoNothing,
+        _ => new BindingNotification(new InvalidCastException(), BindingErrorType.Error)
     };
 }
