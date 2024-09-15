@@ -6,22 +6,27 @@ public static class FilePickerTypes
 {
     public static readonly FilePickerFileType AllFiles = new("All Files")
     {
-        Patterns = new[] { "*.*" },
-        MimeTypes = new[] { "*/*" }
+        Patterns = ["*.*"],
+        MimeTypes = ["*/*"]
     };
 
     public static readonly FilePickerFileType PackFiles = new("Pack Files")
     {
-        Patterns = new[] { "*.pack" }
+        Patterns = ["*.pack"]
     };
 
     public static readonly FilePickerFileType ManifestFiles = new("Manifest Files")
     {
-        Patterns = new[] { "*_manifest.dat" }
+        Patterns = ["*_manifest.dat"]
+    };
+
+    public static readonly FilePickerFileType AssetFiles = new("Asset Files")
+    {
+        Patterns = ["*.pack", "*_manifest.dat"]
     };
 
     public static readonly FilePickerFileType AssetDatFiles = new("Asset Dat Files")
     {
-        Patterns = new[] { "*_???.dat" }
+        Patterns = ["*_???.dat"]
     };
 }

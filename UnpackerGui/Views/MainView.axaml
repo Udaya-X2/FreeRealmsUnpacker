@@ -44,6 +44,23 @@
             <MenuItem Header="File"
                       FontFamily="Tahoma"
                       FontSize="12">
+                <!--Open Submenu-->
+                <MenuItem Header="Open"
+                          FontFamily="Tahoma"
+                          FontSize="12">
+                    <!--Open Folder-->
+                    <MenuItem Header="Folder..."
+                              FontFamily="Tahoma"
+                              FontSize="12"
+                              Command="{Binding OpenFolderCommand}"/>
+                    <!--Open File-->
+                    <MenuItem Header="File..."
+                              FontFamily="Tahoma"
+                              FontSize="12"
+                              Command="{Binding OpenFileCommand}"/>
+                </MenuItem>
+                <Separator/>
+                <!--Exit-->
                 <MenuItem Header="Exit"
                           FontFamily="Tahoma"
                           FontSize="12"
@@ -53,6 +70,7 @@
             <MenuItem Header="Settings"
                       FontFamily="Tahoma"
                       FontSize="12">
+                <!--Preferences-->
                 <MenuItem Header="Preferences..."
                           FontFamily="Tahoma"
                           FontSize="12"
@@ -62,6 +80,7 @@
             <MenuItem Header="Help"
                       FontFamily="Tahoma"
                       FontSize="12">
+                <!--About Free Realms Unpacker-->
                 <MenuItem Header="About Free Realms Unpacker..."
                           FontFamily="Tahoma"
                           FontSize="12"

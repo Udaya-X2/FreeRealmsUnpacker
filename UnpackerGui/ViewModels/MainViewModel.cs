@@ -58,6 +58,8 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenFileCommand { get; }
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
@@ -95,6 +97,8 @@ public class MainViewModel : ViewModelBase
         ExitCommand = ReactiveCommand.Create(App.ShutDown);
         ShowPreferencesCommand = ReactiveCommand.CreateFromTask(ShowPreferences);
         ShowAboutCommand = ReactiveCommand.CreateFromTask(ShowAbout);
+        OpenFolderCommand = ReactiveCommand.CreateFromTask(OpenFolder);
+        OpenFileCommand = ReactiveCommand.CreateFromTask(OpenFile);
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
@@ -272,6 +276,53 @@ public class MainViewModel : ViewModelBase
     {
         DataContext = new AboutViewModel()
     });
+
+    /// <summary>
+    /// Opens a folder dialog that allows the user to add asset files in the folder to the source asset files.
+    /// </summary>
+    private async Task OpenFolder()
+    {
+        if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
+
+        List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(folder.Path.LocalPath)
+                                                    .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)
+                                                    .ToList();
+
+        if (assetFiles.Count > 0)
+        {
+            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+            {
+                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                AutoClose = true
+            });
+        }
+    }
+
+    /// <summary>
+    /// Opens a file dialog that allows the user to add .pack or manifest.dat files to the source asset files.
+    /// </summary>
+    private async Task OpenFile()
+    {
+        IFilesService filesService = App.GetService<IFilesService>();
+        IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = true,
+            FileTypeFilter = FileTypeFilters.AssetFiles
+        });
+        List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
+                                          .Except(AssetFiles.Select(x => x.FullName))
+                                          .Select(x => new AssetFile(x))
+                                          .ToList();
+
+        if (assetFiles.Count > 0)
+        {
+            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+            {
+                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                AutoClose = true
+            });
+        }
+    }
 
     /// <summary>
     /// Opens a file dialog that allows the user to add .pack files to the source asset files.

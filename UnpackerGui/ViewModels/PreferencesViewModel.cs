@@ -1,7 +1,6 @@
 ﻿using AssetIO;
 using ReactiveUI;
 using System;
-using System.Diagnostics;
 
 namespace UnpackerGui.ViewModels;
 
@@ -13,7 +12,7 @@ public class PreferencesViewModel : ViewModelBase
     {
         _conflictOptions = mainViewModel.ConflictOptions;
         this.WhenAnyValue(x => x.ConflictOptions)
-            .Subscribe(x => Debug.WriteLine($"ConflictOptions = {mainViewModel.ConflictOptions = x}"));
+            .Subscribe(x => mainViewModel.ConflictOptions = x);
     }
 
     public FileConflictOptions ConflictOptions
