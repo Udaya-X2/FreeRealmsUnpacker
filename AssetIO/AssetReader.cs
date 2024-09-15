@@ -1,4 +1,6 @@
-﻿namespace AssetIO;
+﻿using System.ComponentModel;
+
+namespace AssetIO;
 
 /// <summary>
 /// Provides random access reading operations on Free Realms asset file(s).
@@ -15,7 +17,7 @@ public abstract class AssetReader : IDisposable
     public byte[] Read(Asset asset)
     {
         if (asset.Size == 0) return Array.Empty<byte>();
-        
+
         byte[] bytes = new byte[asset.Size];
         Read(asset, bytes);
         return bytes;
@@ -40,6 +42,158 @@ public abstract class AssetReader : IDisposable
     public abstract void CopyTo(Asset asset, Stream destination);
 
     /// <summary>
+    /// Reads the bytes of the specified asset from the asset file(s)
+    /// and writes them to a file in the given directory path.
+    /// </summary>
+    /// <returns>The extracted file.</returns>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="InvalidEnumArgumentException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public FileInfo ExtractTo(Asset asset, string path, FileConflictOptions options = FileConflictOptions.Overwrite)
+        => ExtractTo(asset, path, options, out _);
+
+    /// <inheritdoc cref="ExtractTo(Asset, string, FileConflictOptions)"/>
+    public FileInfo ExtractTo(Asset asset, string path, FileConflictOptions options, out bool fileExtracted)
+    {
+        fileExtracted = TryGetExtractionPath(path, asset, options, out path);
+        FileInfo file = new(path);
+
+        if (fileExtracted)
+        {
+            file.Directory?.Create();
+            using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
+            CopyTo(asset, fs);
+        }
+
+        return file;
+    }
+
+    /// <summary>
+    /// Determines where to extract the specified asset. A return value indicates
+    /// whether the path is valid, according to the given file conflict options.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the asset can be extracted to
+    /// <paramref name="path"/>; otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="InvalidEnumArgumentException"/>
+    private bool TryGetExtractionPath(string outputDir, Asset asset, FileConflictOptions options, out string path)
+    {
+        path = Path.Combine(outputDir, asset.Name);
+
+        switch (options)
+        {
+            case FileConflictOptions.Overwrite:
+                break;
+            case FileConflictOptions.Skip:
+                return !File.Exists(path);
+            case FileConflictOptions.Rename:
+                {
+                    string? extension = null, pathWithoutExtension = null;
+
+                    for (int digit = 2; File.Exists(path); digit++)
+                    {
+                        if (AssetEquals(asset, path)) return false;
+
+                        extension ??= Path.GetExtension(path);
+                        pathWithoutExtension ??= path[..^extension.Length];
+                        path = $"{pathWithoutExtension} ({digit}){extension}";
+                    }
+                }
+                break;
+            case FileConflictOptions.MkDir:
+                for (int digit = 2; File.Exists(path); digit++)
+                {
+                    if (AssetEquals(asset, path)) return false;
+
+                    path = Path.Combine($"{outputDir} ({digit})", asset.Name);
+                }
+                break;
+            case FileConflictOptions.MkSubdir:
+                if (File.Exists(path))
+                {
+                    if (AssetEquals(asset, path)) return false;
+
+                    string extension = Path.GetExtension(asset.Name);
+                    MoveFileDown(path, $"1{extension}");
+                    path = Path.Combine(path, $"2{extension}");
+                }
+                else if (Directory.Exists(path))
+                {
+                    string originalPath = path;
+                    string extension = Path.GetExtension(asset.Name);
+                    path = Path.Combine(originalPath, $"1{extension}");
+
+                    for (int digit = 2; File.Exists(path); digit++)
+                    {
+                        if (AssetEquals(asset, path)) return false;
+
+                        path = Path.Combine(originalPath, $"{digit}{extension}");
+                    }
+                }
+                break;
+            case FileConflictOptions.MkTree:
+                if (File.Exists(path))
+                {
+                    if (AssetEquals(asset, path)) return false;
+
+                    string fileName = Path.GetFileName(asset.Name);
+                    MoveFileDown(path, Path.Combine("1", fileName));
+                    path = Path.Combine(path, "2", fileName);
+                }
+                else if (Directory.Exists(path))
+                {
+                    string originalPath = path;
+                    string fileName = Path.GetFileName(asset.Name);
+                    path = Path.Combine(originalPath, "1", fileName);
+
+                    for (int digit = 2; File.Exists(path); digit++)
+                    {
+                        if (AssetEquals(asset, path)) return false;
+
+                        path = Path.Combine(originalPath, $"{digit}", fileName);
+                    }
+                }
+                break;
+            default:
+                throw new InvalidEnumArgumentException(nameof(options), (int)options, options.GetType());
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether the specified asset is equal to the given file.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the specified asset equals the given file; otherwise, <see langword="false"/>.
+    /// </returns>
+    private bool AssetEquals(Asset asset, string path)
+    {
+        FileInfo file = new(path);
+
+        if (asset.Size != file.Length) return false;
+
+        using FileStream fs = file.OpenRead();
+        return StreamEqualsAsync(asset, fs).Result;
+    }
+
+    /// <summary>
+    /// Replaces the specified file with a directory and moves
+    /// the file inside of the directory with the given name.
+    /// </summary>
+    private static void MoveFileDown(string path, string fileName)
+    {
+        string tempPath = Path.GetTempFileName();
+        File.Move(path, tempPath, overwrite: true);
+        FileInfo file = new(Path.Combine(path, fileName));
+        file.Directory?.Create();
+        File.Move(tempPath, file.FullName);
+    }
+
+    /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s) and computes its CRC-32 value.
     /// </summary>
     /// <returns>The CRC-32 checksum value of the specified asset.</returns>
@@ -56,6 +210,10 @@ public abstract class AssetReader : IDisposable
     /// <see langword="true"/> if the contents of the asset and
     /// the stream are the same, otherwise <see langword="false"/>.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
     public abstract bool StreamEquals(Asset asset, Stream stream);
 
     /// <summary>
@@ -65,6 +223,10 @@ public abstract class AssetReader : IDisposable
     /// A task that represents the stream comparison. The result of the task is <see langword="true"/>
     /// if the contents of the asset and the stream are the same, otherwise <see langword="false"/>.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
     public abstract Task<bool> StreamEqualsAsync(Asset asset, Stream stream, CancellationToken token = default);
 
     /// <inheritdoc cref="Dispose()"/>

@@ -1,0 +1,59 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+        xmlns:conv="clr-namespace:UnpackerGui.Converters"
+        x:Class="UnpackerGui.PreferencesWindow"
+        mc:Ignorable="d"
+        Icon="avares://UnpackerGui/Assets/info.ico"
+        Title="Preferences"
+        Width="450"
+        Height="300"
+        x:DataType="vm:PreferencesViewModel"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <Window.Resources>
+        <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
+    </Window.Resources>
+    <DockPanel Margin="15">
+        <StackPanel>
+            <TextBlock Text="File Conflict Options:"
+                       FontFamily="Tahoma"
+                       FontSize="14"
+                       ToolTip.Tip="Specifies how to extract assets with conflicting names"
+                       Margin="0,0,0,5"/>
+            <RadioButton GroupName="FileConflictOptions"
+                         Content="Overwrite"
+                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=0, Mode=TwoWay}"
+                         FontFamily="Tahoma"
+                         FontSize="12"/>
+            <RadioButton GroupName="FileConflictOptions"
+                         Content="Skip"
+                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=1, Mode=TwoWay}"
+                         FontFamily="Tahoma"
+                         FontSize="12"/>
+            <RadioButton GroupName="FileConflictOptions"
+                         Content="Rename"
+                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=2, Mode=TwoWay}"
+                         FontFamily="Tahoma"
+                         FontSize="12"/>
+            <RadioButton GroupName="FileConflictOptions"
+                         Content="Make Directory"
+                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=3, Mode=TwoWay}"
+                         FontFamily="Tahoma"
+                         FontSize="12"/>
+            <RadioButton GroupName="FileConflictOptions"
+                         Content="Make Subdirectory"
+                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=4, Mode=TwoWay}"
+                         FontFamily="Tahoma"
+                         FontSize="12"/>
+            <RadioButton GroupName="FileConflictOptions"
+                         Content="Make Subdirectory Tree"
+                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=5, Mode=TwoWay}"
+                         FontFamily="Tahoma"
+                         FontSize="12"/>
+        </StackPanel>
+    </DockPanel>
+</Window>

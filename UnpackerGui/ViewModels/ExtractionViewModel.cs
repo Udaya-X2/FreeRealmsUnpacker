@@ -1,6 +1,6 @@
 ﻿using AssetIO;
 using System.Collections.Generic;
-using System.IO;
+using System.Data;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -12,28 +12,36 @@ public class ExtractionViewModel : ProgressViewModel
 {
     private readonly IEnumerable<ExtractionAssetFile> _extractionAssetFiles;
     private readonly string _outputDir;
+    private readonly FileConflictOptions _conflictOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtractionViewModel"/>
     /// class from the specified output directory and asset files.
     /// </summary>
-    public ExtractionViewModel(string outputDir, IEnumerable<AssetFileViewModel> assetFiles)
+    public ExtractionViewModel(string outputDir,
+                               IEnumerable<AssetFileViewModel> assetFiles,
+                               FileConflictOptions conflictOptions = FileConflictOptions.Overwrite)
     {
         Maximum = assetFiles.Sum(x => x.Count);
         _outputDir = outputDir;
         _extractionAssetFiles = assetFiles.Select(x => new ExtractionAssetFile(x.Info, x.OpenRead, x.Assets));
+        _conflictOptions = conflictOptions;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtractionViewModel"/>
     /// class from the specified output directory and assets.
     /// </summary>
-    public ExtractionViewModel(string outputDir, IEnumerable<AssetInfo> assets, int? count = null)
+    public ExtractionViewModel(string outputDir,
+                               IEnumerable<AssetInfo> assets,
+                               int? count = null,
+                               FileConflictOptions conflictOptions = FileConflictOptions.Overwrite)
     {
         Maximum = count ?? assets.Count();
         _outputDir = outputDir;
         _extractionAssetFiles = assets.GroupBy(x => x.AssetFile)
                                       .Select(x => new ExtractionAssetFile(x.Key.Info, x.Key.OpenRead, x));
+        _conflictOptions = conflictOptions;
     }
 
     /// <inheritdoc/>
@@ -60,10 +68,7 @@ public class ExtractionViewModel : ProgressViewModel
             foreach (AssetInfo asset in assetFile.Assets)
             {
                 token.ThrowIfCancellationRequested();
-                FileInfo file = new(Path.Combine(_outputDir, asset.Name));
-                file.Directory?.Create();
-                using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
-                reader.CopyTo(asset, fs);
+                reader.ExtractTo(asset, _outputDir, _conflictOptions);
                 Tick();
             }
         }

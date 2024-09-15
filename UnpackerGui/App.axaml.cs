@@ -67,6 +67,17 @@ public partial class App : Application
         ?? throw new InvalidOperationException($"Missing {typeof(T).Name} instance.");
 
     /// <summary>
+    /// Shuts down the application.
+    /// </summary>
+    public static void ShutDown()
+    {
+        if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+    }
+
+    /// <summary>
     /// Displays a fatal error message with the specified exception.
     /// </summary>
     private static void OnFatalException(object sender, UnhandledExceptionEventArgs e)

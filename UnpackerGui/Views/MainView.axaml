@@ -35,418 +35,453 @@
             </Setter>
         </Style>
     </UserControl.Styles>
-    <!--Base Grid-->
-    <Grid Grid.Row="0"
-          ColumnDefinitions="Auto,*"
-          Margin="5">
-        <!--Buttons, Asset Files, Property Grid-->
-        <Grid Grid.Column="0"
-              RowDefinitions="Auto,*,Auto"
-              Width="220"
-              Margin="5">
-            <!--Buttons-->
-            <Grid Grid.Row="0"
-                  MaxHeight="32"
-                  ColumnDefinitions="*,*,*,*,*,*">
-                <!--Add Pack Files Button-->
-                <Button Command="{Binding AddPackFilesCommand}"
-                        ToolTip.Tip="Add .pack Files..."
-                        Grid.Column="0">
-                    <Image Source="/Assets/icon_ui_pickup_siding_32.png"/>
-                </Button>
-                <!--Add Manifest Files Button-->
-                <Button Command="{Binding AddManifestFilesCommand}"
-                        ToolTip.Tip="Add manifest.dat Files..."
-                        IsVisible="{Binding !ManifestFileSelected}"
-                        Grid.Column="1">
-                    <Image Source="/Assets/icon_ui_pickup_siding_blue_32.png"/>
-                </Button>
-                <!--Add Data Files Button-->
-                <Button Command="{Binding AddDataFilesCommand}"
-                        ToolTip.Tip="Add asset .dat Files..."
-                        IsVisible="{Binding ManifestFileSelected}"
-                        Grid.Column="1">
-                    <Image Source="/Assets/icon_minigame_mailsorting_box_32.png"/>
-                </Button>
-                <!--Extract Files Button-->
-                <Button Command="{Binding ExtractFilesCommand}"
-                        ToolTip.Tip="Extract Checked Files..."
-                        Grid.Column="2">
-                    <Image Source="/Assets/downloadIcon.png"/>
-                </Button>
-                <!--Check All Button-->
-                <Button Command="{Binding CheckAllCommand}"
-                        ToolTip.Tip="Check All Files"
-                        Grid.Column="3">
-                    <Image Source="/Assets/ui_dialog_greencheck.png"/>
-                </Button>
-                <!--Uncheck All Button-->
-                <Button Command="{Binding UncheckAllCommand}"
-                        ToolTip.Tip="Uncheck All Files"
-                        Grid.Column="4">
-                    <Image Source="/Assets/ps3_icon_ui_none_32.png"/>
-                </Button>
-                <!--Remove Checked Button-->
-                <Button Command="{Binding RemoveCheckedCommand}"
-                        ToolTip.Tip="Remove Checked Files"
-                        Grid.Column="5">
-                    <Image Source="/Assets/video_new_IC8.png"/>
-                </Button>
-            </Grid>
-            <!--Asset File List-->
-            <ListBox Grid.Row="1"
-                     ItemsSource="{Binding AssetFiles}"
-                     Margin="0 5 0 0"
-                     SelectionMode="Toggle"
-                     SelectedItem="{Binding SelectedAssetFile}"
-                     DragDrop.AllowDrop="True">
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="vm:AssetFileViewModel">
-                        <StackPanel Orientation="Vertical">
-                            <!--Asset File-->
-                            <StackPanel Orientation="Horizontal"
-                                        VerticalAlignment="Center"
-                                        Height="14">
-                                <Button IsVisible="{Binding IsManifestFile}"
-                                        Command="{Binding ShowDataFilesCommand}">
-                                    <Button.Template>
-                                        <ControlTemplate>
-                                            <Image Source="/Assets/Broker_ID.png"
-                                                   Margin="0 0 10 0">
-                                                <Image.RenderTransform>
-                                                    <RotateTransform Angle="{Binding ShowDataFiles, Converter={StaticResource booleanToRotationConverter}, ConverterParameter=90}"/>
-                                                </Image.RenderTransform>
-                                            </Image>
-                                        </ControlTemplate>
-                                    </Button.Template>
-                                </Button>
-                                <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
-                                          VerticalAlignment="Center"/>
-                                <TextBlock FontSize="12"
-                                           Text="{Binding Name}"
-                                           ToolTip.Tip="{Binding FullName}"
-                                           VerticalAlignment="Center"/>
+    <!--Base Panel-->
+    <DockPanel>
+        <!--Toolbar-->
+        <Menu DockPanel.Dock="Top"
+              Height="30">
+            <!--File Menu-->
+            <MenuItem Header="File"
+                      FontFamily="Tahoma"
+                      FontSize="12">
+                <MenuItem Header="Exit"
+                          FontFamily="Tahoma"
+                          FontSize="12"
+                          Command="{Binding ExitCommand}"/>
+            </MenuItem>
+            <!--Settings Menu-->
+            <MenuItem Header="Settings"
+                      FontFamily="Tahoma"
+                      FontSize="12">
+                <MenuItem Header="Preferences..."
+                          FontFamily="Tahoma"
+                          FontSize="12"
+                          Command="{Binding ShowPreferencesCommand}"/>
+            </MenuItem>
+            <!--Help Menu-->
+            <MenuItem Header="Help"
+                      FontFamily="Tahoma"
+                      FontSize="12">
+                <MenuItem Header="About Free Realms Unpacker..."
+                          FontFamily="Tahoma"
+                          FontSize="12"
+                          Command="{Binding ShowAboutCommand}"/>
+            </MenuItem>
+        </Menu>
+        <!--Base Grid-->
+        <Grid DockPanel.Dock="Bottom"
+              Grid.Row="0"
+              ColumnDefinitions="Auto,*"
+              Margin="5,-5,5,5">
+            <!--Buttons, Asset Files, Property Grid-->
+            <Grid Grid.Column="0"
+                  RowDefinitions="Auto,*,Auto"
+                  Width="220"
+                  Margin="5">
+                <!--Buttons-->
+                <Grid Grid.Row="0"
+                      MaxHeight="32"
+                      ColumnDefinitions="*,*,*,*,*,*">
+                    <!--Add Pack Files Button-->
+                    <Button Command="{Binding AddPackFilesCommand}"
+                            ToolTip.Tip="Add .pack Files..."
+                            Grid.Column="0">
+                        <Image Source="/Assets/icon_ui_pickup_siding_32.png"/>
+                    </Button>
+                    <!--Add Manifest Files Button-->
+                    <Button Command="{Binding AddManifestFilesCommand}"
+                            ToolTip.Tip="Add manifest.dat Files..."
+                            IsVisible="{Binding !ManifestFileSelected}"
+                            Grid.Column="1">
+                        <Image Source="/Assets/icon_ui_pickup_siding_blue_32.png"/>
+                    </Button>
+                    <!--Add Data Files Button-->
+                    <Button Command="{Binding AddDataFilesCommand}"
+                            ToolTip.Tip="Add asset .dat Files..."
+                            IsVisible="{Binding ManifestFileSelected}"
+                            Grid.Column="1">
+                        <Image Source="/Assets/icon_minigame_mailsorting_box_32.png"/>
+                    </Button>
+                    <!--Extract Files Button-->
+                    <Button Command="{Binding ExtractFilesCommand}"
+                            ToolTip.Tip="Extract Checked Files..."
+                            Grid.Column="2">
+                        <Image Source="/Assets/downloadIcon.png"/>
+                    </Button>
+                    <!--Check All Button-->
+                    <Button Command="{Binding CheckAllCommand}"
+                            ToolTip.Tip="Check All Files"
+                            Grid.Column="3">
+                        <Image Source="/Assets/ui_dialog_greencheck.png"/>
+                    </Button>
+                    <!--Uncheck All Button-->
+                    <Button Command="{Binding UncheckAllCommand}"
+                            ToolTip.Tip="Uncheck All Files"
+                            Grid.Column="4">
+                        <Image Source="/Assets/ps3_icon_ui_none_32.png"/>
+                    </Button>
+                    <!--Remove Checked Button-->
+                    <Button Command="{Binding RemoveCheckedCommand}"
+                            ToolTip.Tip="Remove Checked Files"
+                            Grid.Column="5">
+                        <Image Source="/Assets/video_new_IC8.png"/>
+                    </Button>
+                </Grid>
+                <!--Asset File List-->
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding AssetFiles}"
+                         Margin="0 5 0 0"
+                         SelectionMode="Toggle"
+                         SelectedItem="{Binding SelectedAssetFile}"
+                         DragDrop.AllowDrop="True">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="vm:AssetFileViewModel">
+                            <StackPanel Orientation="Vertical">
+                                <!--Asset File-->
+                                <StackPanel Orientation="Horizontal"
+                                            VerticalAlignment="Center"
+                                            Height="14">
+                                    <Button IsVisible="{Binding IsManifestFile}"
+                                            Command="{Binding ShowDataFilesCommand}">
+                                        <Button.Template>
+                                            <ControlTemplate>
+                                                <Image Source="/Assets/Broker_ID.png"
+                                                       Margin="0 0 10 0">
+                                                    <Image.RenderTransform>
+                                                        <RotateTransform Angle="{Binding ShowDataFiles, Converter={StaticResource booleanToRotationConverter}, ConverterParameter=90}"/>
+                                                    </Image.RenderTransform>
+                                                </Image>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                    <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
+                                              VerticalAlignment="Center"/>
+                                    <TextBlock FontSize="12"
+                                               Text="{Binding Name}"
+                                               ToolTip.Tip="{Binding FullName}"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <!--Data Files-->
+                                <ItemsControl ItemsSource="{Binding DataFiles}"
+                                              Margin="23 9 0 -9">
+                                    <ItemsControl.IsVisible>
+                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                            <Binding Path="ShowDataFiles"/>
+                                            <Binding Path="!!DataFiles.Count"/>
+                                        </MultiBinding>
+                                    </ItemsControl.IsVisible>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="vm:DataFileViewModel">
+                                            <StackPanel Orientation="Horizontal">
+                                                <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
+                                                          VerticalAlignment="Center"/>
+                                                <TextBlock FontSize="12"
+                                                           Text="{Binding Name}"
+                                                           ToolTip.Tip="{Binding FullName}"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
                             </StackPanel>
-                            <!--Data Files-->
-                            <ItemsControl ItemsSource="{Binding DataFiles}"
-                                          Margin="23 9 0 -9">
-                                <ItemsControl.IsVisible>
-                                    <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                        <Binding Path="ShowDataFiles"/>
-                                        <Binding Path="!!DataFiles.Count"/>
-                                    </MultiBinding>
-                                </ItemsControl.IsVisible>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="vm:DataFileViewModel">
-                                        <StackPanel Orientation="Horizontal">
-                                            <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
-                                                      VerticalAlignment="Center"/>
-                                            <TextBlock FontSize="12"
-                                                       Text="{Binding Name}"
-                                                       ToolTip.Tip="{Binding FullName}"
-                                                       VerticalAlignment="Center"/>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-            <!--Property Grid-->
-            <Grid Grid.Row="2"
-                  Margin="0 5 0 0"
-                  RowDefinitions="*,*,*"
-                  ColumnDefinitions="*,2.5*"
-                  IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
-                <!--Path-->
-                <TextBox Grid.Row="0"
-                         Grid.Column="0"
-                         CornerRadius="0"
-                         IsReadOnly="True"
-                         FontSize="12"
-                         FontFamily="Tahoma"
-                         VerticalAlignment="Center"
-                         Text="Path"
-                         ToolTip.Tip="The full path of this file."/>
-                <TextBox Grid.Row="0"
-                         Grid.Column="1"
-                         CornerRadius="0"
-                         IsReadOnly="True"
-                         FontSize="12"
-                         FontFamily="Tahoma"
-                         VerticalAlignment="Center"
-                         Text="{Binding SelectedAssetFile.FullName}"
-                         ToolTip.Tip="{Binding SelectedAssetFile.FullName}"/>
-                <!--Count-->
-                <TextBox Grid.Row="1"
-                         Grid.Column="0"
-                         CornerRadius="0"
-                         IsReadOnly="True"
-                         FontSize="12"
-                         FontFamily="Tahoma"
-                         VerticalAlignment="Center"
-                         Text="Count"
-                         ToolTip.Tip="The number of assets contained in this file."/>
-                <TextBox Grid.Row="1"
-                         Grid.Column="1"
-                         CornerRadius="0"
-                         IsReadOnly="True"
-                         FontSize="12"
-                         FontFamily="Tahoma"
-                         VerticalAlignment="Center"
-                         Text="{Binding SelectedAssetFile.Count}"
-                         ToolTip.Tip="{Binding SelectedAssetFile.Count}"/>
-                <!--Size-->
-                <TextBox Grid.Row="2"
-                         Grid.Column="0"
-                         CornerRadius="0"
-                         IsReadOnly="True"
-                         FontSize="12"
-                         FontFamily="Tahoma"
-                         VerticalAlignment="Center"
-                         Text="Size"
-                         ToolTip.Tip="The total size of all assets in this file."/>
-                <TextBox Grid.Row="2"
-                         Grid.Column="1"
-                         CornerRadius="0"
-                         IsReadOnly="True"
-                         FontSize="12"
-                         FontFamily="Tahoma"
-                         VerticalAlignment="Center"
-                         Text="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"
-                         ToolTip.Tip="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <!--Property Grid-->
+                <Grid Grid.Row="2"
+                      Margin="0 5 0 0"
+                      RowDefinitions="*,*,*"
+                      ColumnDefinitions="*,2.5*"
+                      IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <!--Path-->
+                    <TextBox Grid.Row="0"
+                             Grid.Column="0"
+                             CornerRadius="0"
+                             IsReadOnly="True"
+                             FontSize="12"
+                             FontFamily="Tahoma"
+                             VerticalAlignment="Center"
+                             Text="Path"
+                             ToolTip.Tip="The full path of this file."/>
+                    <TextBox Grid.Row="0"
+                             Grid.Column="1"
+                             CornerRadius="0"
+                             IsReadOnly="True"
+                             FontSize="12"
+                             FontFamily="Tahoma"
+                             VerticalAlignment="Center"
+                             Text="{Binding SelectedAssetFile.FullName}"
+                             ToolTip.Tip="{Binding SelectedAssetFile.FullName}"/>
+                    <!--Count-->
+                    <TextBox Grid.Row="1"
+                             Grid.Column="0"
+                             CornerRadius="0"
+                             IsReadOnly="True"
+                             FontSize="12"
+                             FontFamily="Tahoma"
+                             VerticalAlignment="Center"
+                             Text="Count"
+                             ToolTip.Tip="The number of assets contained in this file."/>
+                    <TextBox Grid.Row="1"
+                             Grid.Column="1"
+                             CornerRadius="0"
+                             IsReadOnly="True"
+                             FontSize="12"
+                             FontFamily="Tahoma"
+                             VerticalAlignment="Center"
+                             Text="{Binding SelectedAssetFile.Count}"
+                             ToolTip.Tip="{Binding SelectedAssetFile.Count}"/>
+                    <!--Size-->
+                    <TextBox Grid.Row="2"
+                             Grid.Column="0"
+                             CornerRadius="0"
+                             IsReadOnly="True"
+                             FontSize="12"
+                             FontFamily="Tahoma"
+                             VerticalAlignment="Center"
+                             Text="Size"
+                             ToolTip.Tip="The total size of all assets in this file."/>
+                    <TextBox Grid.Row="2"
+                             Grid.Column="1"
+                             CornerRadius="0"
+                             IsReadOnly="True"
+                             FontSize="12"
+                             FontFamily="Tahoma"
+                             VerticalAlignment="Center"
+                             Text="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"
+                             ToolTip.Tip="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"/>
+                </Grid>
+            </Grid>
+            <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
+            <Grid Grid.Column="1"
+                  RowDefinitions="Auto,*,Auto"
+                  Margin="5 0 5 5">
+                <!--Search Bar & Options-->
+                <Grid Margin="0 5 0 0"
+                      ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
+                      MaxHeight="32">
+                    <!--Icon-->
+                    <Image Grid.Column="0"
+                           Source="/Assets/icon_interaction_player_inspect_32.png"
+                           Margin="5 2.5 5 2.5"
+                           ToolTip.Tip="Search (CTRL+F)"/>
+                    <!--Search Bar-->
+                    <TextBox Grid.Column="1"
+                             Name="searchBarTextBox"
+                             MinWidth="0"
+                             Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"
+                             FontFamily="Tahoma"
+                             FontSize="12"/>
+                    <!--Match Case Option-->
+                    <ToggleButton Grid.Column="2"
+                                  Name="matchCaseButton"
+                                  Margin="5 0 0 0"
+                                  ToolTip.Tip="Match Case (ALT+C)"
+                                  IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
+                                  Content="Aa"/>
+                    <!--Use Regular Expressions Option-->
+                    <ToggleButton Grid.Column="3"
+                                  Name="useRegexButton"
+                                  Margin="5 0 0 0"
+                                  ToolTip.Tip="Use Regular Expressions (ALT+E)"
+                                  IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
+                                  Content=".*"/>
+                    <!--Validate Assets Option-->
+                    <ToggleButton Grid.Column="4"
+                                  Name="validateAssetsButton"
+                                  Margin="5 0 0 0"
+                                  ToolTip.Tip="Validate Assets (ALT+V)"
+                                  IsChecked="{Binding IsValidatingAssets, Mode=TwoWay}">
+                        <Image Source="/Assets/icon_ui_guild_content.png"/>
+                    </ToggleButton>
+                    <!--Extract Selected Assets Button-->
+                    <Button Grid.Column="5"
+                            Command="{Binding ExtractAssetsCommand}"
+                            Margin="5 0 0 0"
+                            ToolTip.Tip="Extract Selected Assets...">
+                        <Image Source="/Assets/downloadIcon.png"/>
+                    </Button>
+                    <!--Options Dropdown Menu-->
+                    <DropDownButton Grid.Column="6"
+                                    Margin="5 0 0 0"
+                                    ToolTip.Tip="Options">
+                        <Image Source="/Assets/icon_achievement_02_32.png"/>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                <CheckBox FontSize="12"
+                                          FontFamily="Tahoma"
+                                          Content="Name"
+                                          IsChecked="{Binding ShowName}"/>
+                                <CheckBox FontSize="12"
+                                          FontFamily="Tahoma"
+                                          Content="Offset"
+                                          IsChecked="{Binding ShowOffset}"/>
+                                <CheckBox FontSize="12"
+                                          FontFamily="Tahoma"
+                                          Content="Size"
+                                          IsChecked="{Binding ShowSize}"/>
+                                <CheckBox FontSize="12"
+                                          FontFamily="Tahoma"
+                                          Content="CRC-32"
+                                          IsChecked="{Binding ShowCrc32}"/>
+                                <CheckBox FontSize="12"
+                                          FontFamily="Tahoma"
+                                          Content="Valid"
+                                          IsThreeState="True"
+                                          IsChecked="{Binding ValidationOptions.ShowValid}"
+                                          IsEnabled="{Binding IsValidatingAssets}"/>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </Grid>
+                <!--Asset DataGrid-->
+                <DataGrid Grid.Row="1"
+                          Margin="0 5 0 5"
+                          x:Name="assetGrid"
+                          ItemsSource="{Binding Assets}"
+                          SelectedItem="{Binding SelectedAsset}"
+                          IsReadOnly="True"
+                          SelectionMode="Extended"
+                          CanUserReorderColumns="True"
+                          CanUserResizeColumns="True"
+                          GridLinesVisibility="All"
+                          BorderThickness="1"
+                          BorderBrush="Gray"
+                          DoubleTapped="AssetGrid_DoubleTapped">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn FontSize="12"
+                                            Width="2*"
+                                            IsVisible="{Binding ShowName}"
+                                            Header="Name"
+                                            Binding="{Binding Name}"/>
+                        <DataGridTextColumn FontSize="12"
+                                            Width="*"
+                                            MaxWidth="150"
+                                            IsVisible="{Binding ShowOffset}"
+                                            Header="Offset"
+                                            Binding="{Binding Offset}"/>
+                        <DataGridTextColumn FontSize="12"
+                                            Width="*"
+                                            MaxWidth="150"
+                                            IsVisible="{Binding ShowSize}"
+                                            Header="Size"
+                                            Binding="{Binding Size}"/>
+                        <DataGridTextColumn FontSize="12"
+                                            Width="*"
+                                            MaxWidth="150"
+                                            IsVisible="{Binding ShowCrc32}"
+                                            Header="CRC-32"
+                                            Binding="{Binding Crc32}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <!--#/# Info Bar-->
+                <StackPanel Grid.Row="2"
+                            Orientation="Horizontal"
+                            MaxHeight="20">
+                    <!--#/# Files Selected-->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0 0 10 0"
+                                ToolTip.Tip="Files Selected">
+                        <Image Source="/Assets/questjournal_I50.png"
+                               Margin="0 0 5 0"/>
+                        <TextBlock FontFamily="Tahoma"
+                                   FontSize="12"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}/{1}">
+                                    <Binding Path="CheckedAssetFiles.Count"
+                                             FallbackValue="0"/>
+                                    <Binding Path="AssetFiles.Count"
+                                             FallbackValue="0"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <!--#/# Assets Shown-->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0 0 10 0"
+                                ToolTip.Tip="Assets Shown">
+                        <Image Source="/Assets/Broker_IE2.png"
+                               Margin="0 0 5 0"/>
+                        <TextBlock FontFamily="Tahoma"
+                                   FontSize="12"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}/{1}">
+                                    <Binding Path="CheckedAssets.Count"
+                                             FallbackValue="0"/>
+                                    <Binding Path="NumAssets"
+                                             FallbackValue="0"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <!--#/# In/valid Assets-->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0 0 10 0"
+                                IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource booleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
+                        <Image Source="/Assets/ui_objective_list.png"
+                               Margin="0 0 5 0"
+                               IsVisible="{Binding !ValidationOptions.ShowValid}"/>
+                        <Image Source="/Assets/ui_objective_completed.png"
+                               Margin="0 0 5 0"
+                               IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
+                        <TextBlock FontFamily="Tahoma"
+                                   FontSize="12"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}/{1}">
+                                    <Binding Path="Assets.UnfilteredCount"
+                                             FallbackValue="0"/>
+                                    <Binding Path="CheckedAssets.Count"
+                                             FallbackValue="0"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <!--#/# Search Hits-->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0 0 10 0"
+                                IsVisible="{Binding SearchOptions.Pattern, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                ToolTip.Tip="Search Hits">
+                        <Image Source="/Assets/icon_ui_activityFinder_32.png"
+                               Margin="0 0 5 0"/>
+                        <TextBlock FontFamily="Tahoma"
+                                   FontSize="12"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}/{1}">
+                                    <Binding Path="Assets.Count"
+                                             FallbackValue="0"/>
+                                    <Binding Path="Assets.UnfilteredCount"
+                                             FallbackValue="0"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                    <!--#/# Assets Selected-->
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0 0 10 0"
+                                IsVisible="{Binding !!SelectedAssets.Count}"
+                                ToolTip.Tip="Assets Selected">
+                        <Image Source="/Assets/cursor_interaction_default_use.png"
+                               Margin="0 0 5 0"/>
+                        <TextBlock FontFamily="Tahoma"
+                                   FontSize="12"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}/{1}">
+                                    <Binding Path="SelectedAssets.Count"
+                                             FallbackValue="0"/>
+                                    <Binding Path="Assets.Count"
+                                             FallbackValue="0"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
         </Grid>
-        <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
-        <Grid Grid.Column="1"
-              RowDefinitions="Auto,*,Auto"
-              Margin="5 0 5 5">
-            <!--Search Bar & Options-->
-            <Grid Margin="0 5 0 0"
-                  ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
-                  MaxHeight="32">
-                <!--Icon-->
-                <Image Grid.Column="0"
-                       Source="/Assets/icon_interaction_player_inspect_32.png"
-                       Margin="5 2.5 5 2.5"
-                       ToolTip.Tip="Search (CTRL+F)"/>
-                <!--Search Bar-->
-                <TextBox Grid.Column="1"
-                         Name="searchBarTextBox"
-                         MinWidth="0"
-                         Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"
-                         FontFamily="Tahoma"
-                         FontSize="12"/>
-                <!--Match Case Option-->
-                <ToggleButton Grid.Column="2"
-                              Name="matchCaseButton"
-                              Margin="5 0 0 0"
-                              ToolTip.Tip="Match Case (ALT+C)"
-                              IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
-                              Content="Aa"/>
-                <!--Use Regular Expressions Option-->
-                <ToggleButton Grid.Column="3"
-                              Name="useRegexButton"
-                              Margin="5 0 0 0"
-                              ToolTip.Tip="Use Regular Expressions (ALT+E)"
-                              IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
-                              Content=".*"/>
-                <!--Validate Assets Option-->
-                <ToggleButton Grid.Column="4"
-                              Name="validateAssetsButton"
-                              Margin="5 0 0 0"
-                              ToolTip.Tip="Validate Assets (ALT+V)"
-                              IsChecked="{Binding IsValidatingAssets, Mode=TwoWay}">
-                    <Image Source="/Assets/icon_ui_guild_content.png"/>
-                </ToggleButton>
-                <!--Extract Selected Assets Button-->
-                <Button Grid.Column="5"
-                        Command="{Binding ExtractAssetsCommand}"
-                        Margin="5 0 0 0"
-                        ToolTip.Tip="Extract Selected Assets...">
-                    <Image Source="/Assets/downloadIcon.png"/>
-                </Button>
-                <!--Options Dropdown Menu-->
-                <DropDownButton Grid.Column="6"
-                                Margin="5 0 0 0"
-                                ToolTip.Tip="Options">
-                    <Image Source="/Assets/icon_achievement_02_32.png"/>
-                    <DropDownButton.Flyout>
-                        <MenuFlyout Placement="BottomEdgeAlignedRight">
-                            <CheckBox FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Content="Name"
-                                      IsChecked="{Binding ShowName}"/>
-                            <CheckBox FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Content="Offset"
-                                      IsChecked="{Binding ShowOffset}"/>
-                            <CheckBox FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Content="Size"
-                                      IsChecked="{Binding ShowSize}"/>
-                            <CheckBox FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Content="CRC-32"
-                                      IsChecked="{Binding ShowCrc32}"/>
-                            <CheckBox FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Content="Valid"
-                                      IsThreeState="True"
-                                      IsChecked="{Binding ValidationOptions.ShowValid}"
-                                      IsEnabled="{Binding IsValidatingAssets}"/>
-                        </MenuFlyout>
-                    </DropDownButton.Flyout>
-                </DropDownButton>
-            </Grid>
-            <!--Asset DataGrid-->
-            <DataGrid Grid.Row="1"
-                      Margin="0 5 0 5"
-                      x:Name="assetGrid"
-                      ItemsSource="{Binding Assets}"
-                      SelectedItem="{Binding SelectedAsset}"
-                      IsReadOnly="True"
-                      SelectionMode="Extended"
-                      CanUserReorderColumns="True"
-                      CanUserResizeColumns="True"
-                      GridLinesVisibility="All"
-                      BorderThickness="1"
-                      BorderBrush="Gray"
-                      DoubleTapped="AssetGrid_DoubleTapped">
-                <DataGrid.Columns>
-                    <DataGridTextColumn FontSize="12"
-                                        Width="2*"
-                                        IsVisible="{Binding ShowName}"
-                                        Header="Name"
-                                        Binding="{Binding Name}"/>
-                    <DataGridTextColumn FontSize="12"
-                                        Width="*"
-                                        MaxWidth="150"
-                                        IsVisible="{Binding ShowOffset}"
-                                        Header="Offset"
-                                        Binding="{Binding Offset}"/>
-                    <DataGridTextColumn FontSize="12"
-                                        Width="*"
-                                        MaxWidth="150"
-                                        IsVisible="{Binding ShowSize}"
-                                        Header="Size"
-                                        Binding="{Binding Size}"/>
-                    <DataGridTextColumn FontSize="12"
-                                        Width="*"
-                                        MaxWidth="150"
-                                        IsVisible="{Binding ShowCrc32}"
-                                        Header="CRC-32"
-                                        Binding="{Binding Crc32}"/>
-                </DataGrid.Columns>
-            </DataGrid>
-            <!--#/# Info Bar-->
-            <StackPanel Grid.Row="2"
-                        Orientation="Horizontal"
-                        MaxHeight="20">
-                <!--#/# Files Selected-->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0 0 10 0"
-                            ToolTip.Tip="Files Selected">
-                    <Image Source="/Assets/questjournal_I50.png"
-                           Margin="0 0 5 0"/>
-                    <TextBlock FontFamily="Tahoma"
-                               FontSize="12"
-                               VerticalAlignment="Center">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="CheckedAssetFiles.Count"
-                                         FallbackValue="0"/>
-                                <Binding Path="AssetFiles.Count"
-                                         FallbackValue="0"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
-                <!--#/# Assets Shown-->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0 0 10 0"
-                            ToolTip.Tip="Assets Shown">
-                    <Image Source="/Assets/Broker_IE2.png"
-                           Margin="0 0 5 0"/>
-                    <TextBlock FontFamily="Tahoma"
-                               FontSize="12"
-                               VerticalAlignment="Center">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="CheckedAssets.Count"
-                                         FallbackValue="0"/>
-                                <Binding Path="NumAssets"
-                                         FallbackValue="0"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
-                <!--#/# In/valid Assets-->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0 0 10 0"
-                            IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource booleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
-                    <Image Source="/Assets/ui_objective_list.png"
-                           Margin="0 0 5 0"
-                           IsVisible="{Binding !ValidationOptions.ShowValid}"/>
-                    <Image Source="/Assets/ui_objective_completed.png"
-                           Margin="0 0 5 0"
-                           IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
-                    <TextBlock FontFamily="Tahoma"
-                               FontSize="12"
-                               VerticalAlignment="Center">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="Assets.UnfilteredCount"
-                                         FallbackValue="0"/>
-                                <Binding Path="CheckedAssets.Count"
-                                         FallbackValue="0"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
-                <!--#/# Search Hits-->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0 0 10 0"
-                            IsVisible="{Binding SearchOptions.Pattern, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                            ToolTip.Tip="Search Hits">
-                    <Image Source="/Assets/icon_ui_activityFinder_32.png"
-                           Margin="0 0 5 0"/>
-                    <TextBlock FontFamily="Tahoma"
-                               FontSize="12"
-                               VerticalAlignment="Center">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="Assets.Count"
-                                         FallbackValue="0"/>
-                                <Binding Path="Assets.UnfilteredCount"
-                                         FallbackValue="0"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
-                <!--#/# Assets Selected-->
-                <StackPanel Orientation="Horizontal"
-                            Margin="0 0 10 0"
-                            IsVisible="{Binding !!SelectedAssets.Count}"
-                            ToolTip.Tip="Assets Selected">
-                    <Image Source="/Assets/cursor_interaction_default_use.png"
-                           Margin="0 0 5 0"/>
-                    <TextBlock FontFamily="Tahoma"
-                               FontSize="12"
-                               VerticalAlignment="Center">
-                        <TextBlock.Text>
-                            <MultiBinding StringFormat="{}{0}/{1}">
-                                <Binding Path="SelectedAssets.Count"
-                                         FallbackValue="0"/>
-                                <Binding Path="Assets.Count"
-                                         FallbackValue="0"/>
-                            </MultiBinding>
-                        </TextBlock.Text>
-                    </TextBlock>
-                </StackPanel>
-            </StackPanel>
-        </Grid>
-    </Grid>
+    </DockPanel>
 </UserControl>

@@ -223,15 +223,13 @@ public partial class Unpacker
 
         foreach (Asset asset in assetFile)
         {
-            if (TryGetExtractionPath(reader, asset, out string path))
+            reader.ExtractTo(asset, OutputDirectory, HandleConflicts, out bool fileExtracted);
+
+            if (fileExtracted)
             {
-                FileInfo file = new(path);
-                file.Directory?.Create();
-                using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
-                reader.CopyTo(asset, fs);
                 pbar?.UpdateProgress($"Extracted {asset.Name}");
             }
-            else if (HandleConflicts is ConflictOptions.Skip)
+            else if (HandleConflicts is FileConflictOptions.Skip)
             {
                 pbar?.UpdateProgress($"Skipped {asset.Name}");
             }
@@ -244,132 +242,6 @@ public partial class Unpacker
         }
 
         return numAssets;
-    }
-
-    /// <summary>
-    /// Determines where to extract the specified asset. A return value indicates
-    /// whether the path is valid, according to the command-line options.
-    /// </summary>
-    /// <returns>The path to extract the specified asset.</returns>
-    /// <exception cref="InvalidEnumArgumentException"/>
-    private bool TryGetExtractionPath(AssetReader reader, Asset asset, out string path)
-    {
-        path = Path.Combine(OutputDirectory, asset.Name);
-
-        switch (HandleConflicts)
-        {
-            case ConflictOptions.Overwrite:
-                break;
-            case ConflictOptions.Skip:
-                return !File.Exists(path);
-            case ConflictOptions.Rename:
-                {
-                    string? newPath = path, extension = null, pathWithoutExtension = null;
-
-                    for (int digit = 2; File.Exists(newPath); digit++)
-                    {
-                        if (AssetEquals(reader, asset, newPath)) return false;
-
-                        extension ??= Path.GetExtension(path);
-                        pathWithoutExtension ??= path[..^extension.Length];
-                        newPath = $"{pathWithoutExtension} ({digit}){extension}";
-                    }
-
-                    path = newPath;
-                }
-                break;
-            case ConflictOptions.MkDir:
-                for (int digit = 2; File.Exists(path); digit++)
-                {
-                    if (AssetEquals(reader, asset, path)) return false;
-
-                    path = Path.Combine($"{OutputDirectory} ({digit})", asset.Name);
-                }
-                break;
-            case ConflictOptions.MkSubdir:
-                if (File.Exists(path))
-                {
-                    if (AssetEquals(reader, asset, path)) return false;
-
-                    string extension = Path.GetExtension(asset.Name);
-                    MoveFileDown(path, $"1{extension}");
-                    path = Path.Combine(path, $"2{extension}");
-                }
-                else if (Directory.Exists(path))
-                {
-                    string extension = Path.GetExtension(asset.Name);
-                    string subdirAsset = Path.Combine(path, $"1{extension}");
-
-                    for (int digit = 2; File.Exists(subdirAsset); digit++)
-                    {
-                        if (AssetEquals(reader, asset, subdirAsset)) return false;
-
-                        subdirAsset = Path.Combine(path, $"{digit}{extension}");
-                    }
-
-                    path = subdirAsset;
-                }
-                break;
-            case ConflictOptions.MkTree:
-                if (File.Exists(path))
-                {
-                    if (AssetEquals(reader, asset, path)) return false;
-
-                    string fileName = Path.GetFileName(asset.Name);
-                    MoveFileDown(path, Path.Combine("1", fileName));
-                    path = Path.Combine(path, "2", fileName);
-                }
-                else if (Directory.Exists(path))
-                {
-                    string fileName = Path.GetFileName(asset.Name);
-                    string subdirAsset = Path.Combine(path, "1", fileName);
-
-                    for (int digit = 2; File.Exists(subdirAsset); digit++)
-                    {
-                        if (AssetEquals(reader, asset, subdirAsset)) return false;
-
-                        subdirAsset = Path.Combine(path, $"{digit}", fileName);
-                    }
-
-                    path = subdirAsset;
-                }
-                break;
-            default:
-                throw new InvalidEnumArgumentException(nameof(HandleConflicts),
-                                                       (int)HandleConflicts,
-                                                       HandleConflicts.GetType());
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// Determines whether the specified asset is equal to the given file.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if the specified asset equals the specified file; otherwise, <see langword="false"/>.
-    /// </returns>
-    private static bool AssetEquals(AssetReader reader, Asset asset, string path)
-    {
-        FileInfo file = new(path);
-
-        if (asset.Size != file.Length) return false;
-
-        using FileStream fs = file.OpenRead();
-        return reader.StreamEqualsAsync(asset, fs).Result;
-    }
-
-    /// <summary>
-    /// Replaces the specified file with a directory and moves
-    /// the file inside of the directory with the given name.
-    /// </summary>
-    private static void MoveFileDown(string path, string fileName)
-    {
-        string tempPath = Path.GetTempFileName();
-        File.Move(path, tempPath, overwrite: true);
-        FileInfo file = new(Path.Combine(path, fileName));
-        file.Directory?.Create();
-        File.Move(tempPath, file.FullName);
     }
 
     /// <summary>

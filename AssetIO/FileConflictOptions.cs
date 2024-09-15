@@ -1,9 +1,9 @@
-﻿namespace UnpackerCli;
+﻿namespace AssetIO;
 
 /// <summary>
 /// Specifies how to handle file conflicts.
 /// </summary>
-public enum ConflictOptions
+public enum FileConflictOptions
 {
     /// <summary>
     /// Overwrite the existing file.

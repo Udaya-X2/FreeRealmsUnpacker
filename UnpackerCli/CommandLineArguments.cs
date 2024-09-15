@@ -1,4 +1,5 @@
-﻿using McMaster.Extensions.CommandLineUtils;
+﻿using AssetIO;
+using McMaster.Extensions.CommandLineUtils;
 using System.ComponentModel.DataAnnotations;
 
 namespace UnpackerCli;
@@ -97,7 +98,7 @@ public partial class Unpacker
     /// Gets how to handle assets with conflicting names.
     /// </summary>
     [Option(ShortName = "H", ValueName = "MODE", Description = "Specify how to handle assets with conflicting names.")]
-    public ConflictOptions HandleConflicts { get; }
+    public FileConflictOptions HandleConflicts { get; }
 
     /// <summary>
     /// Gets whether to disable progress bars.

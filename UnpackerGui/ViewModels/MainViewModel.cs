@@ -55,6 +55,9 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     public ValidationOptionsViewModel<AssetInfo> ValidationOptions { get; }
 
+    public ReactiveCommand<Unit, Unit> ExitCommand { get; }
+    public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ShowAboutCommand { get; }
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
@@ -81,6 +84,7 @@ public class MainViewModel : ViewModelBase
     private bool _showOffset;
     private bool _showSize;
     private bool _showCrc32;
+    private FileConflictOptions _conflictOptions;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -88,6 +92,9 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         // Initialize each command.
+        ExitCommand = ReactiveCommand.Create(App.ShutDown);
+        ShowPreferencesCommand = ReactiveCommand.CreateFromTask(ShowPreferences);
+        ShowAboutCommand = ReactiveCommand.CreateFromTask(ShowAbout);
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
@@ -242,6 +249,31 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Gets or sets how to handle assets with conflicting names.
+    /// </summary>
+    public FileConflictOptions ConflictOptions
+    {
+        get => _conflictOptions;
+        set => this.RaiseAndSetIfChanged(ref _conflictOptions, value);
+    }
+
+    /// <summary>
+    /// Opens the Preferences window.
+    /// </summary>
+    private async Task ShowPreferences() => await App.GetService<IDialogService>().ShowDialog(new PreferencesWindow
+    {
+        DataContext = new PreferencesViewModel(this)
+    });
+
+    /// <summary>
+    /// Opens the About Free Realms Unpacker window.
+    /// </summary>
+    private async Task ShowAbout() => await App.GetService<IDialogService>().ShowDialog(new AboutWindow
+    {
+        DataContext = new AboutViewModel()
+    });
+
+    /// <summary>
     /// Opens a file dialog that allows the user to add .pack files to the source asset files.
     /// </summary>
     private async Task AddPackFiles()
@@ -306,7 +338,7 @@ public class MainViewModel : ViewModelBase
 
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles)
+            DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles, _conflictOptions)
         });
     }
 
@@ -322,7 +354,8 @@ public class MainViewModel : ViewModelBase
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath,
                                                   SelectedAssets.Cast<AssetInfo>(),
-                                                  SelectedAssets.Count)
+                                                  SelectedAssets.Count,
+                                                  _conflictOptions)
         });
     }
 
@@ -437,12 +470,9 @@ public class MainViewModel : ViewModelBase
     {
         if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
 
-        string tempDir = Path.GetTempPath();
-        FileInfo file = new(Path.Combine(tempDir, Guid.NewGuid().ToString(), SelectedAsset.Name));
+        string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
-        file.Directory?.Create();
-        using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
-        reader.CopyTo(SelectedAsset, fs);
+        FileInfo file = reader.ExtractTo(SelectedAsset, tempDir);
         Process.Start(new ProcessStartInfo
         {
             UseShellExecute = true,
