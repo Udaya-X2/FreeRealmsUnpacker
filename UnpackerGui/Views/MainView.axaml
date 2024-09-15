@@ -320,10 +320,10 @@
                             ToolTip.Tip="Extract Selected Assets...">
                         <Image Source="/Assets/downloadIcon.png"/>
                     </Button>
-                    <!--Options Dropdown Menu-->
+                    <!--Display Options Dropdown Menu-->
                     <DropDownButton Grid.Column="6"
                                     Margin="5 0 0 0"
-                                    ToolTip.Tip="Options">
+                                    ToolTip.Tip="Display Options">
                         <Image Source="/Assets/icon_achievement_02_32.png"/>
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="BottomEdgeAlignedRight">
