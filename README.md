@@ -1,6 +1,5 @@
 # FreeRealmsUnpacker
-An application that can browse, extract, and validate assets from a Free Realms client directory or asset file to an output directory of your choice.
-CLI and GUI versions are both available according to your needs.
+An application that allows you to browse, extract, and validate assets from Free Realms asset files.
 
 CLI:
 ```
