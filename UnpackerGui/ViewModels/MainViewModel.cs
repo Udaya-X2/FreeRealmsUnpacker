@@ -70,6 +70,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> UncheckAllCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveCheckedCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
+    public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
@@ -113,6 +114,7 @@ public class MainViewModel : ViewModelBase
         UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
         RemoveCheckedCommand = ReactiveCommand.Create(RemoveChecked);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
+        ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
 
         // Observe any changes in the asset files.
@@ -152,11 +154,7 @@ public class MainViewModel : ViewModelBase
         // Need to clear selected assets to avoid the UI freezing when a large
         // number of assets are selected while more assets are added/removed.
         Assets.ObserveCollectionChanges()
-              .Subscribe(_ =>
-              {
-                  SelectedAsset = null;
-                  SelectedAssets.Clear();
-              });
+              .Subscribe(_ => ClearSelectedAssets());
 
         // Show each asset property by default.
         _showName = true;
@@ -562,6 +560,15 @@ public class MainViewModel : ViewModelBase
             UseShellExecute = true,
             FileName = file.FullName
         });
+    }
+
+    /// <summary>
+    /// Deselects all selected assets.
+    /// </summary>
+    private void ClearSelectedAssets()
+    {
+        SelectedAsset = null;
+        SelectedAssets.Clear();
     }
 
     /// <summary>

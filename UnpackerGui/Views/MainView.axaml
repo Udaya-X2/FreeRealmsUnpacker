@@ -366,7 +366,8 @@
                           GridLinesVisibility="All"
                           BorderThickness="1"
                           BorderBrush="Gray"
-                          DoubleTapped="AssetGrid_DoubleTapped">
+                          DoubleTapped="AssetGrid_DoubleTapped"
+                          Sorting="AssetGrid_Sorting">
                     <DataGrid.Columns>
                         <DataGridTextColumn FontSize="12"
                                             Width="2*"
