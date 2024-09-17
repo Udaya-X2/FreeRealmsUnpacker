@@ -113,18 +113,18 @@
                           IsChecked="{Binding AddUnknownAssets}"
                           FontFamily="Tahoma"
                           FontSize="12"/>
-                <CheckBox Content="Dat Assets"
-                          ToolTip.Tip="Asset .dat files, which come with a manifest.dat file consisting of asset information."
-                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
-                          Command="{Binding UpdateAssetFilterCommand}"
-                          CommandParameter="Dat"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
                 <CheckBox Content="Pack Assets"
                           ToolTip.Tip="Asset .pack files, which consist of both asset information and content."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
                           CommandParameter="Pack"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+                <CheckBox Content="Dat Assets"
+                          ToolTip.Tip="Asset .dat files, which come with a manifest.dat file consisting of asset information."
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="Dat"
                           FontFamily="Tahoma"
                           FontSize="12"/>
             </StackPanel>

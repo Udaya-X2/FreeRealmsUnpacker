@@ -325,8 +325,8 @@ public partial class Unpacker
         if (ExtractGame) assetType |= AssetType.Game;
         if (ExtractTcg) assetType |= AssetType.Tcg;
         if (ExtractResource) assetType |= AssetType.Resource;
-        if (ExtractDat) assetType |= AssetType.Dat;
         if (ExtractPack) assetType |= AssetType.Pack;
+        if (ExtractDat) assetType |= AssetType.Dat;
 
         // By default (no options are set), extract all asset types.
         if (assetType.GetDirectoryType() == 0 && !ExtractUnknown)

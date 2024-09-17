@@ -28,105 +28,6 @@ public static partial class ClientFile
     private static partial Regex ResourceDataRegex();
 
     /// <summary>
-    /// Returns an enumerable collection of the assets in the specified manifest.dat file.
-    /// </summary>
-    /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    public static IEnumerable<Asset> EnumerateManifestAssets(string manifestFile)
-    {
-        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
-
-        // Read the manifest.dat file in little-endian format.
-        using FileStream stream = File.OpenRead(manifestFile);
-        using EndianBinaryReader reader = new(stream, Endian.Little);
-        long numAssets = stream.Length / ManifestChunkSize;
-        Asset asset;
-
-        if (stream.Length % ManifestChunkSize != 0)
-        {
-            throw new IOException(string.Format(SR.IO_BadManifest, stream.Name));
-        }
-
-        // manifest.dat files are divided into 148-byte chunks of data with the following format:
-        // 
-        // Positions    Sample Value    Description
-        // 1-4          14              Length of the asset's name, in bytes.
-        // 5-X          mines_pink.def  Name of the asset.
-        // X-X+8        826             Offset of the asset in the asset .dat files(s).
-        // X+8-X+12     25              Size of the asset, in bytes.
-        // X+12-X+16    3577151519      CRC-32 checksum of the asset.
-        // X+16-148     0               Null bytes for the rest of the chunk.
-        // 
-        // Scan each manifest chunk for information regarding each asset.
-        for (int i = 0; i < numAssets; i++)
-        {
-            try
-            {
-                int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
-                string name = reader.ReadString(length);
-                long offset = ValidateRange(reader.ReadInt64(), minValue: 0, maxValue: long.MaxValue);
-                uint size = reader.ReadUInt32();
-                uint crc32 = reader.ReadUInt32();
-                asset = new Asset(name, offset, size, crc32);
-                stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
-            }
-            catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytesRead)
-            {
-                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
-            }
-
-            yield return asset;
-        }
-    }
-
-    /// <summary>
-    /// Returns the assets in the specified manifest.dat file.
-    /// </summary>
-    /// <returns>An array consisting of the assets in the specified manifest.dat file.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    public static Asset[] GetManifestAssets(string manifestFile)
-    {
-        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
-
-        Asset[] assets = new Asset[GetManifestAssetCount(manifestFile)];
-        int index = 0;
-
-        foreach (Asset asset in EnumerateManifestAssets(manifestFile))
-        {
-            assets[index++] = asset;
-        }
-
-        return assets;
-    }
-
-    /// <summary>
-    /// Returns the number of assets in the specified manifest.dat file.
-    /// </summary>
-    /// <returns>The number of assets in the specified manifest.dat file.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="OverflowException"/>
-    public static int GetManifestAssetCount(string manifestFile)
-    {
-        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
-
-        FileInfo manifestFileInfo = new(manifestFile);
-
-        try
-        {
-            return manifestFileInfo.Length % ManifestChunkSize == 0
-                ? checked((int)(manifestFileInfo.Length / ManifestChunkSize))
-                : throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
-        }
-        catch (OverflowException ex)
-        {
-            throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, manifestFileInfo.Name), ex);
-        }
-    }
-
-    /// <summary>
     /// Returns an enumerable collection of the assets in the specified .pack file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the specified .pack file.</returns>
@@ -256,6 +157,105 @@ public static partial class ClientFile
         catch (OverflowException ex)
         {
             throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, stream.Name), ex);
+        }
+    }
+
+    /// <summary>
+    /// Returns an enumerable collection of the assets in the specified manifest.dat file.
+    /// </summary>
+    /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static IEnumerable<Asset> EnumerateManifestAssets(string manifestFile)
+    {
+        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+
+        // Read the manifest.dat file in little-endian format.
+        using FileStream stream = File.OpenRead(manifestFile);
+        using EndianBinaryReader reader = new(stream, Endian.Little);
+        long numAssets = stream.Length / ManifestChunkSize;
+        Asset asset;
+
+        if (stream.Length % ManifestChunkSize != 0)
+        {
+            throw new IOException(string.Format(SR.IO_BadManifest, stream.Name));
+        }
+
+        // manifest.dat files are divided into 148-byte chunks of data with the following format:
+        // 
+        // Positions    Sample Value    Description
+        // 1-4          14              Length of the asset's name, in bytes.
+        // 5-X          mines_pink.def  Name of the asset.
+        // X-X+8        826             Offset of the asset in the asset .dat files(s).
+        // X+8-X+12     25              Size of the asset, in bytes.
+        // X+12-X+16    3577151519      CRC-32 checksum of the asset.
+        // X+16-148     0               Null bytes for the rest of the chunk.
+        // 
+        // Scan each manifest chunk for information regarding each asset.
+        for (int i = 0; i < numAssets; i++)
+        {
+            try
+            {
+                int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
+                string name = reader.ReadString(length);
+                long offset = ValidateRange(reader.ReadInt64(), minValue: 0, maxValue: long.MaxValue);
+                uint size = reader.ReadUInt32();
+                uint crc32 = reader.ReadUInt32();
+                asset = new Asset(name, offset, size, crc32);
+                stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
+            }
+            catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytesRead)
+            {
+                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
+            }
+
+            yield return asset;
+        }
+    }
+
+    /// <summary>
+    /// Returns the assets in the specified manifest.dat file.
+    /// </summary>
+    /// <returns>An array consisting of the assets in the specified manifest.dat file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static Asset[] GetManifestAssets(string manifestFile)
+    {
+        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+
+        Asset[] assets = new Asset[GetManifestAssetCount(manifestFile)];
+        int index = 0;
+
+        foreach (Asset asset in EnumerateManifestAssets(manifestFile))
+        {
+            assets[index++] = asset;
+        }
+
+        return assets;
+    }
+
+    /// <summary>
+    /// Returns the number of assets in the specified manifest.dat file.
+    /// </summary>
+    /// <returns>The number of assets in the specified manifest.dat file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
+    public static int GetManifestAssetCount(string manifestFile)
+    {
+        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+
+        FileInfo manifestFileInfo = new(manifestFile);
+
+        try
+        {
+            return manifestFileInfo.Length % ManifestChunkSize == 0
+                ? checked((int)(manifestFileInfo.Length / ManifestChunkSize))
+                : throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
+        }
+        catch (OverflowException ex)
+        {
+            throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, manifestFileInfo.Name), ex);
         }
     }
 

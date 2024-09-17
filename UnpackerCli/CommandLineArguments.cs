@@ -47,16 +47,16 @@ public partial class Unpacker
     public bool ExtractUnknown { get; }
 
     /// <summary>
-    /// Gets whether to extract .dat assets only.
-    /// </summary>
-    [Option(ShortName = "d", Description = "Extract .dat assets only.")]
-    public bool ExtractDat { get; }
-
-    /// <summary>
     /// Gets whether to extract .pack assets only.
     /// </summary>
     [Option(ShortName = "p", Description = "Extract .pack assets only.")]
     public bool ExtractPack { get; }
+
+    /// <summary>
+    /// Gets whether to extract .dat assets only.
+    /// </summary>
+    [Option(ShortName = "d", Description = "Extract .dat assets only.")]
+    public bool ExtractDat { get; }
 
     /// <summary>
     /// Gets whether to list the assets without extracting them.

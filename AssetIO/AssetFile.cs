@@ -113,8 +113,8 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     public int Count => FileType switch
     {
-        AssetType.Dat => ClientFile.GetManifestAssetCount(FullName),
         AssetType.Pack => ClientFile.GetPackAssetCount(FullName),
+        AssetType.Dat => ClientFile.GetManifestAssetCount(FullName),
         _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
     };
 
@@ -123,8 +123,8 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     public Asset[] Assets => FileType switch
     {
-        AssetType.Dat => ClientFile.GetManifestAssets(FullName),
         AssetType.Pack => ClientFile.GetPackAssets(FullName),
+        AssetType.Dat => ClientFile.GetManifestAssets(FullName),
         _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
     };
 
@@ -134,8 +134,8 @@ public class AssetFile : IEnumerable<Asset>
     /// <returns>A new <see cref="AssetReader"/> that reads from the asset file or related data files.</returns>
     public AssetReader OpenRead() => FileType switch
     {
-        AssetType.Dat => new AssetDatReader(DataFiles),
         AssetType.Pack => new AssetPackReader(FullName),
+        AssetType.Dat => new AssetDatReader(DataFiles),
         _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
     };
 
@@ -145,8 +145,8 @@ public class AssetFile : IEnumerable<Asset>
     /// <returns>An enumerable collection of the assets in the asset file.</returns>
     public IEnumerable<Asset> EnumerateAssets() => FileType switch
     {
-        AssetType.Dat => ClientFile.EnumerateManifestAssets(FullName),
         AssetType.Pack => ClientFile.EnumeratePackAssets(FullName),
+        AssetType.Dat => ClientFile.EnumerateManifestAssets(FullName),
         _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
     };
 

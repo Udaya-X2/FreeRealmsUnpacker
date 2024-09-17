@@ -19,13 +19,13 @@ public enum AssetType
     /// </summary>
     Resource = 4,
     /// <summary>
-    /// Asset .dat files, which come with a manifest.dat file consisting of asset information.
-    /// </summary>
-    Dat = 8,
-    /// <summary>
     /// Asset .pack files, which consist of both asset information and content.
     /// </summary>
-    Pack = 16,
+    Pack = 8,
+    /// <summary>
+    /// Asset .dat files, which come with a manifest.dat file consisting of asset information.
+    /// </summary>
+    Dat = 16,
     /// <summary>
     /// Assets from any Free Realms client subdirectory.
     /// </summary>
@@ -33,7 +33,7 @@ public enum AssetType
     /// <summary>
     /// Asset files with any file extension.
     /// </summary>
-    AllFiles = Dat | Pack,
+    AllFiles = Pack | Dat,
     /// <summary>
     /// Assets from any Free Realms client subdirectory, with any file extension.
     /// </summary>

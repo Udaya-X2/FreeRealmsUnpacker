@@ -16,8 +16,8 @@ Options:
   -t|--extract-tcg              Extract TCG assets only (in 'Free Realms/assets/').
   -r|--extract-resource         Extract resource assets only (in 'Free Realms/tcg/').
   -u|--extract-unknown          Extract unknown assets only (disabled by default).
-  -d|--extract-dat              Extract .dat assets only.
   -p|--extract-pack             Extract .pack assets only.
+  -d|--extract-dat              Extract .dat assets only.
   -l|--list-assets              List the assets without extracting them.
   -f|--list-files               List the asset file paths without extracting them.
   -v|--validate-assets          Validate the assets without extracting them.
