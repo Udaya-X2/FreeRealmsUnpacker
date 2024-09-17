@@ -75,6 +75,8 @@ public class MainViewModel : ViewModelBase
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _checkedAssetFiles;
+    private readonly PreferencesViewModel _preferences;
+    private readonly AboutViewModel _about;
 
     private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
@@ -87,6 +89,8 @@ public class MainViewModel : ViewModelBase
     private bool _showSize;
     private bool _showCrc32;
     private FileConflictOptions _conflictOptions;
+    private AssetType _assetFilter;
+    private bool _addUnknownAssets;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -159,6 +163,15 @@ public class MainViewModel : ViewModelBase
         _showOffset = true;
         _showSize = true;
         _showCrc32 = true;
+
+        // Initialize default preferences.
+        _conflictOptions = FileConflictOptions.Overwrite;
+        _assetFilter = AssetType.All;
+        _addUnknownAssets = false;
+
+        // Initialize other view models.
+        _about = new AboutViewModel();
+        _preferences = new PreferencesViewModel(this);
     }
 
     /// <summary>
@@ -262,11 +275,29 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Gets or sets which assets to search for in folders.
+    /// </summary>
+    public AssetType AssetFilter
+    {
+        get => _assetFilter;
+        set => this.RaiseAndSetIfChanged(ref _assetFilter, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to search for unknown assets in folders.
+    /// </summary>
+    public bool AddUnknownAssets
+    {
+        get => _addUnknownAssets;
+        set => this.RaiseAndSetIfChanged(ref _addUnknownAssets, value);
+    }
+
+    /// <summary>
     /// Opens the Preferences window.
     /// </summary>
     private async Task ShowPreferences() => await App.GetService<IDialogService>().ShowDialog(new PreferencesWindow
     {
-        DataContext = new PreferencesViewModel(this)
+        DataContext = _preferences
     });
 
     /// <summary>
@@ -274,7 +305,7 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private async Task ShowAbout() => await App.GetService<IDialogService>().ShowDialog(new AboutWindow
     {
-        DataContext = new AboutViewModel()
+        DataContext = _about
     });
 
     /// <summary>
@@ -284,7 +315,9 @@ public class MainViewModel : ViewModelBase
     {
         if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
 
-        List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(folder.Path.LocalPath)
+        List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(folder.Path.LocalPath,
+                                                                         _assetFilter,
+                                                                         requireFullType: !_addUnknownAssets)
                                                     .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)
                                                     .ToList();
 

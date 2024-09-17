@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="Preferences"
-        Width="450"
+        Width="500"
         Height="300"
         x:DataType="vm:PreferencesViewModel"
         ShowInTaskbar="False"
@@ -16,44 +16,106 @@
         CanResize="False">
     <Window.Resources>
         <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
+        <conv:StringComparisonConverter x:Key="stringComparisonConverter"/>
     </Window.Resources>
+    <!--Base Panel-->
     <DockPanel Margin="15">
+        <!--Settings List-->
+        <ListBox ItemsSource="{Binding Settings}"
+                 SelectedItem="{Binding SelectedSetting}"
+                 Margin="0,0,15,0"
+                 SelectionMode="AlwaysSelected">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="vm:SettingsViewModel">
+                    <TextBlock Text="{Binding Name}"
+                               FontFamily="Tahoma"
+                               FontSize="12"/>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+        <!--Visible Option-->
         <StackPanel>
-            <TextBlock Text="File Conflict Options:"
+            <!--Option Name-->
+            <TextBlock Text="{Binding SelectedSetting.Name}"
                        FontFamily="Tahoma"
-                       FontSize="14"
-                       ToolTip.Tip="Specifies how to extract assets with conflicting names"
-                       Margin="0,0,0,5"/>
-            <RadioButton GroupName="FileConflictOptions"
-                         Content="Overwrite"
-                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=0, Mode=TwoWay}"
-                         FontFamily="Tahoma"
-                         FontSize="12"/>
-            <RadioButton GroupName="FileConflictOptions"
-                         Content="Skip"
-                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=1, Mode=TwoWay}"
-                         FontFamily="Tahoma"
-                         FontSize="12"/>
-            <RadioButton GroupName="FileConflictOptions"
-                         Content="Rename"
-                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=2, Mode=TwoWay}"
-                         FontFamily="Tahoma"
-                         FontSize="12"/>
-            <RadioButton GroupName="FileConflictOptions"
-                         Content="Make Directory"
-                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=3, Mode=TwoWay}"
-                         FontFamily="Tahoma"
-                         FontSize="12"/>
-            <RadioButton GroupName="FileConflictOptions"
-                         Content="Make Subdirectory"
-                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=4, Mode=TwoWay}"
-                         FontFamily="Tahoma"
-                         FontSize="12"/>
-            <RadioButton GroupName="FileConflictOptions"
-                         Content="Make Subdirectory Tree"
-                         IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=5, Mode=TwoWay}"
-                         FontFamily="Tahoma"
-                         FontSize="12"/>
+                       FontSize="20"
+                       Margin="0,0,0,10"/>
+            <!--Option Description-->
+            <TextBlock Text="{Binding SelectedSetting.Description}"
+                       FontFamily="Tahoma"
+                       FontSize="12"
+                       Opacity="100"
+                       Margin="0,0,0,10"/>
+            <!--File Conflict Options-->
+            <StackPanel IsVisible="{Binding SelectedSetting.Name, Converter={StaticResource stringComparisonConverter} ConverterParameter='File Conflict Options'}">
+                <RadioButton GroupName="FileConflictOptions"
+                             Content="Overwrite"
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay}"
+                             FontFamily="Tahoma"
+                             FontSize="12"/>
+                <RadioButton GroupName="FileConflictOptions"
+                             Content="Skip"
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Skip, Mode=TwoWay}"
+                             FontFamily="Tahoma"
+                             FontSize="12"/>
+                <RadioButton GroupName="FileConflictOptions"
+                             Content="Rename"
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Rename, Mode=TwoWay}"
+                             FontFamily="Tahoma"
+                             FontSize="12"/>
+                <RadioButton GroupName="FileConflictOptions"
+                             Content="Make Directory"
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkDir, Mode=TwoWay}"
+                             FontFamily="Tahoma"
+                             FontSize="12"/>
+                <RadioButton GroupName="FileConflictOptions"
+                             Content="Make Subdirectory"
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkSubdir, Mode=TwoWay}"
+                             FontFamily="Tahoma"
+                             FontSize="12"/>
+                <RadioButton GroupName="FileConflictOptions"
+                             Content="Make Subdirectory Tree"
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"
+                             FontFamily="Tahoma"
+                             FontSize="12"/>
+            </StackPanel>
+            <!--Folder Options-->
+            <StackPanel IsVisible="{Binding SelectedSetting.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Folder Options'}">
+                <CheckBox Content="Game Assets"
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="Game"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+                <CheckBox Content="TCG Assets"
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="Tcg"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+                <CheckBox Content="Resource Assets"
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="Resource"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+                <CheckBox Content="Unknown Assets"
+                          IsChecked="{Binding AddUnknownAssets}"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+                <CheckBox Content="Pack Assets"
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="Pack"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+                <CheckBox Content="Dat Assets"
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="Dat"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+            </StackPanel>
         </StackPanel>
     </DockPanel>
 </Window>

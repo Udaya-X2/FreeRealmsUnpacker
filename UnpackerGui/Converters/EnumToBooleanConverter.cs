@@ -2,6 +2,7 @@
 using Avalonia.Data.Converters;
 using System;
 using System.Globalization;
+using System.Reflection;
 
 namespace UnpackerGui.Converters;
 
@@ -9,11 +10,24 @@ public class EnumToBooleanConverter : IValueConverter
 {
     public static readonly EnumToBooleanConverter Instance = new();
 
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        Enum when Enum.TryParse(value.GetType(), parameter as string, out object? result) => value.Equals(result),
-        _ => new BindingNotification(new InvalidCastException(), BindingErrorType.Error)
-    };
+        if (value?.GetType() is Type valueType && Enum.TryParse(valueType, parameter as string, out object? result))
+        {
+            if (valueType.IsDefined(typeof(FlagsAttribute)))
+            {
+                return ((int)value & (int)result) == (int)result;
+            }
+            else
+            {
+                return value.Equals(result);
+            }
+        }
+        else
+        {
+            return new BindingNotification(new InvalidCastException(), BindingErrorType.Error);
+        }
+    }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
