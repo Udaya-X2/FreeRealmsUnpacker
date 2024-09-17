@@ -50,31 +50,37 @@
             <StackPanel IsVisible="{Binding SelectedSetting.Name, Converter={StaticResource stringComparisonConverter} ConverterParameter='File Conflict Options'}">
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Overwrite"
+                             ToolTip.Tip="Overwrite the existing file."
                              IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay}"
                              FontFamily="Tahoma"
                              FontSize="12"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Skip"
+                             ToolTip.Tip="Skip the file."
                              IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Skip, Mode=TwoWay}"
                              FontFamily="Tahoma"
                              FontSize="12"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Rename"
+                             ToolTip.Tip="Add a number to the new file's name."
                              IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Rename, Mode=TwoWay}"
                              FontFamily="Tahoma"
                              FontSize="12"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Make Directory"
+                             ToolTip.Tip="Create a directory with a number added to its name for the new file."
                              IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkDir, Mode=TwoWay}"
                              FontFamily="Tahoma"
                              FontSize="12"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Make Subdirectory"
+                             ToolTip.Tip="Create a subdirectory with a distinct name for each file."
                              IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkSubdir, Mode=TwoWay}"
                              FontFamily="Tahoma"
                              FontSize="12"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Make Subdirectory Tree"
+                             ToolTip.Tip="Create a subdirectory with a directory for each file."
                              IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"
                              FontFamily="Tahoma"
                              FontSize="12"/>
@@ -82,37 +88,43 @@
             <!--Folder Options-->
             <StackPanel IsVisible="{Binding SelectedSetting.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Folder Options'}">
                 <CheckBox Content="Game Assets"
+                          ToolTip.Tip="Assets for the game, typically located in the &quot;Free Realms/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
                           CommandParameter="Game"
                           FontFamily="Tahoma"
                           FontSize="12"/>
                 <CheckBox Content="TCG Assets"
+                          ToolTip.Tip="Image assets for the TCG, typically located in the &quot;Free Realms/assets/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
                           CommandParameter="Tcg"
                           FontFamily="Tahoma"
                           FontSize="12"/>
                 <CheckBox Content="Resource Assets"
+                          ToolTip.Tip="Resource assets for the TCG, typically located in the &quot;Free Realms/tcg/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
                           CommandParameter="Resource"
                           FontFamily="Tahoma"
                           FontSize="12"/>
                 <CheckBox Content="Unknown Assets"
+                          ToolTip.Tip="Assets with unknown names, possibly renamed or not from a Free Realms directory."
                           IsChecked="{Binding AddUnknownAssets}"
                           FontFamily="Tahoma"
                           FontSize="12"/>
-                <CheckBox Content="Pack Assets"
-                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay}"
-                          Command="{Binding UpdateAssetFilterCommand}"
-                          CommandParameter="Pack"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
                 <CheckBox Content="Dat Assets"
+                          ToolTip.Tip="Asset .dat files, which come with a manifest.dat file consisting of asset information."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
                           CommandParameter="Dat"
+                          FontFamily="Tahoma"
+                          FontSize="12"/>
+                <CheckBox Content="Pack Assets"
+                          ToolTip.Tip="Asset .pack files, which consist of both asset information and content."
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="Pack"
                           FontFamily="Tahoma"
                           FontSize="12"/>
             </StackPanel>
