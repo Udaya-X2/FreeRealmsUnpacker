@@ -33,7 +33,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
     public AssetFileViewModel(AssetFile assetFile, CancellationToken token = default)
     {
-        Assets = new List<AssetInfo>();
+        Assets = [];
         _assetFile = assetFile;
 
         foreach (Asset asset in _assetFile)

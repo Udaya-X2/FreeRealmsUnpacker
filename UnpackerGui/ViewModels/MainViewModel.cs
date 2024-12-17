@@ -137,7 +137,7 @@ public class MainViewModel : ViewModelBase
         // Initialize each observable collection.
         ValidationOptions = new ValidationOptionsViewModel<AssetInfo>(x => x.IsValid);
         SearchOptions = new SearchOptionsViewModel<AssetInfo>(x => x.Name);
-        SelectedAssets = new ControlledObservableList();
+        SelectedAssets = [];
         CheckedAssets = CheckedAssetFiles.Flatten<ReadOnlyObservableCollection<AssetFileViewModel>, AssetInfo>();
         ValidatedAssets = CheckedAssets.Filter(ValidationOptions);
         Assets = ValidatedAssets.Filter(SearchOptions);
@@ -533,14 +533,13 @@ public class MainViewModel : ViewModelBase
         if (ManifestFileSelected)
         {
             SelectedAssetFile?.DataFilePaths?.RemoveMany(SelectedAssetFile!.DataFiles!.Where(x => x.IsChecked)
-                                                                                      .Select(x => x.FullName)
-                                                                                      .ToList());
+                                                                                      .Select(x => x.FullName));
         }
         else
         {
             using (Assets.SuspendNotifications())
             {
-                _sourceAssetFiles.RemoveMany(CheckedAssetFiles.ToList());
+                _sourceAssetFiles.RemoveMany(CheckedAssetFiles);
             }
         }
     }
@@ -576,7 +575,7 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private async Task AddFiles(IEnumerable<string> files)
     {
-        if (files == null) throw new ArgumentNullException(nameof(files));
+        ArgumentNullException.ThrowIfNull(files, nameof(files));
 
         if (ManifestFileSelected)
         {

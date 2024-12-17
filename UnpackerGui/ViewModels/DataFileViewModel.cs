@@ -3,20 +3,13 @@ using System.IO;
 
 namespace UnpackerGui.ViewModels;
 
-public class DataFileViewModel : ViewModelBase
+public class DataFileViewModel(string path, AssetFileViewModel assetFile) : ViewModelBase
 {
-    public AssetFileViewModel Parent { get; }
-    public string FullName { get; }
-    public string Name { get; }
+    public AssetFileViewModel Parent { get; } = assetFile;
+    public string FullName { get; } = path;
+    public string Name { get; } = Path.GetFileName(path);
 
     private bool _isChecked;
-
-    public DataFileViewModel(string path, AssetFileViewModel assetFile)
-    {
-        Parent = assetFile;
-        FullName = path;
-        Name = Path.GetFileName(path);
-    }
 
     public bool IsChecked
     {

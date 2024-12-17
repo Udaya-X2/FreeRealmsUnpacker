@@ -16,8 +16,8 @@ public static class EnumerableExtensions
     /// <exception cref="ArgumentNullException"/>
     public static void ForEach<T>(this IEnumerable<T> source, Action<T> action)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
-        if (action == null) throw new ArgumentNullException(nameof(action));
+        ArgumentNullException.ThrowIfNull(source, nameof(source));
+        ArgumentNullException.ThrowIfNull(action, nameof(action));
 
         foreach (T item in source)
         {
@@ -37,7 +37,7 @@ public static class EnumerableExtensions
     /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T?> source)
     {
-        if (source == null) throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source, nameof(source));
 
         foreach (T? item in source)
         {

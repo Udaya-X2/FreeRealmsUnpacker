@@ -18,7 +18,7 @@ public partial class MainView : UserControl
     public MainView()
     {
         InitializeComponent();
-        _cleanUp = new CompositeDisposable();
+        _cleanUp = [];
     }
 
     private void MainView_Loaded(object? sender, RoutedEventArgs e)

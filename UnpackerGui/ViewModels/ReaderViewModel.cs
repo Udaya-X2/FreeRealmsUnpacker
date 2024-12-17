@@ -6,21 +6,13 @@ using System.Threading;
 
 namespace UnpackerGui.ViewModels;
 
-public class ReaderViewModel : ProgressViewModel
+public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
+                             IList<AssetFile> inputAssetFiles) : ProgressViewModel
 {
-    private readonly ISourceList<AssetFileViewModel> _sourceAssetFiles;
-    private readonly IList<AssetFile> _inputAssetFiles;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ReaderViewModel"/>
-    /// class from the specified source asset files and input asset files.
-    /// </summary>
-    public ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
-                           IList<AssetFile> inputAssetFiles)
-    {
-        _sourceAssetFiles = sourceAssetFiles ?? throw new ArgumentNullException(nameof(sourceAssetFiles));
-        _inputAssetFiles = inputAssetFiles ?? throw new ArgumentNullException(nameof(inputAssetFiles));
-    }
+    private readonly ISourceList<AssetFileViewModel> _sourceAssetFiles = sourceAssetFiles
+        ?? throw new ArgumentNullException(nameof(sourceAssetFiles));
+    private readonly IList<AssetFile> _inputAssetFiles = inputAssetFiles
+        ?? throw new ArgumentNullException(nameof(inputAssetFiles));
 
     /// <inheritdoc/>
     public override int Maximum => _inputAssetFiles.Count;

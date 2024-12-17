@@ -89,7 +89,7 @@ public class ReactiveList<T> : ObservableCollection<T>, IObservableCollection<T>
     /// <inheritdoc/>
     public void Load(IEnumerable<T> items)
     {
-        if (items == null) throw new ArgumentNullException(nameof(items));
+        ArgumentNullException.ThrowIfNull(items, nameof(items));
 
         CheckReentrancy();
         Clear();
@@ -236,7 +236,7 @@ public class ReactiveList<T> : ObservableCollection<T>, IObservableCollection<T>
 
     /// <inheritdoc cref="List{T}.ToArray"/>
     public T[] ToArray()
-        => _items.ToArray();
+        => [.. _items];
 
     /// <inheritdoc cref="List{T}.TrimExcess"/>
     public void TrimExcess()

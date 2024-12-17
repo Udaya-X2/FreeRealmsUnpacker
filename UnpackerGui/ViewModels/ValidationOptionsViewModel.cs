@@ -6,21 +6,12 @@ namespace UnpackerGui.ViewModels;
 /// Represents a filter based on the validity of a specified type.
 /// </summary>
 /// <typeparam name="T">The type of the item to filter.</typeparam>
-public class ValidationOptionsViewModel<T> : FilterViewModel<T>
+/// <param name="converter">The validation property selector.</param>
+public class ValidationOptionsViewModel<T>(Func<T, bool> converter) : FilterViewModel<T>
 {
-    private readonly Func<T, bool> _converter;
+    private readonly Func<T, bool> _converter = converter ?? throw new ArgumentNullException(nameof(converter));
 
     private bool? _showValid;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ValidationOptionsViewModel{T}"/>
-    /// class from the specified validation property selector.
-    /// </summary>
-    /// <exception cref="ArgumentNullException"></exception>
-    public ValidationOptionsViewModel(Func<T, bool> converter)
-    {
-        _converter = converter ?? throw new ArgumentNullException(nameof(converter));
-    }
 
     /// <summary>
     /// Gets or sets whether the filter is satisfied by valid, invalid, or both states.

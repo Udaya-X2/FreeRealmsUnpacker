@@ -39,7 +39,7 @@ public partial class Unpacker
                                               ? ClientDirectory.EnumerateAssetFiles(InputFile,
                                                                                     GetAssetFilter(),
                                                                                     requireFullType: !ExtractUnknown)
-                                              : new[] { new AssetFile(InputFile) };
+                                              : [new AssetFile(InputFile)];
             
             // Handle the asset types specified.
             int count = ListFiles

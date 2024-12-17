@@ -5,14 +5,9 @@ using System.Threading.Tasks;
 
 namespace UnpackerGui.Services;
 
-public class FilesService : IFilesService
+public class FilesService(TopLevel target) : IFilesService
 {
-    private readonly IStorageProvider _storageProvider;
-
-    public FilesService(TopLevel target)
-    {
-        _storageProvider = target.StorageProvider;
-    }
+    private readonly IStorageProvider _storageProvider = target.StorageProvider;
 
     public async Task<IStorageFile?> OpenFileAsync() => await OpenFileAsync(new()
     {

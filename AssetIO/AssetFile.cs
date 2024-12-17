@@ -75,7 +75,7 @@ public class AssetFile : IEnumerable<Asset>
     /// <exception cref="ArgumentException"/>
     private AssetFile(string path, AssetType assetType, IEnumerable<string>? dataFiles, bool findDataFiles)
     {
-        if (path == null) throw new ArgumentNullException(nameof(path));
+        ArgumentNullException.ThrowIfNull(path, nameof(path));
         if (!assetType.IsValid()) throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, assetType));
 
         Info = new FileInfo(path);
@@ -83,7 +83,7 @@ public class AssetFile : IEnumerable<Asset>
         DataFiles = (findDataFiles, FileType) switch
         {
             (true, AssetType.Dat) => ClientDirectory.EnumerateDataFiles(Info),
-            (true, _) => Enumerable.Empty<string>(),
+            (true, _) => [],
             (false, _) => dataFiles ?? throw new ArgumentNullException(nameof(dataFiles))
         };
     }

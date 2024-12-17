@@ -37,7 +37,7 @@ public static partial class ClientDirectory
                                                              SearchOption searchOption = SearchOption.AllDirectories,
                                                              bool requireFullType = true)
     {
-        if (path == null) throw new ArgumentNullException(nameof(path));
+        ArgumentNullException.ThrowIfNull(path, nameof(path));
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
@@ -72,7 +72,7 @@ public static partial class ClientDirectory
                                                          AssetType assetFilter = AssetType.All,
                                                          SearchOption searchOption = SearchOption.AllDirectories)
     {
-        if (path == null) throw new ArgumentNullException(nameof(path));
+        ArgumentNullException.ThrowIfNull(path, nameof(path));
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
@@ -102,9 +102,9 @@ public static partial class ClientDirectory
     public static IEnumerable<string> EnumerateDataFiles(FileInfo manifestFile,
                                                          SearchOption searchOption = SearchOption.TopDirectoryOnly)
     {
-        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
         if (!manifestFile.Name.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
-            || manifestFile.DirectoryName is not string dirName) return Enumerable.Empty<string>();
+            || manifestFile.DirectoryName is not string dirName) return [];
 
         string manifestFilePrefix = manifestFile.Name[..^ManifestFileSuffix.Length];
         return Directory.EnumerateFiles(dirName, "*", searchOption)

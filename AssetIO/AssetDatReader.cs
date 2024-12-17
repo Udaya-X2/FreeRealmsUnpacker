@@ -22,7 +22,7 @@ public class AssetDatReader : AssetReader
     /// <exception cref="ArgumentNullException"/>
     public AssetDatReader(IEnumerable<string> assetDatPaths)
     {
-        if (assetDatPaths == null) throw new ArgumentNullException(nameof(assetDatPaths));
+        ArgumentNullException.ThrowIfNull(assetDatPaths, nameof(assetDatPaths));
 
         _assetStreams = OpenReadFiles(assetDatPaths);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -37,9 +37,9 @@ public class AssetDatReader : AssetReader
     /// <exception cref="ObjectDisposedException"/>
     public override void Read(Asset asset, byte[] buffer)
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
-        if (asset == null) throw new ArgumentNullException(nameof(asset));
-        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
+        ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
         if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
 
         // Determine which .dat file to read and where to start reading from based on the offset.
@@ -67,9 +67,9 @@ public class AssetDatReader : AssetReader
     /// <exception cref="ObjectDisposedException"/>
     public override void CopyTo(Asset asset, Stream destination)
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
-        if (asset == null) throw new ArgumentNullException(nameof(asset));
-        if (destination == null) throw new ArgumentNullException(nameof(destination));
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
+        ArgumentNullException.ThrowIfNull(destination, nameof(destination));
         if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
 
         foreach (int bytesRead in InternalRead(asset))
@@ -87,8 +87,8 @@ public class AssetDatReader : AssetReader
     /// <exception cref="ObjectDisposedException"/>
     public override uint GetCrc32(Asset asset)
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(AssetDatReader));
-        if (asset == null) throw new ArgumentNullException(nameof(asset));
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
 
         uint crc32 = 0u;
 
@@ -103,9 +103,9 @@ public class AssetDatReader : AssetReader
     /// <inheritdoc/>
     public override bool StreamEquals(Asset asset, Stream stream)
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
-        if (asset == null) throw new ArgumentNullException(nameof(asset));
-        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
+        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -139,9 +139,9 @@ public class AssetDatReader : AssetReader
     /// <inheritdoc/>
     public override async Task<bool> StreamEqualsAsync(Asset asset, Stream stream, CancellationToken token = default)
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(AssetPackReader));
-        if (asset == null) throw new ArgumentNullException(nameof(asset));
-        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
+        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
         token.ThrowIfCancellationRequested();
 
@@ -276,7 +276,7 @@ public class AssetDatReader : AssetReader
     /// <returns>An array of read-only <see cref="FileStream"/> objects on the specified files.</returns>
     private static FileStream[] OpenReadFiles(IEnumerable<string> files)
     {
-        List<FileStream> fileStreams = new();
+        List<FileStream> fileStreams = [];
 
         foreach (string file in files)
         {
@@ -292,7 +292,7 @@ public class AssetDatReader : AssetReader
             }
         }
 
-        return fileStreams.ToArray();
+        return [.. fileStreams];
     }
 
     /// <inheritdoc/>

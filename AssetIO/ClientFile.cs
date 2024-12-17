@@ -36,7 +36,7 @@ public static partial class ClientFile
     /// <exception cref="IOException"/>
     public static IEnumerable<Asset> EnumeratePackAssets(string packFile)
     {
-        if (packFile == null) throw new ArgumentNullException(nameof(packFile));
+        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
 
         // Read the .pack file in big-endian format.
         using FileStream stream = File.OpenRead(packFile);
@@ -127,7 +127,7 @@ public static partial class ClientFile
     /// <exception cref="OverflowException"/>
     public static int GetPackAssetCount(string packFile)
     {
-        if (packFile == null) throw new ArgumentNullException(nameof(packFile));
+        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
 
         // Read the .pack file in big-endian format.
         using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
@@ -168,7 +168,7 @@ public static partial class ClientFile
     /// <exception cref="IOException"/>
     public static IEnumerable<Asset> EnumerateManifestAssets(string manifestFile)
     {
-        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
 
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
@@ -221,7 +221,7 @@ public static partial class ClientFile
     /// <exception cref="IOException"/>
     public static Asset[] GetManifestAssets(string manifestFile)
     {
-        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
 
         Asset[] assets = new Asset[GetManifestAssetCount(manifestFile)];
         int index = 0;
@@ -243,7 +243,7 @@ public static partial class ClientFile
     /// <exception cref="OverflowException"/>
     public static int GetManifestAssetCount(string manifestFile)
     {
-        if (manifestFile == null) throw new ArgumentNullException(nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
 
         FileInfo manifestFileInfo = new(manifestFile);
 
@@ -267,7 +267,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static AssetType InferAssetType(string assetFile, bool requireFullType = true, bool strict = false)
     {
-        if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
+        ArgumentNullException.ThrowIfNull(assetFile, nameof(assetFile));
 
         AssetType assetFileType = InferAssetFileType(assetFile, strict);
 
@@ -296,7 +296,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static AssetType InferAssetFileType(string assetFile, bool strict = false)
     {
-        if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
+        ArgumentNullException.ThrowIfNull(assetFile, nameof(assetFile));
 
         if (assetFile.EndsWith(".pack", StringComparison.OrdinalIgnoreCase))
         {
@@ -322,7 +322,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static AssetType InferAssetDirectoryType(string assetFile, bool strict = false)
     {
-        if (assetFile == null) throw new ArgumentNullException(nameof(assetFile));
+        ArgumentNullException.ThrowIfNull(assetFile, nameof(assetFile));
 
         ReadOnlySpan<char> filename = Path.GetFileName(assetFile.AsSpan());
 
@@ -353,7 +353,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static AssetType InferDataType(string assetDataFile, bool strict = false)
     {
-        if (assetDataFile == null) throw new ArgumentNullException(nameof(assetDataFile));
+        ArgumentNullException.ThrowIfNull(assetDataFile, nameof(assetDataFile));
         if (!assetDataFile.EndsWith(".dat", StringComparison.OrdinalIgnoreCase)) return 0;
 
         ReadOnlySpan<char> filename = Path.GetFileName(assetDataFile.AsSpan());

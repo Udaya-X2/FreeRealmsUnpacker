@@ -16,7 +16,7 @@ public abstract class AssetReader : IDisposable
     /// <exception cref="ObjectDisposedException"/>
     public byte[] Read(Asset asset)
     {
-        if (asset.Size == 0) return Array.Empty<byte>();
+        if (asset.Size == 0) return [];
 
         byte[] bytes = new byte[asset.Size];
         Read(asset, bytes);

@@ -6,14 +6,9 @@ using UnpackerGui.Views;
 
 namespace UnpackerGui.Services;
 
-public class DialogService : IDialogService
+public class DialogService(Window window) : IDialogService
 {
-    private readonly Window _owner;
-
-    public DialogService(Window window)
-    {
-        _owner = window;
-    }
+    private readonly Window _owner = window;
 
     public async Task ShowDialog(Window window, bool terminal = false) => await ShowDialog(_owner, window, terminal);
 

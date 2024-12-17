@@ -93,7 +93,7 @@ public abstract class ReadOnlyReactiveCollection<T>
     /// <inheritdoc/>
     public virtual void CopyTo(T[] array, int arrayIndex)
     {
-        if (array == null) throw new ArgumentNullException(nameof(array));
+        ArgumentNullException.ThrowIfNull(array, nameof(array));
         if (array.Length - arrayIndex < Count) throw new ArgumentException(SR.Argument_InvalidOffLen);
         
         foreach (T item in this)

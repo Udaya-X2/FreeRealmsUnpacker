@@ -7,14 +7,10 @@ using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
 
-public class ValidationViewModel : ProgressViewModel
+public class ValidationViewModel(IEnumerable<AssetFileViewModel> assetFiles) : ProgressViewModel
 {
-    private readonly IEnumerable<AssetFileViewModel> _assetFiles;
-
-    public ValidationViewModel(IEnumerable<AssetFileViewModel> assetFiles)
-    {
-        _assetFiles = assetFiles ?? throw new ArgumentNullException(nameof(assetFiles));
-    }
+    private readonly IEnumerable<AssetFileViewModel> _assetFiles = assetFiles
+        ?? throw new ArgumentNullException(nameof(assetFiles));
 
     /// <inheritdoc/>
     public override int Maximum => _assetFiles.Sum(x => x.Count);

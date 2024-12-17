@@ -8,25 +8,14 @@ namespace UnpackerGui.ViewModels;
 /// Represents a set of string-based search options to filter a specified type.
 /// </summary>
 /// <typeparam name="T">The type of the item to filter.</typeparam>
-public class SearchOptionsViewModel<T> : FilterViewModel<T>
+/// <param name="converter">The converter from <typeparamref name="T"/> to a searchable string.</param>
+public class SearchOptionsViewModel<T>(Func<T, string> converter) : FilterViewModel<T>
 {
-    private readonly Func<T, string> _converter;
+    private readonly Func<T, string> _converter = converter ?? throw new ArgumentNullException(nameof(converter));
 
     private bool _matchCase;
     private bool _useRegex;
-    private string _pattern;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SearchOptionsViewModel{T}"/> class
-    /// with the specified converter from <typeparamref name="T"/> to a searchable string.
-    /// </summary>
-    /// <param name="converter"></param>
-    /// <exception cref="ArgumentNullException"></exception>
-    public SearchOptionsViewModel(Func<T, string> converter)
-    {
-        _converter = converter ?? throw new ArgumentNullException(nameof(converter));
-        _pattern = "";
-    }
+    private string _pattern = "";
 
     /// <summary>
     /// Gets or sets whether the search should be case-sensitive.

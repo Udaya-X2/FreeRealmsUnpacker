@@ -15,10 +15,10 @@ public class Table
     /// <exception cref="ArgumentNullException"/>
     public Table(params string[] columns)
     {
-        if (columns == null) throw new ArgumentNullException(nameof(columns));
+        ArgumentNullException.ThrowIfNull(columns, nameof(columns));
 
         _columns = new TableColumn[columns.Length];
-        _rows = new List<string[]>();
+        _rows = [];
 
         for (int i = 0; i < columns.Length; i++)
         {
@@ -40,7 +40,7 @@ public class Table
     /// <exception cref="ArgumentException"/>
     public void AddRow(params object[] values)
     {
-        if (values == null) throw new ArgumentNullException(nameof(values));
+        ArgumentNullException.ThrowIfNull(values, nameof(values));
         if (values.Length < _columns.Length) throw new ArgumentException("Not enough values to add a table row.");
 
         string[] row = new string[values.Length];

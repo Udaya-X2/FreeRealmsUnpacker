@@ -18,14 +18,14 @@ public partial class ProgressWindow : Window
     /// </summary>
     public bool AutoClose { get; init; }
 
-    private readonly IDialogService _dialogService;
+    private readonly DialogService _dialogService;
     private readonly CompositeDisposable _cleanUp;
 
     public ProgressWindow()
     {
         InitializeComponent();
         _dialogService = new DialogService(this);
-        _cleanUp = new CompositeDisposable();
+        _cleanUp = [];
     }
 
     private void Window_Loaded(object? sender, RoutedEventArgs e)

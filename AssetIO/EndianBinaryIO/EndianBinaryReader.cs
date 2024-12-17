@@ -108,18 +108,9 @@ internal class EndianBinaryReader : IDisposable
     /// </exception>
     public EndianBinaryReader(Stream input, Endian endianness, Encoding encoding, bool leaveOpen)
     {
-        if (input == null)
-        {
-            throw new ArgumentNullException(nameof(input));
-        }
-        if (encoding == null)
-        {
-            throw new ArgumentNullException(nameof(encoding));
-        }
-        if (!input.CanRead)
-        {
-            throw new ArgumentException(SR.Argument_StreamNotReadable, nameof(input));
-        }
+        ArgumentNullException.ThrowIfNull(input, nameof(input));
+        ArgumentNullException.ThrowIfNull(encoding, nameof(encoding));
+        if (!input.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable, nameof(input));
 
         _stream = input;
         _decoder = encoding.GetDecoder();
@@ -172,18 +163,6 @@ internal class EndianBinaryReader : IDisposable
     }
 
     /// <summary>
-    /// Throws an exception if this object has been disposed.
-    /// </summary>
-    /// <exception cref="ObjectDisposedException"></exception>
-    private void ThrowIfDisposed()
-    {
-        if (_disposed)
-        {
-            throw new ObjectDisposedException(nameof(EndianBinaryReader));
-        }
-    }
-
-    /// <summary>
     /// Returns the next available character and does not advance the byte or character position.
     /// </summary>
     /// <returns>
@@ -198,7 +177,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public int PeekChar()
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (!_stream.CanSeek)
         {
@@ -223,7 +202,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public int Read()
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         _charBytes ??= new byte[MaxCharBytesSize];
         Span<char> singleChar = stackalloc char[1];
@@ -289,7 +268,7 @@ internal class EndianBinaryReader : IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private byte InternalReadByte()
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
         int b = _stream.ReadByte();
         return b == -1 ? throw new EndOfStreamException(SR.EndOfStream_Stream) : (byte)b;
     }
@@ -467,13 +446,13 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ArgumentException">
     /// The representation of the decimal value in <paramref name="span"/> is not valid.
     /// </exception>
-    private decimal ReadDecimalLittleEndian(ReadOnlySpan<byte> span) => new(stackalloc[]
-    {
+    private static decimal ReadDecimalLittleEndian(ReadOnlySpan<byte> span) => new(
+    [
         BinaryPrimitives.ReadInt32LittleEndian(span),
         BinaryPrimitives.ReadInt32LittleEndian(span[4..]),
         BinaryPrimitives.ReadInt32LittleEndian(span[8..]),
         BinaryPrimitives.ReadInt32LittleEndian(span[12..])
-    });
+    ]);
 
     /// <summary>
     /// Reads a decimal from the beginning of a read-only span of bytes, as big endian.
@@ -482,13 +461,13 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ArgumentException">
     /// The representation of the decimal value in <paramref name="span"/> is not valid.
     /// </exception>
-    private decimal ReadDecimalBigEndian(ReadOnlySpan<byte> span) => new(stackalloc[]
-    {
+    private static decimal ReadDecimalBigEndian(ReadOnlySpan<byte> span) => new(
+    [
         BinaryPrimitives.ReadInt32BigEndian(span[12..]),
         BinaryPrimitives.ReadInt32BigEndian(span[8..]),
         BinaryPrimitives.ReadInt32BigEndian(span[4..]),
         BinaryPrimitives.ReadInt32BigEndian(span)
-    });
+    ]);
 
     /// <summary>
     /// Reads a string from the current stream. The string is prefixed
@@ -510,7 +489,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public string ReadString(int stringLength)
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (stringLength < 0)
         {
@@ -600,7 +579,7 @@ internal class EndianBinaryReader : IDisposable
             throw new ArgumentException(SR.Argument_InvalidOffLen);
         }
 
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
         return InternalReadChars(new Span<char>(buffer, index, count));
     }
 
@@ -622,7 +601,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public int Read(Span<char> buffer)
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
         return InternalReadChars(buffer);
     }
 
@@ -709,11 +688,11 @@ internal class EndianBinaryReader : IDisposable
             throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
         }
 
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (count == 0)
         {
-            return Array.Empty<char>();
+            return [];
         }
 
         char[] chars = new char[count];
@@ -767,7 +746,7 @@ internal class EndianBinaryReader : IDisposable
             throw new ArgumentException(SR.Argument_InvalidOffLen);
         }
 
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
         return _stream.Read(buffer, index, count);
     }
 
@@ -788,7 +767,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public int Read(Span<byte> buffer)
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
         return _stream.Read(buffer);
     }
 
@@ -811,11 +790,11 @@ internal class EndianBinaryReader : IDisposable
             throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
         }
 
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
 
         if (count == 0)
         {
-            return Array.Empty<byte>();
+            return [];
         }
 
         byte[] result = new byte[count];
@@ -854,7 +833,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     private ReadOnlySpan<byte> InternalRead(int numBytes)
     {
-        ThrowIfDisposed();
+        ObjectDisposedException.ThrowIf(_disposed, this);
         Debug.Assert(numBytes is > 0 and < 16, "Number of bytes must be in the range [1, 16].");
 
         int bytesRead = 0;
