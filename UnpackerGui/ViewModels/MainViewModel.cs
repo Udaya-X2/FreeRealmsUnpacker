@@ -92,6 +92,8 @@ public class MainViewModel : ViewModelBase
     private FileConflictOptions _conflictOptions;
     private AssetType _assetFilter;
     private bool _addUnknownAssets;
+    private IStorageFolder? _inputFolder;
+    private IStorageFolder? _outputFolder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -311,8 +313,12 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private async Task OpenFolder()
     {
-        if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
+        if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
+        {
+            SuggestedStartLocation = _inputFolder
+        }) is not IStorageFolder folder) return;
 
+        _inputFolder = folder;
         List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(folder.Path.LocalPath,
                                                                          _assetFilter,
                                                                          requireFullType: !_addUnknownAssets)
@@ -338,8 +344,12 @@ public class MainViewModel : ViewModelBase
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
         {
             AllowMultiple = true,
-            FileTypeFilter = FileTypeFilters.AssetFiles
+            FileTypeFilter = FileTypeFilters.AssetFiles,
+            SuggestedStartLocation = _inputFolder
         });
+
+        if (files.Count > 0) _inputFolder = await files[0].GetParentAsync();
+
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
                                           .Select(x => new AssetFile(x))
@@ -376,8 +386,12 @@ public class MainViewModel : ViewModelBase
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
         {
             AllowMultiple = true,
-            FileTypeFilter = fileTypeFilter
+            FileTypeFilter = fileTypeFilter,
+            SuggestedStartLocation = _inputFolder
         });
+
+        if (files.Count > 0) _inputFolder = await files[0].GetParentAsync();
+
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
                                           .Select(x => new AssetFile(x, assetType))
@@ -402,8 +416,12 @@ public class MainViewModel : ViewModelBase
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
         {
             AllowMultiple = true,
-            FileTypeFilter = FileTypeFilters.AssetDatFiles
+            FileTypeFilter = FileTypeFilters.AssetDatFiles,
+            SuggestedStartLocation = _inputFolder
         });
+
+        if (files.Count > 0) _inputFolder = await files[0].GetParentAsync();
+
         ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
         dataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
                                  .Except(dataFiles)
@@ -416,8 +434,12 @@ public class MainViewModel : ViewModelBase
     private async Task ExtractFiles()
     {
         if (CheckedAssetFiles.Count == 0) return;
-        if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
+        if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
+        {
+            SuggestedStartLocation = _outputFolder
+        }) is not IStorageFolder folder) return;
 
+        _outputFolder = folder;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles, _conflictOptions)
@@ -430,8 +452,12 @@ public class MainViewModel : ViewModelBase
     private async Task ExtractAssets()
     {
         if (SelectedAssets.Count == 0) return;
-        if (await App.GetService<IFilesService>().OpenFolderAsync() is not IStorageFolder folder) return;
+        if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
+        {
+            SuggestedStartLocation = _outputFolder
+        }) is not IStorageFolder folder) return;
 
+        _outputFolder = folder;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath,
