@@ -6,14 +6,14 @@ namespace UnpackerGui.Services;
 
 public interface IFilesService
 {
-    Task<IStorageFile?> OpenFileAsync();
+    Task<IStorageFile?> OpenFileAsync() => OpenFileAsync(new());
     Task<IStorageFile?> OpenFileAsync(FilePickerOpenOptions options);
-    Task<IReadOnlyList<IStorageFile>> OpenFilesAsync();
+    Task<IReadOnlyList<IStorageFile>> OpenFilesAsync() => OpenFilesAsync(new() { AllowMultiple = true });
     Task<IReadOnlyList<IStorageFile>> OpenFilesAsync(FilePickerOpenOptions options);
-    Task<IStorageFolder?> OpenFolderAsync();
+    Task<IStorageFolder?> OpenFolderAsync() => OpenFolderAsync(new());
     Task<IStorageFolder?> OpenFolderAsync(FolderPickerOpenOptions options);
-    Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync();
+    Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync() => OpenFoldersAsync(new() { AllowMultiple = true });
     Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync(FolderPickerOpenOptions options);
-    Task<IStorageFile?> SaveFileAsync();
+    Task<IStorageFile?> SaveFileAsync() => SaveFileAsync(new());
     Task<IStorageFile?> SaveFileAsync(FilePickerSaveOptions options);
 }
