@@ -2,7 +2,7 @@
 
 namespace UnpackerGui.ViewModels;
 
-public class SettingsViewModel(string name, string description) : ViewModelBase
+public class PreferenceViewModel(string name, string description) : ViewModelBase
 {
     public string Name
     {

@@ -20,13 +20,13 @@
     </Window.Resources>
     <!--Base Panel-->
     <DockPanel Margin="15">
-        <!--Settings List-->
-        <ListBox ItemsSource="{Binding Settings}"
-                 SelectedItem="{Binding SelectedSetting}"
+        <!--Preferences List-->
+        <ListBox ItemsSource="{Binding Preferences}"
+                 SelectedItem="{Binding SelectedPreference}"
                  Margin="0,0,15,0"
                  SelectionMode="AlwaysSelected">
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="vm:SettingsViewModel">
+                <DataTemplate DataType="vm:PreferenceViewModel">
                     <TextBlock Text="{Binding Name}"
                                FontFamily="Tahoma"
                                FontSize="12"/>
@@ -36,18 +36,18 @@
         <!--Visible Option-->
         <StackPanel>
             <!--Option Name-->
-            <TextBlock Text="{Binding SelectedSetting.Name}"
+            <TextBlock Text="{Binding SelectedPreference.Name}"
                        FontFamily="Tahoma"
                        FontSize="20"
                        Margin="0,0,0,10"/>
             <!--Option Description-->
-            <TextBlock Text="{Binding SelectedSetting.Description}"
+            <TextBlock Text="{Binding SelectedPreference.Description}"
                        FontFamily="Tahoma"
                        FontSize="12"
                        Opacity="100"
                        Margin="0,0,0,10"/>
             <!--File Conflict Options-->
-            <StackPanel IsVisible="{Binding SelectedSetting.Name, Converter={StaticResource stringComparisonConverter} ConverterParameter='File Conflict Options'}">
+            <StackPanel IsVisible="{Binding SelectedPreference.Name, Converter={StaticResource stringComparisonConverter} ConverterParameter='File Conflict Options'}">
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Overwrite"
                              ToolTip.Tip="Overwrite the existing file."
@@ -86,7 +86,7 @@
                              FontSize="12"/>
             </StackPanel>
             <!--Folder Options-->
-            <StackPanel IsVisible="{Binding SelectedSetting.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Folder Options'}">
+            <StackPanel IsVisible="{Binding SelectedPreference.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Folder Options'}">
                 <CheckBox Content="Game Assets"
                           ToolTip.Tip="Assets for the game, typically located in the &quot;Free Realms/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay}"

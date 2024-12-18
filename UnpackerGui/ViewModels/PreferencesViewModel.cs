@@ -8,30 +8,30 @@ namespace UnpackerGui.ViewModels;
 
 public class PreferencesViewModel : ViewModelBase
 {
-    public ReadOnlyObservableCollection<SettingsViewModel> Settings { get; }
+    public ReadOnlyObservableCollection<PreferenceViewModel> Preferences { get; }
 
     public ReactiveCommand<string, Unit> UpdateAssetFilterCommand { get; }
 
     private readonly MainViewModel _mainViewModel;
 
-    private SettingsViewModel _selectedSetting;
+    private PreferenceViewModel _selectedPreference;
 
     public PreferencesViewModel(MainViewModel mainViewModel)
     {
-        Settings = new ReadOnlyObservableCollection<SettingsViewModel>(
+        Preferences = new ReadOnlyObservableCollection<PreferenceViewModel>(
         [
-            new SettingsViewModel("File Conflict Options", "Select how to extract assets with conflicting names."),
-            new SettingsViewModel("Folder Options", "Check the types of assets to add when opening a folder.")
+            new PreferenceViewModel("File Conflict Options", "Select how to extract assets with conflicting names."),
+            new PreferenceViewModel("Folder Options", "Check the types of assets to add when opening a folder.")
         ]);
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
         _mainViewModel = mainViewModel;
-        _selectedSetting = Settings[0];
+        _selectedPreference = Preferences[0];
     }
 
-    public SettingsViewModel SelectedSetting
+    public PreferenceViewModel SelectedPreference
     {
-        get => _selectedSetting;
-        set => this.RaiseAndSetIfChanged(ref _selectedSetting, value);
+        get => _selectedPreference;
+        set => this.RaiseAndSetIfChanged(ref _selectedPreference, value);
     }
 
     public FileConflictOptions ConflictOptions
