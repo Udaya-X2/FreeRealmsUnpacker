@@ -73,7 +73,7 @@ public partial class App : Application
     {
         if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.Shutdown();
+            desktop.TryShutdown();
         }
     }
 

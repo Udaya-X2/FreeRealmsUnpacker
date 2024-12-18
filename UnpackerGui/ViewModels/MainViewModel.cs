@@ -168,6 +168,8 @@ public class MainViewModel : ViewModelBase
         _conflictOptions = FileConflictOptions.Overwrite;
         _assetFilter = AssetType.All;
         _addUnknownAssets = false;
+        _inputFolder = null;
+        _outputFolder = null;
 
         // Initialize other view models.
         _about = new AboutViewModel();
