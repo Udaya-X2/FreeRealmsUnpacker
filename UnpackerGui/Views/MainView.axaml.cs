@@ -3,9 +3,11 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using UnpackerGui.Extensions;
 using UnpackerGui.ViewModels;
 
@@ -71,6 +73,9 @@ public partial class MainView : UserControl
 
         mainViewModel.ClearSelectedAssetsCommand.Invoke();
     }
+
+    private void AssetGrid_ContextMenu_Copy(object? sender, RoutedEventArgs e)
+        => App.SetClipboardText((assetGrid.CurrentColumn.GetCellContent(assetGrid.SelectedItem) as TextBlock)?.Text);
 
     private void ListBox_Drop(ListBox sender, DragEventArgs e)
     {

@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using ReactiveUI;
 using System;
 using System.Reactive;
 using System.Threading;
+using System.Threading.Tasks;
 using UnpackerGui.Collections;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
@@ -26,6 +28,11 @@ public partial class App : Application
     /// Gets the <see cref="IServiceProvider"/> instance to resolve application services.
     /// </summary>
     public IServiceProvider? Services { get; private set; }
+
+    /// <summary>
+    /// Gets the application's clipboard implementation.
+    /// </summary>
+    public IClipboard? Clipboard { get; private set; }
 
     /// <inheritdoc/>
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -46,6 +53,7 @@ public partial class App : Application
             Services = new ServiceCollection().AddSingleton<IFilesService>(new FilesService(desktop.MainWindow))
                                               .AddSingleton<IDialogService>(new DialogService(desktop.MainWindow))
                                               .BuildServiceProvider();
+            Clipboard = desktop.MainWindow.Clipboard;
         }
         if (Design.IsDesignMode)
         {
@@ -65,6 +73,17 @@ public partial class App : Application
     public static T GetService<T>() where T : class
         => Current?.Services?.GetService<T>()
         ?? throw new InvalidOperationException($"Missing {typeof(T).Name} instance.");
+
+    /// <summary>
+    /// Sets the current application's clipboard text to the specified value.
+    /// </summary>
+    public static async void SetClipboardText(string? text)
+    {
+        if (Current?.Clipboard?.SetTextAsync(text) is Task task)
+        {
+            await task;
+        }
+    }
 
     /// <summary>
     /// Shuts down the application.

@@ -1,5 +1,6 @@
 ﻿using AssetIO;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Aggregation;
@@ -70,6 +71,8 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> UncheckAllCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveCheckedCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenSelectedAssetFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> CopySelectedAssetPathCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
 
@@ -82,9 +85,16 @@ public class MainViewModel : SavedSettingsViewModel
     private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
+    private object? _selectedIndex;
     private IDisposable? _validationHandler;
     private bool _isValidatingAssets;
     private bool _manifestFileSelected;
+
+    public object? SelectedIndex
+    {
+        get => _selectedIndex;
+        set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -107,6 +117,8 @@ public class MainViewModel : SavedSettingsViewModel
         UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
         RemoveCheckedCommand = ReactiveCommand.Create(RemoveChecked);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
+        OpenSelectedAssetFolderCommand = ReactiveCommand.Create(OpenSelectedAssetFolder);
+        CopySelectedAssetPathCommand = ReactiveCommand.Create(CopySelectedAssetPath);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
 
@@ -148,6 +160,9 @@ public class MainViewModel : SavedSettingsViewModel
         // number of assets are selected while more assets are added/removed.
         Assets.ObserveCollectionChanges()
               .Subscribe(_ => ClearSelectedAssets());
+
+        this.WhenAnyValue(x => x.SelectedIndex)
+            .Subscribe(_ => Debug.WriteLine($"Selected Index: {SelectedIndex}"));
 
         // Initialize other view models.
         _about = new AboutViewModel();
@@ -512,6 +527,30 @@ public class MainViewModel : SavedSettingsViewModel
             UseShellExecute = true,
             FileName = file.FullName
         });
+    }
+
+    /// <summary>
+    /// Opens the containing directory of the selected asset.
+    /// </summary>
+    private void OpenSelectedAssetFolder()
+    {
+        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
+
+        Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = true,
+            FileName = SelectedAsset.AssetFile.Info.DirectoryName!
+        });
+    }
+
+    /// <summary>
+    /// Copies the full path of the selected asset to the clipboard.
+    /// </summary>
+    private void CopySelectedAssetPath()
+    {
+        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
+
+        App.SetClipboardText(SelectedAsset.AssetFile.FullName);
     }
 
     /// <summary>

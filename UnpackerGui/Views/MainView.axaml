@@ -393,6 +393,26 @@
                                             Header="CRC-32"
                                             Binding="{Binding Crc32}"/>
                     </DataGrid.Columns>
+                    <DataGrid.ContextMenu>
+                        <ContextMenu IsVisible="{Binding !!SelectedAssets.Count}">
+                            <MenuItem FontFamily="Tahoma"
+                                      FontSize="12"
+                                      Header="Open"
+                                      Command="{Binding OpenSelectedAssetCommand}"/>
+                            <MenuItem FontFamily="Tahoma"
+                                      FontSize="12"
+                                      Header="Open Containing Folder"
+                                      Command="{Binding OpenSelectedAssetFolderCommand}"/>
+                            <MenuItem FontFamily="Tahoma"
+                                      FontSize="12"
+                                      Header="Copy"
+                                      Click="AssetGrid_ContextMenu_Copy"/>
+                            <MenuItem FontFamily="Tahoma"
+                                      FontSize="12"
+                                      Header="Copy Full File Path"
+                                      Command="{Binding CopySelectedAssetPathCommand}"/>
+                        </ContextMenu>
+                    </DataGrid.ContextMenu>
                 </DataGrid>
                 <!--#/# Info Bar-->
                 <StackPanel Grid.Row="2"
