@@ -210,22 +210,14 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
-    /// Gets or sets the default location to input files/folders.
+    /// Gets the default location to input files/folders asynchronously.
     /// </summary>
-    public IStorageFolder? InputFolder
-    {
-        get => App.GetService<IFilesService>().TryGetFolderFromPath(InputDirectory).Result;
-        set => InputDirectory = value?.Path.LocalPath ?? InputDirectory;
-    }
+    private Task<IStorageFolder?> InputFolder => App.GetService<IFilesService>().TryGetFolderFromPath(InputDirectory);
 
     /// <summary>
-    /// Gets or sets the default location to output files/folders.
+    /// Gets the default location to output files/folders asynchronously.
     /// </summary>
-    public IStorageFolder? OutputFolder
-    {
-        get => App.GetService<IFilesService>().TryGetFolderFromPath(OutputDirectory).Result;
-        set => OutputDirectory = value?.Path.LocalPath ?? OutputDirectory;
-    }
+    private Task<IStorageFolder?> OutputFolder => App.GetService<IFilesService>().TryGetFolderFromPath(OutputDirectory);
 
     /// <summary>
     /// Opens the Preferences window.
@@ -250,10 +242,10 @@ public class MainViewModel : SavedSettingsViewModel
     {
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = InputFolder
+            SuggestedStartLocation = await InputFolder
         }) is not IStorageFolder folder) return;
 
-        InputFolder = folder;
+        InputDirectory = folder.Path.LocalPath;
         List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(folder.Path.LocalPath,
                                                                          AssetFilter,
                                                                          requireFullType: !AddUnknownAssets)
@@ -280,10 +272,10 @@ public class MainViewModel : SavedSettingsViewModel
         {
             AllowMultiple = true,
             FileTypeFilter = FileTypeFilters.AssetFiles,
-            SuggestedStartLocation = InputFolder
+            SuggestedStartLocation = await InputFolder
         });
 
-        if (files.Count > 0) InputFolder = await files[0].GetParentAsync();
+        if (files.Count > 0) InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
 
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
@@ -322,10 +314,10 @@ public class MainViewModel : SavedSettingsViewModel
         {
             AllowMultiple = true,
             FileTypeFilter = fileTypeFilter,
-            SuggestedStartLocation = InputFolder
+            SuggestedStartLocation = await InputFolder
         });
 
-        if (files.Count > 0) InputFolder = await files[0].GetParentAsync();
+        if (files.Count > 0) InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
 
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
@@ -352,10 +344,10 @@ public class MainViewModel : SavedSettingsViewModel
         {
             AllowMultiple = true,
             FileTypeFilter = FileTypeFilters.AssetDatFiles,
-            SuggestedStartLocation = InputFolder
+            SuggestedStartLocation = await InputFolder
         });
 
-        if (files.Count > 0) InputFolder = await files[0].GetParentAsync();
+        if (files.Count > 0) InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
 
         ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
         dataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
@@ -371,10 +363,10 @@ public class MainViewModel : SavedSettingsViewModel
         if (CheckedAssetFiles.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = OutputFolder
+            SuggestedStartLocation = await OutputFolder
         }) is not IStorageFolder folder) return;
 
-        OutputFolder = folder;
+        OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles, ConflictOptions)
@@ -389,10 +381,10 @@ public class MainViewModel : SavedSettingsViewModel
         if (SelectedAssets.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = OutputFolder
+            SuggestedStartLocation = await OutputFolder
         }) is not IStorageFolder folder) return;
 
-        OutputFolder = folder;
+        OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath,
