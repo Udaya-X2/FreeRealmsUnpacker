@@ -23,7 +23,7 @@ using UnpackerGui.Views;
 
 namespace UnpackerGui.ViewModels;
 
-public class MainViewModel : ViewModelBase
+public class MainViewModel : SavedSettingsViewModel
 {
     /// <summary>
     /// Gets the selected assets.
@@ -85,15 +85,6 @@ public class MainViewModel : ViewModelBase
     private IDisposable? _validationHandler;
     private bool _isValidatingAssets;
     private bool _manifestFileSelected;
-    private bool _showName;
-    private bool _showOffset;
-    private bool _showSize;
-    private bool _showCrc32;
-    private FileConflictOptions _conflictOptions;
-    private AssetType _assetFilter;
-    private bool _addUnknownAssets;
-    private IStorageFolder? _inputFolder;
-    private IStorageFolder? _outputFolder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -158,19 +149,6 @@ public class MainViewModel : ViewModelBase
         Assets.ObserveCollectionChanges()
               .Subscribe(_ => ClearSelectedAssets());
 
-        // Show each asset property by default.
-        _showName = true;
-        _showOffset = true;
-        _showSize = true;
-        _showCrc32 = true;
-
-        // Initialize default preferences.
-        _conflictOptions = FileConflictOptions.Overwrite;
-        _assetFilter = AssetType.All;
-        _addUnknownAssets = false;
-        _inputFolder = null;
-        _outputFolder = null;
-
         // Initialize other view models.
         _about = new AboutViewModel();
         _preferences = new PreferencesViewModel(this);
@@ -232,66 +210,21 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Gets or sets whether to show the asset's name.
+    /// Gets or sets the default location to input files/folders.
     /// </summary>
-    public bool ShowName
+    public IStorageFolder? InputFolder
     {
-        get => _showName;
-        set => this.RaiseAndSetIfChanged(ref _showName, value);
+        get => App.GetService<IFilesService>().TryGetFolderFromPath(InputDirectory).Result;
+        set => InputDirectory = value?.Path.LocalPath ?? InputDirectory;
     }
 
     /// <summary>
-    /// Gets or sets whether to show the asset's offset.
+    /// Gets or sets the default location to output files/folders.
     /// </summary>
-    public bool ShowOffset
+    public IStorageFolder? OutputFolder
     {
-        get => _showOffset;
-        set => this.RaiseAndSetIfChanged(ref _showOffset, value);
-    }
-
-    /// <summary>
-    /// Gets or sets whether to show the asset's size.
-    /// </summary>
-    public bool ShowSize
-    {
-        get => _showSize;
-        set => this.RaiseAndSetIfChanged(ref _showSize, value);
-    }
-
-    /// <summary>
-    /// Gets or sets whether to show the asset's CRC-32.
-    /// </summary>
-    public bool ShowCrc32
-    {
-        get => _showCrc32;
-        set => this.RaiseAndSetIfChanged(ref _showCrc32, value);
-    }
-
-    /// <summary>
-    /// Gets or sets how to handle assets with conflicting names.
-    /// </summary>
-    public FileConflictOptions ConflictOptions
-    {
-        get => _conflictOptions;
-        set => this.RaiseAndSetIfChanged(ref _conflictOptions, value);
-    }
-
-    /// <summary>
-    /// Gets or sets which assets to search for in folders.
-    /// </summary>
-    public AssetType AssetFilter
-    {
-        get => _assetFilter;
-        set => this.RaiseAndSetIfChanged(ref _assetFilter, value);
-    }
-
-    /// <summary>
-    /// Gets or sets whether to search for unknown assets in folders.
-    /// </summary>
-    public bool AddUnknownAssets
-    {
-        get => _addUnknownAssets;
-        set => this.RaiseAndSetIfChanged(ref _addUnknownAssets, value);
+        get => App.GetService<IFilesService>().TryGetFolderFromPath(OutputDirectory).Result;
+        set => OutputDirectory = value?.Path.LocalPath ?? OutputDirectory;
     }
 
     /// <summary>
@@ -317,13 +250,13 @@ public class MainViewModel : ViewModelBase
     {
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = _inputFolder
+            SuggestedStartLocation = InputFolder
         }) is not IStorageFolder folder) return;
 
-        _inputFolder = folder;
+        InputFolder = folder;
         List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(folder.Path.LocalPath,
-                                                                         _assetFilter,
-                                                                         requireFullType: !_addUnknownAssets)
+                                                                         AssetFilter,
+                                                                         requireFullType: !AddUnknownAssets)
                                                     .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)
                                                     .ToList();
 
@@ -347,10 +280,10 @@ public class MainViewModel : ViewModelBase
         {
             AllowMultiple = true,
             FileTypeFilter = FileTypeFilters.AssetFiles,
-            SuggestedStartLocation = _inputFolder
+            SuggestedStartLocation = InputFolder
         });
 
-        if (files.Count > 0) _inputFolder = await files[0].GetParentAsync();
+        if (files.Count > 0) InputFolder = await files[0].GetParentAsync();
 
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
@@ -389,10 +322,10 @@ public class MainViewModel : ViewModelBase
         {
             AllowMultiple = true,
             FileTypeFilter = fileTypeFilter,
-            SuggestedStartLocation = _inputFolder
+            SuggestedStartLocation = InputFolder
         });
 
-        if (files.Count > 0) _inputFolder = await files[0].GetParentAsync();
+        if (files.Count > 0) InputFolder = await files[0].GetParentAsync();
 
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
@@ -419,10 +352,10 @@ public class MainViewModel : ViewModelBase
         {
             AllowMultiple = true,
             FileTypeFilter = FileTypeFilters.AssetDatFiles,
-            SuggestedStartLocation = _inputFolder
+            SuggestedStartLocation = InputFolder
         });
 
-        if (files.Count > 0) _inputFolder = await files[0].GetParentAsync();
+        if (files.Count > 0) InputFolder = await files[0].GetParentAsync();
 
         ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
         dataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
@@ -438,13 +371,13 @@ public class MainViewModel : ViewModelBase
         if (CheckedAssetFiles.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = _outputFolder
+            SuggestedStartLocation = OutputFolder
         }) is not IStorageFolder folder) return;
 
-        _outputFolder = folder;
+        OutputFolder = folder;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles, _conflictOptions)
+            DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles, ConflictOptions)
         });
     }
 
@@ -456,16 +389,16 @@ public class MainViewModel : ViewModelBase
         if (SelectedAssets.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = _outputFolder
+            SuggestedStartLocation = OutputFolder
         }) is not IStorageFolder folder) return;
 
-        _outputFolder = folder;
+        OutputFolder = folder;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ExtractionViewModel(folder.Path.LocalPath,
                                                   SelectedAssets.Cast<AssetInfo>(),
                                                   SelectedAssets.Count,
-                                                  _conflictOptions)
+                                                  ConflictOptions)
         });
     }
 

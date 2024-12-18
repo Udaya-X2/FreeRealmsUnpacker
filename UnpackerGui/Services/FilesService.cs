@@ -29,4 +29,7 @@ public class FilesService(TopLevel target) : IFilesService
 
     public async Task<IStorageFile?> SaveFileAsync(FilePickerSaveOptions options)
         => await _storageProvider.SaveFilePickerAsync(options);
+
+    public async Task<IStorageFolder?> TryGetFolderFromPath(string folderPath)
+        => await _storageProvider.TryGetFolderFromPathAsync(folderPath);
 }

@@ -16,4 +16,5 @@ public interface IFilesService
     Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync(FolderPickerOpenOptions options);
     Task<IStorageFile?> SaveFileAsync() => SaveFileAsync(new());
     Task<IStorageFile?> SaveFileAsync(FilePickerSaveOptions options);
+    Task<IStorageFolder?> TryGetFolderFromPath(string folderPath);
 }
