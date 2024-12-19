@@ -1,6 +1,5 @@
 ﻿using AssetIO;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Aggregation;
@@ -66,6 +65,7 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractAssetsCommand { get; }
+    public ReactiveCommand<Unit, Unit> SaveSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleValidationCommand { get; }
     public ReactiveCommand<Unit, Unit> CheckAllCommand { get; }
     public ReactiveCommand<Unit, Unit> UncheckAllCommand { get; }
@@ -85,16 +85,9 @@ public class MainViewModel : SavedSettingsViewModel
     private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
-    private object? _selectedIndex;
     private IDisposable? _validationHandler;
     private bool _isValidatingAssets;
     private bool _manifestFileSelected;
-
-    public object? SelectedIndex
-    {
-        get => _selectedIndex;
-        set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
-    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -112,6 +105,7 @@ public class MainViewModel : SavedSettingsViewModel
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
         ExtractAssetsCommand = ReactiveCommand.CreateFromTask(ExtractAssets);
+        SaveSelectedAssetCommand = ReactiveCommand.CreateFromTask(SaveSelectedAsset);
         ToggleValidationCommand = ReactiveCommand.CreateFromTask(ToggleValidation);
         CheckAllCommand = ReactiveCommand.Create(CheckAll);
         UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
@@ -160,9 +154,6 @@ public class MainViewModel : SavedSettingsViewModel
         // number of assets are selected while more assets are added/removed.
         Assets.ObserveCollectionChanges()
               .Subscribe(_ => ClearSelectedAssets());
-
-        this.WhenAnyValue(x => x.SelectedIndex)
-            .Subscribe(_ => Debug.WriteLine($"Selected Index: {SelectedIndex}"));
 
         // Initialize other view models.
         _about = new AboutViewModel();
@@ -261,7 +252,7 @@ public class MainViewModel : SavedSettingsViewModel
         }) is not IStorageFolder folder) return;
 
         InputDirectory = folder.Path.LocalPath;
-        List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(folder.Path.LocalPath,
+        List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(InputDirectory,
                                                                          AssetFilter,
                                                                          requireFullType: !AddUnknownAssets)
                                                     .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)
@@ -384,7 +375,7 @@ public class MainViewModel : SavedSettingsViewModel
         OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(folder.Path.LocalPath, CheckedAssetFiles, ConflictOptions)
+            DataContext = new ExtractionViewModel(OutputDirectory, CheckedAssetFiles, ConflictOptions)
         });
     }
 
@@ -402,11 +393,30 @@ public class MainViewModel : SavedSettingsViewModel
         OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(folder.Path.LocalPath,
+            DataContext = new ExtractionViewModel(OutputDirectory,
                                                   SelectedAssets.Cast<AssetInfo>(),
                                                   SelectedAssets.Count,
                                                   ConflictOptions)
         });
+    }
+
+    /// <summary>
+    /// Opens a save file dialog that allows the user to save the selected asset to a file.
+    /// </summary>
+    private async Task SaveSelectedAsset()
+    {
+        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
+        if (await App.GetService<IFilesService>().SaveFileAsync(new FilePickerSaveOptions
+        {
+            SuggestedStartLocation = await OutputFolder,
+            SuggestedFileName = Path.GetFileName(SelectedAsset.Name),
+            ShowOverwritePrompt = true
+        }) is not IStorageFile file) return;
+
+        // Extracting without conflict options here since the explorer will display an overwrite prompt.
+        OutputDirectory = Path.GetDirectoryName(file.Path.LocalPath) ?? "";
+        using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
+        reader.ExtractTo(SelectedAsset with { Name = file.Name }, OutputDirectory);
     }
 
     /// <summary>

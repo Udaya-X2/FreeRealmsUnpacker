@@ -411,6 +411,10 @@
                                       FontSize="12"
                                       Header="Copy Full File Path"
                                       Command="{Binding CopySelectedAssetPathCommand}"/>
+                            <MenuItem FontFamily="Tahoma"
+                                      FontSize="12"
+                                      Header="Save As..."
+                                      Command="{Binding SaveSelectedAssetCommand}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
