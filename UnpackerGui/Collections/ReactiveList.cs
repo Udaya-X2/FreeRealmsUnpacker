@@ -206,6 +206,10 @@ public class ReactiveList<T> : ObservableCollection<T>, IObservableCollection<T>
     public int RemoveAll(Predicate<T> match)
         => DoWhileSuspended(x => x.RemoveAll(match));
 
+    /// <inheritdoc cref="ListEx.RemoveMany{T}(IList{T}, IEnumerable{T})"/>
+    public void RemoveMany(IEnumerable<T> itemsToRemove)
+        => DoWhileSuspended(x => x.RemoveMany(itemsToRemove));
+
     /// <inheritdoc cref="List{T}.RemoveRange(int, int)"/>
     public void RemoveRange(int index, int count)
         => DoWhileSuspended(x => x.RemoveRange(index, count));

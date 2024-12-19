@@ -87,7 +87,6 @@ public class MainViewModel : SavedSettingsViewModel
     private AssetInfo? _selectedAsset;
     private IDisposable? _validationHandler;
     private bool _isValidatingAssets;
-    private bool _manifestFileSelected;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -145,11 +144,6 @@ public class MainViewModel : SavedSettingsViewModel
         this.WhenAnyValue(x => x.IsValidatingAssets)
             .Subscribe(_ => ToggleValidationCommand.Invoke());
 
-        // Keep track of whether selected asset file is a manifest file.
-        this.WhenAnyValue(x => x.SelectedAssetFile)
-            .Select(x => x?.FileType is AssetType.Dat)
-            .BindTo(this, x => x.ManifestFileSelected);
-
         // Need to clear selected assets to avoid the UI freezing when a large
         // number of assets are selected while more assets are added/removed.
         Assets.ObserveCollectionChanges()
@@ -204,15 +198,6 @@ public class MainViewModel : SavedSettingsViewModel
     {
         get => _isValidatingAssets;
         set => this.RaiseAndSetIfChanged(ref _isValidatingAssets, value);
-    }
-
-    /// <summary>
-    /// Gets or sets whether a manifest.dat file is selected.
-    /// </summary>
-    public bool ManifestFileSelected
-    {
-        get => _manifestFileSelected;
-        set => this.RaiseAndSetIfChanged(ref _manifestFileSelected, value);
     }
 
     /// <summary>
@@ -281,8 +266,9 @@ public class MainViewModel : SavedSettingsViewModel
             SuggestedStartLocation = await InputFolder
         });
 
-        if (files.Count > 0) InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        if (files.Count == 0) return;
 
+        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
                                           .Select(x => new AssetFile(x))
@@ -323,8 +309,9 @@ public class MainViewModel : SavedSettingsViewModel
             SuggestedStartLocation = await InputFolder
         });
 
-        if (files.Count > 0) InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        if (files.Count == 0) return;
 
+        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
         List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
                                           .Except(AssetFiles.Select(x => x.FullName))
                                           .Select(x => new AssetFile(x, assetType))
@@ -341,7 +328,7 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
-    /// Opens a file dialog that allows the user to add asset .dat files to the selected manifest.dat file.
+    /// Opens a file dialog that allows the user to add asset .dat files to the selected asset file.
     /// </summary>
     private async Task AddDataFiles()
     {
@@ -353,12 +340,12 @@ public class MainViewModel : SavedSettingsViewModel
             SuggestedStartLocation = await InputFolder
         });
 
-        if (files.Count > 0) InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        if (files.Count == 0) return;
 
-        ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
-        dataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
-                                 .Except(dataFiles)
-                                 .ToList());
+        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        SelectedAssetFile?.DataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
+                                                    .Except(SelectedAssetFile.DataFiles.Select(x => x.FullName))
+                                                    .Select(x => new DataFileViewModel(x, SelectedAssetFile)));
     }
 
     /// <summary>
@@ -468,57 +455,35 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
-    /// Checks all asset files, or checks the data files under the selected manifest.dat file.
+    /// Checks all asset files.
     /// </summary>
     private void CheckAll()
     {
-        if (ManifestFileSelected)
+        using (Assets.SuspendNotifications())
         {
-            SelectedAssetFile?.DataFiles?.ForEach(x => x.IsChecked = true);
-        }
-        else
-        {
-            using (Assets.SuspendNotifications())
-            {
-                AssetFiles.ForEach(x => x.IsChecked = true);
-            }
+            AssetFiles.ForEach(x => x.IsChecked = true);
         }
     }
 
     /// <summary>
-    /// Unchecks all asset files, or unchecks the data files under the selected manifest.dat file.
+    /// Unchecks all asset files.
     /// </summary>
     private void UncheckAll()
     {
-        if (ManifestFileSelected)
+        using (Assets.SuspendNotifications())
         {
-            SelectedAssetFile?.DataFiles?.ForEach(x => x.IsChecked = false);
-        }
-        else
-        {
-            using (Assets.SuspendNotifications())
-            {
-                AssetFiles.ForEach(x => x.IsChecked = false);
-            }
+            AssetFiles.ForEach(x => x.IsChecked = false);
         }
     }
 
     /// <summary>
-    /// Removes all checked asset files, or removes the checked data files under the selected manifest.dat file.
+    /// Removes all checked asset files.
     /// </summary>
     private void RemoveChecked()
     {
-        if (ManifestFileSelected)
+        using (Assets.SuspendNotifications())
         {
-            SelectedAssetFile?.DataFilePaths?.RemoveMany(SelectedAssetFile!.DataFiles!.Where(x => x.IsChecked)
-                                                                                      .Select(x => x.FullName));
-        }
-        else
-        {
-            using (Assets.SuspendNotifications())
-            {
-                _sourceAssetFiles.RemoveMany(CheckedAssetFiles);
-            }
+            _sourceAssetFiles.RemoveMany(CheckedAssetFiles);
         }
     }
 
@@ -573,37 +538,29 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
-    /// Adds the specified files to either the selected manifest.dat file or source asset files.
+    /// Adds the specified files to the source asset files.
     /// </summary>
     private async Task AddFiles(IEnumerable<string> files)
     {
         ArgumentNullException.ThrowIfNull(files, nameof(files));
 
-        if (ManifestFileSelected)
-        {
-            ReactiveList<string>? dataFiles = SelectedAssetFile?.DataFilePaths;
-            dataFiles?.AddRange(files.Except(dataFiles).ToList());
-        }
-        else
-        {
-            List<AssetFile> assetFiles = files.Except(AssetFiles.Select(x => x.FullName))
-                                              .Select(x =>
-                                              {
-                                                  // Discard the file if we cannot infer its asset type from its name.
-                                                  AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
-                                                  return type.IsValid() ? new AssetFile(x, type) : null;
-                                              })
-                                              .WhereNotNull()
-                                              .ToList();
+        List<AssetFile> assetFiles = files.Except(AssetFiles.Select(x => x.FullName))
+                                          .Select(x =>
+                                          {
+                                              // Discard the file if we cannot infer its asset type from its name.
+                                              AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
+                                              return type.IsValid() ? new AssetFile(x, type) : null;
+                                          })
+                                          .WhereNotNull()
+                                          .ToList();
 
-            if (assetFiles.Count > 0)
+        if (assetFiles.Count > 0)
+        {
+            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
             {
-                await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
-                {
-                    DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
-                    AutoClose = true
-                });
-            }
+                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                AutoClose = true
+            });
         }
     }
 }

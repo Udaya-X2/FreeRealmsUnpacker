@@ -1,12 +1,9 @@
 ﻿using AssetIO;
-using DynamicData;
-using DynamicData.Binding;
 using ReactiveUI;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading;
@@ -18,13 +15,14 @@ namespace UnpackerGui.ViewModels;
 public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 {
     public List<AssetInfo> Assets { get; }
-    public ReactiveList<string>? DataFilePaths { get; }
+    public ReactiveList<DataFileViewModel>? DataFiles { get; }
+    public ReactiveList<DataFileViewModel>? SelectedDataFiles { get; }
     public long Size { get; }
     public bool IsManifestFile { get; }
 
     public ReactiveCommand<Unit, bool>? ShowDataFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit>? RemoveDataFilesCommand { get; }
 
-    private readonly ReadOnlyObservableCollection<DataFileViewModel>? _dataFiles;
     private readonly AssetFile _assetFile;
 
     private bool _isChecked;
@@ -46,12 +44,11 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         if (FileType == AssetType.Dat)
         {
             IsManifestFile = true;
-            assetFile.DataFiles = DataFilePaths = new ReactiveList<string>(assetFile.DataFiles);
-            DataFilePaths.ToObservableChangeSet()
-                         .Transform(x => new DataFileViewModel(x, this))
-                         .Bind(out _dataFiles)
-                         .Subscribe();
+            DataFiles = [.. assetFile.DataFiles.Select(x => new DataFileViewModel(x, this))];
+            assetFile.DataFiles = DataFiles.Select(x => x.FullName);
+            SelectedDataFiles = [];
             ShowDataFilesCommand = ReactiveCommand.Create(() => ShowDataFiles ^= true);
+            RemoveDataFilesCommand = ReactiveCommand.Create(RemoveDataFiles);
         }
     }
 
@@ -72,8 +69,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         get => _isValidated;
         set => this.RaiseAndSetIfChanged(ref _isValidated, value);
     }
-
-    public ReadOnlyObservableCollection<DataFileViewModel>? DataFiles => _dataFiles;
 
     public string Name => _assetFile.Name;
 
@@ -116,4 +111,14 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     public IEnumerator<AssetInfo> GetEnumerator() => Assets.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => Assets.GetEnumerator();
+
+    /// <summary>
+    /// Removes the selected data files from the asset file.
+    /// </summary>
+    private void RemoveDataFiles()
+    {
+        DataFileViewModel[] dataFiles = [.. SelectedDataFiles];
+        SelectedDataFiles!.Clear();
+        DataFiles!.RemoveMany(dataFiles);
+    }
 }
