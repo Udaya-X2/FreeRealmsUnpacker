@@ -357,6 +357,7 @@
                                 <CheckBox FontSize="12"
                                           FontFamily="Tahoma"
                                           Content="Size"
+                                          IsThreeState="True"
                                           IsChecked="{Binding ShowSize}"/>
                                 <CheckBox FontSize="12"
                                           FontFamily="Tahoma"
@@ -390,23 +391,34 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn FontSize="12"
                                             Width="2*"
+                                            MinWidth="90"
                                             IsVisible="{Binding ShowName}"
                                             Header="Name"
                                             Binding="{Binding Name}"/>
                         <DataGridTextColumn FontSize="12"
                                             Width="*"
+                                            MinWidth="90"
                                             MaxWidth="150"
                                             IsVisible="{Binding ShowOffset}"
                                             Header="Offset"
                                             Binding="{Binding Offset}"/>
                         <DataGridTextColumn FontSize="12"
                                             Width="*"
+                                            MinWidth="90"
                                             MaxWidth="150"
-                                            IsVisible="{Binding ShowSize}"
+                                            IsVisible="{Binding ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
+                                            Header="Size"
+                                            Binding="{Binding Size, Converter={StaticResource fileSizeConverter} Mode=OneWay}"/>
+                        <DataGridTextColumn FontSize="12"
+                                            Width="*"
+                                            MinWidth="90"
+                                            MaxWidth="150"
+                                            IsVisible="{Binding !!ShowSize}"
                                             Header="Size"
                                             Binding="{Binding Size}"/>
                         <DataGridTextColumn FontSize="12"
                                             Width="*"
+                                            MinWidth="90"
                                             MaxWidth="150"
                                             IsVisible="{Binding ShowCrc32}"
                                             Header="CRC-32"

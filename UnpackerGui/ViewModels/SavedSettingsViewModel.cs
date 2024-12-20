@@ -17,7 +17,7 @@ public class SavedSettingsViewModel : ViewModelBase
 {
     private bool _showName = true;
     private bool _showOffset = true;
-    private bool _showSize = true;
+    private bool? _showSize = true;
     private bool _showCrc32 = true;
     private FileConflictOptions _conflictOptions = FileConflictOptions.Overwrite;
     private AssetType _assetFilter = AssetType.All;
@@ -79,7 +79,7 @@ public class SavedSettingsViewModel : ViewModelBase
     /// Gets or sets whether to show the asset's size.
     /// </summary>
     [JsonProperty]
-    public bool ShowSize
+    public bool? ShowSize
     {
         get => _showSize;
         set => this.RaiseAndSetIfChanged(ref _showSize, value);
