@@ -157,7 +157,7 @@
                                 <!--Data Files-->
                                 <ListBox ItemsSource="{Binding DataFiles}"
                                          Margin="11 9 0 -9"
-                                         SelectionMode="Multiple"
+                                         SelectionMode="Multiple, Toggle"
                                          SelectedItem="{Binding SelectedDataFile}"
                                          SelectedItems="{Binding SelectedDataFiles}">
                                     <ListBox.IsVisible>
