@@ -74,8 +74,6 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
-    public ReactiveCommand<string, Unit> CopyCommand { get; }
-    public ReactiveCommand<string, Unit> OpenFileCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
@@ -114,8 +112,6 @@ public class MainViewModel : SavedSettingsViewModel
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
-        CopyCommand = ReactiveCommand.Create<string>(App.SetClipboardText);
-        OpenFileCommand = ReactiveCommand.Create<string>(OpenFile);
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
@@ -504,7 +500,11 @@ public class MainViewModel : SavedSettingsViewModel
         string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
         FileInfo file = reader.ExtractTo(SelectedAsset, tempDir);
-        OpenFile(file.FullName);
+        Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = true,
+            FileName = file.FullName
+        });
     }
 
     /// <summary>
@@ -542,13 +542,4 @@ public class MainViewModel : SavedSettingsViewModel
             });
         }
     }
-
-    /// <summary>
-    /// Opens the specified file.
-    /// </summary>
-    private static void OpenFile(string path) => Process.Start(new ProcessStartInfo
-    {
-        UseShellExecute = true,
-        FileName = path
-    });
 }
