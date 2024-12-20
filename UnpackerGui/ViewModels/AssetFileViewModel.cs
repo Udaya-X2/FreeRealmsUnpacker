@@ -28,6 +28,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     private bool _isChecked;
     private bool _showDataFiles;
     private bool _isValidated;
+    private DataFileViewModel? _selectedDataFile;
 
     public AssetFileViewModel(AssetFile assetFile, CancellationToken token = default)
     {
@@ -68,6 +69,12 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     {
         get => _isValidated;
         set => this.RaiseAndSetIfChanged(ref _isValidated, value);
+    }
+
+    public DataFileViewModel? SelectedDataFile
+    {
+        get => _selectedDataFile;
+        set => this.RaiseAndSetIfChanged(ref _selectedDataFile, value);
     }
 
     public string Name => _assetFile.Name;
