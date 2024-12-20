@@ -97,7 +97,7 @@
                         <Image Source="/Assets/icon_ui_pickup_siding_blue_32.png"/>
                     </Button>
                     <!--Extract Files Button-->
-                    <Button Command="{Binding ExtractFilesCommand}"
+                    <Button Command="{Binding ExtractCheckedFilesCommand}"
                             ToolTip.Tip="Extract Checked Files..."
                             Grid.Column="2">
                         <Image Source="/Assets/downloadIcon.png"/>
@@ -177,6 +177,12 @@
                                         <ContextMenu>
                                             <MenuItem Header="Remove"
                                                       Command="{Binding RemoveDataFilesCommand}"/>
+                                            <MenuItem Header="Open Containing Folder"
+                                                      Command="{Binding Source={StaticResource commands} Path=OpenFileCommand}"
+                                                      CommandParameter="{Binding SelectedDataFiles[0].Info.DirectoryName}"/>
+                                            <MenuItem Header="Copy Full File Path"
+                                                      Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
+                                                      CommandParameter="{Binding SelectedDataFiles[0].FullName}"/>
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
                                 </ListBox>
@@ -190,6 +196,11 @@
                             <MenuItem Header="Open Containing Folder"
                                       Command="{Binding Source={StaticResource commands} Path=OpenFileCommand}"
                                       CommandParameter="{Binding SelectedAssetFile.Info.DirectoryName}"/>
+                            <MenuItem Header="Copy Full File Path"
+                                      Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
+                                      CommandParameter="{Binding SelectedAssetFile.FullName}"/>
+                            <MenuItem Header="Extract To..."
+                                      Command="{Binding ExtractSelectedFileCommand}"/>
                             <MenuItem Header="Add Asset .dat Files..."
                                       IsVisible="{Binding SelectedAssetFile.IsManifestFile}"
                                       Command="{Binding AddDataFilesCommand}"/>
@@ -301,7 +312,7 @@
                     </ToggleButton>
                     <!--Extract Selected Assets Button-->
                     <Button Grid.Column="5"
-                            Command="{Binding ExtractAssetsCommand}"
+                            Command="{Binding ExtractSelectedAssetsCommand}"
                             Margin="5 0 0 0"
                             ToolTip.Tip="Extract Selected Assets...">
                         <Image Source="/Assets/downloadIcon.png"/>

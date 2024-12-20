@@ -63,8 +63,10 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
-    public ReactiveCommand<Unit, Unit> ExtractFilesCommand { get; }
-    public ReactiveCommand<Unit, Unit> ExtractAssetsCommand { get; }
+    public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExtractCheckedFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExtractSelectedFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExtractSelectedAssetsCommand { get; }
     public ReactiveCommand<Unit, Unit> SaveSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleValidationCommand { get; }
     public ReactiveCommand<Unit, Unit> CheckAllFilesCommand { get; }
@@ -73,7 +75,6 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> RemoveSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
-    public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
@@ -101,8 +102,10 @@ public class MainViewModel : SavedSettingsViewModel
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
-        ExtractFilesCommand = ReactiveCommand.CreateFromTask(ExtractFiles);
-        ExtractAssetsCommand = ReactiveCommand.CreateFromTask(ExtractAssets);
+        AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
+        ExtractCheckedFilesCommand = ReactiveCommand.CreateFromTask(ExtractCheckedFiles);
+        ExtractSelectedFileCommand = ReactiveCommand.CreateFromTask(ExtractSelectedFile);
+        ExtractSelectedAssetsCommand = ReactiveCommand.CreateFromTask(ExtractSelectedAssets);
         SaveSelectedAssetCommand = ReactiveCommand.CreateFromTask(SaveSelectedAsset);
         ToggleValidationCommand = ReactiveCommand.CreateFromTask(ToggleValidation);
         CheckAllFilesCommand = ReactiveCommand.Create(CheckAllFiles);
@@ -111,7 +114,6 @@ public class MainViewModel : SavedSettingsViewModel
         RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
-        AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
@@ -347,11 +349,46 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
-    /// Opens a folder dialog that allows the user to extract the selected asset files to a directory.
+    /// Adds the specified files to the source asset files.
     /// </summary>
-    private async Task ExtractFiles()
+    private async Task AddFiles(IEnumerable<string> files)
     {
-        if (CheckedAssetFiles.Count == 0) return;
+        List<AssetFile> assetFiles = files.Except(AssetFiles.Select(x => x.FullName))
+                                          .Select(x =>
+                                          {
+                                              // Discard the file if we cannot infer its asset type from its name.
+                                              AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
+                                              return type.IsValid() ? new AssetFile(x, type) : null;
+                                          })
+                                          .WhereNotNull()
+                                          .ToList();
+
+        if (assetFiles.Count > 0)
+        {
+            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+            {
+                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                AutoClose = true
+            });
+        }
+    }
+
+    /// <summary>
+    /// Opens a folder dialog that allows the user to extract the selected asset file to a directory.
+    /// </summary>
+    private async Task ExtractSelectedFile() => await ExtractFiles([SelectedAssetFile!]);
+
+    /// <summary>
+    /// Opens a folder dialog that allows the user to extract the checked asset files to a directory.
+    /// </summary>
+    private async Task ExtractCheckedFiles() => await ExtractFiles(CheckedAssetFiles);
+
+    /// <summary>
+    /// Opens a folder dialog that allows the user to extract the specified asset files to a directory.
+    /// </summary>
+    private async Task ExtractFiles(IEnumerable<AssetFileViewModel> assetFiles)
+    {
+        if (!assetFiles.Any()) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
             SuggestedStartLocation = await OutputFolder
@@ -360,14 +397,14 @@ public class MainViewModel : SavedSettingsViewModel
         OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(OutputDirectory, CheckedAssetFiles, ConflictOptions)
+            DataContext = new ExtractionViewModel(OutputDirectory, assetFiles, ConflictOptions)
         });
     }
 
     /// <summary>
     /// Opens a folder dialog that allows the user to extract the selected assets to a directory.
     /// </summary>
-    private async Task ExtractAssets()
+    private async Task ExtractSelectedAssets()
     {
         if (SelectedAssets.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
@@ -511,30 +548,5 @@ public class MainViewModel : SavedSettingsViewModel
     {
         SelectedAsset = null;
         SelectedAssets.Clear();
-    }
-
-    /// <summary>
-    /// Adds the specified files to the source asset files.
-    /// </summary>
-    private async Task AddFiles(IEnumerable<string> files)
-    {
-        List<AssetFile> assetFiles = files.Except(AssetFiles.Select(x => x.FullName))
-                                          .Select(x =>
-                                          {
-                                              // Discard the file if we cannot infer its asset type from its name.
-                                              AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
-                                              return type.IsValid() ? new AssetFile(x, type) : null;
-                                          })
-                                          .WhereNotNull()
-                                          .ToList();
-
-        if (assetFiles.Count > 0)
-        {
-            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
-            {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
-                AutoClose = true
-            });
-        }
     }
 }
