@@ -7,8 +7,6 @@ namespace UnpackerGui.Converters;
 
 public class StringComparisonConverter : IValueConverter
 {
-    public static readonly StringComparisonConverter Instance = new();
-
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
         string a when parameter is string b => a == b,

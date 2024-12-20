@@ -9,8 +9,6 @@ public class BooleanToStringConverter : IValueConverter
 {
     private const char Separator = '␟';
 
-    public static readonly BooleanToStringConverter Instance = new();
-
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
         bool condition when Split(parameter) is (string val1, string val2) => condition ? val1 : val2,

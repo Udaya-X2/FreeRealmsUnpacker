@@ -7,8 +7,6 @@ namespace UnpackerGui.Converters;
 
 public class FileSizeConverter : IValueConverter
 {
-    public static readonly FileSizeConverter Instance = new();
-
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
         sbyte n => GetFileSize(n),
