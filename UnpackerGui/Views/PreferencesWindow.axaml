@@ -27,9 +27,7 @@
                  SelectionMode="AlwaysSelected">
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="vm:PreferenceViewModel">
-                    <TextBlock Text="{Binding Name}"
-                               FontFamily="Tahoma"
-                               FontSize="12"/>
+                    <TextBlock Text="{Binding Name}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
@@ -37,13 +35,10 @@
         <StackPanel>
             <!--Option Name-->
             <TextBlock Text="{Binding SelectedPreference.Name}"
-                       FontFamily="Tahoma"
                        FontSize="20"
                        Margin="0,0,0,10"/>
             <!--Option Description-->
             <TextBlock Text="{Binding SelectedPreference.Description}"
-                       FontFamily="Tahoma"
-                       FontSize="12"
                        Opacity="100"
                        Margin="0,0,0,10"/>
             <!--File Conflict Options-->
@@ -51,39 +46,27 @@
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Overwrite"
                              ToolTip.Tip="Overwrite the existing file."
-                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay}"
-                             FontFamily="Tahoma"
-                             FontSize="12"/>
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Skip"
                              ToolTip.Tip="Skip the file."
-                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Skip, Mode=TwoWay}"
-                             FontFamily="Tahoma"
-                             FontSize="12"/>
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Skip, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Rename"
                              ToolTip.Tip="Add a number to the new file's name."
-                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Rename, Mode=TwoWay}"
-                             FontFamily="Tahoma"
-                             FontSize="12"/>
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Rename, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Make Directory"
                              ToolTip.Tip="Create a directory with a number added to its name for the new file."
-                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkDir, Mode=TwoWay}"
-                             FontFamily="Tahoma"
-                             FontSize="12"/>
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkDir, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Make Subdirectory"
                              ToolTip.Tip="Create a subdirectory with a distinct name for each file."
-                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkSubdir, Mode=TwoWay}"
-                             FontFamily="Tahoma"
-                             FontSize="12"/>
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkSubdir, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Make Subdirectory Tree"
                              ToolTip.Tip="Create a subdirectory with a directory for each file."
-                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"
-                             FontFamily="Tahoma"
-                             FontSize="12"/>
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"/>
             </StackPanel>
             <!--Folder Options-->
             <StackPanel IsVisible="{Binding SelectedPreference.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Folder Options'}">
@@ -91,42 +74,30 @@
                           ToolTip.Tip="Assets for the game, typically located in the &quot;Free Realms/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
-                          CommandParameter="Game"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
+                          CommandParameter="Game"/>
                 <CheckBox Content="TCG Assets"
                           ToolTip.Tip="Image assets for the TCG, typically located in the &quot;Free Realms/assets/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
-                          CommandParameter="Tcg"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
+                          CommandParameter="Tcg"/>
                 <CheckBox Content="Resource Assets"
                           ToolTip.Tip="Resource assets for the TCG, typically located in the &quot;Free Realms/tcg/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
-                          CommandParameter="Resource"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
+                          CommandParameter="Resource"/>
                 <CheckBox Content="Unknown Assets"
                           ToolTip.Tip="Assets with unknown names, possibly renamed or not from a Free Realms directory."
-                          IsChecked="{Binding AddUnknownAssets}"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
+                          IsChecked="{Binding AddUnknownAssets}"/>
                 <CheckBox Content="Pack Assets"
                           ToolTip.Tip="Asset .pack files, which consist of both asset information and content."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
-                          CommandParameter="Pack"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
+                          CommandParameter="Pack"/>
                 <CheckBox Content="Dat Assets"
                           ToolTip.Tip="Asset .dat files, which come with a manifest.dat file consisting of asset information."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
-                          CommandParameter="Dat"
-                          FontFamily="Tahoma"
-                          FontSize="12"/>
+                          CommandParameter="Dat"/>
             </StackPanel>
         </StackPanel>
     </DockPanel>

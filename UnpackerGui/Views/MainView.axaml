@@ -10,7 +10,6 @@
              d:DesignWidth="800"
              d:DesignHeight="470"
              x:Class="UnpackerGui.Views.MainView"
-             FontFamily="Tahoma"
              x:DataType="vm:MainViewModel"
              Loaded="MainView_Loaded"
              Unloaded="MainView_Unloaded">
@@ -43,49 +42,31 @@
         <Menu DockPanel.Dock="Top"
               Height="30">
             <!--File Menu-->
-            <MenuItem Header="File"
-                      FontFamily="Tahoma"
-                      FontSize="12">
+            <MenuItem Header="File">
                 <!--Open Submenu-->
-                <MenuItem Header="Open"
-                          FontFamily="Tahoma"
-                          FontSize="12">
+                <MenuItem Header="Open">
                     <!--Open Folder-->
                     <MenuItem Header="Folder..."
-                              FontFamily="Tahoma"
-                              FontSize="12"
                               Command="{Binding OpenAssetFolderCommand}"/>
                     <!--Open File-->
                     <MenuItem Header="File..."
-                              FontFamily="Tahoma"
-                              FontSize="12"
                               Command="{Binding OpenAssetFileCommand}"/>
                 </MenuItem>
                 <Separator/>
                 <!--Exit-->
                 <MenuItem Header="Exit"
-                          FontFamily="Tahoma"
-                          FontSize="12"
                           Command="{Binding ExitCommand}"/>
             </MenuItem>
             <!--Settings Menu-->
-            <MenuItem Header="Settings"
-                      FontFamily="Tahoma"
-                      FontSize="12">
+            <MenuItem Header="Settings">
                 <!--Preferences-->
                 <MenuItem Header="Preferences..."
-                          FontFamily="Tahoma"
-                          FontSize="12"
                           Command="{Binding ShowPreferencesCommand}"/>
             </MenuItem>
             <!--Help Menu-->
-            <MenuItem Header="Help"
-                      FontFamily="Tahoma"
-                      FontSize="12">
+            <MenuItem Header="Help">
                 <!--About Free Realms Unpacker-->
                 <MenuItem Header="About Free Realms Unpacker..."
-                          FontFamily="Tahoma"
-                          FontSize="12"
                           Command="{Binding ShowAboutCommand}"/>
             </MenuItem>
         </Menu>
@@ -169,8 +150,7 @@
                                     </Button>
                                     <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
                                               VerticalAlignment="Center"/>
-                                    <TextBlock FontSize="12"
-                                               Text="{Binding Name}"
+                                    <TextBlock Text="{Binding Name}"
                                                ToolTip.Tip="{Binding FullName}"
                                                VerticalAlignment="Center"/>
                                 </StackPanel>
@@ -187,8 +167,7 @@
                                     </ListBox.IsVisible>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate DataType="vm:DataFileViewModel">
-                                            <TextBlock FontSize="12"
-                                                       Text="{Binding Name}"
+                                            <TextBlock Text="{Binding Name}"
                                                        ToolTip.Tip="{Binding FullName}"
                                                        VerticalAlignment="Center"
                                                        Height="14"/>
@@ -196,9 +175,7 @@
                                     </ListBox.ItemTemplate>
                                     <ListBox.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem FontSize="12"
-                                                      FontFamily="Tahoma"
-                                                      Header="Remove"
+                                            <MenuItem Header="Remove"
                                                       Command="{Binding RemoveDataFilesCommand}"/>
                                         </ContextMenu>
                                     </ListBox.ContextMenu>
@@ -208,18 +185,12 @@
                     </ListBox.ItemTemplate>
                     <ListBox.ContextMenu>
                         <ContextMenu>
-                            <MenuItem FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Header="Remove"
+                            <MenuItem Header="Remove"
                                       Command="{Binding RemoveSelectedFileCommand}"/>
-                            <MenuItem FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Header="Open Containing Folder"
+                            <MenuItem Header="Open Containing Folder"
                                       Command="{Binding Source={StaticResource commands} Path=OpenFileCommand}"
                                       CommandParameter="{Binding SelectedAssetFile.Info.DirectoryName}"/>
-                            <MenuItem FontSize="12"
-                                      FontFamily="Tahoma"
-                                      Header="Add Asset .dat Files..."
+                            <MenuItem Header="Add Asset .dat Files..."
                                       IsVisible="{Binding SelectedAssetFile.IsManifestFile}"
                                       Command="{Binding AddDataFilesCommand}"/>
                         </ContextMenu>
@@ -236,8 +207,6 @@
                              Grid.Column="0"
                              CornerRadius="0"
                              IsReadOnly="True"
-                             FontSize="12"
-                             FontFamily="Tahoma"
                              VerticalAlignment="Center"
                              Text="Path"
                              ToolTip.Tip="The full path of this file."/>
@@ -245,8 +214,6 @@
                              Grid.Column="1"
                              CornerRadius="0"
                              IsReadOnly="True"
-                             FontSize="12"
-                             FontFamily="Tahoma"
                              VerticalAlignment="Center"
                              Text="{Binding SelectedAssetFile.FullName}"
                              ToolTip.Tip="{Binding SelectedAssetFile.FullName}"/>
@@ -255,8 +222,6 @@
                              Grid.Column="0"
                              CornerRadius="0"
                              IsReadOnly="True"
-                             FontSize="12"
-                             FontFamily="Tahoma"
                              VerticalAlignment="Center"
                              Text="Count"
                              ToolTip.Tip="The number of assets contained in this file."/>
@@ -264,8 +229,6 @@
                              Grid.Column="1"
                              CornerRadius="0"
                              IsReadOnly="True"
-                             FontSize="12"
-                             FontFamily="Tahoma"
                              VerticalAlignment="Center"
                              Text="{Binding SelectedAssetFile.Count}"
                              ToolTip.Tip="{Binding SelectedAssetFile.Count}"/>
@@ -274,8 +237,6 @@
                              Grid.Column="0"
                              CornerRadius="0"
                              IsReadOnly="True"
-                             FontSize="12"
-                             FontFamily="Tahoma"
                              VerticalAlignment="Center"
                              Text="Size"
                              ToolTip.Tip="The total size of all assets in this file."/>
@@ -283,8 +244,6 @@
                              Grid.Column="1"
                              CornerRadius="0"
                              IsReadOnly="True"
-                             FontSize="12"
-                             FontFamily="Tahoma"
                              VerticalAlignment="Center"
                              Text="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"
                              ToolTip.Tip="{Binding SelectedAssetFile.Size, Converter={StaticResource fileSizeConverter}}"/>
@@ -307,23 +266,31 @@
                     <TextBox Grid.Column="1"
                              Name="searchBarTextBox"
                              MinWidth="0"
-                             Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"
-                             FontFamily="Tahoma"
-                             FontSize="12"/>
+                             Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"/>
                     <!--Match Case Option-->
                     <ToggleButton Grid.Column="2"
                                   Name="matchCaseButton"
                                   Margin="5 0 0 0"
                                   ToolTip.Tip="Match Case (ALT+C)"
                                   IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
-                                  Content="Aa"/>
+                                  Content="Aa"
+                                  Width="35"
+                                  Height="32"
+                                  HorizontalContentAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  FontSize="14"/>
                     <!--Use Regular Expressions Option-->
                     <ToggleButton Grid.Column="3"
                                   Name="useRegexButton"
                                   Margin="5 0 0 0"
                                   ToolTip.Tip="Use Regular Expressions (ALT+E)"
                                   IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
-                                  Content=".*"/>
+                                  Content=".*"
+                                  Width="35"
+                                  Height="32"
+                                  HorizontalContentAlignment="Center"
+                                  VerticalContentAlignment="Center"
+                                  FontSize="14"/>
                     <!--Validate Assets Option-->
                     <ToggleButton Grid.Column="4"
                                   Name="validateAssetsButton"
@@ -346,26 +313,16 @@
                         <Image Source="/Assets/icon_achievement_02_32.png"/>
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                <CheckBox FontSize="12"
-                                          FontFamily="Tahoma"
-                                          Content="Name"
+                                <CheckBox Content="Name"
                                           IsChecked="{Binding ShowName}"/>
-                                <CheckBox FontSize="12"
-                                          FontFamily="Tahoma"
-                                          Content="Offset"
+                                <CheckBox Content="Offset"
                                           IsChecked="{Binding ShowOffset}"/>
-                                <CheckBox FontSize="12"
-                                          FontFamily="Tahoma"
-                                          Content="Size"
+                                <CheckBox Content="Size"
                                           IsThreeState="True"
                                           IsChecked="{Binding ShowSize}"/>
-                                <CheckBox FontSize="12"
-                                          FontFamily="Tahoma"
-                                          Content="CRC-32"
+                                <CheckBox Content="CRC-32"
                                           IsChecked="{Binding ShowCrc32}"/>
-                                <CheckBox FontSize="12"
-                                          FontFamily="Tahoma"
-                                          Content="Valid"
+                                <CheckBox Content="Valid"
                                           IsThreeState="True"
                                           IsChecked="{Binding ValidationOptions.ShowValid}"
                                           IsEnabled="{Binding IsValidatingAssets}"/>
@@ -389,35 +346,30 @@
                           DoubleTapped="AssetGrid_DoubleTapped"
                           Sorting="AssetGrid_Sorting">
                     <DataGrid.Columns>
-                        <DataGridTextColumn FontSize="12"
-                                            Width="2*"
+                        <DataGridTextColumn Width="2*"
                                             MinWidth="90"
                                             IsVisible="{Binding ShowName}"
                                             Header="Name"
                                             Binding="{Binding Name}"/>
-                        <DataGridTextColumn FontSize="12"
-                                            Width="*"
+                        <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
                                             IsVisible="{Binding ShowOffset}"
                                             Header="Offset"
                                             Binding="{Binding Offset}"/>
-                        <DataGridTextColumn FontSize="12"
-                                            Width="*"
+                        <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
                                             IsVisible="{Binding ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
                                             Header="Size"
                                             Binding="{Binding Size, Converter={StaticResource fileSizeConverter} Mode=OneWay}"/>
-                        <DataGridTextColumn FontSize="12"
-                                            Width="*"
+                        <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
                                             IsVisible="{Binding !!ShowSize}"
                                             Header="Size"
                                             Binding="{Binding Size}"/>
-                        <DataGridTextColumn FontSize="12"
-                                            Width="*"
+                        <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
                                             IsVisible="{Binding ShowCrc32}"
@@ -426,27 +378,17 @@
                     </DataGrid.Columns>
                     <DataGrid.ContextMenu>
                         <ContextMenu IsVisible="{Binding !!SelectedAssets.Count}">
-                            <MenuItem FontFamily="Tahoma"
-                                      FontSize="12"
-                                      Header="Open"
+                            <MenuItem Header="Open"
                                       Command="{Binding OpenSelectedAssetCommand}"/>
-                            <MenuItem FontFamily="Tahoma"
-                                      FontSize="12"
-                                      Header="Open Containing Folder"
+                            <MenuItem Header="Open Containing Folder"
                                       Command="{Binding Source={StaticResource commands} Path=OpenFileCommand}"
                                       CommandParameter="{Binding SelectedAsset.AssetFile.Info.DirectoryName}"/>
-                            <MenuItem FontFamily="Tahoma"
-                                      FontSize="12"
-                                      Header="Copy"
+                            <MenuItem Header="Copy"
                                       Click="AssetGrid_ContextMenu_Copy"/>
-                            <MenuItem FontFamily="Tahoma"
-                                      FontSize="12"
-                                      Header="Copy Full File Path"
+                            <MenuItem Header="Copy Full File Path"
                                       Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
                                       CommandParameter="{Binding SelectedAsset.AssetFile.FullName}"/>
-                            <MenuItem FontFamily="Tahoma"
-                                      FontSize="12"
-                                      Header="Save As..."
+                            <MenuItem Header="Save As..."
                                       Command="{Binding SaveSelectedAssetCommand}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
@@ -461,9 +403,7 @@
                                 ToolTip.Tip="Files Selected">
                         <Image Source="/Assets/questjournal_I50.png"
                                Margin="0 0 5 0"/>
-                        <TextBlock FontFamily="Tahoma"
-                                   FontSize="12"
-                                   VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
                                     <Binding Path="CheckedAssetFiles.Count"
@@ -480,9 +420,7 @@
                                 ToolTip.Tip="Assets Shown">
                         <Image Source="/Assets/Broker_IE2.png"
                                Margin="0 0 5 0"/>
-                        <TextBlock FontFamily="Tahoma"
-                                   FontSize="12"
-                                   VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
                                     <Binding Path="CheckedAssets.Count"
@@ -504,9 +442,7 @@
                         <Image Source="/Assets/ui_objective_completed.png"
                                Margin="0 0 5 0"
                                IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
-                        <TextBlock FontFamily="Tahoma"
-                                   FontSize="12"
-                                   VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
                                     <Binding Path="Assets.UnfilteredCount"
@@ -524,9 +460,7 @@
                                 ToolTip.Tip="Search Hits">
                         <Image Source="/Assets/icon_ui_activityFinder_32.png"
                                Margin="0 0 5 0"/>
-                        <TextBlock FontFamily="Tahoma"
-                                   FontSize="12"
-                                   VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
                                     <Binding Path="Assets.Count"
@@ -544,9 +478,7 @@
                                 ToolTip.Tip="Assets Selected">
                         <Image Source="/Assets/cursor_interaction_default_use.png"
                                Margin="0 0 5 0"/>
-                        <TextBlock FontFamily="Tahoma"
-                                   FontSize="12"
-                                   VerticalAlignment="Center">
+                        <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
                                     <Binding Path="SelectedAssets.Count"

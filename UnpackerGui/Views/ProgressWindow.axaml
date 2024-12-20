@@ -21,14 +21,10 @@
         <TextBlock Text="{Binding Message}"
                    TextTrimming="CharacterEllipsis"
                    Margin="0 0 0 10"
-                   FontFamily="Tahoma"
-                   FontSize="12"
                    HorizontalAlignment="Center"/>
         <TextBlock Text="{Binding ElapsedTime}"
                    TextTrimming="CharacterEllipsis"
                    Margin="0 0 0 15"
-                   FontFamily="Tahoma"
-                   FontSize="12"
                    HorizontalAlignment="Center"/>
         <ProgressBar Height="20"
                      Width="250"
@@ -36,8 +32,6 @@
                      Maximum="{Binding Maximum}"
                      Value="{Binding Value}"
                      ProgressTextFormat=" {0}/{3} ({1:0}%) "
-                     FontFamily="Tahoma"
-                     FontSize="12"
                      ShowProgressText="True"/>
     </StackPanel>
 </Window>
