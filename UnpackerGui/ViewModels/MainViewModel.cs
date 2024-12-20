@@ -58,8 +58,8 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutCommand { get; }
-    public ReactiveCommand<Unit, Unit> OpenFolderCommand { get; }
-    public ReactiveCommand<Unit, Unit> OpenFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenAssetFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> OpenAssetFileCommand { get; }
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
@@ -67,14 +67,15 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> ExtractAssetsCommand { get; }
     public ReactiveCommand<Unit, Unit> SaveSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleValidationCommand { get; }
-    public ReactiveCommand<Unit, Unit> CheckAllCommand { get; }
-    public ReactiveCommand<Unit, Unit> UncheckAllCommand { get; }
-    public ReactiveCommand<Unit, Unit> RemoveCheckedCommand { get; }
+    public ReactiveCommand<Unit, Unit> CheckAllFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> UncheckAllFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> RemoveCheckedFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> RemoveSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
-    public ReactiveCommand<Unit, Unit> OpenSelectedAssetFolderCommand { get; }
-    public ReactiveCommand<Unit, Unit> CopySelectedAssetPathCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
+    public ReactiveCommand<string, Unit> CopyCommand { get; }
+    public ReactiveCommand<string, Unit> OpenFileCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
@@ -97,8 +98,8 @@ public class MainViewModel : SavedSettingsViewModel
         ExitCommand = ReactiveCommand.Create(App.ShutDown);
         ShowPreferencesCommand = ReactiveCommand.CreateFromTask(ShowPreferences);
         ShowAboutCommand = ReactiveCommand.CreateFromTask(ShowAbout);
-        OpenFolderCommand = ReactiveCommand.CreateFromTask(OpenFolder);
-        OpenFileCommand = ReactiveCommand.CreateFromTask(OpenFile);
+        OpenAssetFolderCommand = ReactiveCommand.CreateFromTask(OpenAssetFolder);
+        OpenAssetFileCommand = ReactiveCommand.CreateFromTask(OpenAssetFile);
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
@@ -106,14 +107,15 @@ public class MainViewModel : SavedSettingsViewModel
         ExtractAssetsCommand = ReactiveCommand.CreateFromTask(ExtractAssets);
         SaveSelectedAssetCommand = ReactiveCommand.CreateFromTask(SaveSelectedAsset);
         ToggleValidationCommand = ReactiveCommand.CreateFromTask(ToggleValidation);
-        CheckAllCommand = ReactiveCommand.Create(CheckAll);
-        UncheckAllCommand = ReactiveCommand.Create(UncheckAll);
-        RemoveCheckedCommand = ReactiveCommand.Create(RemoveChecked);
+        CheckAllFilesCommand = ReactiveCommand.Create(CheckAllFiles);
+        UncheckAllFilesCommand = ReactiveCommand.Create(UncheckAllFiles);
+        RemoveCheckedFilesCommand = ReactiveCommand.Create(RemoveCheckedFiles);
+        RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
-        OpenSelectedAssetFolderCommand = ReactiveCommand.Create(OpenSelectedAssetFolder);
-        CopySelectedAssetPathCommand = ReactiveCommand.Create(CopySelectedAssetPath);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
+        CopyCommand = ReactiveCommand.Create<string>(App.SetClipboardText);
+        OpenFileCommand = ReactiveCommand.Create<string>(OpenFile);
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
@@ -229,7 +231,7 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Opens a folder dialog that allows the user to add asset files in the folder to the source asset files.
     /// </summary>
-    private async Task OpenFolder()
+    private async Task OpenAssetFolder()
     {
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
@@ -256,7 +258,7 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Opens a file dialog that allows the user to add .pack or manifest.dat files to the source asset files.
     /// </summary>
-    private async Task OpenFile()
+    private async Task OpenAssetFile()
     {
         IFilesService filesService = App.GetService<IFilesService>();
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
@@ -457,7 +459,7 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Checks all asset files.
     /// </summary>
-    private void CheckAll()
+    private void CheckAllFiles()
     {
         using (Assets.SuspendNotifications())
         {
@@ -468,7 +470,7 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Unchecks all asset files.
     /// </summary>
-    private void UncheckAll()
+    private void UncheckAllFiles()
     {
         using (Assets.SuspendNotifications())
         {
@@ -479,13 +481,18 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Removes all checked asset files.
     /// </summary>
-    private void RemoveChecked()
+    private void RemoveCheckedFiles()
     {
         using (Assets.SuspendNotifications())
         {
             _sourceAssetFiles.RemoveMany(CheckedAssetFiles);
         }
     }
+
+    /// <summary>
+    /// Removes the selected asset file.
+    /// </summary>
+    private void RemoveSelectedFile() => _sourceAssetFiles!.Remove(SelectedAssetFile);
 
     /// <summary>
     /// Extracts the selected asset to a temporary location and opens it.
@@ -497,35 +504,7 @@ public class MainViewModel : SavedSettingsViewModel
         string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
         FileInfo file = reader.ExtractTo(SelectedAsset, tempDir);
-        Process.Start(new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            FileName = file.FullName
-        });
-    }
-
-    /// <summary>
-    /// Opens the containing directory of the selected asset.
-    /// </summary>
-    private void OpenSelectedAssetFolder()
-    {
-        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
-
-        Process.Start(new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            FileName = SelectedAsset.AssetFile.Info.DirectoryName!
-        });
-    }
-
-    /// <summary>
-    /// Copies the full path of the selected asset to the clipboard.
-    /// </summary>
-    private void CopySelectedAssetPath()
-    {
-        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
-
-        App.SetClipboardText(SelectedAsset.AssetFile.FullName);
+        OpenFile(file.FullName);
     }
 
     /// <summary>
@@ -563,4 +542,13 @@ public class MainViewModel : SavedSettingsViewModel
             });
         }
     }
+
+    /// <summary>
+    /// Opens the specified file.
+    /// </summary>
+    private static void OpenFile(string path) => Process.Start(new ProcessStartInfo
+    {
+        UseShellExecute = true,
+        FileName = path
+    });
 }

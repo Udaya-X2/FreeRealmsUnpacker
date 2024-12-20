@@ -52,12 +52,12 @@
                     <MenuItem Header="Folder..."
                               FontFamily="Tahoma"
                               FontSize="12"
-                              Command="{Binding OpenFolderCommand}"/>
+                              Command="{Binding OpenAssetFolderCommand}"/>
                     <!--Open File-->
                     <MenuItem Header="File..."
                               FontFamily="Tahoma"
                               FontSize="12"
-                              Command="{Binding OpenFileCommand}"/>
+                              Command="{Binding OpenAssetFileCommand}"/>
                 </MenuItem>
                 <Separator/>
                 <!--Exit-->
@@ -120,19 +120,19 @@
                         <Image Source="/Assets/downloadIcon.png"/>
                     </Button>
                     <!--Check All Button-->
-                    <Button Command="{Binding CheckAllCommand}"
+                    <Button Command="{Binding CheckAllFilesCommand}"
                             ToolTip.Tip="Check All Files"
                             Grid.Column="3">
                         <Image Source="/Assets/ui_dialog_greencheck.png"/>
                     </Button>
                     <!--Uncheck All Button-->
-                    <Button Command="{Binding UncheckAllCommand}"
+                    <Button Command="{Binding UncheckAllFilesCommand}"
                             ToolTip.Tip="Uncheck All Files"
                             Grid.Column="4">
                         <Image Source="/Assets/ps3_icon_ui_none_32.png"/>
                     </Button>
                     <!--Remove Checked Button-->
-                    <Button Command="{Binding RemoveCheckedCommand}"
+                    <Button Command="{Binding RemoveCheckedFilesCommand}"
                             ToolTip.Tip="Remove Checked Files"
                             Grid.Column="5">
                         <Image Source="/Assets/video_new_IC8.png"/>
@@ -208,7 +208,16 @@
                         <ContextMenu>
                             <MenuItem FontSize="12"
                                       FontFamily="Tahoma"
-                                      Header="Add asset .dat files..."
+                                      Header="Remove"
+                                      Command="{Binding RemoveSelectedFileCommand}"/>
+                            <MenuItem FontSize="12"
+                                      FontFamily="Tahoma"
+                                      Header="Open Containing Folder"
+                                      Command="{Binding OpenFileCommand}"
+                                      CommandParameter="{Binding SelectedAssetFile.Info.DirectoryName}"/>
+                            <MenuItem FontSize="12"
+                                      FontFamily="Tahoma"
+                                      Header="Add Asset .dat Files..."
                                       IsVisible="{Binding SelectedAssetFile.IsManifestFile}"
                                       Command="{Binding AddDataFilesCommand}"/>
                         </ContextMenu>
@@ -410,7 +419,8 @@
                             <MenuItem FontFamily="Tahoma"
                                       FontSize="12"
                                       Header="Open Containing Folder"
-                                      Command="{Binding OpenSelectedAssetFolderCommand}"/>
+                                      Command="{Binding OpenFileCommand}"
+                                      CommandParameter="{Binding SelectedAsset.AssetFile.Info.DirectoryName}"/>
                             <MenuItem FontFamily="Tahoma"
                                       FontSize="12"
                                       Header="Copy"
@@ -418,7 +428,8 @@
                             <MenuItem FontFamily="Tahoma"
                                       FontSize="12"
                                       Header="Copy Full File Path"
-                                      Command="{Binding CopySelectedAssetPathCommand}"/>
+                                      Command="{Binding CopyCommand}"
+                                      CommandParameter="{Binding SelectedAsset.AssetFile.FullName}"/>
                             <MenuItem FontFamily="Tahoma"
                                       FontSize="12"
                                       Header="Save As..."
