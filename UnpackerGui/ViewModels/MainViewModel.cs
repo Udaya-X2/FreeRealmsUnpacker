@@ -390,11 +390,10 @@ public class MainViewModel : SavedSettingsViewModel
     /// </summary>
     private async Task SaveSelectedAsset()
     {
-        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
         if (await App.GetService<IFilesService>().SaveFileAsync(new FilePickerSaveOptions
         {
             SuggestedStartLocation = await OutputFolder,
-            SuggestedFileName = Path.GetFileName(SelectedAsset.Name),
+            SuggestedFileName = Path.GetFileName(SelectedAsset!.Name),
             ShowOverwritePrompt = true
         }) is not IStorageFile file) return;
 
@@ -495,10 +494,8 @@ public class MainViewModel : SavedSettingsViewModel
     /// </summary>
     private void OpenSelectedAsset()
     {
-        if (SelectedAsset == null) throw new NullReferenceException(nameof(SelectedAsset));
-
         string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
+        using AssetReader reader = SelectedAsset!.AssetFile.OpenRead();
         FileInfo file = reader.ExtractTo(SelectedAsset, tempDir);
         Process.Start(new ProcessStartInfo
         {
@@ -521,8 +518,6 @@ public class MainViewModel : SavedSettingsViewModel
     /// </summary>
     private async Task AddFiles(IEnumerable<string> files)
     {
-        ArgumentNullException.ThrowIfNull(files, nameof(files));
-
         List<AssetFile> assetFiles = files.Except(AssetFiles.Select(x => x.FullName))
                                           .Select(x =>
                                           {
