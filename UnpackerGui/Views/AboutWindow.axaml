@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
+        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         x:Class="UnpackerGui.AboutWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
@@ -23,7 +24,7 @@
             <TextBlock Text="Free Realms Unpacker"
                        FontSize="14"
                        Margin="0,0,0,15"/>
-            <TextBlock Text="{Binding Version}"
+            <TextBlock Text="{Binding Version, FallbackValue={x:Static dm:Variables.Version}}"
                        FontSize="14"
                        Margin="0,0,0,15"/>
             <TextBlock Text="Created by Udaya"

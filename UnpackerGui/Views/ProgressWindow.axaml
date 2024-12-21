@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         x:Class="UnpackerGui.Views.ProgressWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
@@ -18,11 +19,11 @@
     <StackPanel Margin="20"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
-        <TextBlock Text="{Binding Message}"
+        <TextBlock Text="{Binding Message, FallbackValue={x:Static dm:Variables.ProgressMessage}}"
                    TextTrimming="CharacterEllipsis"
                    Margin="0 0 0 10"
                    HorizontalAlignment="Center"/>
-        <TextBlock Text="{Binding ElapsedTime}"
+        <TextBlock Text="{Binding ElapsedTime, FallbackValue={x:Static dm:Variables.ElapsedTime}}"
                    TextTrimming="CharacterEllipsis"
                    Margin="0 0 0 15"
                    HorizontalAlignment="Center"/>
@@ -30,7 +31,7 @@
                      Width="250"
                      Minimum="0"
                      Maximum="{Binding Maximum}"
-                     Value="{Binding Value}"
+                     Value="{Binding Value, FallbackValue={x:Static dm:Variables.ProgressValue}}"
                      ProgressTextFormat=" {0}/{3} ({1:0}%) "
                      ShowProgressText="True"/>
     </StackPanel>

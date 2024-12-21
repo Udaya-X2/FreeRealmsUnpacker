@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
+        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         x:Class="UnpackerGui.Views.ErrorWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
@@ -29,12 +30,12 @@
                    Margin="0 0 15 0"/>
             <Image Source="/Assets/ui_web_stop.png"
                    Width="64"
-                   IsVisible="{Binding !Handled}"
+                   IsVisible="{Binding !Handled, FallbackValue={x:Static dm:Variables.False}}"
                    Grid.Column="0"
                    Margin="0 0 15 0"/>
             <TextBlock HorizontalAlignment="Left"
                        MaxHeight="128"
-                       Text="{Binding Message}"
+                       Text="{Binding Message, FallbackValue={x:Static dm:Variables.ErrorMessage}}"
                        TextWrapping="Wrap"
                        TextTrimming="CharacterEllipsis"
                        Grid.Column="1"/>
@@ -46,7 +47,7 @@
                        Width="16"
                        Margin="0 0 5 0">
                     <Image.RenderTransform>
-                        <RotateTransform Angle="{Binding ShowDetails, Converter={StaticResource booleanToRotationConverter}, ConverterParameter=180}"/>
+                        <RotateTransform Angle="{Binding ShowDetails, Converter={StaticResource booleanToRotationConverter}, ConverterParameter=180, FallbackValue={x:Static dm:Variables.FlipImageAngle}}"/>
                     </Image.RenderTransform>
                 </Image>
                 <TextBlock Text="Details"/>
@@ -57,7 +58,7 @@
                       IsVisible="{Binding ShowDetails}">
             <TextBox IsReadOnly="True"
                      MaxHeight="128"
-                     Text="{Binding DetailsMessage}"/>
+                     Text="{Binding DetailsMessage, FallbackValue={x:Static dm:Variables.DetailsMessage}}"/>
         </ScrollViewer>
     </StackPanel>
 </Window>

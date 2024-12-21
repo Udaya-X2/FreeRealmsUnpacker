@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
+        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         x:Class="UnpackerGui.PreferencesWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
@@ -21,7 +22,7 @@
     <!--Base Panel-->
     <DockPanel Margin="15">
         <!--Preferences List-->
-        <ListBox ItemsSource="{Binding Preferences}"
+        <ListBox ItemsSource="{Binding Preferences, FallbackValue={x:Static dm:Variables.Preferences}}"
                  SelectedItem="{Binding SelectedPreference}"
                  Margin="0,0,15,0"
                  SelectionMode="AlwaysSelected">
@@ -34,11 +35,11 @@
         <!--Visible Option-->
         <StackPanel>
             <!--Option Name-->
-            <TextBlock Text="{Binding SelectedPreference.Name}"
+            <TextBlock Text="{Binding SelectedPreference.Name, FallbackValue={x:Static dm:Variables.PreferenceName}}"
                        FontSize="20"
                        Margin="0,0,0,10"/>
             <!--Option Description-->
-            <TextBlock Text="{Binding SelectedPreference.Description}"
+            <TextBlock Text="{Binding SelectedPreference.Description, FallbackValue={x:Static dm:Variables.PreferenceDescription}}"
                        Opacity="100"
                        Margin="0,0,0,10"/>
             <!--File Conflict Options-->
@@ -46,7 +47,7 @@
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Overwrite"
                              ToolTip.Tip="Overwrite the existing file."
-                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay}"/>
+                             IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay, FallbackValue={x:Static dm:Variables.True}}"/>
                 <RadioButton GroupName="FileConflictOptions"
                              Content="Skip"
                              ToolTip.Tip="Skip the file."
@@ -69,7 +70,7 @@
                              IsChecked="{Binding ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"/>
             </StackPanel>
             <!--Folder Options-->
-            <StackPanel IsVisible="{Binding SelectedPreference.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Folder Options'}">
+            <StackPanel IsVisible="{Binding SelectedPreference.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Folder Options', FallbackValue={x:Static dm:Variables.False}}">
                 <CheckBox Content="Game Assets"
                           ToolTip.Tip="Assets for the game, typically located in the &quot;Free Realms/&quot; directory."
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay}"

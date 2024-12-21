@@ -6,6 +6,7 @@
              xmlns:conv="clr-namespace:UnpackerGui.Converters"
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              xmlns:commands="clr-namespace:UnpackerGui.Commands"
+             xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="470"
@@ -378,7 +379,7 @@
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
-                                            IsVisible="{Binding !!ShowSize}"
+                                            IsVisible="{Binding !!ShowSize, FallbackValue={x:Static dm:Variables.False}}"
                                             Header="Size"
                                             Binding="{Binding Size}"/>
                         <DataGridTextColumn Width="*"
