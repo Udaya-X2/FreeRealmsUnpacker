@@ -208,7 +208,7 @@ public abstract class AssetReader : IDisposable
     /// </summary>
     /// <returns>
     /// <see langword="true"/> if the contents of the asset and
-    /// the stream are the same, otherwise <see langword="false"/>.
+    /// the stream are the same; otherwise, <see langword="false"/>.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -221,7 +221,7 @@ public abstract class AssetReader : IDisposable
     /// </summary>
     /// <returns>
     /// A task that represents the stream comparison. The result of the task is <see langword="true"/>
-    /// if the contents of the asset and the stream are the same, otherwise <see langword="false"/>.
+    /// if the contents of the asset and the stream are the same; otherwise, <see langword="false"/>.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>

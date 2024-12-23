@@ -8,6 +8,8 @@ namespace AssetIO;
 public static partial class ClientDirectory
 {
     private const string ManifestFileSuffix = "_manifest.dat";
+    private const string PackTempFileSuffix = $".pack{TempFileSuffix}";
+    private const string TempFileSuffix = ".temp";
 
     [GeneratedRegex(@"^_\d{3}\.dat$", RegexOptions.IgnoreCase, "en-US")]
     private static partial Regex DataSuffixRegex();
@@ -124,5 +126,45 @@ public static partial class ClientDirectory
         ReadOnlySpan<char> filename = Path.GetFileName(path.AsSpan());
         return filename.StartsWith(manifestFilePrefix, StringComparison.OrdinalIgnoreCase)
             && DataSuffixRegex().IsMatch(filename[manifestFilePrefix.Length..]);
+    }
+
+    /// <summary>
+    /// Returns an enumerable collection of the .pack.temp files that match a filter on a specified path.
+    /// </summary>
+    /// <param name="path">The relative or absolute path to the directory to search.</param>
+    /// <param name="assetDirFilter">
+    /// A bitwise combination of the enumeration values that specify which asset directory types are allowed.
+    /// </param>
+    /// <param name="searchOption">
+    /// One of the enumeration values that specifies whether the search operation
+    /// should include only the current directory or should include all subdirectories.
+    /// </param>
+    /// <param name="requireFullType">
+    /// <see langword="true"/> to exclude files without an asset directory type;
+    /// <see langword="false"/> to include files with only the ".pack.temp" extension.
+    /// </param>
+    /// <returns>
+    /// An enumerable collection of the .pack.temp files in the directory
+    /// specified by <paramref name="path"/> that match the specified filter.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static IEnumerable<string> EnumeratePackTempFiles(string path,
+                                                             AssetType assetDirFilter = AssetType.AllDirectories,
+                                                             SearchOption searchOption = SearchOption.AllDirectories,
+                                                             bool requireFullType = true)
+    {
+        ArgumentNullException.ThrowIfNull(path, nameof(path));
+
+        foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
+        {
+            if (!file.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase)) continue;
+
+            AssetType assetDirType = ClientFile.InferAssetDirectoryType(file.AsSpan()[..^TempFileSuffix.Length]);
+
+            if ((!requireFullType || assetDirType != 0) && ((assetDirFilter & assetDirType) == assetDirType))
+            {
+                yield return file;
+            }
+        }
     }
 }

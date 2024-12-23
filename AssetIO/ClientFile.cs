@@ -161,6 +161,65 @@ public static partial class ClientFile
     }
 
     /// <summary>
+    /// Scans the specified .pack.temp file for errors and creates a fix for the invalid asset group.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the .pack.temp file contains a fixable error; otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static bool TryFixPackTempFile(string packTempFile, out FixedAssetGroup fix)
+    {
+        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+
+        // Read the .pack.temp file in big-endian format.
+        using FileStream stream = File.OpenRead(packTempFile);
+        using EndianBinaryReader binaryReader = new(stream, Endian.Big);
+        long end = stream.Length;
+        uint prevOffset = 0;
+        uint currOffset = 0;
+        uint nextOffset = 0;
+        uint currAsset = 0;
+        uint numAssets = 0;
+
+        // Scan each asset chunk for errors.
+        try
+        {
+            do
+            {
+                currAsset = 0;
+                prevOffset = currOffset;
+                stream.Position = currOffset = nextOffset;
+                nextOffset = binaryReader.ReadUInt32();
+                numAssets = binaryReader.ReadUInt32();
+
+                while (currAsset++ < numAssets)
+                {
+                    int length = ValidateRange(binaryReader.ReadInt32(), minValue: 1, maxValue: 128);
+                    stream.Seek(length, SeekOrigin.Current);
+                    uint offset = binaryReader.ReadUInt32();
+                    uint size = binaryReader.ReadUInt32();
+
+                    // Check whether the current asset extends past the end of the .pack.temp file.
+                    if (end - offset - size < 0 || stream.Seek(sizeof(uint), SeekOrigin.Current) > end)
+                    {
+                        throw new EndOfStreamException(SR.EndOfStream_AssetFile);
+                    }
+                }
+            } while (nextOffset != 0);
+        }
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
+        {
+            // If the current asset info chunk contains at least one valid asset, fix the error by cutting
+            // it off at the last valid asset. Otherwise, cut the file off at the previous asset info chunk.
+            fix = currAsset > 1 ? new(currOffset, currAsset - 1) : new(prevOffset, 0);
+            return true;
+        }
+
+        fix = default;
+        return false;
+    }
+
+    /// <summary>
     /// Returns an enumerable collection of the assets in the specified manifest.dat file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
@@ -264,11 +323,10 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
     /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferAssetType(string assetFile, bool requireFullType = true, bool strict = false)
+    public static AssetType InferAssetType(ReadOnlySpan<char> assetFile,
+                                           bool requireFullType = true,
+                                           bool strict = false)
     {
-        ArgumentNullException.ThrowIfNull(assetFile, nameof(assetFile));
-
         AssetType assetFileType = InferAssetFileType(assetFile, strict);
 
         if (assetFileType == 0) return 0;
@@ -279,7 +337,7 @@ public static partial class ClientFile
         {
             if (strict)
             {
-                throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile));
+                throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
             }
 
             return 0;
@@ -293,11 +351,8 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>An enum value corresponding to the suffix of the specified asset file.</returns>
     /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferAssetFileType(string assetFile, bool strict = false)
+    public static AssetType InferAssetFileType(ReadOnlySpan<char> assetFile, bool strict = false)
     {
-        ArgumentNullException.ThrowIfNull(assetFile, nameof(assetFile));
-
         if (assetFile.EndsWith(".pack", StringComparison.OrdinalIgnoreCase))
         {
             return AssetType.Pack;
@@ -308,7 +363,7 @@ public static partial class ClientFile
         }
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile));
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
         }
 
         return 0;
@@ -319,12 +374,9 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>An enum value corresponding to the prefix of the specified asset file.</returns>
     /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferAssetDirectoryType(string assetFile, bool strict = false)
+    public static AssetType InferAssetDirectoryType(ReadOnlySpan<char> assetFile, bool strict = false)
     {
-        ArgumentNullException.ThrowIfNull(assetFile, nameof(assetFile));
-
-        ReadOnlySpan<char> filename = Path.GetFileName(assetFile.AsSpan());
+        ReadOnlySpan<char> filename = Path.GetFileName(assetFile);
 
         if (GameAssetRegex().IsMatch(filename))
         {
@@ -340,7 +392,7 @@ public static partial class ClientFile
         }
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile));
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
         }
 
         return 0;
@@ -350,13 +402,12 @@ public static partial class ClientFile
     /// Gets an enum value corresponding to the name of the specified asset .dat file.
     /// </summary>
     /// <returns>An enum value corresponding to the name of the specified asset .dat file.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    public static AssetType InferDataType(string assetDataFile, bool strict = false)
+    /// <exception cref="ArgumentException"/>
+    public static AssetType InferDataType(ReadOnlySpan<char> assetDataFile, bool strict = false)
     {
-        ArgumentNullException.ThrowIfNull(assetDataFile, nameof(assetDataFile));
         if (!assetDataFile.EndsWith(".dat", StringComparison.OrdinalIgnoreCase)) return 0;
 
-        ReadOnlySpan<char> filename = Path.GetFileName(assetDataFile.AsSpan());
+        ReadOnlySpan<char> filename = Path.GetFileName(assetDataFile);
 
         if (GameDataRegex().IsMatch(filename))
         {
@@ -372,7 +423,7 @@ public static partial class ClientFile
         }
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetDataFile));
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetDataFile.ToString()));
         }
 
         return 0;

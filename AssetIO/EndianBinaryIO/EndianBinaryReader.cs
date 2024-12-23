@@ -329,8 +329,8 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public ushort ReadUInt16() => _isLittleEndian
-        ? BinaryPrimitives.ReadUInt16LittleEndian(InternalRead(sizeof(short)))
-        : BinaryPrimitives.ReadUInt16BigEndian(InternalRead(sizeof(short)));
+        ? BinaryPrimitives.ReadUInt16LittleEndian(InternalRead(sizeof(ushort)))
+        : BinaryPrimitives.ReadUInt16BigEndian(InternalRead(sizeof(ushort)));
 
     /// <summary>
     /// Reads a 4-byte signed integer from the current stream and
@@ -353,8 +353,8 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public uint ReadUInt32() => _isLittleEndian
-        ? BinaryPrimitives.ReadUInt32LittleEndian(InternalRead(sizeof(int)))
-        : BinaryPrimitives.ReadUInt32BigEndian(InternalRead(sizeof(int)));
+        ? BinaryPrimitives.ReadUInt32LittleEndian(InternalRead(sizeof(uint)))
+        : BinaryPrimitives.ReadUInt32BigEndian(InternalRead(sizeof(uint)));
 
     /// <summary>
     /// Reads an 8-byte signed integer from the current stream and
@@ -377,8 +377,8 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public ulong ReadUInt64() => _isLittleEndian
-        ? BinaryPrimitives.ReadUInt64LittleEndian(InternalRead(sizeof(long)))
-        : BinaryPrimitives.ReadUInt64BigEndian(InternalRead(sizeof(long)));
+        ? BinaryPrimitives.ReadUInt64LittleEndian(InternalRead(sizeof(ulong)))
+        : BinaryPrimitives.ReadUInt64BigEndian(InternalRead(sizeof(ulong)));
 
     /// <summary>
     /// Reads a 2-byte floating point value from the current stream
@@ -389,8 +389,8 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public Half ReadHalf() => _isLittleEndian
-        ? BitConverter.Int16BitsToHalf(BinaryPrimitives.ReadInt16LittleEndian(InternalRead(sizeof(short))))
-        : BitConverter.Int16BitsToHalf(BinaryPrimitives.ReadInt16BigEndian(InternalRead(sizeof(short))));
+        ? BinaryPrimitives.ReadHalfLittleEndian(InternalRead(sizeof(ushort)) /* sizeof(Half)) */)
+        : BinaryPrimitives.ReadHalfBigEndian(InternalRead(sizeof(ushort)) /* sizeof(Half)) */);
 
     /// <summary>
     /// Reads a 4-byte floating point value from the current stream
@@ -401,8 +401,8 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public float ReadSingle() => _isLittleEndian
-        ? BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32LittleEndian(InternalRead(sizeof(int))))
-        : BitConverter.Int32BitsToSingle(BinaryPrimitives.ReadInt32BigEndian(InternalRead(sizeof(int))));
+        ? BinaryPrimitives.ReadSingleLittleEndian(InternalRead(sizeof(float)))
+        : BinaryPrimitives.ReadSingleBigEndian(InternalRead(sizeof(float)));
 
     /// <summary>
     /// Reads an 8-byte floating point value from the current stream
@@ -413,8 +413,8 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="IOException">An I/O error occurred.</exception>
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public double ReadDouble() => _isLittleEndian
-        ? BitConverter.Int64BitsToDouble(BinaryPrimitives.ReadInt64LittleEndian(InternalRead(sizeof(long))))
-        : BitConverter.Int64BitsToDouble(BinaryPrimitives.ReadInt64BigEndian(InternalRead(sizeof(long))));
+        ? BinaryPrimitives.ReadDoubleLittleEndian(InternalRead(sizeof(double)))
+        : BinaryPrimitives.ReadDoubleBigEndian(InternalRead(sizeof(double)));
 
     /// <summary>
     /// Reads a decimal value from the current stream and advances
