@@ -177,7 +177,7 @@ public abstract class AssetReader : IDisposable
         if (asset.Size != file.Length) return false;
 
         using FileStream fs = file.OpenRead();
-        return StreamEqualsAsync(asset, fs).Result;
+        return StreamEquals(asset, fs);
     }
 
     /// <summary>
