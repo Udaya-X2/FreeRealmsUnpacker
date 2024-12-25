@@ -5,7 +5,7 @@ namespace AssetIO;
 public static partial class ClientFile
 {
     /// <summary>
-    /// Represents a fix for the last valid asset group in a .pack.temp file.
+    /// Represents a fix for the first invalid asset group in a .pack.temp file.
     /// </summary>
     /// <param name="Offset">The byte offset of the group in the file.</param>
     /// <param name="NumAssets">The number of assets in the group, or zero if left unchanged.</param>

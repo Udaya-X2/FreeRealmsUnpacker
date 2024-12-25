@@ -97,6 +97,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset manifest.dat.temp files are not supported..
+        /// </summary>
+        internal static string Argument_ManifestTempNotSupported {
+            get {
+                return ResourceManager.GetString("Argument_ManifestTempNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Stream was not readable..
         /// </summary>
         internal static string Argument_StreamNotReadable {

@@ -13,6 +13,10 @@ public static partial class ClientFile
     private const int ManifestChunkSize = 148;
     private const int MaxAssetNameLength = 128;
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
+    private const string PackFileSuffix = ".pack";
+    private const string ManifestFileSuffix = "_manifest.dat";
+    private const string DatFileSuffix = ".dat";
+    private const string TempFileSuffix = ".temp";
 
     [GeneratedRegex(@"^Assets((_ps3)?W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex GameAssetRegex();
@@ -116,7 +120,7 @@ public static partial class ClientFile
     /// <exception cref="IOException"/>
     public static Asset[] GetPackAssets(string packFile) => packFile == null
         ? throw new ArgumentNullException(nameof(packFile))
-        : EnumeratePackAssets(packFile).ToArray();
+        : [.. EnumeratePackAssets(packFile)];
 
     /// <summary>
     /// Returns the number of assets in the specified .pack file.
@@ -161,7 +165,7 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Scans the specified .pack.temp file for errors and creates a fix for the invalid asset group.
+    /// Scans the specified .pack.temp file for errors and creates a fix for the first invalid asset group.
     /// </summary>
     /// <returns>
     /// <see langword="true"/> if the .pack.temp file contains a fixable error; otherwise, <see langword="false"/>.
@@ -353,11 +357,11 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     public static AssetType InferAssetFileType(ReadOnlySpan<char> assetFile, bool strict = false)
     {
-        if (assetFile.EndsWith(".pack", StringComparison.OrdinalIgnoreCase))
+        if (assetFile.EndsWith(PackFileSuffix, StringComparison.OrdinalIgnoreCase))
         {
             return AssetType.Pack;
         }
-        if (assetFile.EndsWith("_manifest.dat", StringComparison.OrdinalIgnoreCase))
+        if (assetFile.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase))
         {
             return AssetType.Dat;
         }
@@ -405,7 +409,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     public static AssetType InferDataType(ReadOnlySpan<char> assetDataFile, bool strict = false)
     {
-        if (!assetDataFile.EndsWith(".dat", StringComparison.OrdinalIgnoreCase)) return 0;
+        if (!assetDataFile.EndsWith(DatFileSuffix, StringComparison.OrdinalIgnoreCase)) goto End;
 
         ReadOnlySpan<char> filename = Path.GetFileName(assetDataFile);
 
@@ -421,9 +425,31 @@ public static partial class ClientFile
         {
             return AssetType.Resource;
         }
+    End:
         if (strict)
         {
             throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetDataFile.ToString()));
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Gets an enum value corresponding to the name of the specified asset .temp file.
+    /// </summary>
+    /// <returns>An enum value corresponding to the name of the specified asset .temp file.</returns>
+    /// <exception cref="ArgumentException"/>
+    public static AssetType InferTempAssetType(ReadOnlySpan<char> assetTempFile,
+                                               bool requireFullType = true,
+                                               bool strict = false)
+    {
+        if (assetTempFile.EndsWith(TempFileSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            return InferAssetType(assetTempFile[..^TempFileSuffix.Length], requireFullType, strict);
+        }
+        if (strict)
+        {
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetTempFile.ToString()));
         }
 
         return 0;

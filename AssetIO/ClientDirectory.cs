@@ -8,8 +8,6 @@ namespace AssetIO;
 public static partial class ClientDirectory
 {
     private const string ManifestFileSuffix = "_manifest.dat";
-    private const string PackTempFileSuffix = $".pack{TempFileSuffix}";
-    private const string TempFileSuffix = ".temp";
 
     [GeneratedRegex(@"^_\d{3}\.dat$", RegexOptions.IgnoreCase, "en-US")]
     private static partial Regex DataSuffixRegex();
@@ -45,7 +43,7 @@ public static partial class ClientDirectory
         {
             AssetType assetType = ClientFile.InferAssetType(file, requireFullType);
 
-            if (assetType != 0 && ((assetFilter & assetType) == assetType))
+            if (assetType != 0 && (assetFilter & assetType) == assetType)
             {
                 yield return new AssetFile(file, assetType);
             }
@@ -80,7 +78,7 @@ public static partial class ClientDirectory
         {
             AssetType assetType = ClientFile.InferDataType(file);
 
-            if (assetType != 0 && ((assetFilter & assetType) == assetType))
+            if (assetType != 0 && (assetFilter & assetType) == assetType)
             {
                 yield return file;
             }
@@ -100,7 +98,7 @@ public static partial class ClientDirectory
     /// An enumerable collection of the full file names (including paths) for
     /// the asset .dat files corresponding to the specified manifest.dat file.
     /// </returns>
-    /// <exception cref="ArgumentNullException"></exception>
+    /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<string> EnumerateDataFiles(FileInfo manifestFile,
                                                          SearchOption searchOption = SearchOption.TopDirectoryOnly)
     {
@@ -129,41 +127,39 @@ public static partial class ClientDirectory
     }
 
     /// <summary>
-    /// Returns an enumerable collection of the .pack.temp files that match a filter on a specified path.
+    /// Returns an enumerable collection of the asset .temp files that match a filter on a specified path.
     /// </summary>
     /// <param name="path">The relative or absolute path to the directory to search.</param>
-    /// <param name="assetDirFilter">
-    /// A bitwise combination of the enumeration values that specify which asset directory types are allowed.
+    /// <param name="assetFilter">
+    /// A bitwise combination of the enumeration values that specify which asset types are allowed.
     /// </param>
     /// <param name="searchOption">
     /// One of the enumeration values that specifies whether the search operation
     /// should include only the current directory or should include all subdirectories.
     /// </param>
     /// <param name="requireFullType">
-    /// <see langword="true"/> to exclude files without an asset directory type;
-    /// <see langword="false"/> to include files with only the ".pack.temp" extension.
+    /// <see langword="true"/> to exclude asset .temp files without a full asset type;
+    /// <see langword="false"/> to include asset .temp files with only a file type.
     /// </param>
     /// <returns>
-    /// An enumerable collection of the .pack.temp files in the directory
+    /// An enumerable collection of the asset .temp files in the directory
     /// specified by <paramref name="path"/> that match the specified filter.
     /// </returns>
     /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<string> EnumeratePackTempFiles(string path,
-                                                             AssetType assetDirFilter = AssetType.AllDirectories,
-                                                             SearchOption searchOption = SearchOption.AllDirectories,
-                                                             bool requireFullType = true)
+    public static IEnumerable<TempAssetFile> EnumerateTempFiles(string path,
+                                                                AssetType assetFilter = AssetType.All,
+                                                                SearchOption searchOption = SearchOption.AllDirectories,
+                                                                bool requireFullType = true)
     {
         ArgumentNullException.ThrowIfNull(path, nameof(path));
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
-            if (!file.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase)) continue;
+            AssetType assetType = ClientFile.InferTempAssetType(file, requireFullType);
 
-            AssetType assetDirType = ClientFile.InferAssetDirectoryType(file.AsSpan()[..^TempFileSuffix.Length]);
-
-            if ((!requireFullType || assetDirType != 0) && ((assetDirFilter & assetDirType) == assetDirType))
+            if (assetType != 0 && (assetFilter & assetType) == assetType)
             {
-                yield return file;
+                yield return new TempAssetFile(file, assetType);
             }
         }
     }

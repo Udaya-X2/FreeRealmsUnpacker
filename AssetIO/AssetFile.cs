@@ -11,18 +11,18 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Gets the file info of the asset file.
     /// </summary>
-    public FileInfo Info { get; }
+    public virtual FileInfo Info { get; }
 
     /// <summary>
     /// Gets the asset type of the asset file.
     /// </summary>
-    public AssetType Type { get; }
+    public virtual AssetType Type { get; }
 
     /// <summary>
     /// Gets or sets the asset.dat files corresponding to the asset file.
     /// </summary>
     /// <remarks>This is only used by asset files with the <see cref="AssetType.Dat"/> flag set.</remarks>
-    public IEnumerable<string> DataFiles { get; set; }
+    public virtual IEnumerable<string> DataFiles { get; set; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified asset .pack file or manifest.dat file.
@@ -73,7 +73,7 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
-    private AssetFile(string path, AssetType assetType, IEnumerable<string>? dataFiles, bool findDataFiles)
+    protected AssetFile(string path, AssetType assetType, IEnumerable<string>? dataFiles, bool findDataFiles)
     {
         ArgumentNullException.ThrowIfNull(path, nameof(path));
         if (!assetType.IsValid()) throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, assetType));
@@ -91,27 +91,27 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Gets the file flag of the asset file type.
     /// </summary>
-    public AssetType FileType => Type.GetFileType();
+    public virtual AssetType FileType => Type.GetFileType();
 
     /// <summary>
     /// Gets the directory flag of the asset file type.
     /// </summary>
-    public AssetType DirectoryType => Type.GetDirectoryType();
+    public virtual AssetType DirectoryType => Type.GetDirectoryType();
 
     /// <summary>
     /// Gets the name of the asset file.
     /// </summary>
-    public string Name => Info.Name;
+    public virtual string Name => Info.Name;
 
     /// <summary>
     /// Gets the full path of the asset file.
     /// </summary>
-    public string FullName => Info.FullName;
+    public virtual string FullName => Info.FullName;
 
     /// <summary>
     /// Gets the number of assets in the asset file.
     /// </summary>
-    public int Count => FileType switch
+    public virtual int Count => FileType switch
     {
         AssetType.Pack => ClientFile.GetPackAssetCount(FullName),
         AssetType.Dat => ClientFile.GetManifestAssetCount(FullName),
@@ -121,7 +121,7 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Gets the assets in the asset file.
     /// </summary>
-    public Asset[] Assets => FileType switch
+    public virtual Asset[] Assets => FileType switch
     {
         AssetType.Pack => ClientFile.GetPackAssets(FullName),
         AssetType.Dat => ClientFile.GetManifestAssets(FullName),
@@ -132,7 +132,7 @@ public class AssetFile : IEnumerable<Asset>
     /// Creates an <see cref="AssetReader"/> that reads from the asset file or related data files.
     /// </summary>
     /// <returns>A new <see cref="AssetReader"/> that reads from the asset file or related data files.</returns>
-    public AssetReader OpenRead() => FileType switch
+    public virtual AssetReader OpenRead() => FileType switch
     {
         AssetType.Pack => new AssetPackReader(FullName),
         AssetType.Dat => new AssetDatReader(DataFiles),
@@ -143,7 +143,7 @@ public class AssetFile : IEnumerable<Asset>
     /// Returns an enumerable collection of the assets in the asset file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the asset file.</returns>
-    public IEnumerable<Asset> EnumerateAssets() => FileType switch
+    public virtual IEnumerable<Asset> EnumerateAssets() => FileType switch
     {
         AssetType.Pack => ClientFile.EnumeratePackAssets(FullName),
         AssetType.Dat => ClientFile.EnumerateManifestAssets(FullName),
@@ -154,7 +154,7 @@ public class AssetFile : IEnumerable<Asset>
     /// Returns an enumerator that iterates through the assets in the asset file.
     /// </summary>
     /// <returns>An enumerator that can be used to iterate through the assets in the asset file.</returns>
-    public IEnumerator<Asset> GetEnumerator() => EnumerateAssets().GetEnumerator();
+    public virtual IEnumerator<Asset> GetEnumerator() => EnumerateAssets().GetEnumerator();
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

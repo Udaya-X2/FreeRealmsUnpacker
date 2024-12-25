@@ -177,4 +177,7 @@
   <data name="Argument_CantInferAssetType" xml:space="preserve">
     <value>Unable to infer asset type from the specified file name: '{0}'.</value>
   </data>
+  <data name="Argument_ManifestTempNotSupported" xml:space="preserve">
+    <value>Asset manifest.dat.temp files are not supported.</value>
+  </data>
 </root>

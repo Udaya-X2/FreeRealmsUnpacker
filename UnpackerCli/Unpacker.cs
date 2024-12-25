@@ -35,12 +35,18 @@ public partial class Unpacker
             }
 
             // Get the asset files to process from the input directory or file.
-            IEnumerable<AssetFile> assetFiles = Directory.Exists(InputFile)
-                                              ? ClientDirectory.EnumerateAssetFiles(InputFile,
-                                                                                    GetAssetFilter(),
-                                                                                    requireFullType: !ExtractUnknown)
-                                              : [new AssetFile(InputFile)];
-            
+            IEnumerable<AssetFile> assetFiles = (Directory.Exists(InputFile), !FixErrors) switch
+            {
+                (true, true) => ClientDirectory.EnumerateAssetFiles(InputFile,
+                                                                    GetAssetFilter(),
+                                                                    requireFullType: !ExtractUnknown),
+                (true, false) => ClientDirectory.EnumerateTempFiles(InputFile,
+                                                                    AssetType.Pack | GetAssetFilter(),
+                                                                    requireFullType: !ExtractUnknown),
+                (false, true) => [new AssetFile(InputFile)],
+                (false, false) => [new TempAssetFile(InputFile)]
+            };
+
             // Handle the asset types specified.
             int count = ListFiles
                       ? ListFilesFormatted(assetFiles)
@@ -96,6 +102,10 @@ public partial class Unpacker
             else if (ValidateAssets)
             {
                 numAssets += ValidateChecksums(assetFile, pbar, ref numErrors);
+            }
+            else if (FixErrors)
+            {
+                numAssets += TryFixAssetFile((TempAssetFile)assetFile);
             }
             else
             {
@@ -213,6 +223,32 @@ public partial class Unpacker
     }
 
     /// <summary>
+    /// Attempts to fix the specified asset file.
+    /// </summary>
+    /// <returns>The number of assets in the fixed asset file.</returns>
+    private static int TryFixAssetFile(TempAssetFile assetFile)
+    {
+        string oldPath = assetFile.FullName;
+
+        if (assetFile.TryFixAndRename(out AssetFile? newAssetFile))
+        {
+            if (oldPath != newAssetFile.FullName)
+            {
+                Console.WriteLine($"Fixed '{oldPath}' -> {newAssetFile.Name}");
+            }
+            else
+            {
+                Console.WriteLine($"Fixed '{assetFile.FullName}'");
+            }
+
+            return newAssetFile.Count;
+        }
+
+        Console.WriteLine($"Unable to fix '{assetFile.FullName}'");
+        return assetFile.Count;
+    }
+
+    /// <summary>
     /// Extracts assets in the specified asset file to the output directory.
     /// </summary>
     /// <returns>The number of assets in the asset file.</returns>
@@ -299,7 +335,7 @@ public partial class Unpacker
     /// <exception cref="InvalidEnumArgumentException"/>
     private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
-        if (NoProgressBars || ListAssets || ListFiles || CountAssets) return null;
+        if (NoProgressBars || ListAssets || ListFiles || CountAssets || FixErrors) return null;
 
         (string message, ConsoleColor color) = assetType switch
         {
@@ -333,7 +369,7 @@ public partial class Unpacker
         {
             assetType |= AssetType.AllDirectories;
         }
-        if (assetType.GetFileType() == 0)
+        if (assetType.GetFileType() == 0 && !FixErrors)
         {
             assetType |= AssetType.AllFiles;
         }
@@ -349,18 +385,22 @@ public partial class Unpacker
     private bool ValidateArguments()
     {
         if (!Enum.IsDefined(HandleConflicts)) throw new Exception("Invalid value specified for handle-conflicts.");
-        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable) switch
+        if (FixErrors && ExtractPack) throw new Exception("Cannot both fix errors and handle .pack assets.");
+        if (FixErrors && ExtractDat) throw new Exception("Cannot both fix errors and handle .dat assets.");
+
+        const bool T = true, F = false;
+        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable, FixErrors) switch
         {
-            (true, true, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
-            (true, _, true, _, _, _) => throw new Exception("Cannot both list and validate assets."),
-            (_, true, true, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
-            (true, _, _, true, _, _) => throw new Exception("Cannot both list and count assets."),
-            (_, true, _, true, _, _) => throw new Exception("Cannot both list files and count assets."),
-            (_, _, true, true, _, _) => throw new Exception("Cannot both validate and count assets."),
-            (_, _, _, _, true, true) => throw new Exception("Cannot display info as both a CSV file and a table."),
-            (false, false, _, _, true, false) => throw new Exception("Cannot display CSV without a list option."),
-            (false, false, _, _, false, true) => throw new Exception("Cannot display table without a list option."),
-            (false, false, false, false, false, false) => SetupOutputDirectory(),
+            (T, T, _, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
+            (T, _, T, _, _, _, _) => throw new Exception("Cannot both list and validate assets."),
+            (_, T, T, _, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
+            (T, _, _, T, _, _, _) => throw new Exception("Cannot both list and count assets."),
+            (_, T, _, T, _, _, _) => throw new Exception("Cannot both list files and count assets."),
+            (_, _, T, T, _, _, _) => throw new Exception("Cannot both validate and count assets."),
+            (_, _, _, _, T, T, _) => throw new Exception("Cannot display info as both a CSV file and a table."),
+            (F, F, _, _, T, F, _) => throw new Exception("Cannot display CSV without a list option."),
+            (F, F, _, _, F, T, _) => throw new Exception("Cannot display table without a list option."),
+            (F, F, F, F, F, F, F) => SetupOutputDirectory(),
             _ => true,
         };
     }

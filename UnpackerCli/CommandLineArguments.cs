@@ -59,6 +59,12 @@ public partial class Unpacker
     public bool ExtractDat { get; }
 
     /// <summary>
+    /// Gets whether to fix .pack.temp files.
+    /// </summary>
+    [Option(ShortName = "e", Description = "Fix errors in .pack.temp files.")]
+    public bool FixErrors { get; }
+
+    /// <summary>
     /// Gets whether to list the assets without extracting them.
     /// </summary>
     [Option(ShortName = "l", Description = "List the assets without extracting them.")]
@@ -115,6 +121,6 @@ public partial class Unpacker
     /// <summary>
     /// Gets whether to show complete exception stack traces.
     /// </summary>
-    [Option(ShortName = "e", Description = "Show complete exception stack traces.")]
+    [Option(ShortName = "D", Description = "Show complete exception stack traces.")]
     public bool Debug { get; }
 }
