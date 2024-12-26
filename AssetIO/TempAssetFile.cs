@@ -82,13 +82,22 @@ public class TempAssetFile : AssetFile
 
                 do
                 {
-                    newPath = Path.Combine(Info.DirectoryName!, $"{name}{++digits:D3}.pack");
+                    newPath = Path.Combine(Info.DirectoryName!, $"{name}{digits++:D3}.pack");
                 }
                 while (File.Exists(newPath) && !FilesEqual(FullName, newPath));
-
-                Info.MoveTo(newPath, overwrite: true);
-                return true;
             }
+            else
+            {
+                newPath = Path.Combine(Info.DirectoryName!, $"{name}.pack");
+
+                for (int digit = 2; File.Exists(newPath) && !FilesEqual(FullName, newPath); digit++)
+                {
+                    newPath = Path.Combine(Info.DirectoryName!, $"{name}{digit}.pack");
+                }
+            }
+
+            Info.MoveTo(newPath, overwrite: true);
+            return true;
         }
 
         newPath = null;
