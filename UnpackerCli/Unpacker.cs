@@ -340,8 +340,9 @@ public partial class Unpacker
         (string message, ConsoleColor color) = assetType switch
         {
             AssetType.Game => ("Reading game assets...", ConsoleColor.Green),
-            AssetType.Tcg => ("Reading TCG assets...", ConsoleColor.Blue),
-            AssetType.Resource => ("Reading resource assets...", ConsoleColor.DarkYellow),
+            AssetType.Tcg => ("Reading TCG assets...", ConsoleColor.Cyan),
+            AssetType.Resource => ("Reading resource assets...", ConsoleColor.Blue),
+            AssetType.PS3 => ("Reading PS3 assets...", ConsoleColor.Yellow),
             _ => ("Reading unknown assets...", ConsoleColor.Magenta)
         };
         int numAssets = assetFiles.Sum(x => x.Count);
@@ -361,6 +362,7 @@ public partial class Unpacker
         if (ExtractGame) assetType |= AssetType.Game;
         if (ExtractTcg) assetType |= AssetType.Tcg;
         if (ExtractResource) assetType |= AssetType.Resource;
+        if (ExtractPS3) assetType |= AssetType.PS3;
         if (ExtractPack) assetType |= AssetType.Pack;
         if (ExtractDat) assetType |= AssetType.Dat;
 

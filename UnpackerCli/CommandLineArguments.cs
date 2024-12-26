@@ -41,6 +41,12 @@ public partial class Unpacker
     public bool ExtractResource { get; }
 
     /// <summary>
+    /// Gets whether to extract PS3 assets.
+    /// </summary>
+    [Option(ShortName = "3", Description = "Extract PS3 assets only (in 'NPUA30048/USRDIR/' or 'NPEA00299/USRDIR').")]
+    public bool ExtractPS3 { get; }
+
+    /// <summary>
     /// Gets whether to extract unknown assets.
     /// </summary>
     [Option(ShortName = "u", Description = "Extract unknown assets only (disabled by default).")]

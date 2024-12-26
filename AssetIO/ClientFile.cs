@@ -18,12 +18,14 @@ public static partial class ClientFile
     private const string DatFileSuffix = ".dat";
     private const string TempFileSuffix = ".temp";
 
-    [GeneratedRegex(@"^Assets((_ps3)?W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
+    [GeneratedRegex(@"^Assets(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex GameAssetRegex();
     [GeneratedRegex(@"^assetpack000(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex TcgAssetRegex();
     [GeneratedRegex(@"^AssetsTcg(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex ResourceAssetRegex();
+    [GeneratedRegex(@"^assets_ps3w?_\d{3}\.pack$", Options, "en-US")]
+    private static partial Regex PS3AssetRegex();
     [GeneratedRegex(@"^Assets_\d{3}\.dat$", Options, "en-US")]
     private static partial Regex GameDataRegex();
     [GeneratedRegex(@"^assetpack000_\d{3}\.dat$", Options, "en-US")]
@@ -393,6 +395,10 @@ public static partial class ClientFile
         if (ResourceAssetRegex().IsMatch(filename))
         {
             return AssetType.Resource;
+        }
+        if (PS3AssetRegex().IsMatch(filename))
+        {
+            return AssetType.PS3;
         }
         if (strict)
         {

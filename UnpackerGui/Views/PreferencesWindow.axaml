@@ -10,7 +10,7 @@
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="Preferences"
         Width="500"
-        Height="300"
+        Height="320"
         x:DataType="vm:PreferencesViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
@@ -86,6 +86,11 @@
                           IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay}"
                           Command="{Binding UpdateAssetFilterCommand}"
                           CommandParameter="Resource"/>
+                <CheckBox Content="PS3 Assets"
+                          ToolTip.Tip="Assets for the PS3 version of the game, typically located in the &quot;NPUA30048/USRDIR/&quot; or &quot;NPEA00299/USRDIR/&quot; directory."
+                          IsChecked="{Binding AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=PS3, Mode=OneWay}"
+                          Command="{Binding UpdateAssetFilterCommand}"
+                          CommandParameter="PS3"/>
                 <CheckBox Content="Unknown Assets"
                           ToolTip.Tip="Assets with unknown names, possibly renamed or not from a Free Realms directory."
                           IsChecked="{Binding AddUnknownAssets}"/>
