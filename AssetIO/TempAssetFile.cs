@@ -116,28 +116,28 @@ public class TempAssetFile : AssetFile
         using IEnumerator<Asset> enumerator = base.EnumerateAssets().GetEnumerator();
         long end = Info.Length;
 
-    NextAsset:
-        try
+        while (true)
         {
-            // Stop iteration if there are no more assets in the file.
-            if (!enumerator.MoveNext())
+            try
             {
-                yield break;
+                // Stop iteration if there are no more assets in the file.
+                if (!enumerator.MoveNext())
+                {
+                    break;
+                }
             }
-        }
-        // Stop iteration if an error occurs due to cut off data in the file.
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
-        {
-            yield break;
-        }
+            // Stop iteration if an error occurs due to cut off data in the file.
+            catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
+            {
+                break;
+            }
 
-        Asset asset = enumerator.Current;
+            Asset asset = enumerator.Current;
 
-        // Check whether the current asset extends past the end of the file.
-        if (end - asset.Offset - asset.Size >= 0)
-        {
+            // Check whether the current asset extends past the end of the file.
+            if (end - asset.Offset - asset.Size < 0) break;
+
             yield return asset;
-            goto NextAsset;
         }
     }
 

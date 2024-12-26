@@ -335,7 +335,7 @@ public partial class Unpacker
     /// <exception cref="InvalidEnumArgumentException"/>
     private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
-        if (NoProgressBars || ListAssets || ListFiles || CountAssets || FixErrors) return null;
+        if (NoProgressBars || ListAssets || ListFiles || CountAssets || (FixErrors && !ValidateAssets)) return null;
 
         (string message, ConsoleColor color) = assetType switch
         {
