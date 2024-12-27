@@ -35,7 +35,7 @@ public partial class Unpacker
             }
 
             // Get the asset files to process from the input directory or file.
-            IEnumerable<AssetFile> assetFiles = (Directory.Exists(InputFile), !FixTemp) switch
+            IEnumerable<AssetFile> assetFiles = (Directory.Exists(InputFile), !ConvertTemp) switch
             {
                 (true, true) => ClientDirectory.EnumerateAssetFiles(InputFile,
                                                                     GetAssetFilter(),
@@ -103,9 +103,9 @@ public partial class Unpacker
             {
                 numAssets += ValidateChecksums(assetFile, pbar, ref numErrors);
             }
-            else if (FixTemp)
+            else if (ConvertTemp)
             {
-                numAssets += TryFixAssetFile((TempAssetFile)assetFile);
+                numAssets += ConvertTempAssetFile((TempAssetFile)assetFile);
             }
             else
             {
@@ -223,28 +223,28 @@ public partial class Unpacker
     }
 
     /// <summary>
-    /// Attempts to fix the specified asset .temp file.
+    /// Converts the specified asset .temp file to a regular asset file.
     /// </summary>
-    /// <returns>The number of assets in the fixed asset file.</returns>
-    private static int TryFixAssetFile(TempAssetFile tempAssetFile)
+    /// <returns>The number of assets in the converted asset file.</returns>
+    private static int ConvertTempAssetFile(TempAssetFile tempAssetFile)
     {
         string oldPath = tempAssetFile.FullName;
 
-        if (tempAssetFile.TryFixAndRename(out AssetFile? assetFile))
+        if (tempAssetFile.TryConvert(out AssetFile? assetFile))
         {
             if (oldPath != assetFile.FullName)
             {
-                Console.WriteLine($"Fixed '{oldPath}' -> {assetFile.Name}");
+                Console.WriteLine($"Converted '{oldPath}' -> '{assetFile.Name}'");
             }
             else
             {
-                Console.WriteLine($"Fixed '{tempAssetFile.FullName}'");
+                Console.WriteLine($"Converted '{tempAssetFile.FullName}'");
             }
 
             return assetFile.Count;
         }
 
-        Console.WriteLine($"Unable to fix '{tempAssetFile.FullName}'");
+        Console.WriteLine($"Unable to convert '{tempAssetFile.FullName}'");
         return tempAssetFile.Count;
     }
 
@@ -335,7 +335,7 @@ public partial class Unpacker
     /// <exception cref="InvalidEnumArgumentException"/>
     private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
-        if (NoProgressBars || ListAssets || ListFiles || CountAssets || (FixTemp && !ValidateAssets)) return null;
+        if (NoProgressBars || ListAssets || ListFiles || CountAssets || (ConvertTemp && !ValidateAssets)) return null;
 
         (string message, ConsoleColor color) = assetType switch
         {
@@ -389,7 +389,7 @@ public partial class Unpacker
         if (!Enum.IsDefined(HandleConflicts)) throw new Exception("Invalid value specified for handle-conflicts.");
 
         const bool T = true, F = false;
-        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable, FixTemp) switch
+        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable, ConvertTemp) switch
         {
             (T, T, _, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
             (T, _, T, _, _, _, _) => throw new Exception("Cannot both list and validate assets."),

@@ -34,9 +34,9 @@ public class TempAssetFile : AssetFile
     /// Attempts to scan the asset .temp file for errors, fix the error, and rename it to a regular asset file.
     /// </summary>
     /// <returns>
-    /// <see langword="true"/> if the asset .temp file was fixed; otherwise, <see langword="false"/>.
+    /// <see langword="true"/> if the asset .temp file was converted; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryFixAndRename([MaybeNullWhen(false)] out AssetFile assetFile)
+    public bool TryConvert([MaybeNullWhen(false)] out AssetFile assetFile)
     {
         if (TryFix(out var fix))
         {
@@ -67,7 +67,9 @@ public class TempAssetFile : AssetFile
     /// <summary>
     /// Attempts to rename the asset .temp file to the name of a regular asset file.
     /// </summary>
+    /// <returns>
     /// <see langword="true"/> if the rename operation was successful; otherwise, <see langword="false"/>.
+    /// </returns>
     public bool TryRename([MaybeNullWhen(false)] out string newPath)
     {
         const string PackTempFileSuffix = ".pack.temp";
@@ -170,13 +172,13 @@ public class TempAssetFile : AssetFile
                 if (!buffer1.AsSpan(0, bytesRead1).SequenceEqual(buffer2.AsSpan(0, bytesRead2))) return false;
             }
             while (bytesRead1 != 0);
-
-            return true;
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(buffer1);
             ArrayPool<byte>.Shared.Return(buffer2);
         }
+
+        return true;
     }
 }

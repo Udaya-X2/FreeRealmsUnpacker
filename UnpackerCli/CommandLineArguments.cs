@@ -65,6 +65,12 @@ public partial class Unpacker
     public bool ExtractDat { get; }
 
     /// <summary>
+    /// Gets whether to convert .temp asset files to regular asset files.
+    /// </summary>
+    [Option(ShortName = "T", Description = "Convert .temp asset files to regular asset files.")]
+    public bool ConvertTemp { get; }
+
+    /// <summary>
     /// Gets whether to list the assets without extracting them.
     /// </summary>
     [Option(ShortName = "l", Description = "List the assets without extracting them.")]
@@ -99,12 +105,6 @@ public partial class Unpacker
     /// </summary>
     [Option(ShortName = "#", Description = "Display listed information in a table.")]
     public bool DisplayTable { get; }
-
-    /// <summary>
-    /// Gets whether to fix errors in .temp asset files.
-    /// </summary>
-    [Option(ShortName = "F", Description = "Fix errors in .temp asset files.")]
-    public bool FixTemp { get; }
 
     /// <summary>
     /// Gets how to handle assets with conflicting names.
