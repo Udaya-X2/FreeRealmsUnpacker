@@ -65,12 +65,6 @@ public partial class Unpacker
     public bool ExtractDat { get; }
 
     /// <summary>
-    /// Gets whether to fix .pack.temp files.
-    /// </summary>
-    [Option(ShortName = "e", Description = "Fix errors in .pack.temp files.")]
-    public bool FixErrors { get; }
-
-    /// <summary>
     /// Gets whether to list the assets without extracting them.
     /// </summary>
     [Option(ShortName = "l", Description = "List the assets without extracting them.")]
@@ -107,6 +101,12 @@ public partial class Unpacker
     public bool DisplayTable { get; }
 
     /// <summary>
+    /// Gets whether to fix errors in .temp asset files.
+    /// </summary>
+    [Option(ShortName = "F", Description = "Fix errors in .temp asset files.")]
+    public bool FixTemp { get; }
+
+    /// <summary>
     /// Gets how to handle assets with conflicting names.
     /// </summary>
     [Option(ShortName = "H", ValueName = "MODE", Description = "Specify how to handle assets with conflicting names.")]
@@ -115,7 +115,7 @@ public partial class Unpacker
     /// <summary>
     /// Gets whether to disable progress bars.
     /// </summary>
-    [Option(ShortName = "n", Description = "Don't show progress bars.")]
+    [Option(ShortName = "n", Description = "Do not show progress bars.")]
     public bool NoProgressBars { get; }
 
     /// <summary>

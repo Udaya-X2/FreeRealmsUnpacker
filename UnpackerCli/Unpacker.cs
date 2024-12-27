@@ -35,13 +35,13 @@ public partial class Unpacker
             }
 
             // Get the asset files to process from the input directory or file.
-            IEnumerable<AssetFile> assetFiles = (Directory.Exists(InputFile), !FixErrors) switch
+            IEnumerable<AssetFile> assetFiles = (Directory.Exists(InputFile), !FixTemp) switch
             {
                 (true, true) => ClientDirectory.EnumerateAssetFiles(InputFile,
                                                                     GetAssetFilter(),
                                                                     requireFullType: !ExtractUnknown),
                 (true, false) => ClientDirectory.EnumerateTempFiles(InputFile,
-                                                                    AssetType.Pack | GetAssetFilter(),
+                                                                    GetAssetFilter(),
                                                                     requireFullType: !ExtractUnknown),
                 (false, true) => [new AssetFile(InputFile)],
                 (false, false) => [new TempAssetFile(InputFile)]
@@ -103,7 +103,7 @@ public partial class Unpacker
             {
                 numAssets += ValidateChecksums(assetFile, pbar, ref numErrors);
             }
-            else if (FixErrors)
+            else if (FixTemp)
             {
                 numAssets += TryFixAssetFile((TempAssetFile)assetFile);
             }
@@ -223,29 +223,29 @@ public partial class Unpacker
     }
 
     /// <summary>
-    /// Attempts to fix the specified asset file.
+    /// Attempts to fix the specified asset .temp file.
     /// </summary>
     /// <returns>The number of assets in the fixed asset file.</returns>
-    private static int TryFixAssetFile(TempAssetFile assetFile)
+    private static int TryFixAssetFile(TempAssetFile tempAssetFile)
     {
-        string oldPath = assetFile.FullName;
+        string oldPath = tempAssetFile.FullName;
 
-        if (assetFile.TryFixAndRename(out AssetFile? newAssetFile))
+        if (tempAssetFile.TryFixAndRename(out AssetFile? assetFile))
         {
-            if (oldPath != newAssetFile.FullName)
+            if (oldPath != assetFile.FullName)
             {
-                Console.WriteLine($"Fixed '{oldPath}' -> {newAssetFile.Name}");
+                Console.WriteLine($"Fixed '{oldPath}' -> {assetFile.Name}");
             }
             else
             {
-                Console.WriteLine($"Fixed '{assetFile.FullName}'");
+                Console.WriteLine($"Fixed '{tempAssetFile.FullName}'");
             }
 
-            return newAssetFile.Count;
+            return assetFile.Count;
         }
 
-        Console.WriteLine($"Unable to fix '{assetFile.FullName}'");
-        return assetFile.Count;
+        Console.WriteLine($"Unable to fix '{tempAssetFile.FullName}'");
+        return tempAssetFile.Count;
     }
 
     /// <summary>
@@ -335,7 +335,7 @@ public partial class Unpacker
     /// <exception cref="InvalidEnumArgumentException"/>
     private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
-        if (NoProgressBars || ListAssets || ListFiles || CountAssets || (FixErrors && !ValidateAssets)) return null;
+        if (NoProgressBars || ListAssets || ListFiles || CountAssets || (FixTemp && !ValidateAssets)) return null;
 
         (string message, ConsoleColor color) = assetType switch
         {
@@ -371,7 +371,7 @@ public partial class Unpacker
         {
             assetType |= AssetType.AllDirectories;
         }
-        if (assetType.GetFileType() == 0 && !FixErrors)
+        if (assetType.GetFileType() == 0)
         {
             assetType |= AssetType.AllFiles;
         }
@@ -387,11 +387,9 @@ public partial class Unpacker
     private bool ValidateArguments()
     {
         if (!Enum.IsDefined(HandleConflicts)) throw new Exception("Invalid value specified for handle-conflicts.");
-        if (FixErrors && ExtractPack) throw new Exception("Cannot both fix errors and handle .pack assets.");
-        if (FixErrors && ExtractDat) throw new Exception("Cannot both fix errors and handle .dat assets.");
 
         const bool T = true, F = false;
-        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable, FixErrors) switch
+        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable, FixTemp) switch
         {
             (T, T, _, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
             (T, _, T, _, _, _, _) => throw new Exception("Cannot both list and validate assets."),
