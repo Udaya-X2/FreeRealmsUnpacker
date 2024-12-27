@@ -16,6 +16,7 @@ public static partial class ClientFile
     private const string PackFileSuffix = ".pack";
     private const string ManifestFileSuffix = "_manifest.dat";
     private const string DatFileSuffix = ".dat";
+    private const string PackTempFileSuffix = ".pack.temp";
     private const string TempFileSuffix = ".temp";
 
     [GeneratedRegex(@"^Assets(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
@@ -179,7 +180,7 @@ public static partial class ClientFile
 
         // Read the .pack.temp file in big-endian format.
         using FileStream stream = File.OpenRead(packTempFile);
-        using EndianBinaryReader binaryReader = new(stream, Endian.Big);
+        using EndianBinaryReader reader = new(stream, Endian.Big);
         long end = stream.Length;
         uint prevOffset = 0;
         uint currOffset = 0;
@@ -195,15 +196,15 @@ public static partial class ClientFile
                 currAsset = 0;
                 prevOffset = currOffset;
                 stream.Position = currOffset = nextOffset;
-                nextOffset = binaryReader.ReadUInt32();
-                numAssets = binaryReader.ReadUInt32();
+                nextOffset = reader.ReadUInt32();
+                numAssets = reader.ReadUInt32();
 
                 while (currAsset++ < numAssets)
                 {
-                    int length = ValidateRange(binaryReader.ReadInt32(), minValue: 1, maxValue: 128);
+                    int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: 128);
                     stream.Seek(length, SeekOrigin.Current);
-                    uint offset = binaryReader.ReadUInt32();
-                    uint size = binaryReader.ReadUInt32();
+                    uint offset = reader.ReadUInt32();
+                    uint size = reader.ReadUInt32();
 
                     // Check whether the current asset extends past the end of the .pack.temp file.
                     if (end - offset - size < 0 || stream.Seek(sizeof(uint), SeekOrigin.Current) > end)
@@ -289,11 +290,11 @@ public static partial class ClientFile
         ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
 
         Asset[] assets = new Asset[GetManifestAssetCount(manifestFile)];
-        int index = 0;
+        int i = 0;
 
         foreach (Asset asset in EnumerateManifestAssets(manifestFile))
         {
-            assets[index++] = asset;
+            assets[i++] = asset;
         }
 
         return assets;
@@ -339,17 +340,16 @@ public static partial class ClientFile
 
         AssetType assetDirType = InferAssetDirectoryType(assetFile);
 
-        if (requireFullType && assetDirType == 0)
+        if (!requireFullType || assetDirType != 0)
         {
-            if (strict)
-            {
-                throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
-            }
-
-            return 0;
+            return assetFileType | assetDirType;
+        }
+        if (strict)
+        {
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
         }
 
-        return assetFileType | assetDirType;
+        return 0;
     }
 
     /// <summary>
@@ -449,9 +449,14 @@ public static partial class ClientFile
                                                bool requireFullType = true,
                                                bool strict = false)
     {
-        if (assetTempFile.EndsWith(TempFileSuffix, StringComparison.OrdinalIgnoreCase))
+        if (assetTempFile.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase))
         {
-            return InferAssetType(assetTempFile[..^TempFileSuffix.Length], requireFullType, strict);
+            AssetType assetDirType = InferAssetDirectoryType(assetTempFile[..^TempFileSuffix.Length]);
+
+            if (!requireFullType || assetDirType != 0)
+            {
+                return AssetType.Pack | assetDirType;
+            }
         }
         if (strict)
         {
