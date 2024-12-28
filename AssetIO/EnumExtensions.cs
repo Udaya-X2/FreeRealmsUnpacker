@@ -33,7 +33,8 @@ public static class EnumExtensions
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsValid(this AssetType assetType)
         => BitOperations.IsPow2((uint)(assetType.GetFileType() & ~AssetType.Temp))
-        && IsPow2OrZero((uint)assetType.GetDirectoryType());
+        && IsPow2OrZero((uint)assetType.GetDirectoryType())
+        && (AssetType.All | assetType) == AssetType.All;
 
     /// <summary>
     /// Evaluates whether the specified <see langword="uint"/> value is a power of two or zero.
