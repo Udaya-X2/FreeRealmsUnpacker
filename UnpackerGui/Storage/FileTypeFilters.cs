@@ -21,6 +21,7 @@ public static class FileTypeFilters
         FilePickerTypes.AssetFiles,
         FilePickerTypes.PackFiles,
         FilePickerTypes.ManifestFiles,
+        FilePickerTypes.PackTempFiles,
         FilePickerTypes.AllFiles
     ];
 

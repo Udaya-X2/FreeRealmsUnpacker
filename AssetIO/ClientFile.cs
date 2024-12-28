@@ -15,17 +15,16 @@ public static partial class ClientFile
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
     private const string PackFileSuffix = ".pack";
     private const string ManifestFileSuffix = "_manifest.dat";
-    private const string DatFileSuffix = ".dat";
     private const string PackTempFileSuffix = ".pack.temp";
-    private const string TempFileSuffix = ".temp";
+    private const string DatFileSuffix = ".dat";
 
-    [GeneratedRegex(@"^Assets(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
+    [GeneratedRegex(@"^Assets(W?_\d{3}\.pack(\.temp)?|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex GameAssetRegex();
-    [GeneratedRegex(@"^assetpack000(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
+    [GeneratedRegex(@"^assetpack000(W?_\d{3}\.pack(\.temp)?|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex TcgAssetRegex();
-    [GeneratedRegex(@"^AssetsTcg(W?_\d{3}\.pack|_manifest\.dat)$", Options, "en-US")]
+    [GeneratedRegex(@"^AssetsTcg(W?_\d{3}\.pack(\.temp)?|_manifest\.dat)$", Options, "en-US")]
     private static partial Regex ResourceAssetRegex();
-    [GeneratedRegex(@"^assets_ps3w?_\d{3}\.pack$", Options, "en-US")]
+    [GeneratedRegex(@"^assets_ps3w?_\d{3}\.pack(\.temp)?$", Options, "en-US")]
     private static partial Regex PS3AssetRegex();
     [GeneratedRegex(@"^Assets_\d{3}\.dat$", Options, "en-US")]
     private static partial Regex GameDataRegex();
@@ -168,65 +167,6 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Scans the specified .pack.temp file for errors and creates a fix for the first invalid asset group.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if the .pack.temp file contains a fixable error; otherwise, <see langword="false"/>.
-    /// </returns>
-    /// <exception cref="ArgumentNullException"/>
-    public static bool TryFixPackTempFile(string packTempFile, out FixedAssetGroup fix)
-    {
-        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
-
-        // Read the .pack.temp file in big-endian format.
-        using FileStream stream = File.OpenRead(packTempFile);
-        using EndianBinaryReader reader = new(stream, Endian.Big);
-        long end = stream.Length;
-        uint prevOffset = 0;
-        uint currOffset = 0;
-        uint nextOffset = 0;
-        uint currAsset = 0;
-        uint numAssets = 0;
-
-        // Scan each asset chunk for errors.
-        try
-        {
-            do
-            {
-                currAsset = 0;
-                prevOffset = currOffset;
-                stream.Position = currOffset = nextOffset;
-                nextOffset = reader.ReadUInt32();
-                numAssets = reader.ReadUInt32();
-
-                while (currAsset++ < numAssets)
-                {
-                    int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: 128);
-                    stream.Seek(length, SeekOrigin.Current);
-                    uint offset = reader.ReadUInt32();
-                    uint size = reader.ReadUInt32();
-
-                    // Check whether the current asset extends past the end of the .pack.temp file.
-                    if (end - offset - size < 0 || stream.Seek(sizeof(uint), SeekOrigin.Current) > end)
-                    {
-                        throw new EndOfStreamException(SR.EndOfStream_AssetFile);
-                    }
-                }
-            } while (nextOffset != 0);
-        }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
-        {
-            // If the current asset info chunk contains at least one valid asset, fix the error by cutting
-            // it off at the last valid asset. Otherwise, cut the file off at the previous asset info chunk.
-            fix = currAsset > 1 ? new(currOffset, currAsset - 1) : new(prevOffset, 0);
-            return true;
-        }
-
-        fix = default;
-        return false;
-    }
-
-    /// <summary>
     /// Returns an enumerable collection of the assets in the specified manifest.dat file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
@@ -326,6 +266,59 @@ public static partial class ClientFile
     }
 
     /// <summary>
+    /// Returns an enumerable collection of the valid assets in the specified .pack.temp file.
+    /// </summary>
+    /// <returns>An enumerable collection of the valid assets in the specified .pack.temp file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static IEnumerable<Asset> EnumeratePackTempAssets(string packTempFile)
+    {
+        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+
+        using IEnumerator<Asset> enumerator = EnumeratePackAssets(packTempFile).GetEnumerator();
+        long end = new FileInfo(packTempFile).Length;
+
+        while (true)
+        {
+            try
+            {
+                // Stop iteration if there are no more assets in the file.
+                if (!enumerator.MoveNext())
+                {
+                    break;
+                }
+            }
+            // Stop iteration if an error occurs due to cut off data in the file.
+            catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
+            {
+                break;
+            }
+
+            Asset asset = enumerator.Current;
+
+            // Check whether the current asset extends past the end of the file.
+            if (end - asset.Offset - asset.Size < 0) break;
+
+            yield return asset;
+        }
+    }
+
+    /// <summary>
+    /// Gets the valid assets in the specified .pack.temp file.
+    /// </summary>
+    /// <returns>Gets the valid assets in the specified .pack.temp file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static Asset[] GetPackTempAssets(string packTempFile)
+        => [.. EnumeratePackTempAssets(packTempFile)];
+
+    /// <summary>
+    /// Returns the number of the valid assets in the specified .pack.temp file.
+    /// </summary>
+    /// <returns>An number of the valid assets in the specified .pack.temp file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static int GetPackTempAssetCount(string packTempFile)
+        => EnumeratePackTempAssets(packTempFile).Count();
+
+    /// <summary>
     /// Gets an enum value corresponding to the name of the specified asset file.
     /// </summary>
     /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
@@ -366,6 +359,10 @@ public static partial class ClientFile
         if (assetFile.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase))
         {
             return AssetType.Dat;
+        }
+        if (assetFile.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            return AssetType.Pack | AssetType.Temp;
         }
         if (strict)
         {
@@ -435,32 +432,6 @@ public static partial class ClientFile
         if (strict)
         {
             throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetDataFile.ToString()));
-        }
-
-        return 0;
-    }
-
-    /// <summary>
-    /// Gets an enum value corresponding to the name of the specified asset .temp file.
-    /// </summary>
-    /// <returns>An enum value corresponding to the name of the specified asset .temp file.</returns>
-    /// <exception cref="ArgumentException"/>
-    public static AssetType InferTempAssetType(ReadOnlySpan<char> assetTempFile,
-                                               bool requireFullType = true,
-                                               bool strict = false)
-    {
-        if (assetTempFile.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase))
-        {
-            AssetType assetDirType = InferAssetDirectoryType(assetTempFile[..^TempFileSuffix.Length]);
-
-            if (!requireFullType || assetDirType != 0)
-            {
-                return AssetType.Pack | assetDirType;
-            }
-        }
-        if (strict)
-        {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetTempFile.ToString()));
         }
 
         return 0;

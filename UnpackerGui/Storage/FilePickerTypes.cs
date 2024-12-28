@@ -20,9 +20,14 @@ public static class FilePickerTypes
         Patterns = ["*_manifest.dat"]
     };
 
+    public static readonly FilePickerFileType PackTempFiles = new("Pack Temp Files")
+    {
+        Patterns = ["*.pack.temp"]
+    };
+
     public static readonly FilePickerFileType AssetFiles = new("Asset Files")
     {
-        Patterns = ["*.pack", "*_manifest.dat"]
+        Patterns = ["*.pack", "*_manifest.dat", "*.pack.temp"]
     };
 
     public static readonly FilePickerFileType AssetDatFiles = new("Asset Dat Files")

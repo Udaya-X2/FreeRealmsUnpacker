@@ -35,17 +35,11 @@ public partial class Unpacker
             }
 
             // Get the asset files to process from the input directory or file.
-            IEnumerable<AssetFile> assetFiles = (Directory.Exists(InputFile), !ConvertTemp) switch
-            {
-                (true, true) => ClientDirectory.EnumerateAssetFiles(InputFile,
-                                                                    GetAssetFilter(),
-                                                                    requireFullType: !ExtractUnknown),
-                (true, false) => ClientDirectory.EnumerateTempFiles(InputFile,
-                                                                    GetAssetFilter(),
-                                                                    requireFullType: !ExtractUnknown),
-                (false, true) => [new AssetFile(InputFile)],
-                (false, false) => [new TempAssetFile(InputFile)]
-            };
+            IEnumerable<AssetFile> assetFiles = Directory.Exists(InputFile)
+                                              ? ClientDirectory.EnumerateAssetFiles(InputFile,
+                                                                GetAssetFilter(),
+                                                                requireFullType: !ExtractUnknown)
+                                              : [new AssetFile(InputFile)];
 
             // Handle the asset types specified.
             int count = ListFiles
@@ -102,10 +96,6 @@ public partial class Unpacker
             else if (ValidateAssets)
             {
                 numAssets += ValidateChecksums(assetFile, pbar, ref numErrors);
-            }
-            else if (ConvertTemp)
-            {
-                numAssets += ConvertTempAssetFile((TempAssetFile)assetFile);
             }
             else
             {
@@ -223,32 +213,6 @@ public partial class Unpacker
     }
 
     /// <summary>
-    /// Converts the specified asset .temp file to a regular asset file.
-    /// </summary>
-    /// <returns>The number of assets in the converted asset file.</returns>
-    private static int ConvertTempAssetFile(TempAssetFile tempAssetFile)
-    {
-        string oldPath = tempAssetFile.FullName;
-
-        if (tempAssetFile.TryConvert(out AssetFile? assetFile))
-        {
-            if (oldPath != assetFile.FullName)
-            {
-                Console.WriteLine($"Converted '{oldPath}' -> '{assetFile.Name}'");
-            }
-            else
-            {
-                Console.WriteLine($"Converted '{tempAssetFile.FullName}'");
-            }
-
-            return assetFile.Count;
-        }
-
-        Console.WriteLine($"Unable to convert '{tempAssetFile.FullName}'");
-        return tempAssetFile.Count;
-    }
-
-    /// <summary>
     /// Extracts assets in the specified asset file to the output directory.
     /// </summary>
     /// <returns>The number of assets in the asset file.</returns>
@@ -335,7 +299,7 @@ public partial class Unpacker
     /// <exception cref="InvalidEnumArgumentException"/>
     private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
-        if (NoProgressBars || ListAssets || ListFiles || CountAssets || (ConvertTemp && !ValidateAssets)) return null;
+        if (NoProgressBars || ListAssets || ListFiles || CountAssets) return null;
 
         (string message, ConsoleColor color) = assetType switch
         {
@@ -376,6 +340,9 @@ public partial class Unpacker
             assetType |= AssetType.AllFiles;
         }
 
+        // Unset the enum flag for .temp asset files, if specified.
+        if (IgnoreTemp) assetType &= ~AssetType.Temp;
+
         return assetType;
     }
 
@@ -389,18 +356,18 @@ public partial class Unpacker
         if (!Enum.IsDefined(HandleConflicts)) throw new Exception("Invalid value specified for handle-conflicts.");
 
         const bool T = true, F = false;
-        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable, ConvertTemp) switch
+        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable) switch
         {
-            (T, T, _, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
-            (T, _, T, _, _, _, _) => throw new Exception("Cannot both list and validate assets."),
-            (_, T, T, _, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
-            (T, _, _, T, _, _, _) => throw new Exception("Cannot both list and count assets."),
-            (_, T, _, T, _, _, _) => throw new Exception("Cannot both list files and count assets."),
-            (_, _, T, T, _, _, _) => throw new Exception("Cannot both validate and count assets."),
-            (_, _, _, _, T, T, _) => throw new Exception("Cannot display info as both a CSV file and a table."),
-            (F, F, _, _, T, F, _) => throw new Exception("Cannot display CSV without a list option."),
-            (F, F, _, _, F, T, _) => throw new Exception("Cannot display table without a list option."),
-            (F, F, F, F, F, F, F) => SetupOutputDirectory(),
+            (T, T, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
+            (T, _, T, _, _, _) => throw new Exception("Cannot both list and validate assets."),
+            (_, T, T, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
+            (T, _, _, T, _, _) => throw new Exception("Cannot both list and count assets."),
+            (_, T, _, T, _, _) => throw new Exception("Cannot both list files and count assets."),
+            (_, _, T, T, _, _) => throw new Exception("Cannot both validate and count assets."),
+            (_, _, _, _, T, T) => throw new Exception("Cannot display info as both a CSV file and a table."),
+            (F, F, _, _, T, F) => throw new Exception("Cannot display CSV without a list option."),
+            (F, F, _, _, F, T) => throw new Exception("Cannot display table without a list option."),
+            (F, F, F, F, F, F) => SetupOutputDirectory(),
             _ => true,
         };
     }

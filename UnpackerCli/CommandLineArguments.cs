@@ -65,10 +65,10 @@ public partial class Unpacker
     public bool ExtractDat { get; }
 
     /// <summary>
-    /// Gets whether to convert .temp asset files to regular asset files.
+    /// Gets whether to ignore .temp asset files.
     /// </summary>
-    [Option(ShortName = "T", Description = "Convert .temp asset files to regular asset files.")]
-    public bool ConvertTemp { get; }
+    [Option(ShortName = "i", Description = "Ignore .temp asset files.")]
+    public bool IgnoreTemp { get; }
 
     /// <summary>
     /// Gets whether to list the assets without extracting them.

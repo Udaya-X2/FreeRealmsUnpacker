@@ -23,23 +23,24 @@ public static class EnumExtensions
     public static AssetType GetDirectoryType(this AssetType assetType) => assetType & AssetType.AllDirectories;
 
     /// <summary>
-    /// Returns <see langword="true"/> if the asset type has exactly one file flag
+    /// Returns <see langword="true"/> if the asset type has exactly one file flag (except <see cref="AssetType.Temp"/>)
     /// and at most one directory flag set; otherwise, <see langword="false"/>.
     /// </summary>
     /// <returns>
-    /// <see langword="true"/> if the asset type has exactly one file flag and
-    /// at most one directory flag set; otherwise, <see langword="false"/>.
+    /// <see langword="true"/> if the asset type has exactly one file flag (except <see cref="AssetType.Temp"/>)
+    /// and at most one directory flag set; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsValid(this AssetType assetType)
-        => BitOperations.IsPow2((uint)assetType.GetFileType())
+        => BitOperations.IsPow2((uint)(assetType.GetFileType() & ~AssetType.Temp))
         && IsPow2OrZero((uint)assetType.GetDirectoryType());
 
     /// <summary>
-    /// Evaluates whether the specified <typeparamref name="T"/> value is a power of two or zero.
+    /// Evaluates whether the specified <see langword="uint"/> value is a power of two or zero.
     /// </summary>
     /// <returns>
     /// <see langword="true"/> if the specified value is a power of two; <see langword="false"/> otherwise.
     /// </returns>
-    private static bool IsPow2OrZero<T>(T value) where T : IBinaryInteger<T> => (value & (value - T.One)) == T.Zero;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsPow2OrZero(uint value) => (value & (value - 1)) == 0;
 }

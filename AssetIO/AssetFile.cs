@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AssetIO;
 
@@ -41,7 +41,7 @@ public class AssetFile : IEnumerable<Asset>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
     public AssetFile(string path, AssetType assetType)
-        : this(path, assetType, null, findDataFiles: true)
+        : this(path, assetType, null)
     {
     }
 
@@ -51,7 +51,7 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
-    public AssetFile(string path, IEnumerable<string> dataFiles)
+    public AssetFile(string path, [AllowNull] IEnumerable<string> dataFiles)
         : this(path, ClientFile.InferAssetType(path, requireFullType: false, strict: true), dataFiles)
     {
     }
@@ -62,30 +62,14 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
-    public AssetFile(string path, AssetType assetType, IEnumerable<string> dataFiles)
-        : this(path, assetType, dataFiles, findDataFiles: false)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="AssetFile"/> from the specified asset
-    /// .pack file or manifest.dat file, with the specified asset type and data files.
-    /// </summary>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="ArgumentException"/>
-    protected AssetFile(string path, AssetType assetType, IEnumerable<string>? dataFiles, bool findDataFiles)
+    public AssetFile(string path, AssetType assetType, [AllowNull] IEnumerable<string> dataFiles)
     {
         ArgumentNullException.ThrowIfNull(path, nameof(path));
         if (!assetType.IsValid()) throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, assetType));
 
         Info = new FileInfo(path);
         Type = assetType;
-        DataFiles = (findDataFiles, FileType) switch
-        {
-            (true, AssetType.Dat) => ClientDirectory.EnumerateDataFiles(Info),
-            (true, _) => [],
-            (false, _) => dataFiles ?? throw new ArgumentNullException(nameof(dataFiles))
-        };
+        DataFiles = dataFiles ?? (FileType == AssetType.Dat ? ClientDirectory.EnumerateDataFiles(Info) : []);
     }
 
     /// <summary>
@@ -115,7 +99,8 @@ public class AssetFile : IEnumerable<Asset>
     {
         AssetType.Pack => ClientFile.GetPackAssetCount(FullName),
         AssetType.Dat => ClientFile.GetManifestAssetCount(FullName),
-        _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
+        AssetType.Pack | AssetType.Temp => ClientFile.GetPackTempAssetCount(FullName),
+        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
     };
 
     /// <summary>
@@ -125,18 +110,19 @@ public class AssetFile : IEnumerable<Asset>
     {
         AssetType.Pack => ClientFile.GetPackAssets(FullName),
         AssetType.Dat => ClientFile.GetManifestAssets(FullName),
-        _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
+        AssetType.Pack | AssetType.Temp => ClientFile.GetPackTempAssets(FullName),
+        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
     };
 
     /// <summary>
     /// Creates an <see cref="AssetReader"/> that reads from the asset file or related data files.
     /// </summary>
     /// <returns>A new <see cref="AssetReader"/> that reads from the asset file or related data files.</returns>
-    public virtual AssetReader OpenRead() => FileType switch
+    public virtual AssetReader OpenRead() => (FileType & ~AssetType.Temp) switch
     {
         AssetType.Pack => new AssetPackReader(FullName),
         AssetType.Dat => new AssetDatReader(DataFiles),
-        _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
+        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
     };
 
     /// <summary>
@@ -147,7 +133,8 @@ public class AssetFile : IEnumerable<Asset>
     {
         AssetType.Pack => ClientFile.EnumeratePackAssets(FullName),
         AssetType.Dat => ClientFile.EnumerateManifestAssets(FullName),
-        _ => throw new InvalidEnumArgumentException(nameof(Type), (int)Type, Type.GetType())
+        AssetType.Pack | AssetType.Temp => ClientFile.EnumeratePackTempAssets(FullName),
+        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
     };
 
     /// <summary>

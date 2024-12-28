@@ -125,42 +125,4 @@ public static partial class ClientDirectory
         return filename.StartsWith(manifestFilePrefix, StringComparison.OrdinalIgnoreCase)
             && DataSuffixRegex().IsMatch(filename[manifestFilePrefix.Length..]);
     }
-
-    /// <summary>
-    /// Returns an enumerable collection of the asset .temp files that match a filter on a specified path.
-    /// </summary>
-    /// <param name="path">The relative or absolute path to the directory to search.</param>
-    /// <param name="assetFilter">
-    /// A bitwise combination of the enumeration values that specify which asset types are allowed.
-    /// </param>
-    /// <param name="searchOption">
-    /// One of the enumeration values that specifies whether the search operation
-    /// should include only the current directory or should include all subdirectories.
-    /// </param>
-    /// <param name="requireFullType">
-    /// <see langword="true"/> to exclude asset .temp files without a full asset type;
-    /// <see langword="false"/> to include asset .temp files with only a file type.
-    /// </param>
-    /// <returns>
-    /// An enumerable collection of the asset .temp files in the directory
-    /// specified by <paramref name="path"/> that match the specified filter.
-    /// </returns>
-    /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<TempAssetFile> EnumerateTempFiles(string path,
-                                                                AssetType assetFilter = AssetType.All,
-                                                                SearchOption searchOption = SearchOption.AllDirectories,
-                                                                bool requireFullType = true)
-    {
-        ArgumentNullException.ThrowIfNull(path, nameof(path));
-
-        foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
-        {
-            AssetType assetType = ClientFile.InferTempAssetType(file, requireFullType);
-
-            if (assetType != 0 && (assetFilter & assetType) == assetType)
-            {
-                yield return new TempAssetFile(file, assetType);
-            }
-        }
-    }
 }

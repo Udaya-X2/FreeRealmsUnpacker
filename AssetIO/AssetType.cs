@@ -32,13 +32,17 @@ public enum AssetType
     /// </summary>
     Dat = 32,
     /// <summary>
+    /// Asset .temp files, which retain a portion of the original asset data.
+    /// </summary>
+    Temp = 64,
+    /// <summary>
     /// Assets from any Free Realms client subdirectory.
     /// </summary>
     AllDirectories = Game | Tcg | Resource | PS3,
     /// <summary>
     /// Asset files with any file extension.
     /// </summary>
-    AllFiles = Pack | Dat,
+    AllFiles = Pack | Dat | Temp,
     /// <summary>
     /// Assets from any Free Realms client subdirectory, with any file extension.
     /// </summary>
