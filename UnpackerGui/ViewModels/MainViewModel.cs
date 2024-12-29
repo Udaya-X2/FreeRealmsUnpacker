@@ -73,6 +73,7 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> UncheckAllFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveCheckedFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveSelectedFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> ConvertSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
 
@@ -112,6 +113,7 @@ public class MainViewModel : SavedSettingsViewModel
         UncheckAllFilesCommand = ReactiveCommand.Create(UncheckAllFiles);
         RemoveCheckedFilesCommand = ReactiveCommand.Create(RemoveCheckedFiles);
         RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
+        ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
 
@@ -374,14 +376,14 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
-    /// Opens a folder dialog that allows the user to extract the selected asset file to a directory.
-    /// </summary>
-    private async Task ExtractSelectedFile() => await ExtractFiles([SelectedAssetFile!]);
-
-    /// <summary>
     /// Opens a folder dialog that allows the user to extract the checked asset files to a directory.
     /// </summary>
     private async Task ExtractCheckedFiles() => await ExtractFiles(CheckedAssetFiles);
+
+    /// <summary>
+    /// Opens a folder dialog that allows the user to extract the selected asset file to a directory.
+    /// </summary>
+    private async Task ExtractSelectedFile() => await ExtractFiles([SelectedAssetFile!]);
 
     /// <summary>
     /// Opens a folder dialog that allows the user to extract the specified asset files to a directory.
@@ -525,6 +527,31 @@ public class MainViewModel : SavedSettingsViewModel
     /// Removes the selected asset file.
     /// </summary>
     private void RemoveSelectedFile() => _sourceAssetFiles!.Remove(SelectedAssetFile);
+
+    /// <summary>
+    /// Converts the selected asset file from a .pack.temp file to a .pack file.
+    /// </summary>
+    private void ConvertSelectedFile()
+    {
+        if (ClientFile.TryConvertPackTempFile(SelectedAssetFile!.FullName, out AssetFile? assetFile))
+        {
+            if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel convertedFile)
+            {
+                _sourceAssetFiles.Remove(SelectedAssetFile);
+            }
+            else
+            {
+                convertedFile = new AssetFileViewModel(assetFile) { IsChecked = SelectedAssetFile.IsChecked };
+                _sourceAssetFiles.Replace(SelectedAssetFile, convertedFile);
+            }
+
+            SelectedAssetFile = convertedFile;
+        }
+        else
+        {
+            throw new Exception($"Unable to convert '{SelectedAssetFile.FullName}' to a .pack file.");
+        }
+    }
 
     /// <summary>
     /// Extracts the selected asset to a temporary location and opens it.

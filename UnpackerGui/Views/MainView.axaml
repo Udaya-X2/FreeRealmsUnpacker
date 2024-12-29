@@ -18,6 +18,7 @@
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
         <conv:BooleanToRotationConverter x:Key="booleanToRotationConverter"/>
         <conv:BooleanToStringConverter x:Key="booleanToStringConverter"/>
+        <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
         <commands:StaticCommands x:Key="commands"/>
     </UserControl.Resources>
     <UserControl.Styles>
@@ -136,7 +137,7 @@
                                 <StackPanel Orientation="Horizontal"
                                             VerticalAlignment="Center"
                                             Height="14">
-                                    <Button IsVisible="{Binding IsManifestFile}"
+                                    <Button IsVisible="{Binding FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                                             Command="{Binding ShowDataFilesCommand}">
                                         <Button.Template>
                                             <ControlTemplate>
@@ -204,8 +205,11 @@
                             <MenuItem Header="Extract To..."
                                       Command="{Binding ExtractSelectedFileCommand}"/>
                             <MenuItem Header="Add Asset .dat Files..."
-                                      IsVisible="{Binding SelectedAssetFile.IsManifestFile}"
+                                      IsVisible="{Binding SelectedAssetFile.FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                                       Command="{Binding AddDataFilesCommand}"/>
+                            <MenuItem Header="Convert To .pack File"
+                                      IsVisible="{Binding SelectedAssetFile.FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay}"
+                                      Command="{Binding ConvertSelectedFileCommand}"/>
                         </ContextMenu>
                     </ListBox.ContextMenu>
                 </ListBox>

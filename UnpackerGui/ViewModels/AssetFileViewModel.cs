@@ -18,7 +18,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     public ReactiveList<DataFileViewModel>? DataFiles { get; }
     public ReactiveList<DataFileViewModel>? SelectedDataFiles { get; }
     public long Size { get; }
-    public bool IsManifestFile { get; }
 
     public ReactiveCommand<Unit, bool>? ShowDataFilesCommand { get; }
     public ReactiveCommand<Unit, Unit>? RemoveDataFilesCommand { get; }
@@ -44,7 +43,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
         if (FileType == AssetType.Dat)
         {
-            IsManifestFile = true;
             DataFiles = [.. assetFile.DataFiles.Select(x => new DataFileViewModel(x, this))];
             assetFile.DataFiles = DataFiles.Select(x => x.FullName);
             SelectedDataFiles = [];

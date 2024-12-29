@@ -1,4 +1,6 @@
 ﻿using AssetIO.EndianBinaryIO;
+using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -319,6 +321,138 @@ public static partial class ClientFile
         => EnumeratePackTempAssets(packTempFile).Count();
 
     /// <summary>
+    /// Attempts to scan the specified .pack.temp file for errors and create a fix for the first invalid asset group.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the .pack.temp file contains a fixable error; otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static bool TryGetPackTempFix(string packTempFile, out FixedAssetGroup fix)
+    {
+        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+
+        // Read the .pack.temp file in big-endian format.
+        using FileStream stream = File.OpenRead(packTempFile);
+        using EndianBinaryReader reader = new(stream, Endian.Big);
+        long end = stream.Length;
+        uint prevOffset = 0;
+        uint currOffset = 0;
+        uint nextOffset = 0;
+        uint currAsset = 0;
+        uint numAssets = 0;
+
+        // Scan each asset chunk for errors.
+        try
+        {
+            do
+            {
+                currAsset = 0;
+                prevOffset = currOffset;
+                stream.Position = currOffset = nextOffset;
+                nextOffset = reader.ReadUInt32();
+                numAssets = reader.ReadUInt32();
+
+                while (currAsset++ < numAssets)
+                {
+                    int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: 128);
+                    stream.Seek(length, SeekOrigin.Current);
+                    uint offset = reader.ReadUInt32();
+                    uint size = reader.ReadUInt32();
+
+                    // Check whether the current asset extends past the end of the .pack.temp file.
+                    if (end - offset - size < 0 || stream.Seek(sizeof(uint), SeekOrigin.Current) > end)
+                    {
+                        throw new EndOfStreamException(SR.EndOfStream_AssetFile);
+                    }
+                }
+            } while (nextOffset != 0);
+        }
+        catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
+        {
+            // If the current asset info chunk contains at least one valid asset, fix the error by cutting
+            // it off at the last valid asset. Otherwise, cut the file off at the previous asset info chunk.
+            fix = currAsset > 1 ? new(currOffset, currAsset - 1) : new(prevOffset, 0);
+            return true;
+        }
+
+        fix = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Renames the specified .pack.temp file to a .pack file.
+    /// </summary>
+    /// <returns>The renamed .pack file.</returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static FileInfo RenamePackTempFile(string packTempFile)
+    {
+        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+
+        FileInfo file = new(packTempFile);
+        string name = file.Name;
+        string dirName = file.DirectoryName!;
+        string newPath;
+
+        // Remove the current file extension.
+        if (name.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            name = name[..^PackTempFileSuffix.Length];
+        }
+        else
+        {
+            name = name[..^file.Extension.Length];
+        }
+
+        // Increment the 3-digit number in the file name if another .pack file is already using it.
+        if (name.Length >= 3 && int.TryParse(name[^3..], out int digits))
+        {
+            name = name[..^3];
+
+            do
+            {
+                newPath = Path.Combine(dirName, $"{name}{digits++:D3}.pack");
+            }
+            while (File.Exists(newPath) && !FilesEqual(packTempFile, newPath));
+        }
+        // If the file name doesn't end with 3 digits, append a digit and increment it if needed.
+        else
+        {
+            digits = 2;
+            newPath = Path.Combine(dirName, $"{name}.pack");
+
+            while (File.Exists(newPath) && !FilesEqual(packTempFile, newPath))
+            {
+                newPath = Path.Combine(dirName, $"{name} ({digits++}).pack");
+            }
+        }
+
+        file.MoveTo(newPath, overwrite: true);
+        return file;
+    }
+
+    /// <summary>
+    /// Attempts to convert the specified .pack.temp file to a .pack file.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if the asset .temp file was converted; otherwise, <see langword="false"/>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"/>
+    public static bool TryConvertPackTempFile(string packTempFile, [MaybeNullWhen(false)] out AssetFile assetFile)
+    {
+        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+
+        if (TryGetPackTempFix(packTempFile, out FixedAssetGroup fix))
+        {
+            fix.FixPackTempFile(packTempFile);
+            assetFile = new AssetFile(RenamePackTempFile(packTempFile).FullName);
+            return true;
+        }
+
+        assetFile = null;
+        return false;
+    }
+
+    /// <summary>
     /// Gets an enum value corresponding to the name of the specified asset file.
     /// </summary>
     /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
@@ -455,5 +589,44 @@ public static partial class ClientFile
             exception.Data["BytesRead"] = Unsafe.SizeOf<T>();
             throw exception;
         }
+    }
+
+    /// <summary>
+    /// Checks whether the contents of the files are the same.
+    /// </summary>
+    /// <returns><see langword="true"/> if the files have the same bytes; otherwise, <see langword="false"/>.</returns>
+    private static bool FilesEqual(string file1, string file2)
+    {
+        if (file1 == file2) return true;
+
+        using FileStream stream1 = File.OpenRead(file1);
+        using FileStream stream2 = File.OpenRead(file2);
+
+        if (stream1.Length != stream2.Length) return false;
+
+        const int BufferSize = 81920;
+        byte[] buffer1 = ArrayPool<byte>.Shared.Rent(BufferSize);
+        byte[] buffer2 = ArrayPool<byte>.Shared.Rent(BufferSize);
+
+        try
+        {
+            int bytesRead1, bytesRead2;
+
+            do
+            {
+                bytesRead1 = stream1.Read(buffer1);
+                bytesRead2 = stream2.Read(buffer2);
+
+                if (!buffer1.AsSpan(0, bytesRead1).SequenceEqual(buffer2.AsSpan(0, bytesRead2))) return false;
+            }
+            while (bytesRead1 != 0);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer1);
+            ArrayPool<byte>.Shared.Return(buffer2);
+        }
+
+        return true;
     }
 }
