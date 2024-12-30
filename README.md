@@ -14,9 +14,11 @@ Options:
   -g|--extract-game             Extract game assets only (in 'Free Realms/').
   -t|--extract-tcg              Extract TCG assets only (in 'Free Realms/assets/').
   -r|--extract-resource         Extract resource assets only (in 'Free Realms/tcg/').
+  -3|--extract-ps3              Extract PS3 assets only (in 'NPUA30048/USRDIR/' or 'NPEA00299/USRDIR').
   -u|--extract-unknown          Extract unknown assets only (disabled by default).
   -p|--extract-pack             Extract .pack assets only.
   -d|--extract-dat              Extract .dat assets only.
+  -i|--ignore-temp              Ignore .temp asset files.
   -l|--list-assets              List the assets without extracting them.
   -f|--list-files               List the asset file paths without extracting them.
   -v|--validate-assets          Validate the assets without extracting them.
@@ -26,9 +28,9 @@ Options:
   -H|--handle-conflicts <MODE>  Specify how to handle assets with conflicting names.
                                 Allowed values are: Overwrite, Skip, Rename, MkDir, MkSubdir, MkTree.
                                 Default value is: Overwrite.
-  -n|--no-progress-bars         Don't show progress bars.
+  -n|--no-progress-bars         Do not show progress bars.
   -y|--answer-yes               Automatically answer yes to any question.
-  -e|--debug                    Show complete exception stack traces.
+  -D|--debug                    Show complete exception stack traces.
   -?|-h|--help                  Show help information.
 ```
 
