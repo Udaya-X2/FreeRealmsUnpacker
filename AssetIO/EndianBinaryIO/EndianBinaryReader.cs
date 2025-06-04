@@ -250,7 +250,8 @@ internal class EndianBinaryReader : IDisposable
 
                 throw;
             }
-        } while (charsRead == 0);
+        }
+        while (charsRead == 0);
 
         return singleChar[0];
     }
@@ -531,7 +532,8 @@ internal class EndianBinaryReader : IDisposable
             sb ??= new(Math.Min(stringLength, maxBuilderSize)); // Actual string length in chars may be smaller.
             sb.Append(_charBuffer, 0, charsRead);
             currPos += n;
-        } while (currPos < stringLength);
+        }
+        while (currPos < stringLength);
 
         return sb.ToString();
     }
@@ -811,7 +813,8 @@ internal class EndianBinaryReader : IDisposable
 
             numRead += n;
             count -= n;
-        } while (count > 0);
+        }
+        while (count > 0);
 
         if (numRead != result.Length)
         {
@@ -848,7 +851,8 @@ internal class EndianBinaryReader : IDisposable
             }
 
             bytesRead += n;
-        } while (bytesRead < numBytes);
+        }
+        while (bytesRead < numBytes);
 
         return _buffer;
     }

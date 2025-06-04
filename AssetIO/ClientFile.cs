@@ -112,7 +112,8 @@ public static partial class ClientFile
 
                 yield return asset;
             }
-        } while (nextOffset != 0);
+        }
+        while (nextOffset != 0);
     }
 
     /// <summary>
@@ -153,7 +154,8 @@ public static partial class ClientFile
                     stream.Position = nextOffset;
                     nextOffset = reader.ReadUInt32();
                     numAssets += reader.ReadUInt32();
-                } while (nextOffset != 0);
+                }
+                while (nextOffset != 0);
 
                 return (int)numAssets;
             }
@@ -365,7 +367,8 @@ public static partial class ClientFile
                         throw new EndOfStreamException(SR.EndOfStream_AssetFile);
                     }
                 }
-            } while (nextOffset != 0);
+            }
+            while (nextOffset != 0);
         }
         catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
         {
