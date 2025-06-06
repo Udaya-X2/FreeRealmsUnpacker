@@ -3,6 +3,7 @@ using Force.Crc32;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -251,8 +252,9 @@ public static partial class ClientFile
                     // Add assets to the current asset chunk.
                     file = enumerator.Current;
                     FileStream asset = file.OpenRead();
+                    int fileNameLength = ValidateRange(file.Name.Length, minValue: 1, maxValue: MaxAssetNameLength);
                     chunkOffset += (uint)asset.Length;
-                    assetOffset += (uint)file.Name.Length + SizeOfPackAssetFields;
+                    assetOffset += (uint)fileNameLength + SizeOfPackAssetFields;
                     chunkAssets.Add(asset);
                     hasNext = enumerator.MoveNext();
 
