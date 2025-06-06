@@ -277,12 +277,20 @@ public class AssetDatReader : AssetReader
     private static FileStream[] OpenReadFiles(IEnumerable<string> files)
     {
         List<FileStream> fileStreams = [];
+        FileStream? fileStream = null;
 
         foreach (string file in files)
         {
             try
             {
-                fileStreams.Add(File.OpenRead(file));
+                // Enforce size requirement on previous files.
+                if (fileStream != null && fileStream.Length != MaxAssetDatSize)
+                {
+                    throw new IOException(string.Format(SR.IO_BadAssetDat, fileStream.Length, fileStream.Name));
+                }
+
+                fileStream = File.OpenRead(file);
+                fileStreams.Add(fileStream);
             }
             catch
             {
