@@ -3,7 +3,6 @@ using Force.Crc32;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
-using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -256,7 +255,7 @@ public static partial class ClientFile
                     chunkOffset += (uint)asset.Length;
                     assetOffset += (uint)fileNameLength + SizeOfPackAssetFields;
                     chunkAssets.Add(asset);
-                    hasNext = enumerator.MoveNext();
+                    hasNext = enumerator.SafeMoveNext();
 
                     // If this is the last asset, write the asset chunk and set
                     // the next asset chunk to the start of the .pack file.
@@ -284,7 +283,7 @@ public static partial class ClientFile
         {
             throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, file, stream.Name), ex);
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int)
+        catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
         {
             throw new PathTooLongException(string.Format(SR.PathTooLong_CantWriteAsset, file, stream.Name), ex);
         }
@@ -834,5 +833,22 @@ public static partial class ClientFile
         }
 
         return true;
+    }
+
+    /// <inheritdoc cref="System.Collections.IEnumerator.MoveNext"/>
+    /// <remarks>
+    /// If an error occurs, the exception is nested within a generic <see cref="Exception"/>
+    /// to distinguish it from other runtime exceptions.
+    /// </remarks>
+    private static bool SafeMoveNext<T>(this IEnumerator<T> enumerator)
+    {
+        try
+        {
+            return enumerator.MoveNext();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Unable to advance enumerator to next element.", ex);
+        }
     }
 }
