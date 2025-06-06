@@ -18,7 +18,7 @@ public static partial class ClientFile
     private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
     private const int DefaultAssetsPerChunk = 128; // Default # of assets to write per chunk in a .pack file.
     private const int SizeOfPackAssetFields = 16; // sizeof(Name.Length) + sizeof(Offset) + sizeof(Size) + sizeof(Crc32)
-    private const int SizeOfPackAssetChunkHeader = 8; // sizeof(NumAssets) + sizeof(NextOffset)
+    private const int SizeOfPackAssetChunkHeader = 8; // sizeof(NextOffset) + sizeof(NumAssets)
     private const int BufferSize = 81920;
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
     private const string PackFileSuffix = ".pack";
@@ -211,9 +211,10 @@ public static partial class ClientFile
         // Keep track of chunk assets via FileStream to prevent concurrent modification (and optimize Length reads).
         List<FileStream> chunkAssets = new(DefaultAssetsPerChunk);
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        FileInfo file = enumerator.Current;
         uint chunkOffset = 0;
         uint assetOffset = 0;
-        FileInfo file = enumerator.Current;
+        long prevOffset = -1;
 
         try
         {
@@ -239,6 +240,7 @@ public static partial class ClientFile
                     {
                         assetOffset = chunkOffset = (uint)fileSize;
                         stream.Seek(-sizeof(uint), SeekOrigin.Current);
+                        prevOffset = stream.Position;
                         writer.Write(chunkOffset);
                         stream.Position = chunkOffset;
                     }
@@ -249,23 +251,24 @@ public static partial class ClientFile
                     // Add assets to the current asset chunk.
                     file = enumerator.Current;
                     FileStream asset = file.OpenRead();
-                    hasNext = enumerator.MoveNext();
-                    chunkAssets.Add(asset);
                     chunkOffset += (uint)asset.Length;
                     assetOffset += (uint)file.Name.Length + SizeOfPackAssetFields;
+                    chunkAssets.Add(asset);
+                    hasNext = enumerator.MoveNext();
 
                     // If this is the last asset, write the asset chunk and set
                     // the next asset chunk to the start of the .pack file.
                     if (!hasNext)
                     {
-                        assetOffset += SizeOfPackAssetChunkHeader;
                         WritePackAssetChunk(writer, chunkAssets, chunkOffset: 0, assetOffset, buffer);
                     }
                     // When the asset chunk is at max capacity, write the assets to the .pack file.
                     else if (chunkAssets.Count == DefaultAssetsPerChunk)
                     {
-                        chunkOffset += assetOffset += SizeOfPackAssetChunkHeader;
-                        assetOffset = WritePackAssetChunk(writer, chunkAssets, chunkOffset, assetOffset, buffer);
+                        chunkOffset += assetOffset + SizeOfPackAssetChunkHeader;
+                        prevOffset = stream.Position;
+                        WritePackAssetChunk(writer, chunkAssets, chunkOffset, assetOffset, buffer);
+                        assetOffset = chunkOffset;
                         chunkOffset = 0;
                     }
                 }
@@ -283,6 +286,14 @@ public static partial class ClientFile
         {
             chunkAssets.ForEach(x => x.Dispose());
             ArrayPool<byte>.Shared.Return(buffer);
+
+            // If an error occurred before all assets were written, ensure
+            // the previous asset chunk is the last one in the .pack file.
+            if (hasNext && prevOffset != -1)
+            {
+                stream.Position = prevOffset;
+                writer.Write(0u); // Next Offset
+            }
         }
     }
 
@@ -730,8 +741,7 @@ public static partial class ClientFile
     /// <summary>
     /// Writes the specified list of assets to the asset chunk at the given offset.
     /// </summary>
-    /// <returns>The offset of the next asset.</returns>
-    private static uint WritePackAssetChunk(EndianBinaryWriter writer,
+    private static void WritePackAssetChunk(EndianBinaryWriter writer,
                                             List<FileStream> assets,
                                             uint chunkOffset,
                                             uint assetOffset,
@@ -740,6 +750,7 @@ public static partial class ClientFile
         // Write the offset of the next asset chunk and the number of assets in this chunk.
         writer.Write(chunkOffset);
         writer.Write(assets.Count);
+        assetOffset += SizeOfPackAssetChunkHeader;
 
         // Create an index of each asset in the asset info chunk.
         foreach (FileStream asset in assets)
@@ -761,7 +772,6 @@ public static partial class ClientFile
 
         // Clear the asset list.
         assets.Clear();
-        return assetOffset;
     }
 
     /// <summary>
