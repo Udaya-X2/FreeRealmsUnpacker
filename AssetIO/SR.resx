@@ -180,4 +180,7 @@
   <data name="Argument_ManifestTempNotSupported" xml:space="preserve">
     <value>Asset manifest.dat.temp files are not supported.</value>
   </data>
+  <data name="Overflow_MaxPackCapacity" xml:space="preserve">
+    <value>Cannot add '{0}' to '{1}'; asset .pack file exceeds maximum capacity.</value>
+  </data>
 </root>

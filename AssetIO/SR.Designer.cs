@@ -241,6 +241,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot add &apos;{0}&apos; to &apos;{1}&apos;; asset .pack file exceeds maximum capacity..
+        /// </summary>
+        internal static string Overflow_MaxPackCapacity {
+            get {
+                return ResourceManager.GetString("Overflow_MaxPackCapacity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Number of assets exceeds the maximum integer value: &apos;{0}&apos;..
         /// </summary>
         internal static string Overflow_TooManyAssets {
