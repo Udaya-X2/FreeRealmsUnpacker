@@ -14,15 +14,17 @@ public static partial class ClientFile
         /// <summary>
         /// Fixes the specified .pack.temp file.
         /// </summary>
+        /// <exception cref="IOException"/>
+        /// <exception cref="FileNotFoundException"/>
         public void FixPackTempFile(string packTempFile)
         {
             // Write to the .pack.temp file in big-endian format.
-            using FileStream stream = File.OpenWrite(packTempFile);
+            using FileStream stream = File.Open(packTempFile, FileMode.Open, FileAccess.Write, FileShare.Read);
             using EndianBinaryWriter writer = new(stream, Endian.Big);
             stream.Position = Offset;
 
             // Set the next offset to zero.
-            writer.Write(0);
+            writer.Write(0u);
 
             // If specified, set the new number of assets.
             if (NumAssets != 0)
