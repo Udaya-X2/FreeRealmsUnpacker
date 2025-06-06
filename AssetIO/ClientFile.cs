@@ -282,7 +282,11 @@ public static partial class ClientFile
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, file.Name, stream.Name), ex);
+            throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, file, stream.Name), ex);
+        }
+        catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int)
+        {
+            throw new PathTooLongException(string.Format(SR.PathTooLong_CantWriteAsset, file, stream.Name), ex);
         }
         finally
         {
