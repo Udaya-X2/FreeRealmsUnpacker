@@ -22,7 +22,7 @@ public class AssetDatReader : AssetReader
     /// <exception cref="ArgumentNullException"/>
     public AssetDatReader(IEnumerable<string> assetDatPaths)
     {
-        ArgumentNullException.ThrowIfNull(assetDatPaths, nameof(assetDatPaths));
+        ArgumentNullException.ThrowIfNull(assetDatPaths);
 
         _assetStreams = OpenReadFiles(assetDatPaths);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -38,8 +38,8 @@ public class AssetDatReader : AssetReader
     public override void Read(Asset asset, byte[] buffer)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(buffer);
         if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
 
         // Determine which .dat file to read and where to start reading from based on the offset.
@@ -68,8 +68,8 @@ public class AssetDatReader : AssetReader
     public override void CopyTo(Asset asset, Stream destination)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(destination, nameof(destination));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(destination);
         if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
 
         foreach (int bytesRead in InternalRead(asset))
@@ -88,7 +88,7 @@ public class AssetDatReader : AssetReader
     public override uint GetCrc32(Asset asset)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
+        ArgumentNullException.ThrowIfNull(asset);
 
         uint crc32 = 0u;
 
@@ -104,8 +104,8 @@ public class AssetDatReader : AssetReader
     public override bool StreamEquals(Asset asset, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -140,8 +140,8 @@ public class AssetDatReader : AssetReader
     public override async Task<bool> StreamEqualsAsync(Asset asset, Stream stream, CancellationToken token = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
         token.ThrowIfCancellationRequested();
 

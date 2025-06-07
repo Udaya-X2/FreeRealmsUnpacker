@@ -64,7 +64,7 @@ public class AssetFile : IEnumerable<Asset>
     /// <exception cref="ArgumentException"/>
     public AssetFile(string path, AssetType assetType, [AllowNull] IEnumerable<string> dataFiles)
     {
-        ArgumentNullException.ThrowIfNull(path, nameof(path));
+        ArgumentNullException.ThrowIfNull(path);
         if (!assetType.IsValid()) throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, assetType));
 
         Info = new FileInfo(path);

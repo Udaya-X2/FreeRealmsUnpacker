@@ -21,7 +21,7 @@ public class AssetPackReader : AssetReader
     /// <exception cref="ArgumentNullException"/>
     public AssetPackReader(string assetPackPath)
     {
-        ArgumentNullException.ThrowIfNull(assetPackPath, nameof(assetPackPath));
+        ArgumentNullException.ThrowIfNull(assetPackPath);
 
         _assetStream = File.OpenRead(assetPackPath);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -37,8 +37,8 @@ public class AssetPackReader : AssetReader
     public override void Read(Asset asset, byte[] buffer)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(buffer);
         if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
 
         _assetStream.Position = asset.Offset;
@@ -59,8 +59,8 @@ public class AssetPackReader : AssetReader
     /// <exception cref="ObjectDisposedException"/>
     public override void CopyTo(Asset asset, Stream destination)
     {
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(destination, nameof(destination));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(destination);
         if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
 
         foreach (int bytesRead in InternalRead(asset))
@@ -79,7 +79,7 @@ public class AssetPackReader : AssetReader
     public override uint GetCrc32(Asset asset)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
+        ArgumentNullException.ThrowIfNull(asset);
 
         uint crc32 = 0u;
 
@@ -95,8 +95,8 @@ public class AssetPackReader : AssetReader
     public override bool StreamEquals(Asset asset, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -131,8 +131,8 @@ public class AssetPackReader : AssetReader
     public override async Task<bool> StreamEqualsAsync(Asset asset, Stream stream, CancellationToken token = default)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(asset, nameof(asset));
-        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
         token.ThrowIfCancellationRequested();
 

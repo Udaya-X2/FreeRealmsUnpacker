@@ -15,7 +15,7 @@ public class Table
     /// <exception cref="ArgumentNullException"/>
     public Table(params string[] columns)
     {
-        ArgumentNullException.ThrowIfNull(columns, nameof(columns));
+        ArgumentNullException.ThrowIfNull(columns);
 
         _columns = new TableColumn[columns.Length];
         _rows = [];
@@ -40,7 +40,7 @@ public class Table
     /// <exception cref="ArgumentException"/>
     public void AddRow(params object[] values)
     {
-        ArgumentNullException.ThrowIfNull(values, nameof(values));
+        ArgumentNullException.ThrowIfNull(values);
         if (values.Length < _columns.Length) throw new ArgumentException("Not enough values to add a table row.");
 
         string[] row = new string[values.Length];

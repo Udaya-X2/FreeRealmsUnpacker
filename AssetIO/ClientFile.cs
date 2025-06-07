@@ -54,7 +54,7 @@ public static partial class ClientFile
     /// <exception cref="IOException"/>
     public static IEnumerable<Asset> EnumeratePackAssets(string packFile)
     {
-        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
+        ArgumentNullException.ThrowIfNull(packFile);
 
         // Read the .pack file in big-endian format.
         using FileStream stream = File.OpenRead(packFile);
@@ -146,7 +146,7 @@ public static partial class ClientFile
     /// <exception cref="OverflowException"/>
     public static int GetPackAssetCount(string packFile)
     {
-        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
+        ArgumentNullException.ThrowIfNull(packFile);
 
         // Read the .pack file in big-endian format.
         using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
@@ -190,8 +190,8 @@ public static partial class ClientFile
     /// </summary>
     public static void AppendPackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
-        ArgumentNullException.ThrowIfNull(assets, nameof(assets));
+        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentNullException.ThrowIfNull(assets);
 
         // Open the .pack file in big-endian format.
         using FileStream stream = new(packFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
@@ -316,8 +316,8 @@ public static partial class ClientFile
     /// </summary>
     public static void WritePackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
-        ArgumentNullException.ThrowIfNull(assets, nameof(assets));
+        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentNullException.ThrowIfNull(assets);
 
         File.Delete(packFile);
         AppendPackAssets(packFile, assets);
@@ -331,7 +331,7 @@ public static partial class ClientFile
     /// <exception cref="IOException"/>
     public static IEnumerable<Asset> EnumerateManifestAssets(string manifestFile)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile);
 
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
@@ -384,7 +384,7 @@ public static partial class ClientFile
     /// <exception cref="IOException"/>
     public static Asset[] GetManifestAssets(string manifestFile)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile);
 
         Asset[] assets = new Asset[GetManifestAssetCount(manifestFile)];
         int i = 0;
@@ -406,7 +406,7 @@ public static partial class ClientFile
     /// <exception cref="OverflowException"/>
     public static int GetManifestAssetCount(string manifestFile)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile);
 
         FileInfo manifestFileInfo = new(manifestFile);
 
@@ -432,8 +432,8 @@ public static partial class ClientFile
     /// </summary>
     public static void AppendManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
-        ArgumentNullException.ThrowIfNull(assets, nameof(assets));
+        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentNullException.ThrowIfNull(assets);
 
         // Open the manifest .dat file in little-endian format.
         using FileStream stream = new(manifestFile, FileMode.Append, FileAccess.Write, FileShare.Read);
@@ -556,8 +556,8 @@ public static partial class ClientFile
     /// </summary>
     public static void WriteManifestAssets(string packFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
-        ArgumentNullException.ThrowIfNull(assets, nameof(assets));
+        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentNullException.ThrowIfNull(assets);
 
         File.Delete(packFile);
         AppendManifestAssets(packFile, assets);
@@ -570,7 +570,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<Asset> EnumeratePackTempAssets(string packTempFile)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+        ArgumentNullException.ThrowIfNull(packTempFile);
 
         using IEnumerator<Asset> enumerator = EnumeratePackAssets(packTempFile).GetEnumerator();
         long end = new FileInfo(packTempFile).Length;
@@ -625,7 +625,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static bool TryGetPackTempFix(string packTempFile, out FixedAssetGroup fix)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+        ArgumentNullException.ThrowIfNull(packTempFile);
 
         // Read the .pack.temp file in big-endian format.
         using FileStream stream = File.OpenRead(packTempFile);
@@ -683,7 +683,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static FileInfo RenamePackTempFile(string packTempFile)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+        ArgumentNullException.ThrowIfNull(packTempFile);
 
         FileInfo file = new(packTempFile);
         string name = file.Name;
@@ -736,7 +736,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static bool TryConvertPackTempFile(string packTempFile, [MaybeNullWhen(false)] out AssetFile assetFile)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile, nameof(packTempFile));
+        ArgumentNullException.ThrowIfNull(packTempFile);
 
         if (TryGetPackTempFix(packTempFile, out FixedAssetGroup fix))
         {

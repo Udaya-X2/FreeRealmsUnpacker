@@ -89,7 +89,7 @@ public class ReactiveList<T> : ObservableCollection<T>, IObservableCollection<T>
     /// <inheritdoc/>
     public void Load(IEnumerable<T> items)
     {
-        ArgumentNullException.ThrowIfNull(items, nameof(items));
+        ArgumentNullException.ThrowIfNull(items);
 
         CheckReentrancy();
         Clear();

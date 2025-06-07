@@ -108,8 +108,8 @@ internal class EndianBinaryReader : IDisposable
     /// </exception>
     public EndianBinaryReader(Stream input, Endian endianness, Encoding encoding, bool leaveOpen)
     {
-        ArgumentNullException.ThrowIfNull(input, nameof(input));
-        ArgumentNullException.ThrowIfNull(encoding, nameof(encoding));
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(encoding);
         if (!input.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable, nameof(input));
 
         _stream = input;

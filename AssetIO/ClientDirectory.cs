@@ -37,7 +37,7 @@ public static partial class ClientDirectory
                                                              SearchOption searchOption = SearchOption.AllDirectories,
                                                              bool requireFullType = true)
     {
-        ArgumentNullException.ThrowIfNull(path, nameof(path));
+        ArgumentNullException.ThrowIfNull(path);
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
@@ -72,7 +72,7 @@ public static partial class ClientDirectory
                                                          AssetType assetFilter = AssetType.All,
                                                          SearchOption searchOption = SearchOption.AllDirectories)
     {
-        ArgumentNullException.ThrowIfNull(path, nameof(path));
+        ArgumentNullException.ThrowIfNull(path);
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
@@ -102,7 +102,7 @@ public static partial class ClientDirectory
     public static IEnumerable<string> EnumerateDataFiles(FileInfo manifestFile,
                                                          SearchOption searchOption = SearchOption.TopDirectoryOnly)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile);
 
         if (!manifestFile.Name.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
             || manifestFile.DirectoryName is not string dirName) return [];
@@ -112,12 +112,14 @@ public static partial class ClientDirectory
                         .Where(x => MatchesManifestFile(x, manifestFilePrefix));
     }
 
+    // TODO: add docs
     public static IEnumerable<string> EnumerateDataFilesUnlimited(string manifestFile)
         => EnumerateDataFilesUnlimited(new FileInfo(manifestFile));
 
+    // TODO: add docs
     public static IEnumerable<string> EnumerateDataFilesUnlimited(FileInfo manifestFile)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(manifestFile);
 
         int i = 0;
         string path = EscapeFormatString(manifestFile.FullName);
