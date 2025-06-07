@@ -205,6 +205,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Asset .dat file has an incorrect size ({0} != 209715200): &apos;{1}&apos;..
+        /// </summary>
+        internal static string IO_BadAssetDat {
+            get {
+                return ResourceManager.GetString("IO_BadAssetDat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Manifest.dat file was not divided in chunks of 148: &apos;{0}&apos;..
         /// </summary>
         internal static string IO_BadManifest {

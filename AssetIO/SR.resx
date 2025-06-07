@@ -186,4 +186,7 @@
   <data name="PathTooLong_CantWriteAsset" xml:space="preserve">
     <value>Cannot add '{0}' to '{1}'; asset file name length exceeds maximum limit.</value>
   </data>
+  <data name="IO_BadAssetDat" xml:space="preserve">
+    <value>Asset .dat file has an incorrect size ({0} != 209715200): '{1}'.</value>
+  </data>
 </root>

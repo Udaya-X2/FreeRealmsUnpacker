@@ -1,7 +1,10 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Force.Crc32;
+using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.IO.Pipes;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,6 +19,7 @@ public static partial class ClientFile
 {
     private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest .dat file.
     private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
+    private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
     private const int DefaultAssetsPerChunk = 128; // Default # of assets to write per chunk in a .pack file.
     private const int SizeOfPackAssetFields = 16; // sizeof(Name.Length) + sizeof(Offset) + sizeof(Size) + sizeof(Crc32)
     private const int SizeOfPackAssetChunkHeader = 8; // sizeof(NextOffset) + sizeof(NumAssets)
@@ -416,6 +420,147 @@ public static partial class ClientFile
         {
             throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, manifestFileInfo.Name), ex);
         }
+    }
+
+    /// <inheritdoc cref="AppendManifestAssets(string, IEnumerable{FileInfo})"/>
+    public static void AppendManifestAssets(string manifestFile, IEnumerable<string> assets)
+        => AppendManifestAssets(manifestFile, assets.Select(x => new FileInfo(x)));
+
+    /// <summary>
+    /// Opens a manifest .dat file, appends the specified assets to the file, and then
+    /// closes the file. If the target file does not exist, this method creates the file.
+    /// </summary>
+    public static void AppendManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
+    {
+        ArgumentNullException.ThrowIfNull(manifestFile, nameof(manifestFile));
+        ArgumentNullException.ThrowIfNull(assets, nameof(assets));
+
+        // Open the manifest .dat file in little-endian format.
+        using FileStream stream = new(manifestFile, FileMode.Append, FileAccess.Write, FileShare.Read);
+        using EndianBinaryWriter writer = new(stream, Endian.Little);
+        long fileSize = stream.Length;
+
+        if (fileSize % ManifestChunkSize != 0)
+        {
+            throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
+        }
+
+        IEnumerable<string> dataFiles = ClientDirectory.EnumerateDataFilesUnlimited(manifestFile);
+        using IEnumerator<string> enumerator = dataFiles.GetEnumerator();
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        FileStream? dataStream = null;
+        long offset = 0;
+
+        // TODO: add checked {}
+        try
+        {
+            // If this is a non-empty manifest .dat file, skip to the last asset .dat file.
+            FileMode mode = fileSize != 0 ? FileMode.Append : FileMode.Create;
+            dataStream = GetNextDataStream(ref offset, enumerator, mode);
+
+            foreach (FileInfo asset in assets)
+            {
+                using FileStream assetStream = asset.OpenRead();
+                string name = asset.Name;
+                uint size = (uint)assetStream.Length;
+                int length = ValidateRange(name.Length, minValue: 1, maxValue: MaxAssetNameLength);
+                uint bytes = size;
+
+                while (bytes > 0u)
+                {
+                    int count = BufferSize <= bytes ? BufferSize : (int)bytes;
+                    int spaceLeft = MaxAssetDatSize - (int)dataStream.Position;
+
+                    if (count > spaceLeft)
+                    {
+                        count = spaceLeft;
+                        assetStream.ReadExactly(buffer, 0, count);
+                        dataStream.Write(buffer, 0, count);
+                        dataStream.Dispose();
+                        dataStream = GetNextDataStream(ref offset, enumerator, FileMode.Create);
+                    }
+                    else
+                    {
+                        assetStream.ReadExactly(buffer, 0, count);
+                        dataStream.Write(buffer, 0, count);
+                    }
+
+                    bytes -= (uint)count;
+                }
+
+                assetStream.Position = 0;
+
+                writer.Write(name);                                           // Name
+                writer.Write(offset);                                         // Offset
+                writer.Write(size);                                           // Size
+                writer.Write(GetCrc32(assetStream, buffer));                  // CRC-32
+                stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current); // Pad with null bytes
+
+                offset += size;
+            }
+        }
+        //catch (EndOfStreamException ex)
+        //{
+        //    throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
+        //}
+        //catch (OverflowException ex)
+        //{
+        //    throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, file, stream.Name), ex);
+        //}
+        //catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
+        //{
+        //    throw new PathTooLongException(string.Format(SR.PathTooLong_CantWriteAsset, file, stream.Name), ex);
+        //}
+        finally
+        {
+            dataStream?.Dispose();
+            ArrayPool<byte>.Shared.Return(buffer);
+            stream.SetLength(stream.Position); // Set length to include null byte padding
+        }
+    }
+
+    private static FileStream GetNextDataStream(ref long offset, IEnumerator<string> enumerator, FileMode mode)
+    {
+        FileStream dataStream = File.Open(enumerator.SafeGetNext(), mode, FileAccess.Write, FileShare.Read);
+
+        // Skip to the first asset .dat file with free space.
+        if (mode == FileMode.Append)
+        {
+            long size = dataStream.Length;
+            offset += size;
+
+            while (size >= MaxAssetDatSize)
+            {
+                if (size > MaxAssetDatSize)
+                {
+                    throw new IOException(string.Format(SR.IO_BadAssetDat, size, dataStream.Name));
+                }
+
+                dataStream.Dispose();
+                dataStream = File.Open(enumerator.SafeGetNext(), mode, FileAccess.Write, FileShare.Read);
+                size = dataStream.Length;
+                offset += size;
+            }
+        }
+
+        return dataStream;
+    }
+
+    /// <inheritdoc cref="WriteManifestAssets(string, IEnumerable{FileInfo})"/>
+    public static void WriteManifestAssets(string manifestFile, IEnumerable<string> assets)
+        => WriteManifestAssets(manifestFile, assets.Select(x => new FileInfo(x)));
+
+    /// <summary>
+    /// Creates a new manifest .dat file, writes the specified assets to the file, and
+    /// then closes the file. If the target file already exists, it is overwritten.
+    /// </summary>
+    public static void WriteManifestAssets(string packFile, IEnumerable<FileInfo> assets)
+    {
+        ArgumentNullException.ThrowIfNull(packFile, nameof(packFile));
+        ArgumentNullException.ThrowIfNull(assets, nameof(assets));
+
+        File.Delete(packFile);
+        AppendManifestAssets(packFile, assets);
     }
 
     /// <summary>
@@ -833,6 +978,17 @@ public static partial class ClientFile
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Advances the enumerator to the next element of the collection and returns it.
+    /// </summary>
+    /// <remarks><inheritdoc cref="SafeMoveNext{T}(IEnumerator{T})"/></remarks>
+    /// <returns>The next element of the collection.</returns>
+    private static T SafeGetNext<T>(this IEnumerator<T> enumerator)
+    {
+        enumerator.SafeMoveNext();
+        return enumerator.Current;
     }
 
     /// <inheritdoc cref="System.Collections.IEnumerator.MoveNext"/>
