@@ -183,7 +183,7 @@
   <data name="Overflow_MaxPackCapacity" xml:space="preserve">
     <value>Cannot add '{0}' to '{1}'; asset .pack file exceeds maximum capacity.</value>
   </data>
-  <data name="PathTooLong_CantWriteAsset" xml:space="preserve">
+  <data name="PathTooLong_CantAddAsset" xml:space="preserve">
     <value>Cannot add '{0}' to '{1}'; asset file name length exceeds maximum limit.</value>
   </data>
   <data name="IO_BadAssetDat" xml:space="preserve">

@@ -113,15 +113,15 @@ public static partial class ClientDirectory
     }
 
     // TODO: add docs
-    public static IEnumerable<string> EnumerateDataFilesUnlimited(string manifestFile)
-        => EnumerateDataFilesUnlimited(new FileInfo(manifestFile));
+    public static IEnumerable<string> EnumerateDataFilesInfinite(string manifestFile)
+        => EnumerateDataFilesInfinite(new FileInfo(manifestFile));
 
     // TODO: add docs
-    public static IEnumerable<string> EnumerateDataFilesUnlimited(FileInfo manifestFile)
+    public static IEnumerable<string> EnumerateDataFilesInfinite(FileInfo manifestFile)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);
 
-        int i = 0;
+        uint i = 0;
         string path = EscapeFormatString(manifestFile.FullName);
         string dataFileFormat = path.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
             ? $"{path[..^ManifestFileSuffix.Length]}_{{0:D3}}.dat"

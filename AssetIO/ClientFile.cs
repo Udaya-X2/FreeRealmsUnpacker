@@ -1,10 +1,7 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Force.Crc32;
-using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.IO.Pipes;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -289,7 +286,7 @@ public static partial class ClientFile
         }
         catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
         {
-            throw new PathTooLongException(string.Format(SR.PathTooLong_CantWriteAsset, file, stream.Name), ex);
+            throw new PathTooLongException(string.Format(SR.PathTooLong_CantAddAsset, file, stream.Name), ex);
         }
         finally
         {
@@ -435,115 +432,12 @@ public static partial class ClientFile
         ArgumentNullException.ThrowIfNull(manifestFile);
         ArgumentNullException.ThrowIfNull(assets);
 
-        // Open the manifest .dat file in little-endian format.
-        using FileStream stream = new(manifestFile, FileMode.Append, FileAccess.Write, FileShare.Read);
-        using EndianBinaryWriter writer = new(stream, Endian.Little);
-        long fileSize = stream.Length;
+        using AssetDatWriter writer = new(manifestFile, append: true);
 
-        if (fileSize % ManifestChunkSize != 0)
+        foreach (FileInfo asset in assets)
         {
-            throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
+            writer.Write(asset);
         }
-
-        IEnumerable<string> dataFiles = ClientDirectory.EnumerateDataFilesUnlimited(manifestFile);
-        using IEnumerator<string> enumerator = dataFiles.GetEnumerator();
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-        FileStream? dataStream = null;
-        long offset = 0;
-
-        // TODO: add checked {}
-        try
-        {
-            // If this is a non-empty manifest .dat file, skip to the last asset .dat file.
-            FileMode mode = fileSize != 0 ? FileMode.Append : FileMode.Create;
-            dataStream = GetNextDataStream(ref offset, enumerator, mode);
-
-            foreach (FileInfo asset in assets)
-            {
-                using FileStream assetStream = asset.OpenRead();
-                string name = asset.Name;
-                uint size = (uint)assetStream.Length;
-                int length = ValidateRange(name.Length, minValue: 1, maxValue: MaxAssetNameLength);
-                uint bytes = size;
-
-                while (bytes > 0u)
-                {
-                    int count = BufferSize <= bytes ? BufferSize : (int)bytes;
-                    int spaceLeft = MaxAssetDatSize - (int)dataStream.Position;
-
-                    if (count > spaceLeft)
-                    {
-                        count = spaceLeft;
-                        assetStream.ReadExactly(buffer, 0, count);
-                        dataStream.Write(buffer, 0, count);
-                        dataStream.Dispose();
-                        dataStream = GetNextDataStream(ref offset, enumerator, FileMode.Create);
-                    }
-                    else
-                    {
-                        assetStream.ReadExactly(buffer, 0, count);
-                        dataStream.Write(buffer, 0, count);
-                    }
-
-                    bytes -= (uint)count;
-                }
-
-                assetStream.Position = 0;
-
-                writer.Write(name);                                           // Name
-                writer.Write(offset);                                         // Offset
-                writer.Write(size);                                           // Size
-                writer.Write(GetCrc32(assetStream, buffer));                  // CRC-32
-                stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current); // Pad with null bytes
-
-                offset += size;
-            }
-        }
-        //catch (EndOfStreamException ex)
-        //{
-        //    throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
-        //}
-        //catch (OverflowException ex)
-        //{
-        //    throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, file, stream.Name), ex);
-        //}
-        //catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
-        //{
-        //    throw new PathTooLongException(string.Format(SR.PathTooLong_CantWriteAsset, file, stream.Name), ex);
-        //}
-        finally
-        {
-            dataStream?.Dispose();
-            ArrayPool<byte>.Shared.Return(buffer);
-            stream.SetLength(stream.Position); // Set length to include null byte padding
-        }
-    }
-
-    private static FileStream GetNextDataStream(ref long offset, IEnumerator<string> enumerator, FileMode mode)
-    {
-        FileStream dataStream = File.Open(enumerator.SafeGetNext(), mode, FileAccess.Write, FileShare.Read);
-
-        // Skip to the first asset .dat file with free space.
-        if (mode == FileMode.Append)
-        {
-            long size = dataStream.Length;
-            offset += size;
-
-            while (size >= MaxAssetDatSize)
-            {
-                if (size > MaxAssetDatSize)
-                {
-                    throw new IOException(string.Format(SR.IO_BadAssetDat, size, dataStream.Name));
-                }
-
-                dataStream.Dispose();
-                dataStream = File.Open(enumerator.SafeGetNext(), mode, FileAccess.Write, FileShare.Read);
-                size = dataStream.Length;
-                offset += size;
-            }
-        }
-
-        return dataStream;
     }
 
     /// <inheritdoc cref="WriteManifestAssets(string, IEnumerable{FileInfo})"/>
@@ -554,13 +448,17 @@ public static partial class ClientFile
     /// Creates a new manifest .dat file, writes the specified assets to the file, and
     /// then closes the file. If the target file already exists, it is overwritten.
     /// </summary>
-    public static void WriteManifestAssets(string packFile, IEnumerable<FileInfo> assets)
+    public static void WriteManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentNullException.ThrowIfNull(manifestFile);
         ArgumentNullException.ThrowIfNull(assets);
 
-        File.Delete(packFile);
-        AppendManifestAssets(packFile, assets);
+        using AssetDatWriter writer = new(manifestFile);
+
+        foreach (FileInfo asset in assets)
+        {
+            writer.Write(asset);
+        }
     }
 
     /// <summary>
@@ -873,7 +771,7 @@ public static partial class ClientFile
     /// </summary>
     /// <returns>The specified integer.</returns>
     /// <exception cref="ArgumentOutOfRangeException"/>
-    private static T ValidateRange<T>(T value, T minValue, T maxValue) where T : unmanaged, IBinaryInteger<T>
+    internal static T ValidateRange<T>(T value, T minValue, T maxValue) where T : unmanaged, IBinaryInteger<T>
     {
         if (minValue <= value && value <= maxValue)
         {
@@ -978,33 +876,5 @@ public static partial class ClientFile
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Advances the enumerator to the next element of the collection and returns it.
-    /// </summary>
-    /// <remarks><inheritdoc cref="SafeMoveNext{T}(IEnumerator{T})"/></remarks>
-    /// <returns>The next element of the collection.</returns>
-    private static T SafeGetNext<T>(this IEnumerator<T> enumerator)
-    {
-        enumerator.SafeMoveNext();
-        return enumerator.Current;
-    }
-
-    /// <inheritdoc cref="System.Collections.IEnumerator.MoveNext"/>
-    /// <remarks>
-    /// If an error occurs, the exception is nested within a generic <see cref="Exception"/>
-    /// to distinguish it from other runtime exceptions.
-    /// </remarks>
-    private static bool SafeMoveNext<T>(this IEnumerator<T> enumerator)
-    {
-        try
-        {
-            return enumerator.MoveNext();
-        }
-        catch (Exception ex)
-        {
-            throw new Exception("Unable to advance enumerator to next element.", ex);
-        }
     }
 }

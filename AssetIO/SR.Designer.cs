@@ -270,9 +270,9 @@ namespace AssetIO {
         /// <summary>
         ///   Looks up a localized string similar to Cannot add &apos;{0}&apos; to &apos;{1}&apos;; asset file name length exceeds maximum limit..
         /// </summary>
-        internal static string PathTooLong_CantWriteAsset {
+        internal static string PathTooLong_CantAddAsset {
             get {
-                return ResourceManager.GetString("PathTooLong_CantWriteAsset", resourceCulture);
+                return ResourceManager.GetString("PathTooLong_CantAddAsset", resourceCulture);
             }
         }
     }
