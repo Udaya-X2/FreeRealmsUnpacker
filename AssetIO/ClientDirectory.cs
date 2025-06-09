@@ -112,11 +112,23 @@ public static partial class ClientDirectory
                         .Where(x => MatchesManifestFile(x, manifestFilePrefix));
     }
 
-    // TODO: add docs
+    /// <inheritdoc cref="EnumerateDataFilesInfinite(FileInfo)"/>
     public static IEnumerable<string> EnumerateDataFilesInfinite(string manifestFile)
         => EnumerateDataFilesInfinite(new FileInfo(manifestFile));
 
-    // TODO: add docs
+    /// <summary>
+    /// Returns an infinite enumerable of full file names for all asset
+    /// .dat files corresponding to the specified manifest .dat file.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="EnumerateDataFilesInfinite(FileInfo)"/>, this method enumerates
+    /// each asset .dat file in numerical order and includes nonexistent files.
+    /// </remarks>
+    /// <param name="manifestFile">The manifest .dat file.</param>
+    /// <returns>
+    /// An infinite enumerable of the full file names (including paths) for
+    /// the asset .dat files corresponding to the specified manifest.dat file.
+    /// </returns>
     public static IEnumerable<string> EnumerateDataFilesInfinite(FileInfo manifestFile)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);
