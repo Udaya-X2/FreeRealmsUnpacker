@@ -185,6 +185,10 @@ public static partial class ClientFile
     /// Opens a .pack file, appends the specified assets to the file, and then closes
     /// the file. If the target file does not exist, this method creates the file.
     /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="OverflowException"/>
+    /// <exception cref="PathTooLongException"/>
     public static void AppendPackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
         ArgumentNullException.ThrowIfNull(packFile);
@@ -311,13 +315,21 @@ public static partial class ClientFile
     /// Creates a new .pack file, writes the specified assets to the file, and then
     /// closes the file. If the target file already exists, it is overwritten.
     /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="OverflowException"/>
+    /// <exception cref="PathTooLongException"/>
     public static void WritePackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
         ArgumentNullException.ThrowIfNull(packFile);
         ArgumentNullException.ThrowIfNull(assets);
 
-        File.Delete(packFile);
-        AppendPackAssets(packFile, assets);
+        using AssetPackWriter writer = new(packFile);
+
+        foreach (FileInfo asset in assets)
+        {
+            writer.Write(asset);
+        }
     }
 
     /// <summary>
@@ -427,6 +439,8 @@ public static partial class ClientFile
     /// Opens a manifest .dat file, appends the specified assets to the file, and then
     /// closes the file. If the target file does not exist, this method creates the file.
     /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="PathTooLongException"/>
     public static void AppendManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);
@@ -448,6 +462,8 @@ public static partial class ClientFile
     /// Creates a new manifest .dat file, writes the specified assets to the file, and
     /// then closes the file. If the target file already exists, it is overwritten.
     /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="PathTooLongException"/>
     public static void WriteManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);

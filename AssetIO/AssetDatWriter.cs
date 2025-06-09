@@ -122,7 +122,7 @@ public class AssetDatWriter : AssetWriter
                     _dataStream.Write(_buffer, 0, bytesRead);
                 }
 
-                // Compute the CRC-32 of the asset while the data is being read.
+                // Compute the CRC-32/size of the asset while the data is being written.
                 crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
                 size += (uint)bytesRead;
             }
