@@ -28,6 +28,7 @@ public class AssetDatWriter : AssetWriter
     /// Initializes a new instance of the <see cref="AssetDatWriter"/> class for the specified manifest .dat file.
     /// </summary>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public AssetDatWriter(string manifestFile, bool append = false)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);
@@ -86,6 +87,9 @@ public class AssetDatWriter : AssetWriter
     /// <summary>
     /// Writes an asset with the given name and stream contents to the manifest .dat file and asset .dat file(s).
     /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    /// <exception cref="PathTooLongException"/>
     public override void Write(Stream stream, string name)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -95,6 +99,7 @@ public class AssetDatWriter : AssetWriter
         try
         {
             int length = ClientFile.ValidateRange(name.Length, minValue: 1, maxValue: MaxAssetNameLength);
+            long offset;
             uint size = 0u;
             uint crc32 = 0u;
             int bytesRead;
@@ -123,8 +128,9 @@ public class AssetDatWriter : AssetWriter
             }
 
             // Index the asset in the manifest .dat file.
+            offset = size != 0 ? _offset : 0;
             _manifestWriter.Write(name);
-            _manifestWriter.Write(_offset);
+            _manifestWriter.Write(offset);
             _manifestWriter.Write(size);
             _manifestWriter.Write(crc32);
             _manifestStream.Seek(MaxAssetNameLength - length, SeekOrigin.Current); // Pad with null bytes
@@ -153,6 +159,7 @@ public class AssetDatWriter : AssetWriter
         {
             if (disposing)
             {
+                // Set length to include null byte padding, if necessary.
                 _manifestStream.SetLength(_manifestStream.Position);
                 _manifestStream.Dispose();
                 _manifestWriter.Dispose();
