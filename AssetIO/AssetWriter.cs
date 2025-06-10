@@ -22,7 +22,7 @@ public abstract class AssetWriter : IDisposable
     public virtual void Write(FileInfo file)
     {
         using FileStream stream = file.OpenRead();
-        Write(stream, file.Name);
+        Write(file.Name, stream);
     }
 
     /// <summary>
@@ -31,7 +31,7 @@ public abstract class AssetWriter : IDisposable
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public abstract void Write(Stream stream, string name);
+    public abstract void Write(string name, Stream stream);
 
     /// <inheritdoc cref="Dispose()"/>
     protected abstract void Dispose(bool disposing);

@@ -8,7 +8,7 @@ namespace AssetIO;
 /// </summary>
 public class AssetDatReader : AssetReader
 {
-    private const int MaxAssetDatSize = 209715200;
+    private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
     private const int BufferSize = 81920;
 
     private readonly FileStream[] _assetStreams;
@@ -266,7 +266,7 @@ public class AssetDatReader : AssetReader
         }
         catch
         {
-            throw new IOException(string.Format(SR.IO_NoMoreAssetDatFiles, asset.Name));
+            throw new IOException(string.Format(SR.IO_NoMoreAssetDatFilesRead, asset.Name));
         }
     }
 

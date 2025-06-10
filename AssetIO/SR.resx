@@ -168,7 +168,7 @@
   <data name="IO_InvalidStringLen" xml:space="preserve">
     <value>EndianBinaryReader encountered an invalid string length of {0} characters.</value>
   </data>
-  <data name="IO_NoMoreAssetDatFiles" xml:space="preserve">
+  <data name="IO_NoMoreAssetDatFilesRead" xml:space="preserve">
     <value>Ran out of asset .dat files while reading '{0}'.</value>
   </data>
   <data name="Overflow_TooManyAssets" xml:space="preserve">
@@ -180,7 +180,7 @@
   <data name="Argument_ManifestTempNotSupported" xml:space="preserve">
     <value>Asset manifest.dat.temp files are not supported.</value>
   </data>
-  <data name="Overflow_MaxPackCapacity" xml:space="preserve">
+  <data name="Overflow_CantAddAsset" xml:space="preserve">
     <value>Cannot add '{0}' to '{1}'; asset .pack file exceeds maximum capacity.</value>
   </data>
   <data name="PathTooLong_CantAddAsset" xml:space="preserve">
@@ -188,5 +188,11 @@
   </data>
   <data name="IO_BadAssetDat" xml:space="preserve">
     <value>Asset .dat file has an incorrect size ({0} != 209715200): '{1}'.</value>
+  </data>
+  <data name="Overflow_MaxPackCapacity" xml:space="preserve">
+    <value>Cannot add assets to '{0}'; asset .pack file is at maximum capacity.</value>
+  </data>
+  <data name="IO_NoMoreAssetDatFilesWrite" xml:space="preserve">
+    <value>Ran out of asset .dat files while writing '{0}'.</value>
   </data>
 </root>

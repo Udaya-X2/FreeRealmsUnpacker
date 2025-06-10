@@ -1,10 +1,8 @@
 ﻿using AssetIO.EndianBinaryIO;
-using Force.Crc32;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace AssetIO;
@@ -16,10 +14,6 @@ public static partial class ClientFile
 {
     private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest .dat file.
     private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
-    private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
-    private const int DefaultAssetsPerChunk = 128; // Default # of assets to write per chunk in a .pack file.
-    private const int SizeOfPackAssetFields = 16; // sizeof(Name.Length) + sizeof(Offset) + sizeof(Size) + sizeof(Crc32)
-    private const int SizeOfPackAssetChunkHeader = 8; // sizeof(NextOffset) + sizeof(NumAssets)
     private const int BufferSize = 81920;
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
     private const string PackFileSuffix = ".pack";
@@ -194,116 +188,11 @@ public static partial class ClientFile
         ArgumentNullException.ThrowIfNull(packFile);
         ArgumentNullException.ThrowIfNull(assets);
 
-        // Open the .pack file in big-endian format.
-        using FileStream stream = new(packFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-        using EndianBinaryWriter writer = new(stream, Endian.Big);
-        using IEnumerator<FileInfo> enumerator = assets.GetEnumerator();
-        bool hasNext = enumerator.MoveNext();
-        long fileSize = stream.Length;
+        using AssetPackWriter writer = new(packFile, append: true);
 
-        // Exit early if there are no assets to add.
-        if (!hasNext)
+        foreach (FileInfo asset in assets)
         {
-            // If this is an empty .pack file, write an empty asset chunk at the start of the file.
-            if (fileSize == 0)
-            {
-                stream.Write(stackalloc byte[SizeOfPackAssetChunkHeader]);
-            }
-
-            return;
-        }
-
-        // Keep track of chunk assets via FileStream to prevent concurrent modification (and optimize Length reads).
-        List<FileStream> chunkAssets = new(DefaultAssetsPerChunk);
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-        FileInfo file = enumerator.Current;
-        uint chunkOffset = 0;
-        uint assetOffset = 0;
-        long prevOffset = -1;
-
-        try
-        {
-            checked
-            {
-                // If this is a non-empty .pack file, skip to the last asset chunk.
-                if (fileSize != 0)
-                {
-                    using EndianBinaryReader reader = new(stream, Endian.Big, Encoding.UTF8, leaveOpen: true);
-
-                    while ((chunkOffset = reader.ReadUInt32()) != 0)
-                    {
-                        stream.Position = chunkOffset;
-                    }
-
-                    // If the last asset chunk is empty and at the end of the .pack file, overwrite it.
-                    if (stream.Position + sizeof(uint) == fileSize)
-                    {
-                        stream.Seek(-sizeof(uint), SeekOrigin.Current);
-                    }
-                    // Otherwise, create a new asset chunk at the end of the .pack file.
-                    else
-                    {
-                        assetOffset = chunkOffset = (uint)fileSize;
-                        stream.Seek(-sizeof(uint), SeekOrigin.Current);
-                        prevOffset = stream.Position;
-                        writer.Write(chunkOffset);
-                        stream.Position = chunkOffset;
-                    }
-                }
-
-                while (hasNext)
-                {
-                    // Add assets to the current asset chunk.
-                    file = enumerator.Current;
-                    FileStream asset = file.OpenRead();
-                    int fileNameLength = ValidateRange(file.Name.Length, minValue: 1, maxValue: MaxAssetNameLength);
-                    chunkOffset += (uint)asset.Length;
-                    assetOffset += (uint)fileNameLength + SizeOfPackAssetFields;
-                    chunkAssets.Add(asset);
-                    hasNext = enumerator.SafeMoveNext();
-
-                    // If this is the last asset, write the asset chunk and set
-                    // the next asset chunk to the start of the .pack file.
-                    if (!hasNext)
-                    {
-                        WritePackAssetChunk(writer, chunkAssets, chunkOffset: 0, assetOffset, buffer);
-                    }
-                    // When the asset chunk is at max capacity, write the assets to the .pack file.
-                    else if (chunkAssets.Count == DefaultAssetsPerChunk)
-                    {
-                        chunkOffset += assetOffset + SizeOfPackAssetChunkHeader;
-                        prevOffset = stream.Position;
-                        WritePackAssetChunk(writer, chunkAssets, chunkOffset, assetOffset, buffer);
-                        assetOffset = chunkOffset;
-                        chunkOffset = 0;
-                    }
-                }
-            }
-        }
-        catch (EndOfStreamException ex)
-        {
-            throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
-        }
-        catch (OverflowException ex)
-        {
-            throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, file, stream.Name), ex);
-        }
-        catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
-        {
-            throw new PathTooLongException(string.Format(SR.PathTooLong_CantAddAsset, file, stream.Name), ex);
-        }
-        finally
-        {
-            chunkAssets.ForEach(x => x.Dispose());
-            ArrayPool<byte>.Shared.Return(buffer);
-
-            // If an error occurred before all assets were written, ensure
-            // the previous asset chunk is the last one in the .pack file.
-            if (hasNext && prevOffset != -1)
-            {
-                stream.Position = prevOffset;
-                writer.Write(0u); // Next Offset
-            }
+            writer.Write(asset);
         }
     }
 
@@ -800,60 +689,6 @@ public static partial class ClientFile
             exception.Data["BytesRead"] = Unsafe.SizeOf<T>();
             throw exception;
         }
-    }
-
-    /// <summary>
-    /// Writes the specified list of assets to the asset chunk at the given offset.
-    /// </summary>
-    private static void WritePackAssetChunk(EndianBinaryWriter writer,
-                                            List<FileStream> assets,
-                                            uint chunkOffset,
-                                            uint assetOffset,
-                                            byte[] buffer)
-    {
-        // Write the offset of the next asset chunk and the number of assets in this chunk.
-        writer.Write(chunkOffset);
-        writer.Write(assets.Count);
-        assetOffset += SizeOfPackAssetChunkHeader;
-
-        // Create an index of each asset in the asset info chunk.
-        foreach (FileStream asset in assets)
-        {
-            uint size = (uint)asset.Length;
-            writer.Write(Path.GetFileName(asset.Name)); // Name
-            writer.Write(assetOffset);                  // Offset
-            writer.Write(size);                         // Size
-            writer.Write(GetCrc32(asset, buffer));      // CRC-32
-            assetOffset += size;
-        }
-
-        // Copy each asset into the asset content chunk.
-        foreach (FileStream asset in assets)
-        {
-            asset.CopyTo(writer.BaseStream);
-            asset.Dispose();
-        }
-
-        // Clear the asset list.
-        assets.Clear();
-    }
-
-    /// <summary>
-    /// Computes the CRC-32 of the bytes in the specified stream.
-    /// </summary>
-    /// <returns>The CRC-32 checksum value of the specified stream.</returns>
-    private static uint GetCrc32(Stream stream, byte[] buffer)
-    {
-        uint crc32 = 0u;
-        int bytesRead;
-
-        while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) != 0)
-        {
-            crc32 = Crc32Algorithm.Append(crc32, buffer, 0, bytesRead);
-        }
-
-        stream.Position = 0;
-        return crc32;
     }
 
     /// <summary>

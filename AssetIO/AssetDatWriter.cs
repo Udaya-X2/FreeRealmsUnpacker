@@ -9,9 +9,9 @@ namespace AssetIO;
 /// </summary>
 public class AssetDatWriter : AssetWriter
 {
-    private const int MaxAssetDatSize = 209715200;
-    private const int ManifestChunkSize = 148;
-    private const int MaxAssetNameLength = 128;
+    private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
+    private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest .dat file.
+    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
     private const int BufferSize = 81920;
 
     private readonly FileStream _manifestStream;
@@ -90,7 +90,7 @@ public class AssetDatWriter : AssetWriter
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ObjectDisposedException"/>
     /// <exception cref="PathTooLongException"/>
-    public override void Write(Stream stream, string name)
+    public override void Write(string name, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(stream);
@@ -146,10 +146,19 @@ public class AssetDatWriter : AssetWriter
     /// Closes the current data file stream and opens the next asset .dat file.
     /// </summary>
     /// <returns>A write-only <see cref="FileStream"/> for the next asset .dat file.</returns>
+    /// <exception cref="IOException"/>
     private FileStream GetNextDataStream()
     {
-        _dataStream?.Dispose();
-        return File.Open(_dataFileEnumerator.SafeGetNext(), _mode, FileAccess.Write, FileShare.Read);
+        try
+        {
+            _dataStream?.Dispose();
+            _dataFileEnumerator.MoveNext();
+            return File.Open(_dataFileEnumerator.Current, _mode, FileAccess.Write, FileShare.Read);
+        }
+        catch (Exception ex)
+        {
+            throw new IOException(string.Format(SR.IO_NoMoreAssetDatFilesWrite, _manifestStream.Name), ex);
+        }
     }
 
     /// <inheritdoc/>

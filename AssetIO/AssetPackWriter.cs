@@ -1,6 +1,7 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Force.Crc32;
 using System.Buffers;
+using System.Text;
 
 namespace AssetIO;
 
@@ -9,10 +10,10 @@ namespace AssetIO;
 /// </summary>
 public class AssetPackWriter : AssetWriter
 {
-    private const int MaxAssetNameLength = 128;
-    private const int AssetPackInfoChunkSize = 8192;
-    private const int AssetPackInfoHeaderSize = 8;
-    private const int AssetPackInfoFieldsSize = 16;
+    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
+    private const int AssetPackInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
+    private const int AssetPackInfoHeaderSize = 8; // The size of an asset info chunk header (NextOffset/NumAssets).
+    private const int AssetPackInfoFieldsSize = 16; // The size of an asset's fields (Name.Length/Offset/Size/Crc32).
     private const int BufferSize = 81920;
 
     private readonly FileStream _packStream;
@@ -28,20 +29,72 @@ public class AssetPackWriter : AssetWriter
     /// Initializes a new instance of the <see cref="AssetPackWriter"/> class for the specified asset .pack file.
     /// </summary>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
     public AssetPackWriter(string packFile, bool append = false)
     {
         ArgumentNullException.ThrowIfNull(packFile);
-        if (append) throw new Exception("Append option not implemented");
 
         // Open the .pack file in big-endian format.
-        _packStream = new FileStream(packFile, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+        FileMode mode = append ? FileMode.OpenOrCreate : FileMode.Create;
+        FileAccess access = append ? FileAccess.ReadWrite : FileAccess.Write;
+        _packStream = new FileStream(packFile, mode, access, FileShare.Read);
         _packWriter = new EndianBinaryWriter(_packStream, Endian.Big);
-
-        // Create an empty asset info chunk at the start of the .pack file.
-        _packStream.SetLength(AssetPackInfoChunkSize);
-        _chunkSize = AssetPackInfoHeaderSize;
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        _chunkSize = AssetPackInfoHeaderSize;
+
+        try
+        {
+            // If appending to a non-empty .pack file, skip to the last asset chunk.
+            if (append && _packStream.Length != 0)
+            {
+                using EndianBinaryReader reader = new(_packStream, Endian.Big, Encoding.UTF8, leaveOpen: true);
+                uint nextOffset;
+
+                while ((nextOffset = reader.ReadUInt32()) != 0)
+                {
+                    _chunkOffset = nextOffset;
+                    _packStream.Position = nextOffset;
+                }
+
+                _numAssets = reader.ReadUInt32();
+
+                // Compute the size of the last asset info chunk.
+                for (uint i = 0; i < _numAssets; i++)
+                {
+                    int nameLength = ClientFile.ValidateRange(reader.ReadInt32(), 1, MaxAssetNameLength);
+                    int assetInfoSize = nameLength + AssetPackInfoFieldsSize;
+                    _packStream.Seek(assetInfoSize - sizeof(int), SeekOrigin.Current);
+                    checked { _chunkSize += assetInfoSize; }
+                }
+            }
+            // Otherwise, create an empty asset info chunk at the start of the .pack file.
+            else
+            {
+                _packStream.SetLength(AssetPackInfoChunkSize);
+            }
+        }
+        catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytes)
+        {
+            Dispose();
+            throw new IOException(string.Format(SR.IO_BadAsset, _packStream.Position - bytes, _packStream.Name), ex);
+        }
+        catch (EndOfStreamException ex)
+        {
+            Dispose();
+            throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, _packStream.Name), ex);
+        }
+        catch (OverflowException ex)
+        {
+            Dispose();
+            throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, _packStream.Name), ex);
+        }
+        catch
+        {
+            Dispose();
+            throw;
+        }
     }
 
     /// <summary>
@@ -50,7 +103,7 @@ public class AssetPackWriter : AssetWriter
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ObjectDisposedException"/>
     /// <exception cref="PathTooLongException"/>
-    public override void Write(Stream stream, string name)
+    public override void Write(string name, Stream stream)
     {
         try
         {
@@ -109,7 +162,7 @@ public class AssetPackWriter : AssetWriter
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, name, _packStream.Name), ex);
+            throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, name, _packStream.Name), ex);
         }
         catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
         {

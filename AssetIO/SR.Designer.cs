@@ -243,14 +243,32 @@ namespace AssetIO {
         /// <summary>
         ///   Looks up a localized string similar to Ran out of asset .dat files while reading &apos;{0}&apos;..
         /// </summary>
-        internal static string IO_NoMoreAssetDatFiles {
+        internal static string IO_NoMoreAssetDatFilesRead {
             get {
-                return ResourceManager.GetString("IO_NoMoreAssetDatFiles", resourceCulture);
+                return ResourceManager.GetString("IO_NoMoreAssetDatFilesRead", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ran out of asset .dat files while writing &apos;{0}&apos;..
+        /// </summary>
+        internal static string IO_NoMoreAssetDatFilesWrite {
+            get {
+                return ResourceManager.GetString("IO_NoMoreAssetDatFilesWrite", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Cannot add &apos;{0}&apos; to &apos;{1}&apos;; asset .pack file exceeds maximum capacity..
+        /// </summary>
+        internal static string Overflow_CantAddAsset {
+            get {
+                return ResourceManager.GetString("Overflow_CantAddAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot add assets to &apos;{0}&apos;; asset .pack file is at maximum capacity..
         /// </summary>
         internal static string Overflow_MaxPackCapacity {
             get {
