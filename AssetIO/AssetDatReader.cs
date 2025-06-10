@@ -24,7 +24,7 @@ public class AssetDatReader : AssetReader
     {
         ArgumentNullException.ThrowIfNull(assetDatPaths);
 
-        _assetStreams = OpenReadFiles(assetDatPaths);
+        _assetStreams = OpenReadDataFiles(assetDatPaths);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
     }
 
@@ -271,10 +271,10 @@ public class AssetDatReader : AssetReader
     }
 
     /// <summary>
-    /// Opens the specified files for reading.
+    /// Opens the specified asset .dat files for reading.
     /// </summary>
     /// <returns>An array of read-only <see cref="FileStream"/> objects on the specified files.</returns>
-    private static FileStream[] OpenReadFiles(IEnumerable<string> files)
+    private static FileStream[] OpenReadDataFiles(IEnumerable<string> files)
     {
         List<FileStream> fileStreams = [];
         FileStream? fileStream = null;
@@ -283,10 +283,10 @@ public class AssetDatReader : AssetReader
         {
             try
             {
-                // Enforce size requirement on previous files.
-                if (fileStream != null && fileStream.Length != MaxAssetDatSize)
+                // Break early if the previous asset .dat file doesn't meet the size requirement.
+                if (fileStream?.Length < MaxAssetDatSize)
                 {
-                    throw new IOException(string.Format(SR.IO_BadAssetDat, fileStream.Length, fileStream.Name));
+                    break;
                 }
 
                 fileStream = File.OpenRead(file);
