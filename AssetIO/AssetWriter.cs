@@ -26,8 +26,33 @@ public abstract class AssetWriter : IDisposable
     }
 
     /// <summary>
+    /// Writes an asset with the given name and bytes to the asset file(s).
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public virtual void Write(string name, byte[] buffer)
+        => Write(name, buffer, 0, buffer.Length);
+
+    /// <summary>
+    /// Writes an asset with the given name and bytes to the asset file(s).
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public virtual void Write(string name, byte[] buffer, int index, int count)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(buffer);
+
+        using MemoryStream ms = new(buffer, index, count);
+        Write(name, ms);
+    }
+
+    /// <summary>
     /// Writes an asset with the given name and stream contents to the asset file(s).
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>

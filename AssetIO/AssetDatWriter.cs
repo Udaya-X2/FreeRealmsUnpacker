@@ -87,6 +87,7 @@ public class AssetDatWriter : AssetWriter
     /// <summary>
     /// Writes an asset with the given name and stream contents to the manifest .dat file and asset .dat file(s).
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ObjectDisposedException"/>
     /// <exception cref="PathTooLongException"/>
@@ -95,6 +96,7 @@ public class AssetDatWriter : AssetWriter
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(stream);
         ArgumentNullException.ThrowIfNull(name);
+        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
 
         try
         {

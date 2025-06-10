@@ -100,11 +100,17 @@ public class AssetPackWriter : AssetWriter
     /// <summary>
     /// Writes an asset with the given name and stream contents to the .pack file.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ObjectDisposedException"/>
     /// <exception cref="PathTooLongException"/>
     public override void Write(string name, Stream stream)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+
         try
         {
             checked
