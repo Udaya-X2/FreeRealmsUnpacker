@@ -115,15 +115,6 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Too many manifest files in the client directory..
-        /// </summary>
-        internal static string Argument_TooManyManifestFiles {
-            get {
-                return ResourceManager.GetString("Argument_TooManyManifestFiles", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Buffer cannot be null..
         /// </summary>
         internal static string ArgumentNull_Buffer {

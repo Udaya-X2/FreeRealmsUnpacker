@@ -141,9 +141,6 @@
   <data name="Argument_StreamNotWritable" xml:space="preserve">
     <value>Stream was not writable.</value>
   </data>
-  <data name="Argument_TooManyManifestFiles" xml:space="preserve">
-    <value>Too many manifest files in the client directory.</value>
-  </data>
   <data name="EndOfStream_AssetFile" xml:space="preserve">
     <value>End of file reached before assets were parsed: '{0}'.</value>
   </data>
