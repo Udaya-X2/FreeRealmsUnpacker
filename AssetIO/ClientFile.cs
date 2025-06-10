@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 namespace AssetIO;
 
 /// <summary>
-/// Provides static methods for obtaining asset information from a Free Realms asset file.
+/// Provides static methods for reading, writing, and extracting assets from a Free Realms asset file.
 /// </summary>
 public static partial class ClientFile
 {
@@ -222,6 +222,24 @@ public static partial class ClientFile
     }
 
     /// <summary>
+    /// Extracts the assets from the specified .pack file to the given directory.
+    /// </summary>
+    public static void ExtractPackAssets(string packFile,
+                                         string destDir,
+                                         FileConflictOptions options = FileConflictOptions.Overwrite)
+    {
+        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentNullException.ThrowIfNull(destDir);
+
+        using AssetPackReader reader = new(packFile);
+
+        foreach (Asset asset in EnumeratePackAssets(packFile))
+        {
+            reader.ExtractTo(asset, destDir, options);
+        }
+    }
+
+    /// <summary>
     /// Returns an enumerable collection of the assets in the specified manifest.dat file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
@@ -367,6 +385,37 @@ public static partial class ClientFile
     }
 
     /// <summary>
+    /// Extracts the assets from the asset .dat files corresponding
+    /// to the specified manifest .dat file to the given directory.
+    /// </summary>
+    public static void ExtractManifestAssets(string manifestFile,
+                                             string destDir,
+                                             FileConflictOptions options = FileConflictOptions.Overwrite)
+    {
+        IEnumerable<string> assetDatFiles = ClientDirectory.EnumerateDataFiles(new FileInfo(manifestFile));
+        ExtractManifestAssets(manifestFile, assetDatFiles, destDir, options);
+    }
+
+    /// <summary>
+    /// Extracts the assets from the asset .dat files using the specified manifest .dat file to the given directory.
+    /// </summary>
+    public static void ExtractManifestAssets(string manifestFile,
+                                             IEnumerable<string> assetDatFiles,
+                                             string destDir,
+                                             FileConflictOptions options = FileConflictOptions.Overwrite)
+    {
+        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentNullException.ThrowIfNull(destDir);
+
+        using AssetDatReader reader = new(assetDatFiles);
+
+        foreach (Asset asset in EnumerateManifestAssets(manifestFile))
+        {
+            reader.ExtractTo(asset, destDir, options);
+        }
+    }
+
+    /// <summary>
     /// Returns an enumerable collection of the valid assets in the specified .pack.temp file.
     /// </summary>
     /// <returns>An enumerable collection of the valid assets in the specified .pack.temp file.</returns>
@@ -418,6 +467,24 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     public static int GetPackTempAssetCount(string packTempFile)
         => EnumeratePackTempAssets(packTempFile).Count();
+
+    /// <summary>
+    /// Extracts the assets from the specified .pack.temp file to the given directory.
+    /// </summary>
+    public static void ExtractPackTempAssets(string packTempFile,
+                                             string destDir,
+                                             FileConflictOptions options = FileConflictOptions.Overwrite)
+    {
+        ArgumentNullException.ThrowIfNull(packTempFile);
+        ArgumentNullException.ThrowIfNull(destDir);
+
+        using AssetPackReader reader = new(packTempFile);
+
+        foreach (Asset asset in EnumeratePackTempAssets(packTempFile))
+        {
+            reader.ExtractTo(asset, destDir, options);
+        }
+    }
 
     /// <summary>
     /// Attempts to scan the specified .pack.temp file for errors and create a fix for the first invalid asset group.

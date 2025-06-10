@@ -177,9 +177,6 @@
   <data name="Argument_CantInferAssetType" xml:space="preserve">
     <value>Unable to infer asset type from the specified file name: '{0}'.</value>
   </data>
-  <data name="Argument_ManifestTempNotSupported" xml:space="preserve">
-    <value>Asset manifest.dat.temp files are not supported.</value>
-  </data>
   <data name="Overflow_CantAddAsset" xml:space="preserve">
     <value>Cannot add '{0}' to '{1}'; asset .pack file exceeds maximum capacity.</value>
   </data>
@@ -194,5 +191,8 @@
   </data>
   <data name="IO_NoMoreAssetDatFilesWrite" xml:space="preserve">
     <value>Ran out of asset .dat files while writing '{0}'.</value>
+  </data>
+  <data name="NotSupported_PackTempWrite" xml:space="preserve">
+    <value>Writing to .pack.temp files is not supported; convert the file to .pack first.</value>
   </data>
 </root>

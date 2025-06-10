@@ -97,15 +97,6 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset manifest.dat.temp files are not supported..
-        /// </summary>
-        internal static string Argument_ManifestTempNotSupported {
-            get {
-                return ResourceManager.GetString("Argument_ManifestTempNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Stream was not readable..
         /// </summary>
         internal static string Argument_StreamNotReadable {
@@ -255,6 +246,15 @@ namespace AssetIO {
         internal static string IO_NoMoreAssetDatFilesWrite {
             get {
                 return ResourceManager.GetString("IO_NoMoreAssetDatFilesWrite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing to .pack.temp files is not supported; convert the file to .pack first..
+        /// </summary>
+        internal static string NotSupported_PackTempWrite {
+            get {
+                return ResourceManager.GetString("NotSupported_PackTempWrite", resourceCulture);
             }
         }
         

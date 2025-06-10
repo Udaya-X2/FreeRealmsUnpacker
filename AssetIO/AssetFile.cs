@@ -126,6 +126,18 @@ public class AssetFile : IEnumerable<Asset>
     };
 
     /// <summary>
+    /// Creates an <see cref="AssetWriter"/> that writes to the asset file and related data files.
+    /// </summary>
+    /// <returns>A new <see cref="AssetReader"/> that writes to the asset file and related data files.</returns>
+    public virtual AssetWriter OpenWrite(bool append = false) => FileType switch
+    {
+        AssetType.Pack => new AssetPackWriter(FullName, append),
+        AssetType.Dat => new AssetDatWriter(FullName, append),
+        AssetType.Pack | AssetType.Temp => throw new NotSupportedException(SR.NotSupported_PackTempWrite),
+        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+    };
+
+    /// <summary>
     /// Returns an enumerable collection of the assets in the asset file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the asset file.</returns>
