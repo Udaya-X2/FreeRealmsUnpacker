@@ -1,16 +1,11 @@
-﻿using System.Text.RegularExpressions;
-
-namespace AssetIO;
+﻿namespace AssetIO;
 
 /// <summary>
 /// Provides static methods for obtaining asset files in a Free Realms client directory.
 /// </summary>
-public static partial class ClientDirectory
+public static class ClientDirectory
 {
     private const string ManifestFileSuffix = "_manifest.dat";
-
-    [GeneratedRegex(@"^_\d{3}\.dat$", RegexOptions.IgnoreCase, "en-US")]
-    private static partial Regex DataSuffixRegex();
 
     /// <summary>
     /// Returns an enumerable collection of the asset files that match a filter on a specified path.
@@ -31,13 +26,14 @@ public static partial class ClientDirectory
     /// An enumerable collection of the asset files in the directory specified
     /// by <paramref name="path"/> that match the specified filter.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<AssetFile> EnumerateAssetFiles(string path,
                                                              AssetType assetFilter = AssetType.All,
                                                              SearchOption searchOption = SearchOption.AllDirectories,
                                                              bool requireFullType = true)
     {
-        ArgumentNullException.ThrowIfNull(path);
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
@@ -72,7 +68,7 @@ public static partial class ClientDirectory
                                                          AssetType assetFilter = AssetType.All,
                                                          SearchOption searchOption = SearchOption.AllDirectories)
     {
-        ArgumentNullException.ThrowIfNull(path);
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
         {
@@ -90,50 +86,35 @@ public static partial class ClientDirectory
     /// .dat files corresponding to the specified manifest .dat file.
     /// </summary>
     /// <param name="manifestFile">The manifest .dat file.</param>
-    /// <param name="searchOption">
-    /// One of the enumeration values that specifies whether the search operation
-    /// should include only the current directory or should include all subdirectories.
-    /// </param>
     /// <returns>
     /// An enumerable collection of the full file names (including paths) for
     /// the asset .dat files corresponding to the specified manifest.dat file.
     /// </returns>
     /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<string> EnumerateDataFiles(FileInfo manifestFile,
-                                                         SearchOption searchOption = SearchOption.TopDirectoryOnly)
-    {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+    public static IEnumerable<string> EnumerateDataFiles(FileInfo manifestFile)
+        => EnumerateDataFilesInfinite(manifestFile).TakeWhile(File.Exists);
 
-        if (!manifestFile.Name.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
-            || manifestFile.DirectoryName is not string dirName) return [];
-
-        string manifestFilePrefix = manifestFile.Name[..^ManifestFileSuffix.Length];
-        return Directory.EnumerateFiles(dirName, "*", searchOption)
-                        .Where(x => MatchesManifestFile(x, manifestFilePrefix));
-    }
-
-    /// <inheritdoc cref="EnumerateDataFilesInfinite(FileInfo)"/>
-    public static IEnumerable<string> EnumerateDataFilesInfinite(string manifestFile)
-        => EnumerateDataFilesInfinite(new FileInfo(manifestFile));
+    /// <inheritdoc cref="EnumerateDataFilesInfinite(FileInfo, int)"/>
+    public static IEnumerable<string> EnumerateDataFilesInfinite(string manifestFile, int index = 0)
+        => EnumerateDataFilesInfinite(new FileInfo(manifestFile), index);
 
     /// <summary>
     /// Returns an infinite enumerable of full file names for all asset
     /// .dat files corresponding to the specified manifest .dat file.
     /// </summary>
     /// <remarks>
-    /// Unlike <see cref="EnumerateDataFilesInfinite(FileInfo)"/>, this method enumerates
-    /// each asset .dat file in numerical order and includes nonexistent files.
+    /// Unlike <see cref="EnumerateDataFiles(FileInfo)"/>, this method includes nonexistent files.
     /// </remarks>
     /// <param name="manifestFile">The manifest .dat file.</param>
+    /// <param name="index">The starting index.</param>
     /// <returns>
     /// An infinite enumerable of the full file names (including paths) for
     /// the asset .dat files corresponding to the specified manifest.dat file.
     /// </returns>
-    public static IEnumerable<string> EnumerateDataFilesInfinite(FileInfo manifestFile)
+    public static IEnumerable<string> EnumerateDataFilesInfinite(FileInfo manifestFile, int index = 0)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);
 
-        uint i = 0;
         string path = EscapeFormatString(manifestFile.FullName);
         string dataFileFormat = path.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
             ? $"{path[..^ManifestFileSuffix.Length]}_{{0:D3}}.dat"
@@ -141,23 +122,8 @@ public static partial class ClientDirectory
 
         while (true)
         {
-            yield return string.Format(dataFileFormat, i++);
+            yield return string.Format(dataFileFormat, index++);
         }
-    }
-
-    /// <summary>
-    /// Returns <see langword="true"/> if the specified path has the same prefix as the specified manifest
-    /// file prefix and ends with the suffix of an asset .dat file; otherwise, <see langword="false"/>.
-    /// </summary>
-    /// <returns>
-    /// <see langword="true"/> if the specified path has the same prefix as the specified manifest
-    /// file prefix and ends with the suffix of an asset .dat file; otherwise, <see langword="false"/>.
-    /// </returns>
-    private static bool MatchesManifestFile(string path, string manifestFilePrefix)
-    {
-        ReadOnlySpan<char> filename = Path.GetFileName(path.AsSpan());
-        return filename.StartsWith(manifestFilePrefix, StringComparison.OrdinalIgnoreCase)
-            && DataSuffixRegex().IsMatch(filename[manifestFilePrefix.Length..]);
     }
 
     /// <summary>
