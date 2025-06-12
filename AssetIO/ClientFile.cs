@@ -8,7 +8,8 @@ using System.Text.RegularExpressions;
 namespace AssetIO;
 
 /// <summary>
-/// Provides static methods for reading, writing, and extracting assets from a Free Realms asset file.
+/// Provides static methods for the reading, writing, extraction,
+/// and validation of assets from a Free Realms asset file.
 /// </summary>
 public static partial class ClientFile
 {
@@ -222,6 +223,29 @@ public static partial class ClientFile
     }
 
     /// <summary>
+    /// Throws an exception if the specified .pack file is invalid or contains assets with CRC-32 mismatches.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void ValidatePackAssets(string packFile)
+    {
+        ArgumentNullException.ThrowIfNull(packFile);
+
+        using AssetPackReader reader = new(packFile);
+
+        foreach (Asset asset in EnumeratePackAssets(packFile))
+        {
+            uint crc32 = reader.GetCrc32(asset);
+
+            if (asset.Crc32 != crc32)
+            {
+                throw new IOException(string.Format(SR.IO_CrcMismatch, asset.Name, crc32, asset.Crc32, packFile));
+            }
+        }
+    }
+
+    /// <summary>
     /// Extracts the assets from the specified .pack file to the given directory.
     /// </summary>
     public static void ExtractPackAssets(string packFile,
@@ -397,21 +421,57 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Extracts the assets from the asset .dat files using the specified manifest .dat file to the given directory.
+    /// Extracts the assets from the given asset .dat files to the
+    /// given directory, using the specified manifest .dat file.
     /// </summary>
     public static void ExtractManifestAssets(string manifestFile,
-                                             IEnumerable<string> assetDatFiles,
+                                             IEnumerable<string> dataFiles,
                                              string destDir,
                                              FileConflictOptions options = FileConflictOptions.Overwrite)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);
         ArgumentNullException.ThrowIfNull(destDir);
 
-        using AssetDatReader reader = new(assetDatFiles);
+        using AssetDatReader reader = new(dataFiles);
 
         foreach (Asset asset in EnumerateManifestAssets(manifestFile))
         {
             reader.ExtractTo(asset, destDir, options);
+        }
+    }
+
+    /// <summary>
+    /// Throws an exception if the specified manifest .dat file and corresponding
+    /// asset .dat files are invalid or contain assets with CRC-32 mismatches.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void ValidateManifestAssets(string manifestFile)
+        => ValidateManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(new FileInfo(manifestFile)));
+
+    /// <summary>
+    /// Throws an exception if the specified manifest .dat file and asset
+    /// .dat files are invalid or contain assets with CRC-32 mismatches.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void ValidateManifestAssets(string manifestFile, IEnumerable<string> dataFiles)
+    {
+        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentNullException.ThrowIfNull(dataFiles);
+
+        using AssetDatReader reader = new(dataFiles);
+
+        foreach (Asset asset in EnumerateManifestAssets(manifestFile))
+        {
+            uint crc32 = reader.GetCrc32(asset);
+
+            if (asset.Crc32 != crc32)
+            {
+                throw new IOException(string.Format(SR.IO_CrcMismatch, asset.Name, crc32, asset.Crc32, manifestFile));
+            }
         }
     }
 
@@ -617,6 +677,29 @@ public static partial class ClientFile
 
         assetFile = null;
         return false;
+    }
+
+    /// <summary>
+    /// Throws an exception if the specified .pack.temp file is invalid or contains assets with CRC-32 mismatches.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void ValidatePackTempAssets(string packTempFile)
+    {
+        ArgumentNullException.ThrowIfNull(packTempFile);
+
+        using AssetPackReader reader = new(packTempFile);
+
+        foreach (Asset asset in EnumeratePackTempAssets(packTempFile))
+        {
+            uint crc32 = reader.GetCrc32(asset);
+
+            if (asset.Crc32 != crc32)
+            {
+                throw new IOException(string.Format(SR.IO_CrcMismatch, asset.Name, crc32, asset.Crc32, packTempFile));
+            }
+        }
     }
 
     /// <summary>

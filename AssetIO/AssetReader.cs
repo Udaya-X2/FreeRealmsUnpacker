@@ -16,6 +16,8 @@ public abstract class AssetReader : IDisposable
     /// <exception cref="ObjectDisposedException"/>
     public virtual byte[] Read(Asset asset)
     {
+        ArgumentNullException.ThrowIfNull(asset);
+
         if (asset.Size == 0) return [];
 
         byte[] bytes = new byte[asset.Size];
@@ -41,6 +43,10 @@ public abstract class AssetReader : IDisposable
     /// <exception cref="ObjectDisposedException"/>
     public abstract void CopyTo(Asset asset, Stream destination);
 
+    /// <inheritdoc cref="ExtractTo(Asset, string, FileConflictOptions, out bool)"/>
+    public FileInfo ExtractTo(Asset asset, string path, FileConflictOptions options = FileConflictOptions.Overwrite)
+        => ExtractTo(asset, path, options, out _);
+
     /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s)
     /// and writes them to a file in the given directory path.
@@ -51,10 +57,6 @@ public abstract class AssetReader : IDisposable
     /// <exception cref="InvalidEnumArgumentException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public FileInfo ExtractTo(Asset asset, string path, FileConflictOptions options = FileConflictOptions.Overwrite)
-        => ExtractTo(asset, path, options, out _);
-
-    /// <inheritdoc cref="ExtractTo(Asset, string, FileConflictOptions)"/>
     public FileInfo ExtractTo(Asset asset, string path, FileConflictOptions options, out bool fileExtracted)
     {
         fileExtracted = TryGetExtractionPath(path, asset, options, out path);

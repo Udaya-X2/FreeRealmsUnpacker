@@ -4,7 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 namespace AssetIO;
 
 /// <summary>
-/// Provides properties and instance methods for the reading and extraction of Free Realms asset files.
+/// Provides properties and instance methods for the reading, writing,
+/// extraction, and validation of Free Realms asset files.
 /// </summary>
 public class AssetFile : IEnumerable<Asset>
 {
@@ -129,13 +130,49 @@ public class AssetFile : IEnumerable<Asset>
     /// Creates an <see cref="AssetWriter"/> that writes to the asset file and related data files.
     /// </summary>
     /// <returns>A new <see cref="AssetReader"/> that writes to the asset file and related data files.</returns>
-    public virtual AssetWriter OpenWrite(bool append = false) => FileType switch
+    public virtual AssetWriter OpenWrite() => FileType switch
     {
-        AssetType.Pack => new AssetPackWriter(FullName, append),
-        AssetType.Dat => new AssetDatWriter(FullName, append),
+        AssetType.Pack => new AssetPackWriter(FullName),
+        AssetType.Dat => new AssetDatWriter(FullName),
         AssetType.Pack | AssetType.Temp => throw new NotSupportedException(SR.NotSupported_PackTempWrite),
         _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
     };
+
+    /// <summary>
+    /// Creates an <see cref="AssetWriter"/> that appends to the asset file and related data files.
+    /// </summary>
+    /// <returns>A new <see cref="AssetReader"/> that appends to the asset file and related data files.</returns>
+    public virtual AssetWriter OpenAppend() => FileType switch
+    {
+        AssetType.Pack => new AssetPackWriter(FullName, append: true),
+        AssetType.Dat => new AssetDatWriter(FullName, append: true),
+        AssetType.Pack | AssetType.Temp => throw new NotSupportedException(SR.NotSupported_PackTempWrite),
+        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+    };
+
+    /// <summary>
+    /// Throws an exception if the asset file is invalid or contains assets with CRC-32 mismatches.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public virtual void ValidateAssets()
+    {
+        switch (FileType)
+        {
+            case AssetType.Pack:
+                ClientFile.ValidatePackAssets(FullName);
+                break;
+            case AssetType.Dat:
+                ClientFile.ValidateManifestAssets(FullName, DataFiles);
+                break;
+            case AssetType.Pack | AssetType.Temp:
+                ClientFile.ValidatePackTempAssets(FullName);
+                break;
+            default:
+                throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type));
+        }
+    }
 
     /// <summary>
     /// Returns an enumerable collection of the assets in the asset file.

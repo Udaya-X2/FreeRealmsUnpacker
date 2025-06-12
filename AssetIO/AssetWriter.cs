@@ -8,19 +8,17 @@ public abstract class AssetWriter : IDisposable
     /// <summary>
     /// Writes an asset with the name and contents of the given file to the asset file(s).
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc cref="Write(string, Stream)"/>
     public virtual void Write(string file) => Write(new FileInfo(file));
  
     /// <summary>
     /// Writes an asset with the name and contents of the given file to the asset file(s).
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc cref="Write(string, Stream)"/>
     public virtual void Write(FileInfo file)
     {
+        ArgumentNullException.ThrowIfNull(file);
+
         using FileStream stream = file.OpenRead();
         Write(file.Name, stream);
     }
@@ -28,18 +26,14 @@ public abstract class AssetWriter : IDisposable
     /// <summary>
     /// Writes an asset with the given name and bytes to the asset file(s).
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc cref="Write(string, Stream)"/>
     public virtual void Write(string name, byte[] buffer)
         => Write(name, buffer, 0, buffer.Length);
 
     /// <summary>
     /// Writes an asset with the given name and bytes to the asset file(s).
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc cref="Write(string, Stream)"/>
     public virtual void Write(string name, byte[] buffer, int index, int count)
     {
         ArgumentNullException.ThrowIfNull(name);
