@@ -79,6 +79,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot add &apos;{0}&apos; to &apos;{1}&apos;; asset name length exceeds 128 bytes..
+        /// </summary>
+        internal static string Argument_InvalidAssetName {
+            get {
+                return ResourceManager.GetString("Argument_InvalidAssetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and at most one directory flag must be set: &apos;{0}&apos;..
         /// </summary>
         internal static string Argument_InvalidAssetType {
@@ -196,11 +205,29 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid asset info at offset {0} in &apos;{1}&apos;; listed assets exceed size of 8192 bytes..
+        /// </summary>
+        internal static string IO_BadAssetInfo {
+            get {
+                return ResourceManager.GetString("IO_BadAssetInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Manifest.dat file was not divided in chunks of 148: &apos;{0}&apos;..
         /// </summary>
         internal static string IO_BadManifest {
             get {
                 return ResourceManager.GetString("IO_BadManifest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset &apos;{0}&apos; does not match the expected CRC-32 ({1} != {2}) in &apos;{3}&apos;..
+        /// </summary>
+        internal static string IO_CrcMismatch {
+            get {
+                return ResourceManager.GetString("IO_CrcMismatch", resourceCulture);
             }
         }
         
@@ -259,29 +286,11 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot add assets to &apos;{0}&apos;; asset .pack file is at maximum capacity..
-        /// </summary>
-        internal static string Overflow_MaxPackCapacity {
-            get {
-                return ResourceManager.GetString("Overflow_MaxPackCapacity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Number of assets exceeds the maximum integer value: &apos;{0}&apos;..
         /// </summary>
         internal static string Overflow_TooManyAssets {
             get {
                 return ResourceManager.GetString("Overflow_TooManyAssets", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot add &apos;{0}&apos; to &apos;{1}&apos;; asset file name length exceeds maximum limit..
-        /// </summary>
-        internal static string PathTooLong_CantAddAsset {
-            get {
-                return ResourceManager.GetString("PathTooLong_CantAddAsset", resourceCulture);
             }
         }
     }

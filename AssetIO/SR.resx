@@ -177,19 +177,22 @@
   <data name="Overflow_CantAddAsset" xml:space="preserve">
     <value>Cannot add '{0}' to '{1}'; asset .pack file exceeds maximum capacity.</value>
   </data>
-  <data name="PathTooLong_CantAddAsset" xml:space="preserve">
-    <value>Cannot add '{0}' to '{1}'; asset file name length exceeds maximum limit.</value>
-  </data>
   <data name="IO_BadAssetDat" xml:space="preserve">
     <value>Asset .dat file has an incorrect size ({0} != 209715200): '{1}'.</value>
-  </data>
-  <data name="Overflow_MaxPackCapacity" xml:space="preserve">
-    <value>Cannot add assets to '{0}'; asset .pack file is at maximum capacity.</value>
   </data>
   <data name="IO_NoMoreAssetDatFilesWrite" xml:space="preserve">
     <value>Ran out of asset .dat files while writing '{0}'.</value>
   </data>
   <data name="NotSupported_PackTempWrite" xml:space="preserve">
     <value>Writing to .pack.temp files is not supported; convert the file to .pack first.</value>
+  </data>
+  <data name="IO_BadAssetInfo" xml:space="preserve">
+    <value>Invalid asset info at offset {0} in '{1}'; listed assets exceed size of 8192 bytes.</value>
+  </data>
+  <data name="IO_CrcMismatch" xml:space="preserve">
+    <value>The asset '{0}' does not match the expected CRC-32 ({1} != {2}) in '{3}'.</value>
+  </data>
+  <data name="Argument_InvalidAssetName" xml:space="preserve">
+    <value>Cannot add '{0}' to '{1}'; asset name length exceeds 128 bytes.</value>
   </data>
 </root>

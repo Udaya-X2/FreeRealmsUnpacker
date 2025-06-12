@@ -9,20 +9,14 @@ namespace AssetIO.EndianBinaryIO;
 /// Writes primitive types in binary to a stream in a specific
 /// endianness and supports writing strings in a specific encoding.
 /// </summary>
-internal class EndianBinaryWriter(Stream output, Endian endianness, Encoding encoding, bool leaveOpen)
-    : BinaryWriter(output, encoding, leaveOpen)
+internal class EndianBinaryWriter : BinaryWriter
 {
     private const int MaxArrayPoolRentalSize = 64 * 1024; // try to keep rentals to a reasonable size
     private const int CodePageUTF8 = 65001;
 
-    private readonly Encoding _encoding = encoding;
-    private readonly bool _useFastUtf8 = encoding is { CodePage: CodePageUTF8, EncoderFallback.MaxCharCount: <= 1 };
-    private readonly bool _isLittleEndian = endianness switch
-    {
-        Endian.Little => true,
-        Endian.Big => false,
-        _ => throw new InvalidEnumArgumentException(nameof(endianness), (int)endianness, endianness.GetType()),
-    };
+    private readonly Encoding _encoding;
+    private readonly bool _useFastUtf8;
+    private readonly bool _isLittleEndian;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EndianBinaryWriter"/> class based
@@ -73,6 +67,34 @@ internal class EndianBinaryWriter(Stream output, Endian endianness, Encoding enc
     public EndianBinaryWriter(Stream output, Endian endianness, Encoding encoding)
         : this(output, endianness, encoding, false)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="EndianBinaryWriter"/> class based on the specified
+    /// stream, endianness, and character encoding, and optionally leaves the stream open.
+    /// </summary>
+    /// <param name="output">The output stream.</param>
+    /// <param name="endianness">Specifies the order in which bytes are read.</param>
+    /// <param name="encoding">The character encoding to use.</param>
+    /// <param name="leaveOpen">
+    /// <see langword="true"/> to leave the stream open after the <see cref="EndianBinaryWriter"/>
+    /// object is disposed; otherwise, <see langword="false"/>.
+    /// </param>
+    /// <exception cref="InvalidEnumArgumentException">
+    /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
+    /// </exception>
+    /// <inheritdoc cref="BinaryWriter(Stream, Encoding, bool)"/>
+    public EndianBinaryWriter(Stream output, Endian endianness, Encoding encoding, bool leaveOpen)
+        : base(output, encoding, leaveOpen)
+    {
+        _encoding = encoding;
+        _useFastUtf8 = encoding is { CodePage: CodePageUTF8, EncoderFallback.MaxCharCount: <= 1 };
+        _isLittleEndian = endianness switch
+        {
+            Endian.Little => true,
+            Endian.Big => false,
+            _ => throw new InvalidEnumArgumentException(nameof(endianness), (int)endianness, endianness.GetType()),
+        };
     }
 
     /// <summary>
@@ -180,105 +202,8 @@ internal class EndianBinaryWriter(Stream output, Endian endianness, Encoding enc
     }
 
     /// <inheritdoc/>
-    public override void Write(string value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        // Common: UTF-8, small string, avoid 2-pass calculation
-        // Less common: UTF-8, large string, avoid 2-pass calculation
-        // Uncommon: excessively large string or not UTF-8
-        if (_useFastUtf8)
-        {
-            if (value.Length <= 128 / 3)
-            {
-                // Max expansion: each char -> 3 bytes, so 128 bytes max of data
-                Span<byte> buffer = stackalloc byte[128];
-                int actualByteCount = _encoding.GetBytes(value, buffer);
-                Write(actualByteCount);
-                OutStream.Write(buffer[..actualByteCount]);
-                return;
-            }
-            else if (value.Length <= MaxArrayPoolRentalSize / 3)
-            {
-                byte[] rented = ArrayPool<byte>.Shared.Rent(value.Length * 3); // max expansion: each char -> 3 bytes
-                int actualByteCount = _encoding.GetBytes(value, rented);
-                Write(actualByteCount);
-                OutStream.Write(rented, 0, actualByteCount);
-                ArrayPool<byte>.Shared.Return(rented);
-                return;
-            }
-        }
-
-        // Slow path: not fast UTF-8, or data is very large. We need to fall back
-        // to a 2-pass mechanism so that we're not renting absurdly large arrays.
-        int actualBytecount = _encoding.GetByteCount(value);
-        Write(actualBytecount);
-        WriteCharsCommonWithoutLengthPrefix(value, useThisWriteOverride: false);
-    }
-
-    /// <inheritdoc/>
     public override void Write(ReadOnlySpan<byte> buffer)
     {
         OutStream.Write(buffer);
-    }
-
-    private void WriteCharsCommonWithoutLengthPrefix(ReadOnlySpan<char> chars, bool useThisWriteOverride)
-    {
-        // If our input is truly enormous, the call to GetMaxByteCount might overflow,
-        // which we want to avoid. Theoretically, any Encoding could expand from chars -> bytes
-        // at an enormous ratio and cause us problems anyway given small inputs, but this is so
-        // unrealistic that we needn't worry about it.
-        byte[] rented;
-
-        if (chars.Length <= MaxArrayPoolRentalSize)
-        {
-            // GetByteCount may walk the buffer contents, resulting in 2 passes over the data.
-            // We prefer GetMaxByteCount because it's a constant-time operation.
-            int maxByteCount = _encoding.GetMaxByteCount(chars.Length);
-
-            if (maxByteCount <= MaxArrayPoolRentalSize)
-            {
-                rented = ArrayPool<byte>.Shared.Rent(maxByteCount);
-                int actualByteCount = _encoding.GetBytes(chars, rented);
-                WriteToOutStream(rented, 0, actualByteCount, useThisWriteOverride);
-                ArrayPool<byte>.Shared.Return(rented);
-                return;
-            }
-        }
-
-        // We're dealing with an enormous amount of data, so acquire an Encoder.
-        // It should be rare that callers pass sufficiently large inputs to hit
-        // this code path, and the cost of the operation is dominated by the transcoding
-        // step anyway, so it's ok for us to take the allocation here.
-        rented = ArrayPool<byte>.Shared.Rent(MaxArrayPoolRentalSize);
-        Encoder encoder = _encoding.GetEncoder();
-        bool completed;
-
-        do
-        {
-            encoder.Convert(chars, rented, flush: true, out int charsConsumed, out int bytesWritten, out completed);
-
-            if (bytesWritten != 0)
-            {
-                WriteToOutStream(rented, 0, bytesWritten, useThisWriteOverride);
-            }
-
-            chars = chars[charsConsumed..];
-        }
-        while (!completed);
-
-        ArrayPool<byte>.Shared.Return(rented);
-
-        void WriteToOutStream(byte[] buffer, int offset, int count, bool useThisWriteOverride)
-        {
-            if (useThisWriteOverride)
-            {
-                Write(buffer, offset, count); // bounce through this.Write(...) overridden logic
-            }
-            else
-            {
-                OutStream.Write(buffer, offset, count); // ignore this.Write(...) override, go straight to inner stream
-            }
-        }
     }
 }

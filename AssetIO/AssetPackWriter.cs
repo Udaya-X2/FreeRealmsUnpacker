@@ -11,14 +11,15 @@ namespace AssetIO;
 public class AssetPackWriter : AssetWriter
 {
     private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
-    private const int AssetPackInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
-    private const int AssetPackInfoHeaderSize = 8; // The size of an asset info chunk header (NextOffset/NumAssets).
-    private const int AssetPackInfoFieldsSize = 16; // The size of an asset's fields (Name.Length/Offset/Size/Crc32).
+    private const int AssetInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
+    private const int AssetInfoHeaderSize = 8; // The size of an asset info chunk header (NextOffset + NumAssets).
+    private const int AssetFieldsSize = 16; // The size of an asset's fields (Name.Length + Offset + Size + Crc32).
     private const int BufferSize = 81920;
 
     private readonly FileStream _packStream;
     private readonly EndianBinaryWriter _packWriter;
     private readonly byte[] _buffer;
+    private readonly byte[] _nameBuffer;
 
     private bool _disposed;
     private uint _chunkOffset;
@@ -31,7 +32,6 @@ public class AssetPackWriter : AssetWriter
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    /// <exception cref="OverflowException"/>
     public AssetPackWriter(string packFile, bool append = false)
     {
         ArgumentNullException.ThrowIfNull(packFile);
@@ -42,7 +42,8 @@ public class AssetPackWriter : AssetWriter
         _packStream = new FileStream(packFile, mode, access, FileShare.Read);
         _packWriter = new EndianBinaryWriter(_packStream, Endian.Big);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
-        _chunkSize = AssetPackInfoHeaderSize;
+        _nameBuffer = new byte[MaxAssetNameLength];
+        _chunkSize = AssetInfoHeaderSize;
 
         try
         {
@@ -63,32 +64,32 @@ public class AssetPackWriter : AssetWriter
                 // Compute the size of the last asset info chunk.
                 for (uint i = 0; i < _numAssets; i++)
                 {
-                    int nameLength = ClientFile.ValidateRange(reader.ReadInt32(), 1, MaxAssetNameLength);
-                    int assetInfoSize = nameLength + AssetPackInfoFieldsSize;
-                    _packStream.Seek(assetInfoSize - sizeof(int), SeekOrigin.Current);
-                    checked { _chunkSize += assetInfoSize; }
+                    int length = ClientFile.ValidateRange(reader.ReadInt32(), 1, MaxAssetNameLength);
+                    int assetIndexSize = length + AssetFieldsSize;
+                    _packStream.Seek(assetIndexSize - sizeof(int), SeekOrigin.Current);
+                    _chunkSize += assetIndexSize;
+
+                    if (_chunkSize > AssetInfoChunkSize)
+                    {
+                        throw new IOException(string.Format(SR.IO_BadAssetInfo, _chunkOffset, _packStream.Name));
+                    }
                 }
             }
             // Otherwise, create an empty asset info chunk at the start of the .pack file.
             else
             {
-                _packStream.SetLength(AssetPackInfoChunkSize);
+                _packStream.SetLength(AssetInfoChunkSize);
             }
         }
         catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytes)
         {
-            Dispose();
+            using var _ = this;
             throw new IOException(string.Format(SR.IO_BadAsset, _packStream.Position - bytes, _packStream.Name), ex);
         }
         catch (EndOfStreamException ex)
         {
-            Dispose();
+            using var _ = this;
             throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, _packStream.Name), ex);
-        }
-        catch (OverflowException ex)
-        {
-            Dispose();
-            throw new OverflowException(string.Format(SR.Overflow_MaxPackCapacity, _packStream.Name), ex);
         }
         catch
         {
@@ -103,11 +104,10 @@ public class AssetPackWriter : AssetWriter
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ObjectDisposedException"/>
-    /// <exception cref="PathTooLongException"/>
     public override void Write(string name, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(name);
+        ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
 
@@ -115,15 +115,15 @@ public class AssetPackWriter : AssetWriter
         {
             checked
             {
-                int nameLength = ClientFile.ValidateRange(name.Length, 1, MaxAssetNameLength);
-                int assetInfoSize = nameLength + AssetPackInfoFieldsSize;
+                int length = GetByteCountUTF8(name);
+                int assetInfoSize = length + AssetFieldsSize;
                 uint offset = (uint)_packStream.Length;
                 uint size = 0u;
                 uint crc32 = 0u;
                 int bytesRead;
 
                 // If current asset exceeds the space of this asset info chunk, proceed to the next asset chunk.
-                if (_chunkSize + assetInfoSize > AssetPackInfoChunkSize)
+                if (_chunkSize + assetInfoSize > AssetInfoChunkSize)
                 {
                     // Write the offset of the next asset info chunk and the number of assets at the start of the chunk.
                     _packStream.Position = _chunkOffset;
@@ -132,11 +132,11 @@ public class AssetPackWriter : AssetWriter
 
                     // Reset asset info chunk related fields.
                     _chunkOffset = offset;
-                    _chunkSize = AssetPackInfoHeaderSize;
+                    _chunkSize = AssetInfoHeaderSize;
                     _numAssets = 0;
 
                     // Start the next asset content chunk at the end of the next asset info chunk.
-                    offset += AssetPackInfoChunkSize;
+                    offset += AssetInfoChunkSize;
                     _packStream.SetLength(offset);
                 }
 
@@ -158,7 +158,8 @@ public class AssetPackWriter : AssetWriter
 
                 // Index the asset in the asset info chunk.
                 _packStream.Position = _chunkOffset + _chunkSize;
-                _packWriter.Write(name);
+                _packWriter.Write(length);
+                _packStream.Write(_nameBuffer, 0, length);
                 _packWriter.Write(offset);
                 _packWriter.Write(size);
                 _packWriter.Write(crc32);
@@ -170,9 +171,23 @@ public class AssetPackWriter : AssetWriter
         {
             throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, name, _packStream.Name), ex);
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
+    }
+
+    /// <summary>
+    /// Encodes the characters from the specified name into a sequence of bytes, stored in <see cref="_nameBuffer"/>.
+    /// </summary>
+    /// <param name="name">The string containing the characters to encode.</param>
+    /// <returns>The number of encoded bytes.</returns>
+    /// <exception cref="ArgumentException"/>
+    private int GetByteCountUTF8(string name)
+    {
+        try
         {
-            throw new PathTooLongException(string.Format(SR.PathTooLong_CantAddAsset, name, _packStream.Name), ex);
+            return Encoding.UTF8.GetBytes(name, _nameBuffer);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ArgumentException(string.Format(SR.Argument_InvalidAssetName, name, _packStream.Name), ex);
         }
     }
 

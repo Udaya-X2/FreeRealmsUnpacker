@@ -1,6 +1,7 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Force.Crc32;
 using System.Buffers;
+using System.Text;
 
 namespace AssetIO;
 
@@ -19,6 +20,7 @@ public class AssetDatWriter : AssetWriter
     private readonly IEnumerator<string> _dataFileEnumerator;
     private readonly FileMode _mode;
     private readonly byte[] _buffer;
+    private readonly byte[] _nameBuffer;
 
     private FileStream _dataStream;
     private long _offset;
@@ -82,6 +84,7 @@ public class AssetDatWriter : AssetWriter
         // Ensure future asset .dat files are written to from the start of the file.
         _mode = FileMode.Create;
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        _nameBuffer = new byte[MaxAssetNameLength];
     }
 
     /// <summary>
@@ -90,57 +93,68 @@ public class AssetDatWriter : AssetWriter
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ObjectDisposedException"/>
-    /// <exception cref="PathTooLongException"/>
     public override void Write(string name, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(stream);
-        ArgumentNullException.ThrowIfNull(name);
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
 
-        try
+        int length = GetByteCountUTF8(name);
+        long offset;
+        uint size = 0u;
+        uint crc32 = 0u;
+        int bytesRead;
+
+        // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
+        while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) != 0)
         {
-            int length = ClientFile.ValidateRange(name.Length, minValue: 1, maxValue: MaxAssetNameLength);
-            long offset;
-            uint size = 0u;
-            uint crc32 = 0u;
-            int bytesRead;
+            int spaceLeft = MaxAssetDatSize - (int)_dataStream.Position;
 
-            // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
-            while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) != 0)
+            // If the asset content exceeds the remaining space in the current asset
+            // .dat file, write the overflow bytes to the next asset .dat file.
+            if (bytesRead > spaceLeft)
             {
-                int spaceLeft = MaxAssetDatSize - (int)_dataStream.Position;
-
-                // If the asset content exceeds the remaining space in the current asset
-                // .dat file, write the overflow bytes to the next asset .dat file.
-                if (bytesRead > spaceLeft)
-                {
-                    _dataStream.Write(_buffer, 0, spaceLeft);
-                    _dataStream = GetNextDataStream();
-                    _dataStream.Write(_buffer, spaceLeft, bytesRead - spaceLeft);
-                }
-                else
-                {
-                    _dataStream.Write(_buffer, 0, bytesRead);
-                }
-
-                // Compute the CRC-32/size of the asset while the data is being written.
-                crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
-                size += (uint)bytesRead;
+                _dataStream.Write(_buffer, 0, spaceLeft);
+                _dataStream = GetNextDataStream();
+                _dataStream.Write(_buffer, spaceLeft, bytesRead - spaceLeft);
+            }
+            else
+            {
+                _dataStream.Write(_buffer, 0, bytesRead);
             }
 
-            // Index the asset in the manifest .dat file.
-            offset = size != 0 ? _offset : 0;
-            _manifestWriter.Write(name);
-            _manifestWriter.Write(offset);
-            _manifestWriter.Write(size);
-            _manifestWriter.Write(crc32);
-            _manifestStream.Seek(MaxAssetNameLength - length, SeekOrigin.Current); // Pad with null bytes
-            _offset += size;
+            // Compute the CRC-32/size of the asset while the data is being written.
+            crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
+            size += (uint)bytesRead;
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.Data.Contains("BytesRead"))
+
+        // Index the asset in the manifest .dat file.
+        offset = size != 0 ? _offset : 0;
+        _manifestWriter.Write(length);
+        _manifestStream.Write(_nameBuffer, 0, length);
+        _manifestWriter.Write(offset);
+        _manifestWriter.Write(size);
+        _manifestWriter.Write(crc32);
+        _manifestStream.Seek(MaxAssetNameLength - length, SeekOrigin.Current); // Pad with null bytes
+        _offset += size;
+    }
+
+    /// <summary>
+    /// Encodes the characters from the specified name into a sequence of bytes, stored in <see cref="_nameBuffer"/>.
+    /// </summary>
+    /// <param name="name">The string containing the characters to encode.</param>
+    /// <returns>The number of encoded bytes.</returns>
+    /// <exception cref="ArgumentException"/>
+    private int GetByteCountUTF8(string name)
+    {
+        try
         {
-            throw new PathTooLongException(string.Format(SR.PathTooLong_CantAddAsset, name, _manifestStream.Name), ex);
+            return Encoding.UTF8.GetBytes(name, _nameBuffer);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new ArgumentException(string.Format(SR.Argument_InvalidAssetName, name, _manifestStream.Name), ex);
         }
     }
 
