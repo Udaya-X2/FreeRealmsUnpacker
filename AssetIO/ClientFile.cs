@@ -415,10 +415,7 @@ public static partial class ClientFile
     public static void ExtractManifestAssets(string manifestFile,
                                              string destDir,
                                              FileConflictOptions options = FileConflictOptions.Overwrite)
-    {
-        IEnumerable<string> assetDatFiles = ClientDirectory.EnumerateDataFiles(new FileInfo(manifestFile));
-        ExtractManifestAssets(manifestFile, assetDatFiles, destDir, options);
-    }
+        => ExtractManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(manifestFile), destDir, options);
 
     /// <summary>
     /// Extracts the assets from the given asset .dat files to the
@@ -448,7 +445,7 @@ public static partial class ClientFile
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ValidateManifestAssets(string manifestFile)
-        => ValidateManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(new FileInfo(manifestFile)));
+        => ValidateManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(manifestFile));
 
     /// <summary>
     /// Throws an exception if the specified manifest .dat file and asset

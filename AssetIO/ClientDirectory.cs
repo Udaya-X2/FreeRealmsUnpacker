@@ -48,9 +48,9 @@ public static class ClientDirectory
 
     /// <summary>
     /// Returns an enumerable collection of full file names for all asset
-    /// .dat files with the specified asset type in a specified path.
+    /// .dat files with the specified asset type in a specified directory.
     /// </summary>
-    /// <param name="path">The relative or absolute path to the directory to search.</param>
+    /// <param name="directory">The directory to search.</param>
     /// <param name="assetFilter">
     /// A bitwise combination of the enumeration values that specify which asset types are allowed.
     /// </param>
@@ -59,18 +59,18 @@ public static class ClientDirectory
     /// should include only the current directory or should include all subdirectories.
     /// </param>
     /// <returns>
-    /// An enumerable collection of the full file names (including paths) for the asset .dat files
-    /// with the specified asset type in the directory specified by <paramref name="path"/>.
+    /// An enumerable collection of the full file names (including paths) for the asset .dat
+    /// files with the specified asset type in the specified <paramref name="directory"/>.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<string> EnumerateDataFiles(string path,
+    public static IEnumerable<string> EnumerateDataFiles(DirectoryInfo directory,
                                                          AssetType assetFilter = AssetType.All,
                                                          SearchOption searchOption = SearchOption.AllDirectories)
     {
-        ArgumentException.ThrowIfNullOrEmpty(path);
+        ArgumentNullException.ThrowIfNull(directory);
 
-        foreach (string file in Directory.EnumerateFiles(path, "*", searchOption))
+        foreach (string file in Directory.EnumerateFiles(directory.FullName, "*", searchOption))
         {
             AssetType assetType = ClientFile.InferDataType(file);
 
@@ -81,6 +81,10 @@ public static class ClientDirectory
         }
     }
 
+    /// <inheritdoc cref="EnumerateDataFiles(FileInfo)"/>
+    public static IEnumerable<string> EnumerateDataFiles(string manifestFile)
+        => EnumerateDataFilesInfinite(manifestFile).TakeWhile(File.Exists);
+
     /// <summary>
     /// Returns an enumerable collection of full file names for all asset
     /// .dat files corresponding to the specified manifest .dat file.
@@ -90,6 +94,7 @@ public static class ClientDirectory
     /// An enumerable collection of the full file names (including paths) for
     /// the asset .dat files corresponding to the specified manifest.dat file.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<string> EnumerateDataFiles(FileInfo manifestFile)
         => EnumerateDataFilesInfinite(manifestFile).TakeWhile(File.Exists);
@@ -103,7 +108,7 @@ public static class ClientDirectory
     /// .dat files corresponding to the specified manifest .dat file.
     /// </summary>
     /// <remarks>
-    /// Unlike <see cref="EnumerateDataFiles(FileInfo)"/>, this method includes nonexistent files.
+    /// Unlike <see cref="EnumerateDataFiles(string)"/>, this method includes nonexistent files.
     /// </remarks>
     /// <param name="manifestFile">The manifest .dat file.</param>
     /// <param name="index">The starting index.</param>
@@ -111,6 +116,8 @@ public static class ClientDirectory
     /// An infinite enumerable of the full file names (including paths) for
     /// the asset .dat files corresponding to the specified manifest.dat file.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<string> EnumerateDataFilesInfinite(FileInfo manifestFile, int index = 0)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);

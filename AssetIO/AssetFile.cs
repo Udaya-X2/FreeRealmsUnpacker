@@ -133,7 +133,7 @@ public class AssetFile : IEnumerable<Asset>
     public virtual AssetWriter OpenWrite() => FileType switch
     {
         AssetType.Pack => new AssetPackWriter(FullName),
-        AssetType.Dat => new AssetDatWriter(FullName),
+        AssetType.Dat => new AssetDatWriter(FullName, DataFiles),
         AssetType.Pack | AssetType.Temp => throw new NotSupportedException(SR.NotSupported_PackTempWrite),
         _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
     };
@@ -145,7 +145,7 @@ public class AssetFile : IEnumerable<Asset>
     public virtual AssetWriter OpenAppend() => FileType switch
     {
         AssetType.Pack => new AssetPackWriter(FullName, append: true),
-        AssetType.Dat => new AssetDatWriter(FullName, append: true),
+        AssetType.Dat => new AssetDatWriter(FullName, DataFiles, append: true),
         AssetType.Pack | AssetType.Temp => throw new NotSupportedException(SR.NotSupported_PackTempWrite),
         _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
     };

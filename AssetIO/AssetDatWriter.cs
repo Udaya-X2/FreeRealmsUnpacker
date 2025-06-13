@@ -17,12 +17,13 @@ public class AssetDatWriter : AssetWriter
 
     private readonly FileStream _manifestStream;
     private readonly EndianBinaryWriter _manifestWriter;
-    private readonly IEnumerator<string> _dataFileEnumerator;
     private readonly FileMode _mode;
     private readonly byte[] _buffer;
     private readonly byte[] _nameBuffer;
 
+    private IEnumerator<string> _dataFileEnumerator;
     private FileStream _dataStream;
+    private int _dataFileIdx;
     private long _offset;
     private bool _disposed;
 
@@ -32,6 +33,17 @@ public class AssetDatWriter : AssetWriter
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     public AssetDatWriter(string manifestFile, bool append = false)
+        : this(manifestFile, ClientDirectory.EnumerateDataFilesInfinite(manifestFile), append)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AssetDatWriter"/> class
+    /// for the specified manifest .dat file and asset .dat files.
+    /// </summary>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public AssetDatWriter(string manifestFile, IEnumerable<string> dataFiles, bool append = false)
     {
         ArgumentNullException.ThrowIfNull(manifestFile);
 
@@ -43,7 +55,6 @@ public class AssetDatWriter : AssetWriter
             _manifestWriter = new(_manifestStream, Endian.Little);
 
             // Create an enumerator to access asset .dat files.
-            IEnumerable<string> dataFiles = ClientDirectory.EnumerateDataFilesInfinite(manifestFile);
             _dataFileEnumerator = dataFiles.GetEnumerator();
             _dataStream = GetNextDataStream();
 
@@ -168,7 +179,17 @@ public class AssetDatWriter : AssetWriter
         try
         {
             _dataStream?.Dispose();
-            _dataFileEnumerator.MoveNext();
+
+            // Create a new enumerator if the current one runs out of asset .dat files.
+            if (!_dataFileEnumerator.MoveNext())
+            {
+                _dataFileEnumerator.Dispose();
+                _dataFileEnumerator = ClientDirectory.EnumerateDataFilesInfinite(_manifestStream.Name, _dataFileIdx)
+                                                     .GetEnumerator();
+                _dataFileEnumerator.MoveNext();
+            }
+
+            _dataFileIdx++;
             return File.Open(_dataFileEnumerator.Current, _mode, FileAccess.Write, FileShare.Read);
         }
         catch (Exception ex)
