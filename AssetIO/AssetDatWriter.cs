@@ -30,6 +30,7 @@ public class AssetDatWriter : AssetWriter
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetDatWriter"/> class for the specified manifest .dat file.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     public AssetDatWriter(string manifestFile, bool append = false)
@@ -41,11 +42,12 @@ public class AssetDatWriter : AssetWriter
     /// Initializes a new instance of the <see cref="AssetDatWriter"/> class
     /// for the specified manifest .dat file and asset .dat files.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     public AssetDatWriter(string manifestFile, IEnumerable<string> dataFiles, bool append = false)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         try
         {

@@ -18,10 +18,11 @@ public class AssetPackReader : AssetReader
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetPackReader"/> class for the specified asset .pack file.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public AssetPackReader(string assetPackPath)
     {
-        ArgumentNullException.ThrowIfNull(assetPackPath);
+        ArgumentException.ThrowIfNullOrEmpty(assetPackPath);
 
         _assetStream = File.OpenRead(assetPackPath);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);

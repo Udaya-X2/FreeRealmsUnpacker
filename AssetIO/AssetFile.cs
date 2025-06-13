@@ -28,8 +28,8 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified asset .pack file or manifest.dat file.
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path)
         : this(path, ClientFile.InferAssetType(path, requireFullType: false, strict: true))
     {
@@ -39,8 +39,8 @@ public class AssetFile : IEnumerable<Asset>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified
     /// asset .pack file or manifest.dat file, with the specified asset type.
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path, AssetType assetType)
         : this(path, assetType, null)
     {
@@ -50,8 +50,8 @@ public class AssetFile : IEnumerable<Asset>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified
     /// asset .pack file or manifest.dat file, with the specified data files.
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path, [AllowNull] IEnumerable<string> dataFiles)
         : this(path, ClientFile.InferAssetType(path, requireFullType: false, strict: true), dataFiles)
     {
@@ -61,11 +61,11 @@ public class AssetFile : IEnumerable<Asset>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified asset
     /// .pack file or manifest.dat file, with the specified asset type and data files.
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path, AssetType assetType, [AllowNull] IEnumerable<string> dataFiles)
     {
-        ArgumentNullException.ThrowIfNull(path);
+        ArgumentException.ThrowIfNullOrEmpty(path);
         if (!assetType.IsValid()) throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, assetType));
 
         Info = new FileInfo(path);

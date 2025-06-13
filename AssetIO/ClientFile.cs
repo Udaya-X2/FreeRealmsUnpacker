@@ -41,12 +41,13 @@ public static partial class ClientFile
     /// Returns an enumerable collection of the assets in the specified .pack file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the specified .pack file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static IEnumerable<Asset> EnumeratePackAssets(string packFile)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         // Read the .pack file in big-endian format.
         using FileStream stream = File.OpenRead(packFile);
@@ -122,23 +123,23 @@ public static partial class ClientFile
     /// Returns the assets in the specified .pack file.
     /// </summary>
     /// <returns>An array consisting of the assets in the specified .pack file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    public static Asset[] GetPackAssets(string packFile) => packFile == null
-        ? throw new ArgumentNullException(nameof(packFile))
-        : [.. EnumeratePackAssets(packFile)];
+    public static Asset[] GetPackAssets(string packFile) => [.. EnumeratePackAssets(packFile)];
 
     /// <summary>
     /// Returns the number of assets in the specified .pack file.
     /// </summary>
     /// <returns>The number of assets in the specified .pack file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="OverflowException"/>
     public static int GetPackAssetCount(string packFile)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         // Read the .pack file in big-endian format.
         using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
@@ -180,13 +181,14 @@ public static partial class ClientFile
     /// Opens a .pack file, appends the specified assets to the file, and then closes
     /// the file. If the target file does not exist, this method creates the file.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="OverflowException"/>
     /// <exception cref="PathTooLongException"/>
     public static void AppendPackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
         ArgumentNullException.ThrowIfNull(assets);
 
         using AssetPackWriter writer = new(packFile, append: true);
@@ -205,13 +207,14 @@ public static partial class ClientFile
     /// Creates a new .pack file, writes the specified assets to the file, and then
     /// closes the file. If the target file already exists, it is overwritten.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="OverflowException"/>
     /// <exception cref="PathTooLongException"/>
     public static void WritePackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
         ArgumentNullException.ThrowIfNull(assets);
 
         using AssetPackWriter writer = new(packFile);
@@ -225,12 +228,13 @@ public static partial class ClientFile
     /// <summary>
     /// Throws an exception if the specified .pack file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ValidatePackAssets(string packFile)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         using AssetPackReader reader = new(packFile);
 
@@ -248,12 +252,14 @@ public static partial class ClientFile
     /// <summary>
     /// Extracts the assets from the specified .pack file to the given directory.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public static void ExtractPackAssets(string packFile,
                                          string destDir,
                                          FileConflictOptions options = FileConflictOptions.Overwrite)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
-        ArgumentNullException.ThrowIfNull(destDir);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(destDir);
 
         using AssetPackReader reader = new(packFile);
 
@@ -267,11 +273,12 @@ public static partial class ClientFile
     /// Returns an enumerable collection of the assets in the specified manifest.dat file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     public static IEnumerable<Asset> EnumerateManifestAssets(string manifestFile)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
@@ -320,11 +327,12 @@ public static partial class ClientFile
     /// Returns the assets in the specified manifest.dat file.
     /// </summary>
     /// <returns>An array consisting of the assets in the specified manifest.dat file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     public static Asset[] GetManifestAssets(string manifestFile)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         Asset[] assets = new Asset[GetManifestAssetCount(manifestFile)];
         int i = 0;
@@ -341,12 +349,13 @@ public static partial class ClientFile
     /// Returns the number of assets in the specified manifest.dat file.
     /// </summary>
     /// <returns>The number of assets in the specified manifest.dat file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="OverflowException"/>
     public static int GetManifestAssetCount(string manifestFile)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         FileInfo manifestFileInfo = new(manifestFile);
 
@@ -370,11 +379,12 @@ public static partial class ClientFile
     /// Opens a manifest .dat file, appends the specified assets to the file, and then
     /// closes the file. If the target file does not exist, this method creates the file.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="PathTooLongException"/>
     public static void AppendManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
         ArgumentNullException.ThrowIfNull(assets);
 
         using AssetDatWriter writer = new(manifestFile, append: true);
@@ -393,11 +403,12 @@ public static partial class ClientFile
     /// Creates a new manifest .dat file, writes the specified assets to the file, and
     /// then closes the file. If the target file already exists, it is overwritten.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="PathTooLongException"/>
     public static void WriteManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
         ArgumentNullException.ThrowIfNull(assets);
 
         using AssetDatWriter writer = new(manifestFile);
@@ -412,6 +423,8 @@ public static partial class ClientFile
     /// Extracts the assets from the asset .dat files corresponding
     /// to the specified manifest .dat file to the given directory.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public static void ExtractManifestAssets(string manifestFile,
                                              string destDir,
                                              FileConflictOptions options = FileConflictOptions.Overwrite)
@@ -421,13 +434,15 @@ public static partial class ClientFile
     /// Extracts the assets from the given asset .dat files to the
     /// given directory, using the specified manifest .dat file.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public static void ExtractManifestAssets(string manifestFile,
                                              IEnumerable<string> dataFiles,
                                              string destDir,
                                              FileConflictOptions options = FileConflictOptions.Overwrite)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
-        ArgumentNullException.ThrowIfNull(destDir);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(destDir);
 
         using AssetDatReader reader = new(dataFiles);
 
@@ -441,6 +456,7 @@ public static partial class ClientFile
     /// Throws an exception if the specified manifest .dat file and corresponding
     /// asset .dat files are invalid or contain assets with CRC-32 mismatches.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
@@ -451,12 +467,13 @@ public static partial class ClientFile
     /// Throws an exception if the specified manifest .dat file and asset
     /// .dat files are invalid or contain assets with CRC-32 mismatches.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ValidateManifestAssets(string manifestFile, IEnumerable<string> dataFiles)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
         ArgumentNullException.ThrowIfNull(dataFiles);
 
         using AssetDatReader reader = new(dataFiles);
@@ -476,10 +493,11 @@ public static partial class ClientFile
     /// Returns an enumerable collection of the valid assets in the specified .pack.temp file.
     /// </summary>
     /// <returns>An enumerable collection of the valid assets in the specified .pack.temp file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static IEnumerable<Asset> EnumeratePackTempAssets(string packTempFile)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile);
+        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
         using IEnumerator<Asset> enumerator = EnumeratePackAssets(packTempFile).GetEnumerator();
         long end = new FileInfo(packTempFile).Length;
@@ -513,6 +531,7 @@ public static partial class ClientFile
     /// Gets the valid assets in the specified .pack.temp file.
     /// </summary>
     /// <returns>Gets the valid assets in the specified .pack.temp file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static Asset[] GetPackTempAssets(string packTempFile)
         => [.. EnumeratePackTempAssets(packTempFile)];
@@ -521,6 +540,7 @@ public static partial class ClientFile
     /// Returns the number of the valid assets in the specified .pack.temp file.
     /// </summary>
     /// <returns>An number of the valid assets in the specified .pack.temp file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static int GetPackTempAssetCount(string packTempFile)
         => EnumeratePackTempAssets(packTempFile).Count();
@@ -528,12 +548,14 @@ public static partial class ClientFile
     /// <summary>
     /// Extracts the assets from the specified .pack.temp file to the given directory.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
     public static void ExtractPackTempAssets(string packTempFile,
                                              string destDir,
                                              FileConflictOptions options = FileConflictOptions.Overwrite)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile);
-        ArgumentNullException.ThrowIfNull(destDir);
+        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
+        ArgumentException.ThrowIfNullOrEmpty(destDir);
 
         using AssetPackReader reader = new(packTempFile);
 
@@ -549,10 +571,11 @@ public static partial class ClientFile
     /// <returns>
     /// <see langword="true"/> if the .pack.temp file contains a fixable error; otherwise, <see langword="false"/>.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static bool TryGetPackTempFix(string packTempFile, out FixedAssetGroup fix)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile);
+        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
         // Read the .pack.temp file in big-endian format.
         using FileStream stream = File.OpenRead(packTempFile);
@@ -607,10 +630,11 @@ public static partial class ClientFile
     /// Renames the specified .pack.temp file to a .pack file.
     /// </summary>
     /// <returns>The renamed .pack file.</returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static FileInfo RenamePackTempFile(string packTempFile)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile);
+        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
         FileInfo file = new(packTempFile);
         string name = file.Name;
@@ -660,10 +684,11 @@ public static partial class ClientFile
     /// <returns>
     /// <see langword="true"/> if the asset .temp file was converted; otherwise, <see langword="false"/>.
     /// </returns>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static bool TryConvertPackTempFile(string packTempFile, [MaybeNullWhen(false)] out AssetFile assetFile)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile);
+        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
         if (TryGetPackTempFix(packTempFile, out FixedAssetGroup fix))
         {
@@ -679,12 +704,13 @@ public static partial class ClientFile
     /// <summary>
     /// Throws an exception if the specified .pack.temp file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ValidatePackTempAssets(string packTempFile)
     {
-        ArgumentNullException.ThrowIfNull(packTempFile);
+        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
         using AssetPackReader reader = new(packTempFile);
 

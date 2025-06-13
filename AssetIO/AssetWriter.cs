@@ -36,7 +36,7 @@ public abstract class AssetWriter : IDisposable
     /// <inheritdoc cref="Write(string, Stream)"/>
     public virtual void Write(string name, byte[] buffer, int index, int count)
     {
-        ArgumentNullException.ThrowIfNull(name);
+        ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(buffer);
 
         using MemoryStream ms = new(buffer, index, count);

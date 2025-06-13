@@ -29,12 +29,13 @@ public class AssetPackWriter : AssetWriter
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetPackWriter"/> class for the specified asset .pack file.
     /// </summary>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public AssetPackWriter(string packFile, bool append = false)
     {
-        ArgumentNullException.ThrowIfNull(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         // Open the .pack file in big-endian format.
         FileMode mode = append ? FileMode.OpenOrCreate : FileMode.Create;
