@@ -239,11 +239,10 @@ public class MainViewModel : SavedSettingsViewModel
         }) is not IStorageFolder folder) return;
 
         InputDirectory = folder.Path.LocalPath;
-        List<AssetFile> assetFiles = ClientDirectory.EnumerateAssetFiles(InputDirectory,
-                                                                         AssetFilter,
-                                                                         requireFullType: !AddUnknownAssets)
-                                                    .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)
-                                                    .ToList();
+        List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(InputDirectory,
+                                                                             AssetFilter,
+                                                                             requireFullType: !AddUnknownAssets)
+                                                        .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)];
 
         if (assetFiles.Count > 0)
         {
@@ -271,10 +270,9 @@ public class MainViewModel : SavedSettingsViewModel
         if (files.Count == 0) return;
 
         InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
-        List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
-                                          .Except(AssetFiles.Select(x => x.FullName))
-                                          .Select(x => new AssetFile(x))
-                                          .ToList();
+        List<AssetFile> assetFiles = [.. files.Select(x => x.Path.LocalPath)
+                                              .Except(AssetFiles.Select(x => x.FullName))
+                                              .Select(x => new AssetFile(x))];
 
         if (assetFiles.Count > 0)
         {
@@ -314,10 +312,9 @@ public class MainViewModel : SavedSettingsViewModel
         if (files.Count == 0) return;
 
         InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
-        List<AssetFile> assetFiles = files.Select(x => x.Path.LocalPath)
-                                          .Except(AssetFiles.Select(x => x.FullName))
-                                          .Select(x => new AssetFile(x, assetType))
-                                          .ToList();
+        List<AssetFile> assetFiles = [.. files.Select(x => x.Path.LocalPath)
+                                              .Except(AssetFiles.Select(x => x.FullName))
+                                              .Select(x => new AssetFile(x, assetType))];
 
         if (assetFiles.Count > 0)
         {
@@ -355,15 +352,14 @@ public class MainViewModel : SavedSettingsViewModel
     /// </summary>
     private async Task AddFiles(IEnumerable<string> files)
     {
-        List<AssetFile> assetFiles = files.Except(AssetFiles.Select(x => x.FullName))
-                                          .Select(x =>
-                                          {
-                                              // Discard the file if we cannot infer its asset type from its name.
-                                              AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
-                                              return type.IsValid() ? new AssetFile(x, type) : null;
-                                          })
-                                          .WhereNotNull()
-                                          .ToList();
+        List<AssetFile> assetFiles = [.. files.Except(AssetFiles.Select(x => x.FullName))
+                                              .Select(x =>
+                                              {
+                                                  // Discard the file if we cannot infer its asset type from its name.
+                                                  AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
+                                                  return type.IsValid() ? new AssetFile(x, type) : null;
+                                              })
+                                              .WhereNotNull()];
 
         if (assetFiles.Count > 0)
         {

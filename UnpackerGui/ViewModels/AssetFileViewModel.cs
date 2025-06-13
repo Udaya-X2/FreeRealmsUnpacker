@@ -122,7 +122,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// </summary>
     private void RemoveDataFiles()
     {
-        DataFileViewModel[] dataFiles = [.. SelectedDataFiles];
+        DataFileViewModel[] dataFiles = [.. SelectedDataFiles!];
         SelectedDataFiles!.Clear();
         DataFiles!.RemoveMany(dataFiles);
     }

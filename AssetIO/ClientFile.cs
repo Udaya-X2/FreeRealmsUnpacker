@@ -127,7 +127,8 @@ public static partial class ClientFile
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    public static Asset[] GetPackAssets(string packFile) => [.. EnumeratePackAssets(packFile)];
+    public static Asset[] GetPackAssets(string packFile)
+        => [.. EnumeratePackAssets(packFile)];
 
     /// <summary>
     /// Returns the number of assets in the specified .pack file.
