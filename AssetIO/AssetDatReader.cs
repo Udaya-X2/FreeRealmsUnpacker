@@ -20,11 +20,11 @@ public class AssetDatReader : AssetReader
     /// Initializes a new instance of the <see cref="AssetDatReader"/> class for the specified asset .dat files.
     /// </summary>
     /// <exception cref="ArgumentNullException"/>
-    public AssetDatReader(IEnumerable<string> assetDatPaths)
+    public AssetDatReader(IEnumerable<string> dataFiles)
     {
-        ArgumentNullException.ThrowIfNull(assetDatPaths);
+        ArgumentNullException.ThrowIfNull(dataFiles);
 
-        _assetStreams = OpenReadDataFiles(assetDatPaths);
+        _assetStreams = OpenReadDataFiles(dataFiles);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
     }
 

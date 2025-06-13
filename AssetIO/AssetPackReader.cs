@@ -20,11 +20,11 @@ public class AssetPackReader : AssetReader
     /// </summary>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public AssetPackReader(string assetPackPath)
+    public AssetPackReader(string packFile)
     {
-        ArgumentException.ThrowIfNullOrEmpty(assetPackPath);
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
 
-        _assetStream = File.OpenRead(assetPackPath);
+        _assetStream = File.OpenRead(packFile);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
     }
 
