@@ -194,4 +194,10 @@ public class AssetFile : IEnumerable<Asset>
 
     /// <inheritdoc/>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>
+    /// Returns the full path of the asset file.
+    /// </summary>
+    /// <returns>The full path of the asset file.</returns>
+    public override string ToString() => Info.FullName;
 }
