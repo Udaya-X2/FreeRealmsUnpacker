@@ -205,12 +205,14 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Gets the default location to input files/folders asynchronously.
     /// </summary>
-    private Task<IStorageFolder?> InputFolder => App.GetService<IFilesService>().TryGetFolderFromPath(InputDirectory);
+    private Task<IStorageFolder?> InputFolder
+        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(InputDirectory);
 
     /// <summary>
     /// Gets the default location to output files/folders asynchronously.
     /// </summary>
-    private Task<IStorageFolder?> OutputFolder => App.GetService<IFilesService>().TryGetFolderFromPath(OutputDirectory);
+    private Task<IStorageFolder?> OutputFolder
+        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(OutputDirectory);
 
     /// <summary>
     /// Opens the Preferences window.
@@ -554,9 +556,10 @@ public class MainViewModel : SavedSettingsViewModel
     /// </summary>
     private void OpenSelectedAsset()
     {
-        string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        DirectoryInfo tempDir = Directory.CreateTempSubdirectory("fru-");
         using AssetReader reader = SelectedAsset!.AssetFile.OpenRead();
-        FileInfo file = reader.ExtractTo(SelectedAsset, tempDir);
+        FileInfo file = reader.ExtractTo(SelectedAsset, tempDir.FullName);
+        App.GetService<IFilesService>().DeleteOnExit(file.FullName);
         Process.Start(new ProcessStartInfo
         {
             UseShellExecute = true,

@@ -50,10 +50,13 @@ public partial class App : Application
             {
                 DataContext = new MainViewModel()
             };
-            Services = new ServiceCollection().AddSingleton<IFilesService>(new FilesService(desktop.MainWindow))
-                                              .AddSingleton<IDialogService>(new DialogService(desktop.MainWindow))
+            FilesService filesService = new(desktop.MainWindow);
+            DialogService dialogService = new(desktop.MainWindow);
+            Services = new ServiceCollection().AddSingleton<IFilesService>(filesService)
+                                              .AddSingleton<IDialogService>(dialogService)
                                               .BuildServiceProvider();
             Clipboard = desktop.MainWindow.Clipboard;
+            desktop.Exit += (s, e) => filesService.Dispose();
         }
         if (Design.IsDesignMode)
         {

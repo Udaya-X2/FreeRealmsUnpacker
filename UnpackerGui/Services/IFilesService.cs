@@ -1,10 +1,11 @@
 ﻿using Avalonia.Platform.Storage;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace UnpackerGui.Services;
 
-public interface IFilesService
+public interface IFilesService : IDisposable
 {
     Task<IStorageFile?> OpenFileAsync() => OpenFileAsync(new());
     Task<IStorageFile?> OpenFileAsync(FilePickerOpenOptions options);
@@ -16,5 +17,6 @@ public interface IFilesService
     Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync(FolderPickerOpenOptions options);
     Task<IStorageFile?> SaveFileAsync() => SaveFileAsync(new());
     Task<IStorageFile?> SaveFileAsync(FilePickerSaveOptions options);
-    Task<IStorageFolder?> TryGetFolderFromPath(string folderPath);
+    Task<IStorageFolder?> TryGetFolderFromPathAsync(string folderPath);
+    void DeleteOnExit(string filePath);
 }
