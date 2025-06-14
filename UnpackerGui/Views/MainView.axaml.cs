@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -23,17 +24,23 @@ public partial class MainView : UserControl
 
     private void MainView_Loaded(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is MainViewModel mainViewModel)
-        {
-            // SelectedItems is a not a bindable property in DataGrid, so we need to pass 
-            // it as a reference to the view model to keep track of the selected assets.
-            mainViewModel.SelectedAssets.Items = assetGrid.SelectedItems;
-            assetGrid.SelectionChanged += mainViewModel.SelectedAssets.Refresh;
-            _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= mainViewModel.SelectedAssets.Refresh));
-        }
+        if (DataContext is not MainViewModel mainViewModel) return;
 
+        // SelectedItems is a not a bindable property in DataGrid, so we need to pass 
+        // it as a reference to the view model to keep track of the selected assets.
+        mainViewModel.SelectedAssets.Items = assetGrid.SelectedItems;
+        assetGrid.SelectionChanged += mainViewModel.SelectedAssets.Refresh;
+        _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= mainViewModel.SelectedAssets.Refresh));
+
+        // Add hotkey/drag-and-drop event handlers.
         _cleanUp.Add(KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown));
         _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop));
+
+        // If arguments were passed to the application, load them in as asset files.
+        if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { Args: string[] args })
+        {
+            mainViewModel.AddFilesCommand.Execute(args);
+        }
     }
 
     private void MainView_Unloaded(object? sender, RoutedEventArgs e) => _cleanUp.Dispose();
