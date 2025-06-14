@@ -193,7 +193,7 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                     <ListBox.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <MenuItem Header="Remove"
                                       Command="{Binding RemoveSelectedFileCommand}"/>
                             <MenuItem Header="Open Containing Folder"
