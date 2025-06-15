@@ -524,7 +524,7 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Removes the selected asset file.
     /// </summary>
-    private void RemoveSelectedFile() => _sourceAssetFiles!.Remove(SelectedAssetFile);
+    private void RemoveSelectedFile() => _sourceAssetFiles.Remove(SelectedAssetFile!);
 
     /// <summary>
     /// Converts the selected asset file from a .pack.temp file to a .pack file.
