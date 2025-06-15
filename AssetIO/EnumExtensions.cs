@@ -11,6 +11,7 @@ public static class EnumExtensions
     /// <summary>
     /// Returns the asset type with only the file flags set.
     /// </summary>
+    /// <param name="assetType">The asset type.</param>
     /// <returns>The asset type with only the file flags set.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static AssetType GetFileType(this AssetType assetType) => assetType & AssetType.AllFiles;
@@ -18,6 +19,7 @@ public static class EnumExtensions
     /// <summary>
     /// Returns the asset type with only the directory flags set.
     /// </summary>
+    /// <param name="assetType">The asset type.</param>
     /// <returns>The asset type with only the directory flags set.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static AssetType GetDirectoryType(this AssetType assetType) => assetType & AssetType.AllDirectories;
@@ -26,6 +28,7 @@ public static class EnumExtensions
     /// Returns <see langword="true"/> if the asset type has exactly one file flag (except <see cref="AssetType.Temp"/>)
     /// and at most one directory flag set; otherwise, <see langword="false"/>.
     /// </summary>
+    /// <param name="assetType">The asset type.</param>
     /// <returns>
     /// <see langword="true"/> if the asset type has exactly one file flag (except <see cref="AssetType.Temp"/>)
     /// and at most one directory flag set; otherwise, <see langword="false"/>.
@@ -39,6 +42,7 @@ public static class EnumExtensions
     /// <summary>
     /// Evaluates whether the specified <see langword="uint"/> value is a power of two or zero.
     /// </summary>
+    /// <param name="value">An unsigned integer value.</param>
     /// <returns>
     /// <see langword="true"/> if the specified value is a power of two; <see langword="false"/> otherwise.
     /// </returns>

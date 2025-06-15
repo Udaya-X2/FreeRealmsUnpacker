@@ -12,14 +12,15 @@ public static partial class ClientFile
     public readonly record struct FixedAssetGroup(uint Offset, uint NumAssets)
     {
         /// <summary>
-        /// Fixes the specified .pack.temp file.
+        /// Fixes the specified asset .pack.temp file.
         /// </summary>
+        /// <param name="packTempFile">The asset .pack.temp file.</param>
         /// <exception cref="IOException"/>
         /// <exception cref="FileNotFoundException"/>
         public void FixPackTempFile(string packTempFile)
         {
             // Write to the .pack.temp file in big-endian format.
-            using FileStream stream = File.Open(packTempFile, FileMode.Open, FileAccess.Write, FileShare.Read);
+            using FileStream stream = new(packTempFile, FileMode.Open, FileAccess.Write, FileShare.Read, bufferSize: 8);
             using EndianBinaryWriter writer = new(stream, Endian.Big);
             stream.Position = Offset;
 

@@ -6,13 +6,13 @@ using System.Text;
 namespace AssetIO;
 
 /// <summary>
-/// Provides sequential asset writing operations on a Free Realms manifest .dat file and accompanying asset .dat files.
+/// Provides sequential asset writing operations on a Free Realms manifest.dat file and accompanying asset .dat files.
 /// </summary>
 public class AssetDatWriter : AssetWriter
 {
     private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
-    private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest .dat file.
-    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
+    private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest.dat file.
+    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
     private const int BufferSize = 81920;
 
     private readonly FileStream _manifestStream;
@@ -28,8 +28,10 @@ public class AssetDatWriter : AssetWriter
     private bool _disposed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AssetDatWriter"/> class for the specified manifest .dat file.
+    /// Initializes a new instance of the <see cref="AssetDatWriter"/> class for the specified manifest.dat file.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to write.</param>
+    /// <param name="append">Whether to append assets instead of overwriting the file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
@@ -40,8 +42,11 @@ public class AssetDatWriter : AssetWriter
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetDatWriter"/> class
-    /// for the specified manifest .dat file and asset .dat files.
+    /// for the specified manifest.dat file and asset .dat files.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to write.</param>
+    /// <param name="dataFiles">The asset .dat files to write to.</param>
+    /// <param name="append">Whether to append assets instead of overwriting the file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
@@ -51,7 +56,7 @@ public class AssetDatWriter : AssetWriter
 
         try
         {
-            // Open the manifest .dat file in little-endian format.
+            // Open the manifest.dat file in little-endian format.
             _mode = append ? FileMode.Append : FileMode.Create;
             _manifestStream = new(manifestFile, _mode, FileAccess.Write, FileShare.Read);
             _manifestWriter = new(_manifestStream, Endian.Little);
@@ -101,11 +106,9 @@ public class AssetDatWriter : AssetWriter
     }
 
     /// <summary>
-    /// Writes an asset with the given name and stream contents to the manifest .dat file and asset .dat file(s).
+    /// Writes an asset with the given name and stream contents to the manifest.dat file and asset .dat file(s).
     /// </summary>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override void Write(string name, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -142,7 +145,7 @@ public class AssetDatWriter : AssetWriter
             size += (uint)bytesRead;
         }
 
-        // Index the asset in the manifest .dat file.
+        // Index the asset in the manifest.dat file.
         offset = size != 0 ? _offset : 0;
         _manifestWriter.Write(length);
         _manifestStream.Write(_nameBuffer, 0, length);

@@ -13,8 +13,8 @@ namespace AssetIO;
 /// </summary>
 public static partial class ClientFile
 {
-    private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest .dat file.
-    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
+    private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest.dat file.
+    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
     private const int BufferSize = 81920;
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
     private const string PackFileSuffix = ".pack";
@@ -40,6 +40,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns an enumerable collection of the assets in the specified .pack file.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to read.</param>
     /// <returns>An enumerable collection of the assets in the specified .pack file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -122,6 +123,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns the assets in the specified .pack file.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to read.</param>
     /// <returns>An array consisting of the assets in the specified .pack file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -133,6 +135,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns the number of assets in the specified .pack file.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to read.</param>
     /// <returns>The number of assets in the specified .pack file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -182,6 +185,8 @@ public static partial class ClientFile
     /// Opens a .pack file, appends the specified assets to the file, and then closes
     /// the file. If the target file does not exist, this method creates the file.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to append.</param>
+    /// <param name="assets">The files to append as assets to the .pack file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
@@ -208,6 +213,8 @@ public static partial class ClientFile
     /// Creates a new .pack file, writes the specified assets to the file, and then
     /// closes the file. If the target file already exists, it is overwritten.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to write.</param>
+    /// <param name="assets">The files to write as assets to the .pack file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
@@ -229,6 +236,7 @@ public static partial class ClientFile
     /// <summary>
     /// Throws an exception if the specified .pack file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
@@ -253,6 +261,9 @@ public static partial class ClientFile
     /// <summary>
     /// Extracts the assets from the specified .pack file to the given directory.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to extract.</param>
+    /// <param name="destDir">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static void ExtractPackAssets(string packFile,
@@ -273,6 +284,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns an enumerable collection of the assets in the specified manifest.dat file.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to read.</param>
     /// <returns>An enumerable collection of the assets in the specified manifest.dat file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -327,6 +339,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns the assets in the specified manifest.dat file.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to read.</param>
     /// <returns>An array consisting of the assets in the specified manifest.dat file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -349,6 +362,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns the number of assets in the specified manifest.dat file.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to read.</param>
     /// <returns>The number of assets in the specified manifest.dat file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -377,9 +391,11 @@ public static partial class ClientFile
         => AppendManifestAssets(manifestFile, assets.Select(x => new FileInfo(x)));
 
     /// <summary>
-    /// Opens a manifest .dat file, appends the specified assets to the file, and then
+    /// Opens a manifest.dat file, appends the specified assets to the file, and then
     /// closes the file. If the target file does not exist, this method creates the file.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to append.</param>
+    /// <param name="assets">The files to append as assets to the manifest.dat file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="PathTooLongException"/>
@@ -401,9 +417,11 @@ public static partial class ClientFile
         => WriteManifestAssets(manifestFile, assets.Select(x => new FileInfo(x)));
 
     /// <summary>
-    /// Creates a new manifest .dat file, writes the specified assets to the file, and
+    /// Creates a new manifest.dat file, writes the specified assets to the file, and
     /// then closes the file. If the target file already exists, it is overwritten.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to write.</param>
+    /// <param name="assets">The files to write as assets to the manifest.dat file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="PathTooLongException"/>
@@ -422,8 +440,11 @@ public static partial class ClientFile
 
     /// <summary>
     /// Extracts the assets from the asset .dat files corresponding
-    /// to the specified manifest .dat file to the given directory.
+    /// to the specified manifest.dat file to the given directory.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to extract.</param>
+    /// <param name="destDir">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static void ExtractManifestAssets(string manifestFile,
@@ -433,8 +454,12 @@ public static partial class ClientFile
 
     /// <summary>
     /// Extracts the assets from the given asset .dat files to the
-    /// given directory, using the specified manifest .dat file.
+    /// given directory, using the specified manifest.dat file.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to extract.</param>
+    /// <param name="dataFiles">The asset .dat files to extract.</param>
+    /// <param name="destDir">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static void ExtractManifestAssets(string manifestFile,
@@ -454,9 +479,10 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Throws an exception if the specified manifest .dat file and corresponding
+    /// Throws an exception if the specified manifest.dat file and corresponding
     /// asset .dat files are invalid or contain assets with CRC-32 mismatches.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
@@ -465,9 +491,11 @@ public static partial class ClientFile
         => ValidateManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(manifestFile));
 
     /// <summary>
-    /// Throws an exception if the specified manifest .dat file and asset
+    /// Throws an exception if the specified manifest.dat file and asset
     /// .dat files are invalid or contain assets with CRC-32 mismatches.
     /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to validate.</param>
+    /// <param name="dataFiles">The asset .dat files to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
@@ -493,6 +521,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns an enumerable collection of the valid assets in the specified .pack.temp file.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to read.</param>
     /// <returns>An enumerable collection of the valid assets in the specified .pack.temp file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -531,6 +560,7 @@ public static partial class ClientFile
     /// <summary>
     /// Gets the valid assets in the specified .pack.temp file.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to read.</param>
     /// <returns>Gets the valid assets in the specified .pack.temp file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -540,6 +570,7 @@ public static partial class ClientFile
     /// <summary>
     /// Returns the number of the valid assets in the specified .pack.temp file.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to read.</param>
     /// <returns>An number of the valid assets in the specified .pack.temp file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -549,6 +580,9 @@ public static partial class ClientFile
     /// <summary>
     /// Extracts the assets from the specified .pack.temp file to the given directory.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to extract.</param>
+    /// <param name="destDir">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public static void ExtractPackTempAssets(string packTempFile,
@@ -569,6 +603,8 @@ public static partial class ClientFile
     /// <summary>
     /// Attempts to scan the specified .pack.temp file for errors and create a fix for the first invalid asset group.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to fix.</param>
+    /// <param name="fix">On return, contains a fix for the .pack.temp file or an undefined value on failure.</param>
     /// <returns>
     /// <see langword="true"/> if the .pack.temp file contains a fixable error; otherwise, <see langword="false"/>.
     /// </returns>
@@ -630,6 +666,7 @@ public static partial class ClientFile
     /// <summary>
     /// Renames the specified .pack.temp file to a .pack file.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to rename.</param>
     /// <returns>The renamed .pack file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -682,6 +719,8 @@ public static partial class ClientFile
     /// <summary>
     /// Attempts to convert the specified .pack.temp file to a .pack file.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to convert.</param>
+    /// <param name="assetFile">On return, contains the converted .pack file or an undefined value on failure.</param>
     /// <returns>
     /// <see langword="true"/> if the asset .temp file was converted; otherwise, <see langword="false"/>.
     /// </returns>
@@ -705,6 +744,7 @@ public static partial class ClientFile
     /// <summary>
     /// Throws an exception if the specified .pack.temp file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
@@ -729,6 +769,15 @@ public static partial class ClientFile
     /// <summary>
     /// Gets an enum value corresponding to the name of the specified asset file.
     /// </summary>
+    /// <remarks>
+    /// It is recommended to keep <paramref name="requireFullType"/> = <see langword="true"/> to
+    /// exclude non Free Realms files, such as the .pack files used by Git in <c>.git/objects/pack/</c>.
+    /// </remarks>
+    /// <param name="assetFile">The span containing the name of the asset file.</param>
+    /// <param name="requireFullType">
+    /// Whether to return 0 if both a file flag and a directory flag cannot be inferred.
+    /// </param>
+    /// <param name="strict">Whether to throw an exception if an asset type cannot be inferred.</param>
     /// <returns>An enum value corresponding to the name of the specified asset file.</returns>
     /// <exception cref="ArgumentException"/>
     public static AssetType InferAssetType(ReadOnlySpan<char> assetFile,
@@ -756,6 +805,8 @@ public static partial class ClientFile
     /// <summary>
     /// Gets an enum value corresponding to the suffix of the specified asset file.
     /// </summary>
+    /// <param name="assetFile">The span containing the name of the asset file.</param>
+    /// <param name="strict">Whether to throw an exception if an asset type cannot be inferred.</param>
     /// <returns>An enum value corresponding to the suffix of the specified asset file.</returns>
     /// <exception cref="ArgumentException"/>
     public static AssetType InferAssetFileType(ReadOnlySpan<char> assetFile, bool strict = false)
@@ -783,6 +834,8 @@ public static partial class ClientFile
     /// <summary>
     /// Gets an enum value corresponding to the prefix of the specified asset file.
     /// </summary>
+    /// <param name="assetFile">The span containing the name of the asset file.</param>
+    /// <param name="strict">Whether to throw an exception if an asset type cannot be inferred.</param>
     /// <returns>An enum value corresponding to the prefix of the specified asset file.</returns>
     /// <exception cref="ArgumentException"/>
     public static AssetType InferAssetDirectoryType(ReadOnlySpan<char> assetFile, bool strict = false)
@@ -816,13 +869,15 @@ public static partial class ClientFile
     /// <summary>
     /// Gets an enum value corresponding to the name of the specified asset .dat file.
     /// </summary>
+    /// <param name="dataFile">The span containing the name of the asset .dat file.</param>
+    /// <param name="strict">Whether to throw an exception if an asset type cannot be inferred.</param>
     /// <returns>An enum value corresponding to the name of the specified asset .dat file.</returns>
     /// <exception cref="ArgumentException"/>
-    public static AssetType InferDataType(ReadOnlySpan<char> assetDataFile, bool strict = false)
+    public static AssetType InferDataType(ReadOnlySpan<char> dataFile, bool strict = false)
     {
-        if (!assetDataFile.EndsWith(DatFileSuffix, StringComparison.OrdinalIgnoreCase)) goto End;
+        if (!dataFile.EndsWith(DatFileSuffix, StringComparison.OrdinalIgnoreCase)) goto End;
 
-        ReadOnlySpan<char> filename = Path.GetFileName(assetDataFile);
+        ReadOnlySpan<char> filename = Path.GetFileName(dataFile);
 
         if (GameDataRegex().IsMatch(filename))
         {
@@ -839,7 +894,7 @@ public static partial class ClientFile
     End:
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetDataFile.ToString()));
+            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, dataFile.ToString()));
         }
 
         return 0;
@@ -848,6 +903,9 @@ public static partial class ClientFile
     /// <summary>
     /// Throws an exception if the specified integer is outside the given range.
     /// </summary>
+    /// <param name="value">The integer value to check.</param>
+    /// <param name="minValue">The minimum allowed value.</param>
+    /// <param name="maxValue">The maximum allowed value.</param>
     /// <returns>The specified integer.</returns>
     /// <exception cref="ArgumentOutOfRangeException"/>
     internal static T ValidateRange<T>(T value, T minValue, T maxValue) where T : unmanaged, IBinaryInteger<T>

@@ -20,7 +20,7 @@ public class AssetFile : IEnumerable<Asset>
     public virtual AssetType Type { get; }
 
     /// <summary>
-    /// Gets or sets the asset.dat files corresponding to the asset file.
+    /// Gets or sets the asset .dat files corresponding to the asset file.
     /// </summary>
     /// <remarks>This is only used by asset files with the <see cref="AssetType.Dat"/> flag set.</remarks>
     public virtual IEnumerable<string> DataFiles { get; set; }
@@ -28,6 +28,7 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified asset .pack file or manifest.dat file.
     /// </summary>
+    /// <param name="path">The path to the asset .pack file or manifest.dat file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path)
@@ -39,6 +40,8 @@ public class AssetFile : IEnumerable<Asset>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified
     /// asset .pack file or manifest.dat file, with the specified asset type.
     /// </summary>
+    /// <param name="path">The path to the asset .pack file or manifest.dat file.</param>
+    /// <param name="assetType">Specifies the type of the asset file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path, AssetType assetType)
@@ -50,6 +53,8 @@ public class AssetFile : IEnumerable<Asset>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified
     /// asset .pack file or manifest.dat file, with the specified data files.
     /// </summary>
+    /// <param name="path">The path to the asset .pack file or manifest.dat file.</param>
+    /// <param name="dataFiles">The asset .dat files to read from, if necessary.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path, [AllowNull] IEnumerable<string> dataFiles)
@@ -61,6 +66,9 @@ public class AssetFile : IEnumerable<Asset>
     /// Initializes a new instance of <see cref="AssetFile"/> from the specified asset
     /// .pack file or manifest.dat file, with the specified asset type and data files.
     /// </summary>
+    /// <param name="path">The path to the asset .pack file or manifest.dat file.</param>
+    /// <param name="assetType">Specifies the type of the asset file.</param>
+    /// <param name="dataFiles">The asset .dat files to read from, if necessary.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public AssetFile(string path, AssetType assetType, [AllowNull] IEnumerable<string> dataFiles)

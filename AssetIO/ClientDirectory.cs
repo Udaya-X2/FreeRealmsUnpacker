@@ -87,9 +87,9 @@ public static class ClientDirectory
 
     /// <summary>
     /// Returns an enumerable collection of full file names for all asset
-    /// .dat files corresponding to the specified manifest .dat file.
+    /// .dat files corresponding to the specified manifest.dat file.
     /// </summary>
-    /// <param name="manifestFile">The manifest .dat file.</param>
+    /// <param name="manifestFile">The manifest.dat file.</param>
     /// <returns>
     /// An enumerable collection of the full file names (including paths) for
     /// the asset .dat files corresponding to the specified manifest.dat file.
@@ -105,12 +105,12 @@ public static class ClientDirectory
 
     /// <summary>
     /// Returns an infinite enumerable of full file names for all asset
-    /// .dat files corresponding to the specified manifest .dat file.
+    /// .dat files corresponding to the specified manifest.dat file.
     /// </summary>
     /// <remarks>
     /// Unlike <see cref="EnumerateDataFiles(string)"/>, this method includes nonexistent files.
     /// </remarks>
-    /// <param name="manifestFile">The manifest .dat file.</param>
+    /// <param name="manifestFile">The manifest.dat file.</param>
     /// <param name="index">The starting index.</param>
     /// <returns>
     /// An infinite enumerable of the full file names (including paths) for

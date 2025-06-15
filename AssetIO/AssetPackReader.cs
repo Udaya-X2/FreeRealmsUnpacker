@@ -18,6 +18,7 @@ public class AssetPackReader : AssetReader
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetPackReader"/> class for the specified asset .pack file.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to read.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     public AssetPackReader(string packFile)
@@ -31,10 +32,7 @@ public class AssetPackReader : AssetReader
     /// <summary>
     /// Reads the bytes of the specified asset from the .pack file and writes the data in a given buffer.
     /// </summary>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override void Read(Asset asset, byte[] buffer)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -54,10 +52,7 @@ public class AssetPackReader : AssetReader
     /// <summary>
     /// Reads the bytes of the specified asset from the .pack file and writes them to another stream.
     /// </summary>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override void CopyTo(Asset asset, Stream destination)
     {
         ArgumentNullException.ThrowIfNull(asset);
@@ -74,9 +69,7 @@ public class AssetPackReader : AssetReader
     /// Reads the bytes of the specified asset from the .pack file and computes its CRC-32 value.
     /// </summary>
     /// <returns>The CRC-32 checksum value of the specified asset.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override uint GetCrc32(Asset asset)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);

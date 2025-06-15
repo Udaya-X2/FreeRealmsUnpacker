@@ -10,7 +10,7 @@ namespace AssetIO;
 /// </summary>
 public class AssetPackWriter : AssetWriter
 {
-    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest .dat file.
+    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
     private const int AssetInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
     private const int AssetInfoHeaderSize = 8; // The size of an asset info chunk header (NextOffset + NumAssets).
     private const int AssetFieldsSize = 16; // The size of an asset's fields (Name.Length + Offset + Size + Crc32).
@@ -29,6 +29,8 @@ public class AssetPackWriter : AssetWriter
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetPackWriter"/> class for the specified asset .pack file.
     /// </summary>
+    /// <param name="packFile">The asset .pack file to write.</param>
+    /// <param name="append">Whether to append assets instead of overwriting the file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
@@ -102,9 +104,7 @@ public class AssetPackWriter : AssetWriter
     /// <summary>
     /// Writes an asset with the given name and stream contents to the .pack file.
     /// </summary>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override void Write(string name, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);

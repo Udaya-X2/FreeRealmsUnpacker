@@ -19,6 +19,7 @@ public class AssetDatReader : AssetReader
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetDatReader"/> class for the specified asset .dat files.
     /// </summary>
+    /// <param name="dataFiles">The asset .dat files to read.</param>
     /// <exception cref="ArgumentNullException"/>
     public AssetDatReader(IEnumerable<string> dataFiles)
     {
@@ -31,10 +32,7 @@ public class AssetDatReader : AssetReader
     /// <summary>
     /// Reads the bytes of the specified asset from the .dat file(s) and writes the data in a given buffer.
     /// </summary>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override void Read(Asset asset, byte[] buffer)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -61,10 +59,7 @@ public class AssetDatReader : AssetReader
     /// <summary>
     /// Reads the bytes of the specified asset from the .dat file(s) and writes them to another stream.
     /// </summary>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override void CopyTo(Asset asset, Stream destination)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -82,9 +77,7 @@ public class AssetDatReader : AssetReader
     /// Reads the bytes of the specified asset from the .dat file(s) and computes its CRC-32 value.
     /// </summary>
     /// <returns>The CRC-32 checksum value of the specified asset.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
+    /// <inheritdoc/>
     public override uint GetCrc32(Asset asset)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);

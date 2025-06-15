@@ -10,6 +10,7 @@ public abstract class AssetReader : IDisposable
     /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s) into a byte array.
     /// </summary>
+    /// <param name="asset">The asset to read.</param>
     /// <returns>A byte array containing data read from the asset file(s).</returns>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
@@ -28,6 +29,11 @@ public abstract class AssetReader : IDisposable
     /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s) and writes the data in a given buffer.
     /// </summary>
+    /// <param name="asset">The asset to read.</param>
+    /// <param name="buffer">
+    /// When this method returns, contains the specified byte array with the values between 0
+    /// and <see cref="Asset.Offset"/> replaced by the the bytes read from the asset file(s).
+    /// </param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
@@ -37,6 +43,8 @@ public abstract class AssetReader : IDisposable
     /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s) and writes them to another stream.
     /// </summary>
+    /// <param name="asset">The asset to copy.</param>
+    /// <param name="destination">The stream to which the contents of the asset will be copied.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
@@ -44,23 +52,32 @@ public abstract class AssetReader : IDisposable
     public abstract void CopyTo(Asset asset, Stream destination);
 
     /// <inheritdoc cref="ExtractTo(Asset, string, FileConflictOptions, out bool)"/>
-    public FileInfo ExtractTo(Asset asset, string path, FileConflictOptions options = FileConflictOptions.Overwrite)
-        => ExtractTo(asset, path, options, out _);
+    public FileInfo ExtractTo(Asset asset, string dirPath, FileConflictOptions options = FileConflictOptions.Overwrite)
+        => ExtractTo(asset, dirPath, options, out _);
 
     /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s)
     /// and writes them to a file in the given directory path.
     /// </summary>
+    /// <param name="asset">The asset to extract.</param>
+    /// <param name="dirPath">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
+    /// <param name="fileExtracted">
+    /// <see langword="true"/> if the file was extracted; <see langword="false"/> if it was skipped.
+    /// </param>
     /// <returns>The extracted file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="InvalidEnumArgumentException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public FileInfo ExtractTo(Asset asset, string path, FileConflictOptions options, out bool fileExtracted)
+    public FileInfo ExtractTo(Asset asset, string dirPath, FileConflictOptions options, out bool fileExtracted)
     {
-        fileExtracted = TryGetExtractionPath(path, asset, options, out path);
-        FileInfo file = new(path);
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(dirPath);
+
+        fileExtracted = TryGetExtractionPath(asset, dirPath, options, out string filePath);
+        FileInfo file = new(filePath);
 
         if (fileExtracted)
         {
@@ -76,86 +93,90 @@ public abstract class AssetReader : IDisposable
     /// Determines where to extract the specified asset. A return value indicates
     /// whether the path is valid, according to the given file conflict options.
     /// </summary>
+    /// <param name="asset">The asset to extract.</param>
+    /// <param name="dirPath">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
+    /// <param name="filePath">The destination file path.</param>
     /// <returns>
     /// <see langword="true"/> if the asset can be extracted to
-    /// <paramref name="path"/>; otherwise, <see langword="false"/>.
+    /// <paramref name="filePath"/>; otherwise, <see langword="false"/>.
     /// </returns>
     /// <exception cref="InvalidEnumArgumentException"/>
-    private bool TryGetExtractionPath(string outputDir, Asset asset, FileConflictOptions options, out string path)
+    private bool TryGetExtractionPath(Asset asset, string dirPath, FileConflictOptions options, out string filePath)
     {
-        path = Path.Combine(outputDir, asset.Name);
+        filePath = Path.Combine(dirPath, asset.Name);
 
         switch (options)
         {
             case FileConflictOptions.Overwrite:
                 break;
             case FileConflictOptions.Skip:
-                return !File.Exists(path);
+                return !File.Exists(filePath);
             case FileConflictOptions.Rename:
                 {
                     string? extension = null, pathWithoutExtension = null;
 
-                    for (int digit = 2; File.Exists(path); digit++)
+                    for (int digit = 2; File.Exists(filePath); digit++)
                     {
-                        if (AssetEquals(asset, path)) return false;
+                        if (AssetEquals(asset, filePath)) return false;
 
-                        extension ??= Path.GetExtension(path);
-                        pathWithoutExtension ??= path[..^extension.Length];
-                        path = $"{pathWithoutExtension} ({digit}){extension}";
+                        extension ??= Path.GetExtension(filePath);
+                        pathWithoutExtension ??= filePath[..^extension.Length];
+                        filePath = $"{pathWithoutExtension} ({digit}){extension}";
                     }
                 }
                 break;
             case FileConflictOptions.MkDir:
-                for (int digit = 2; File.Exists(path); digit++)
+                for (int digit = 2; File.Exists(filePath); digit++)
                 {
-                    if (AssetEquals(asset, path)) return false;
+                    if (AssetEquals(asset, filePath)) return false;
 
-                    path = Path.Combine($"{outputDir} ({digit})", asset.Name);
+                    filePath = Path.Combine($"{dirPath} ({digit})", asset.Name);
                 }
                 break;
             case FileConflictOptions.MkSubdir:
-                if (File.Exists(path))
+                if (File.Exists(filePath))
                 {
-                    if (AssetEquals(asset, path)) return false;
+                    if (AssetEquals(asset, filePath)) return false;
 
                     string extension = Path.GetExtension(asset.Name);
-                    MoveFileDown(path, $"1{extension}");
-                    path = Path.Combine(path, $"2{extension}");
+                    MoveFileDown(filePath, $"1{extension}");
+                    filePath = Path.Combine(filePath, $"2{extension}");
                 }
-                else if (Directory.Exists(path))
+                else if (Directory.Exists(filePath))
                 {
-                    string originalPath = path;
+                    string originalPath = filePath;
                     string extension = Path.GetExtension(asset.Name);
-                    path = Path.Combine(originalPath, $"1{extension}");
+                    filePath = Path.Combine(originalPath, $"1{extension}");
 
-                    for (int digit = 2; File.Exists(path); digit++)
+                    for (int digit = 2; File.Exists(filePath); digit++)
                     {
-                        if (AssetEquals(asset, path)) return false;
+                        if (AssetEquals(asset, filePath)) return false;
 
-                        path = Path.Combine(originalPath, $"{digit}{extension}");
+                        filePath = Path.Combine(originalPath, $"{digit}{extension}");
                     }
                 }
                 break;
             case FileConflictOptions.MkTree:
-                if (File.Exists(path))
+                if (File.Exists(filePath))
                 {
-                    if (AssetEquals(asset, path)) return false;
+                    if (AssetEquals(asset, filePath)) return false;
 
                     string fileName = Path.GetFileName(asset.Name);
-                    MoveFileDown(path, Path.Combine("1", fileName));
-                    path = Path.Combine(path, "2", fileName);
+                    MoveFileDown(filePath, Path.Combine("1", fileName));
+                    filePath = Path.Combine(filePath, "2", fileName);
                 }
-                else if (Directory.Exists(path))
+                else if (Directory.Exists(filePath))
                 {
-                    string originalPath = path;
+                    string originalPath = filePath;
                     string fileName = Path.GetFileName(asset.Name);
-                    path = Path.Combine(originalPath, "1", fileName);
+                    filePath = Path.Combine(originalPath, "1", fileName);
 
-                    for (int digit = 2; File.Exists(path); digit++)
+                    for (int digit = 2; File.Exists(filePath); digit++)
                     {
-                        if (AssetEquals(asset, path)) return false;
+                        if (AssetEquals(asset, filePath)) return false;
 
-                        path = Path.Combine(originalPath, $"{digit}", fileName);
+                        filePath = Path.Combine(originalPath, $"{digit}", fileName);
                     }
                 }
                 break;
@@ -169,6 +190,8 @@ public abstract class AssetReader : IDisposable
     /// <summary>
     /// Determines whether the specified asset is equal to the given file.
     /// </summary>
+    /// <param name="asset">The asset to read.</param>
+    /// <param name="path">The path of the file to compare with the contents of the asset.</param>
     /// <returns>
     /// <see langword="true"/> if the specified asset equals the given file; otherwise, <see langword="false"/>.
     /// </returns>
@@ -186,6 +209,8 @@ public abstract class AssetReader : IDisposable
     /// Replaces the specified file with a directory and moves
     /// the file inside of the directory with the given name.
     /// </summary>
+    /// <param name="path">The path of the specified file, which will be replaced with a directory.</param>
+    /// <param name="fileName">The name of the file inside the new directory.</param>
     private static void MoveFileDown(string path, string fileName)
     {
         string tempPath = Path.GetTempFileName();
@@ -198,6 +223,7 @@ public abstract class AssetReader : IDisposable
     /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s) and computes its CRC-32 value.
     /// </summary>
+    /// <param name="asset">The asset to read.</param>
     /// <returns>The CRC-32 checksum value of the specified asset.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -208,6 +234,8 @@ public abstract class AssetReader : IDisposable
     /// <summary>
     /// Determines whether the contents of the given asset matches the specified stream.
     /// </summary>
+    /// <param name="asset">The asset to read.</param>
+    /// <param name="stream">The stream to which the contents of the asset will be compared.</param>
     /// <returns>
     /// <see langword="true"/> if the contents of the asset and
     /// the stream are the same; otherwise, <see langword="false"/>.
@@ -221,6 +249,9 @@ public abstract class AssetReader : IDisposable
     /// <summary>
     /// Asynchronously determines whether the contents of the given asset matches the specified stream.
     /// </summary>
+    /// <param name="asset">The asset to read.</param>
+    /// <param name="stream">The stream to which the contents of the asset will be compared.</param>
+    /// <param name="token">The token to monitor for cancellation requests.</param>
     /// <returns>
     /// A task that represents the stream comparison. The result of the task is <see langword="true"/>
     /// if the contents of the asset and the stream are the same; otherwise, <see langword="false"/>.
