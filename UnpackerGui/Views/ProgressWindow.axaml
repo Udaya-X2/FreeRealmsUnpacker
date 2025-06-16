@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
+        xmlns:ic="using:FluentIcons.Avalonia"
         x:Class="UnpackerGui.Views.ProgressWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"

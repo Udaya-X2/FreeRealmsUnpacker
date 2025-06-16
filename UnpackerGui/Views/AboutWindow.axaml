@@ -5,6 +5,7 @@
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
         xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
+        xmlns:ic="using:FluentIcons.Avalonia"
         x:Class="UnpackerGui.AboutWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"

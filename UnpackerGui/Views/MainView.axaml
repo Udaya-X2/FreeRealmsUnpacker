@@ -7,6 +7,7 @@
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              xmlns:commands="clr-namespace:UnpackerGui.Commands"
              xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
+             xmlns:ic="using:FluentIcons.Avalonia"
              mc:Ignorable="d"
              d:DesignWidth="800"
              d:DesignHeight="470"
@@ -16,7 +17,6 @@
              Unloaded="MainView_Unloaded">
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="fileSizeConverter"/>
-        <conv:BooleanToRotationConverter x:Key="booleanToRotationConverter"/>
         <conv:BooleanToStringConverter x:Key="booleanToStringConverter"/>
         <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
         <commands:StaticCommands x:Key="commands"/>
@@ -90,37 +90,37 @@
                     <Button Command="{Binding AddPackFilesCommand}"
                             ToolTip.Tip="Add .pack Files..."
                             Grid.Column="0">
-                        <Image Source="/Assets/icon_ui_pickup_siding_32.png"/>
+                        <ic:FluentIcon Icon="DocumentAdd"/>
                     </Button>
                     <!--Add Manifest Files Button-->
                     <Button Command="{Binding AddManifestFilesCommand}"
                             ToolTip.Tip="Add manifest.dat Files..."
                             Grid.Column="1">
-                        <Image Source="/Assets/icon_ui_pickup_siding_blue_32.png"/>
+                        <ic:FluentIcon Icon="FolderAdd"/>
                     </Button>
                     <!--Extract Files Button-->
                     <Button Command="{Binding ExtractCheckedFilesCommand}"
                             ToolTip.Tip="Extract Checked Files..."
                             Grid.Column="2">
-                        <Image Source="/Assets/downloadIcon.png"/>
+                        <ic:FluentIcon Icon="ArrowDownload"/>
                     </Button>
                     <!--Check All Button-->
                     <Button Command="{Binding CheckAllFilesCommand}"
                             ToolTip.Tip="Check All Files"
                             Grid.Column="3">
-                        <Image Source="/Assets/ui_dialog_greencheck.png"/>
+                        <ic:FluentIcon Icon="Checkmark"/>
                     </Button>
                     <!--Uncheck All Button-->
                     <Button Command="{Binding UncheckAllFilesCommand}"
                             ToolTip.Tip="Uncheck All Files"
                             Grid.Column="4">
-                        <Image Source="/Assets/ps3_icon_ui_none_32.png"/>
+                        <ic:FluentIcon Icon="Prohibited"/>
                     </Button>
                     <!--Remove Checked Button-->
                     <Button Command="{Binding RemoveCheckedFilesCommand}"
                             ToolTip.Tip="Remove Checked Files"
                             Grid.Column="5">
-                        <Image Source="/Assets/video_new_IC8.png"/>
+                        <ic:FluentIcon Icon="Dismiss"/>
                     </Button>
                 </Grid>
                 <!--Asset File List-->
@@ -141,12 +141,14 @@
                                             Command="{Binding ShowDataFilesCommand}">
                                         <Button.Template>
                                             <ControlTemplate>
-                                                <Image Source="/Assets/Broker_ID.png"
-                                                       Margin="0 0 10 0">
-                                                    <Image.RenderTransform>
-                                                        <RotateTransform Angle="{Binding ShowDataFiles, Converter={StaticResource booleanToRotationConverter}, ConverterParameter=90}"/>
-                                                    </Image.RenderTransform>
-                                                </Image>
+                                                <StackPanel>
+                                                    <ic:FluentIcon Icon="CaretRight"
+                                                                   Margin="-2.5 -3 5 0"
+                                                                   IsVisible="{Binding !ShowDataFiles}"/>
+                                                    <ic:FluentIcon Icon="CaretDown"
+                                                                   Margin="-2.5 -3 5 0"
+                                                                   IsVisible="{Binding ShowDataFiles}"/>
+                                                </StackPanel>
                                             </ControlTemplate>
                                         </Button.Template>
                                     </Button>
@@ -275,13 +277,15 @@
                       ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
                       MaxHeight="32">
                     <!--Icon-->
-                    <Image Grid.Column="0"
-                           Source="/Assets/icon_interaction_player_inspect_32.png"
-                           Margin="5 2.5 5 2.5"
-                           ToolTip.Tip="Search (CTRL+F)"/>
+                    <ic:FluentIcon Grid.Column="0"
+                                   Icon="Search"
+                                   IconSize="Size12"
+                                   FontSize="28"
+                                   ToolTip.Tip="Search (CTRL+F)"/>
                     <!--Search Bar-->
                     <TextBox Grid.Column="1"
                              Name="searchBarTextBox"
+                             Margin="5 0 0 0"
                              MinWidth="0"
                              Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"/>
                     <!--Match Case Option-->
@@ -314,20 +318,20 @@
                                   Margin="5 0 0 0"
                                   ToolTip.Tip="Validate Assets (ALT+V)"
                                   IsChecked="{Binding IsValidatingAssets, Mode=TwoWay}">
-                        <Image Source="/Assets/icon_ui_guild_content.png"/>
+                        <ic:FluentIcon Icon="Shield"/>
                     </ToggleButton>
                     <!--Extract Selected Assets Button-->
                     <Button Grid.Column="5"
                             Command="{Binding ExtractSelectedAssetsCommand}"
                             Margin="5 0 0 0"
                             ToolTip.Tip="Extract Selected Assets...">
-                        <Image Source="/Assets/downloadIcon.png"/>
+                        <ic:FluentIcon Icon="ArrowDownload"/>
                     </Button>
                     <!--Display Options Dropdown Menu-->
                     <DropDownButton Grid.Column="6"
                                     Margin="5 0 0 0"
                                     ToolTip.Tip="Display Options">
-                        <Image Source="/Assets/icon_achievement_02_32.png"/>
+                        <ic:FluentIcon Icon="Settings"/>
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="BottomEdgeAlignedRight">
                                 <CheckBox Content="Name"
@@ -418,8 +422,8 @@
                     <StackPanel Orientation="Horizontal"
                                 Margin="0 0 10 0"
                                 ToolTip.Tip="Files Selected">
-                        <Image Source="/Assets/questjournal_I50.png"
-                               Margin="0 0 5 0"/>
+                        <ic:FluentIcon Icon="DocumentCheckmark"
+                                       Margin="0 0 5 0"/>
                         <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
@@ -435,8 +439,8 @@
                     <StackPanel Orientation="Horizontal"
                                 Margin="0 0 10 0"
                                 ToolTip.Tip="Assets Shown">
-                        <Image Source="/Assets/Broker_IE2.png"
-                               Margin="0 0 5 0"/>
+                        <ic:FluentIcon Icon="DocumentMultiple"
+                                       Margin="0 0 5 0"/>
                         <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
@@ -453,12 +457,12 @@
                                 Margin="0 0 10 0"
                                 IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
                                 ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource booleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
-                        <Image Source="/Assets/ui_objective_list.png"
-                               Margin="0 0 5 0"
-                               IsVisible="{Binding !ValidationOptions.ShowValid}"/>
-                        <Image Source="/Assets/ui_objective_completed.png"
-                               Margin="0 0 5 0"
-                               IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
+                        <ic:FluentIcon Icon="Warning"
+                                       Margin="0 0 5 0"
+                                       IsVisible="{Binding !ValidationOptions.ShowValid}"/>
+                        <ic:FluentIcon Icon="CheckboxChecked"
+                                       Margin="0 0 5 0"
+                                       IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
                         <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
@@ -475,8 +479,8 @@
                                 Margin="0 0 10 0"
                                 IsVisible="{Binding SearchOptions.Pattern, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                 ToolTip.Tip="Search Hits">
-                        <Image Source="/Assets/icon_ui_activityFinder_32.png"
-                               Margin="0 0 5 0"/>
+                        <ic:FluentIcon Icon="DocumentSearch"
+                                       Margin="0 0 5 0"/>
                         <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">
@@ -493,8 +497,8 @@
                                 Margin="0 0 10 0"
                                 IsVisible="{Binding !!SelectedAssets.Count}"
                                 ToolTip.Tip="Assets Selected">
-                        <Image Source="/Assets/cursor_interaction_default_use.png"
-                               Margin="0 0 5 0"/>
+                        <ic:FluentIcon Icon="HandPoint"
+                                       Margin="0 0 5 0"/>
                         <TextBlock VerticalAlignment="Center">
                             <TextBlock.Text>
                                 <MultiBinding StringFormat="{}{0}/{1}">

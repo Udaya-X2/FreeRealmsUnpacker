@@ -36,3 +36,7 @@ Options:
 
 GUI:
 ![program.png](UnpackerGui/Assets/program.png)
+
+## Credits
+
+<a href="https://www.freepik.com/icon/package_1170846">Icon by Freepik</a>
