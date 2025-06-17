@@ -58,8 +58,8 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutCommand { get; }
-    public ReactiveCommand<Unit, Unit> OpenAssetFolderCommand { get; }
-    public ReactiveCommand<Unit, Unit> OpenAssetFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddAssetFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddAssetFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
@@ -98,8 +98,8 @@ public class MainViewModel : SavedSettingsViewModel
         ExitCommand = ReactiveCommand.Create(App.ShutDown);
         ShowPreferencesCommand = ReactiveCommand.CreateFromTask(ShowPreferences);
         ShowAboutCommand = ReactiveCommand.CreateFromTask(ShowAbout);
-        OpenAssetFolderCommand = ReactiveCommand.CreateFromTask(OpenAssetFolder);
-        OpenAssetFileCommand = ReactiveCommand.CreateFromTask(OpenAssetFile);
+        AddAssetFolderCommand = ReactiveCommand.CreateFromTask(AddAssetFolder);
+        AddAssetFilesCommand = ReactiveCommand.CreateFromTask(AddAssetFiles);
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
@@ -233,7 +233,7 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Opens a folder dialog that allows the user to add asset files in the folder to the source asset files.
     /// </summary>
-    private async Task OpenAssetFolder()
+    private async Task AddAssetFolder()
     {
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
@@ -259,7 +259,7 @@ public class MainViewModel : SavedSettingsViewModel
     /// <summary>
     /// Opens a file dialog that allows the user to add .pack or manifest.dat files to the source asset files.
     /// </summary>
-    private async Task OpenAssetFile()
+    private async Task AddAssetFiles()
     {
         IFilesService filesService = App.GetService<IFilesService>();
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions

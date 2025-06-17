@@ -47,12 +47,12 @@
             <MenuItem Header="File">
                 <!--Open Submenu-->
                 <MenuItem Header="Open">
-                    <!--Open Folder-->
-                    <MenuItem Header="Folder..."
-                              Command="{Binding OpenAssetFolderCommand}"/>
-                    <!--Open File-->
-                    <MenuItem Header="File..."
-                              Command="{Binding OpenAssetFileCommand}"/>
+                    <!--Open Pack File-->
+                    <MenuItem Header="Asset .pack File..."
+                              Command="{Binding AddPackFilesCommand}"/>
+                    <!--Open Manifest File-->
+                    <MenuItem Header="Asset manifest.dat File..."
+                              Command="{Binding AddManifestFilesCommand}"/>
                 </MenuItem>
                 <Separator/>
                 <!--Exit-->
@@ -86,15 +86,15 @@
                 <Grid Grid.Row="0"
                       MaxHeight="32"
                       ColumnDefinitions="*,*,*,*,*,*">
-                    <!--Add Pack Files Button-->
-                    <Button Command="{Binding AddPackFilesCommand}"
-                            ToolTip.Tip="Add .pack Files..."
+                    <!--Add Asset Files Button-->
+                    <Button Command="{Binding AddAssetFilesCommand}"
+                            ToolTip.Tip="Add Asset Files..."
                             Grid.Column="0">
                         <ic:FluentIcon Icon="DocumentAdd"/>
                     </Button>
-                    <!--Add Manifest Files Button-->
-                    <Button Command="{Binding AddManifestFilesCommand}"
-                            ToolTip.Tip="Add manifest.dat Files..."
+                    <!--Add Asset Folder Button-->
+                    <Button Command="{Binding AddAssetFolderCommand}"
+                            ToolTip.Tip="Add Asset Folder..."
                             Grid.Column="1">
                         <ic:FluentIcon Icon="FolderAdd"/>
                     </Button>
