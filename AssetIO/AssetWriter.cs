@@ -60,6 +60,7 @@ public abstract class AssetWriter : IDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(buffer);
+        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
 
         using MemoryStream ms = new(buffer, index, count);
         Write(name, ms);
