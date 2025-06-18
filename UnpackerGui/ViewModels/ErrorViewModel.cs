@@ -27,8 +27,8 @@ public class ErrorViewModel : ViewModelBase
     }
 
     public string Message => Handled
-        ? $"An error has occurred.{Environment.NewLine}{Environment.NewLine}{Exception.Message}"
-        : $"A fatal error has occurred.{Environment.NewLine}{Environment.NewLine}{Exception.Message}";
+        ? $"An error has occurred.\n\n{Exception.Message}"
+        : $"A fatal error has occurred.\n\n{Exception.Message}";
 
-    public string DetailsMessage => $"{Exception}{Environment.NewLine}";
+    public string DetailsMessage => $"{Exception}\n";
 }
