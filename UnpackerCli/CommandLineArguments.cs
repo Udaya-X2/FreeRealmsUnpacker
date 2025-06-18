@@ -9,7 +9,7 @@ public partial class Unpacker
     /// <summary>
     /// Gets the Free Realms client directory or asset file.
     /// </summary>
-    [Argument(0, Name = "InputDirectory/AssetFile", Description = "The Free Realms client directory or asset file.")]
+    [Argument(0, Name = "InputFile/Directory", Description = "The Free Realms asset file or client directory.")]
     [Required]
     [FileOrDirectoryExists]
     public string InputFile { get; } = "";
@@ -71,6 +71,24 @@ public partial class Unpacker
     public bool IgnoreTemp { get; }
 
     /// <summary>
+    /// Gets the output file, or <see langword="null"/> if not writing
+    /// assets from the input file or directory to an asset file.
+    /// </summary>
+    [Option(ShortName = "w", LongName = "write-assets", ValueName = "FILE",
+        Description = "Write the assets from the input file or directory to an asset file.\n"
+                      + "The input file should contain a list of paths separated by newlines.\n"
+                      + "The input directory should contain the assets to add to the file.")]
+    [DirectoryNotExists]
+    public string? OutputFile { get; }
+
+    /// <summary>
+    /// Gets whether to append assets instead of overwriting the asset file.
+    /// </summary>
+    [Option(ShortName = "a", Description = "Append assets instead of overwriting the asset file.\n"
+                                           + "Requires --write-assets.")]
+    public bool AppendAssets { get; }
+
+    /// <summary>
     /// Gets whether to list the assets without extracting them.
     /// </summary>
     [Option(ShortName = "l", Description = "List the assets without extracting them.")]
@@ -97,13 +115,15 @@ public partial class Unpacker
     /// <summary>
     /// Gets whether to display listed information as comma-separated values.
     /// </summary>
-    [Option(ShortName = "C", Description = "Display listed information as comma-separated values.")]
+    [Option(ShortName = "C", Description = "Display listed information as comma-separated values.\n"
+                                           + "Requires --list-assets or --list-files.")]
     public bool DisplayCsv { get; }
 
     /// <summary>
     /// Gets whether to display listed information in a table.
     /// </summary>
-    [Option(ShortName = "#", Description = "Display listed information in a table.")]
+    [Option(ShortName = "#", Description = "Display listed information in a table.\n"
+                                           + "Requires --list-assets or --list-files.")]
     public bool DisplayTable { get; }
 
     /// <summary>

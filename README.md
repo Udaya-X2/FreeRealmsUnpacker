@@ -3,10 +3,10 @@ An application that allows you to browse, extract, and validate assets from Free
 
 CLI:
 ```
-Usage: FreeRealmsUnpackerCLI [options] <InputDirectory/AssetFile> <OutputDirectory>
+Usage: FreeRealmsUnpackerCLI [options] <InputFile/Directory> <OutputDirectory>
 
 Arguments:
-  InputDirectory/AssetFile      The Free Realms client directory or asset file.
+  InputFile/Directory           The Free Realms asset file or client directory.
   OutputDirectory               The destination for extracted assets.
                                 Default value is: ./assets.
 
@@ -19,12 +19,19 @@ Options:
   -p|--extract-pack             Extract .pack assets only.
   -d|--extract-dat              Extract .dat assets only.
   -i|--ignore-temp              Ignore .temp asset files.
+  -w|--write-assets <FILE>      Write the assets from the input file or directory to an asset file.
+                                The input file should contain a list of paths separated by newlines.
+                                The input directory should contain the assets to add to the file.
+  -a|--append-assets            Append assets instead of overwriting the asset file.
+                                Requires --write-assets.
   -l|--list-assets              List the assets without extracting them.
   -f|--list-files               List the asset file paths without extracting them.
   -v|--validate-assets          Validate the assets without extracting them.
   -c|--count-assets             Count the assets without extracting them.
   -C|--display-csv              Display listed information as comma-separated values.
+                                Requires --list-assets or --list-files.
   -#|--display-table            Display listed information in a table.
+                                Requires --list-assets or --list-files.
   -H|--handle-conflicts <MODE>  Specify how to handle assets with conflicting names.
                                 Allowed values are: Overwrite, Skip, Rename, MkDir, MkSubdir, MkTree.
                                 Default value is: Overwrite.

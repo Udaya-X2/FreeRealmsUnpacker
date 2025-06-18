@@ -34,29 +34,38 @@ public partial class Unpacker
                 Console.WriteLine(ListAssets ? "Name,Offset,Size,CRC-32" : "Name,Count,Size");
             }
 
-            // Get the asset files to process from the input directory or file.
-            IEnumerable<AssetFile> assetFiles = Directory.Exists(InputFile)
-                                              ? ClientDirectory.EnumerateAssetFiles(InputFile,
-                                                                GetAssetFilter(),
-                                                                requireFullType: !ExtractUnknown)
-                                              : [new AssetFile(InputFile)];
+            // Get the asset files to process from the input file, input directory, or output file.
+            IEnumerable<AssetFile> assetFiles = (File.Exists(InputFile), OutputFile) switch
+            {
+                (true, null) => [new AssetFile(InputFile)],
+                (false, null) => ClientDirectory.EnumerateAssetFiles(InputFile,
+                                                                     GetAssetFilter(),
+                                                                     requireFullType: !ExtractUnknown),
+                (_, not null) => [new AssetFile(OutputFile)]
+            };
 
             // Handle the asset types specified.
-            int count = ListFiles
-                      ? ListFilesFormatted(assetFiles)
-                      : assetFiles.OrderBy(x => x.DirectoryType)
-                                  .GroupBy(x => x.DirectoryType)
-                                  .Sum(x => HandleAssets(x.Key, x));
-
-            // Print the number of assets or files found.
-            string message = (count, ListFiles) switch
+            int count = (ListFiles, OutputFile) switch
             {
-                (0, false) => $"\nNo assets found.",
-                (0, true) => $"\nNo asset files found.",
-                (1, false) => $"\n1 asset found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
-                (1, true) => $"\n1 asset file found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
-                (_, false) => $"\n{count} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
-                (_, true) => $"\n{count} asset files found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}"
+                (true, null) => ListFilesFormatted(assetFiles),
+                (false, null) => assetFiles.OrderBy(x => x.DirectoryType)
+                                           .GroupBy(x => x.DirectoryType)
+                                           .Sum(x => HandleAssets(x.Key, x)),
+                (_, not null) => WriteAssets(assetFiles.First())
+            };
+
+            // Print the number of assets or files handled.
+            string message = (count, ListFiles, OutputFile) switch
+            {
+                (0, false, null) => $"\nNo assets found.",
+                (0, true, null) => $"\nNo asset files found.",
+                (0, _, not null) => $"\nNo assets written.",
+                (1, false, null) => $"\n1 asset found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                (1, true, null) => $"\n1 asset file found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                (1, _, not null) => $"\n1 asset written in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                (_, false, null) => $"\n{count} assets found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                (_, true, null) => $"\n{count} asset files found in {sw.Elapsed:hh\\:mm\\:ss\\.fff}",
+                (_, _, not null) => $"\n{count} assets written in {sw.Elapsed:hh\\:mm\\:ss\\.fff}"
             };
 
             Console.Error.WriteLine(message);
@@ -73,6 +82,27 @@ public partial class Unpacker
         {
             Console.OutputEncoding = consoleEncoding;
         }
+    }
+
+    /// <summary>
+    /// Writes the assets from the input file or directory to the specified asset file.
+    /// </summary>
+    /// <returns>The number of assets written.</returns>
+    private int WriteAssets(AssetFile assetFile)
+    {
+        List<FileInfo> assets = File.Exists(InputFile)
+            ? [.. File.ReadLines(InputFile).Select(x => new FileInfo(x))]
+            : [.. new DirectoryInfo(InputFile).EnumerateFiles("*", SearchOption.AllDirectories)];
+        using ProgressBar? pbar = NoProgressBars ? null : new(assets.Count, "Writing assets...");
+        using AssetWriter writer = AppendAssets ? assetFile.OpenAppend() : assetFile.OpenWrite();
+
+        foreach (FileInfo asset in assets)
+        {
+            writer.Write(asset);
+            pbar?.UpdateProgress($"Added {asset.Name}");
+        }
+
+        return assets.Count;
     }
 
     /// <summary>
@@ -353,21 +383,27 @@ public partial class Unpacker
     /// <exception cref="Exception"/>
     private bool ValidateArguments()
     {
-        if (!Enum.IsDefined(HandleConflicts)) throw new Exception("Invalid value specified for handle-conflicts.");
-
         const bool T = true, F = false;
-        return (ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable) switch
+        bool writeAssets = OutputFile != null;
+
+        if (!Enum.IsDefined(HandleConflicts)) throw new Exception("Invalid value specified for --handle-conflicts.");
+        if (AppendAssets && !writeAssets) throw new Exception("Cannot append assets without --write-assets.");
+        return (writeAssets, ListAssets, ListFiles, ValidateAssets, CountAssets, DisplayCsv, DisplayTable) switch
         {
-            (T, T, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
-            (T, _, T, _, _, _) => throw new Exception("Cannot both list and validate assets."),
-            (_, T, T, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
-            (T, _, _, T, _, _) => throw new Exception("Cannot both list and count assets."),
-            (_, T, _, T, _, _) => throw new Exception("Cannot both list files and count assets."),
-            (_, _, T, T, _, _) => throw new Exception("Cannot both validate and count assets."),
-            (_, _, _, _, T, T) => throw new Exception("Cannot display info as both a CSV file and a table."),
-            (F, F, _, _, T, F) => throw new Exception("Cannot display CSV without a list option."),
-            (F, F, _, _, F, T) => throw new Exception("Cannot display table without a list option."),
-            (F, F, F, F, F, F) => SetupOutputDirectory(),
+            (T, T, _, _, _, _, _) => throw new Exception("Cannot both write and list assets."),
+            (T, _, T, _, _, _, _) => throw new Exception("Cannot both write and list files."),
+            (T, _, _, T, _, _, _) => throw new Exception("Cannot both write and validate assets."),
+            (T, _, _, _, T, _, _) => throw new Exception("Cannot both write and count assets."),
+            (_, T, T, _, _, _, _) => throw new Exception("Cannot both list assets and files."),
+            (_, T, _, T, _, _, _) => throw new Exception("Cannot both list and validate assets."),
+            (_, T, _, _, T, _, _) => throw new Exception("Cannot both list and count assets."),
+            (_, _, T, T, _, _, _) => throw new Exception("Cannot both list files and validate assets."),
+            (_, _, T, _, T, _, _) => throw new Exception("Cannot both list files and count assets."),
+            (_, _, _, T, T, _, _) => throw new Exception("Cannot both validate and count assets."),
+            (_, _, _, _, _, T, T) => throw new Exception("Cannot display info as both a CSV file and a table."),
+            (_, F, F, _, _, T, F) => throw new Exception("Cannot display CSV without a list option."),
+            (_, F, F, _, _, F, T) => throw new Exception("Cannot display table without a list option."),
+            (F, F, F, F, F, F, F) => SetupOutputDirectory(),
             _ => true,
         };
     }
