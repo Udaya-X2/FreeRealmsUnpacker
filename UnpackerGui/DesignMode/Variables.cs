@@ -1,7 +1,14 @@
-﻿namespace UnpackerGui.DesignMode;
+﻿using AssetIO;
+using Avalonia.Controls;
+using UnpackerGui.ViewModels;
+
+namespace UnpackerGui.DesignMode;
 
 public static class Variables
 {
+    /* MainWindow Design Variables */
+    public static readonly AssetFileViewModel[]? AssetFiles;
+
     /* ProgressWindow Design Variables */
     public const string ProgressMessage = "Progress Message";
     public const string ElapsedTime = "00:00:00";
@@ -18,11 +25,7 @@ public static class Variables
     public const int FlipImageAngle = 180;
 
     /* PreferencesWindow Design Variables */
-    public static readonly string[] Preferences =
-    [
-        "File Conflict Options",
-        "Folder Options"
-    ];
+    public static readonly string[]? Preferences;
     public const string PreferenceName = "File Conflict Options";
     public const string PreferenceDescription = "Select how to extract assets with conflicting names.";
 
@@ -33,4 +36,26 @@ public static class Variables
     /* Generic Design Variables */
     public const bool True = true;
     public const bool False = false;
+
+    /* Static Constructor */
+    static Variables()
+    {
+        if (Design.IsDesignMode)
+        {
+            AssetFiles =
+            [
+                new AssetFileViewModel(new AssetFile("Assets_001.pack")),
+                new AssetFileViewModel(new AssetFile("Assets_002.pack")),
+                new AssetFileViewModel(new AssetFile("Assets_003.pack")),
+                new AssetFileViewModel(new AssetFile("Assets_004.pack")),
+                new AssetFileViewModel(new AssetFile("Assets_005.pack")),
+                new AssetFileViewModel(new AssetFile("Assets_manifest.dat"))
+            ];
+            Preferences =
+            [
+                "File Conflict Options",
+                "Folder Options"
+            ];
+        }
+    }
 }

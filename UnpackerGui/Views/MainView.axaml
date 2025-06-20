@@ -126,7 +126,7 @@
                 </Grid>
                 <!--Asset File List-->
                 <ListBox Grid.Row="1"
-                         ItemsSource="{Binding AssetFiles}"
+                         ItemsSource="{Binding AssetFiles, FallbackValue={x:Static dm:Variables.AssetFiles}}"
                          Margin="0 5 0 0"
                          SelectionMode="Toggle"
                          SelectedItem="{Binding SelectedAssetFile}"

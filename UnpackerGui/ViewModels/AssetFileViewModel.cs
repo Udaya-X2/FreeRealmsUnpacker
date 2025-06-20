@@ -1,4 +1,5 @@
 ﻿using AssetIO;
+using Avalonia.Controls;
 using ReactiveUI;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,6 +34,8 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     {
         Assets = [];
         _assetFile = assetFile;
+
+        if (Design.IsDesignMode) return;
 
         foreach (Asset asset in _assetFile)
         {

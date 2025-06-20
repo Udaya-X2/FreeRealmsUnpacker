@@ -49,6 +49,12 @@ public partial class MainView : UserControl
     {
         switch (e.KeyModifiers, e.Key)
         {
+#if DEBUG
+            case (KeyModifiers.Alt, Key.D):
+                System.Diagnostics.Debug.Write($"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} ");
+                System.Diagnostics.Debug.WriteLine($"{DesignMode.Variables.AssetFiles is null}");
+                break;
+#endif
             case (KeyModifiers.Alt, Key.C):
                 matchCaseButton.IsChecked ^= true;
                 break;
