@@ -12,7 +12,7 @@ public partial class Unpacker
     [Argument(0, Name = "InputFile/Directory", Description = "The Free Realms asset file or client directory.")]
     [Required]
     [FileOrDirectoryExists]
-    public string InputFile { get; } = "";
+    public string InputFile { get; } = null!;
 
     /// <summary>
     /// Gets the destination for extracted assets.

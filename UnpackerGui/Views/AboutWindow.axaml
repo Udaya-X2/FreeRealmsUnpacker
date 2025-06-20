@@ -6,37 +6,58 @@
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
         xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         xmlns:ic="using:FluentIcons.Avalonia"
+        xmlns:commands="clr-namespace:UnpackerGui.Commands"
         x:Class="UnpackerGui.AboutWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="About Free Realms Unpacker"
-        Width="450"
-        Height="200"
+        Width="500"
+        Height="225"
         x:DataType="vm:AboutViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         CanResize="False">
+    <Window.Resources>
+        <commands:StaticCommands x:Key="commands"/>
+    </Window.Resources>
     <DockPanel>
         <Image Source="avares://UnpackerGui/Assets/unpacker.ico"
-               Height="128"
                Width="128"
-               Margin="10"/>
+               Margin="15"/>
         <StackPanel VerticalAlignment="Center">
-            <TextBlock Text="Free Realms Unpacker"
-                       FontSize="14"
+            <TextBlock Text="Free Realms Unpacker"/>
+            <TextBlock Text="{Binding Version, FallbackValue={x:Static dm:Variables.Version}}"/>
+            <TextBlock Text="{Binding Copyright, FallbackValue={x:Static dm:Variables.Copyright}}"
                        Margin="0,0,0,15"/>
-            <TextBlock Text="{Binding Version, FallbackValue={x:Static dm:Variables.Version}}"
-                       FontSize="14"
-                       Margin="0,0,0,15"/>
-            <TextBlock Text="Created by Udaya"
-                       FontSize="14"
-                       Margin="0,0,0,15"/>
-            <TextBlock FontSize="14"
-                       TextWrapping="Wrap"
-                       Margin="0,0,15,0">
-                Free Realms Unpacker is an application that allows you to browse,
-                extract, and validate assets from Free Realms asset files.
+            <TextBlock TextWrapping="Wrap"
+                       Margin="0,0,20,15">
+                Free Realms Unpacker is an application that allows you to browse and extract assets from Free Realms asset files.
+                <LineBreak/><LineBreak/>
+                It also includes other utilities, such as creating asset files, adding assets to files, validating assets, and fixing some types of asset files (i.e., .pack.temp files).
             </TextBlock>
+            <Button Cursor="Hand"
+                    ToolTip.Tip="{Binding SourceCodeUrl}">
+                <Button.Template>
+                    <ControlTemplate>
+                        <TextBlock TextDecorations="Underline"
+                                   Foreground="#4493f8"
+                                   Text="Source Code"/>
+                    </ControlTemplate>
+                </Button.Template>
+                <Interaction.Behaviors>
+                    <ButtonClickEventTriggerBehavior>
+                        <InvokeCommandAction Command="{Binding OpenLinkCommand}"
+                                             CommandParameter="{Binding SourceCodeUrl}"/>
+                    </ButtonClickEventTriggerBehavior>
+                </Interaction.Behaviors>
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy Link"
+                                  Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
+                                  CommandParameter="{Binding SourceCodeUrl}"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
         </StackPanel>
     </DockPanel>
 </Window>

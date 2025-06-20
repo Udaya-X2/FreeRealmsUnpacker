@@ -28,6 +28,7 @@ public static class Variables
 
     /* AboutWindow Design Variables */
     public const string Version = "Version X.X.X";
+    public const string Copyright = "Copyright © Udaya";
 
     /* Generic Design Variables */
     public const bool True = true;

@@ -1,5 +1,5 @@
 # FreeRealmsUnpacker
-An application that allows you to browse, extract, and validate assets from Free Realms asset files.
+An application that allows you to browse and extract assets from Free Realms asset files. It also includes other utilities, such as creating asset files, adding assets to files, validating assets, and fixing some types of asset files (i.e., .pack.temp files).
 
 ## GUI
 
