@@ -18,7 +18,8 @@ public class AboutViewModel : ViewModelBase
     public AboutViewModel()
     {
         Assembly assembly = Assembly.GetEntryAssembly()!;
-        Version = $"Version {assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion}";
+        string version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
+        Version = $"Version {version}";
         Copyright = assembly.GetCustomAttribute<AssemblyCopyrightAttribute>()!.Copyright;
         SourceCodeUrl = "https://github.com/Udaya-X2/FreeRealmsUnpacker";
         OpenLinkCommand = ReactiveCommand.Create<string>(OpenLink);
