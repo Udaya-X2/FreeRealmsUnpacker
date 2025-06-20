@@ -159,6 +159,11 @@ public class AssetFile : IEnumerable<Asset>
     };
 
     /// <summary>
+    /// Creates or overwrites the asset file.
+    /// </summary>
+    public virtual void Create() => OpenWrite().Dispose();
+
+    /// <summary>
     /// Throws an exception if the asset file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>
     /// <exception cref="ArgumentNullException"/>

@@ -55,6 +55,15 @@
                     <MenuItem Header="Asset manifest.dat File..."
                               Command="{Binding AddManifestFilesCommand}"/>
                 </MenuItem>
+                <!--Create Submenu-->
+                <MenuItem Header="Create">
+                    <!--Create Pack File-->
+                    <MenuItem Header="Asset .pack File..."
+                              Command="{Binding CreatePackFileCommand}"/>
+                    <!--Create Manifest File-->
+                    <MenuItem Header="Asset manifest.dat File..."
+                              Command="{Binding CreateManifestFileCommand}"/>
+                </MenuItem>
                 <Separator/>
                 <!--Exit-->
                 <MenuItem Header="Exit"

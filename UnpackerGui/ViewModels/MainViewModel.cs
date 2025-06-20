@@ -64,6 +64,8 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> CreatePackFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> CreateManifestFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractCheckedFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractSelectedAssetsCommand { get; }
@@ -104,6 +106,8 @@ public class MainViewModel : SavedSettingsViewModel
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
+        CreatePackFileCommand = ReactiveCommand.CreateFromTask(CreatePackFile);
+        CreateManifestFileCommand = ReactiveCommand.CreateFromTask(CreateManifestFile);
         ExtractCheckedFilesCommand = ReactiveCommand.CreateFromTask(ExtractCheckedFiles);
         ExtractSelectedFileCommand = ReactiveCommand.CreateFromTask(ExtractSelectedFile);
         ExtractSelectedAssetsCommand = ReactiveCommand.CreateFromTask(ExtractSelectedAssets);
@@ -371,6 +375,47 @@ public class MainViewModel : SavedSettingsViewModel
                 AutoClose = true
             });
         }
+    }
+
+    /// <summary>
+    /// Opens a save file dialog that allows the user to create an asset .pack file.
+    /// </summary>
+    private async Task CreatePackFile() => await CreateAssetFile(AssetType.Pack);
+
+    /// <summary>
+    /// Opens a save file dialog that allows the user to create a manifest.dat file.
+    /// </summary>
+    private async Task CreateManifestFile() => await CreateAssetFile(AssetType.Dat);
+
+    /// <summary>
+    /// Opens a save file dialog that allows the user to create an asset file of the specified type.
+    /// </summary>
+    private async Task CreateAssetFile(AssetType assetType)
+    {
+        bool isPackFile = (assetType & AssetType.Pack) != 0;
+        if (await App.GetService<IFilesService>().SaveFileAsync(new FilePickerSaveOptions
+        {
+            SuggestedStartLocation = await OutputFolder,
+            SuggestedFileName = isPackFile ? "Assets_000.pack" : "Assets_manifest.dat",
+            FileTypeChoices = isPackFile ? FileTypeFilters.PackFiles : FileTypeFilters.ManifestFiles,
+            ShowOverwritePrompt = true
+        }) is not IStorageFile file) return;
+        AssetFile assetFile = new(file.Path.LocalPath, assetType);
+        OutputDirectory = assetFile.Info.DirectoryName ?? "";
+        assetFile.Create();
+        AssetFileViewModel newFile = new(assetFile);
+
+        if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel existingFile)
+        {
+            _sourceAssetFiles.Replace(existingFile, newFile);
+            newFile.IsChecked = existingFile.IsChecked;
+        }
+        else
+        {
+            _sourceAssetFiles.Add(newFile);
+        }
+
+        SelectedAssetFile = newFile;
     }
 
     /// <summary>
