@@ -10,7 +10,7 @@
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="Preferences"
-        Width="500"
+        Width="550"
         Height="350"
         x:DataType="vm:PreferencesViewModel"
         ShowInTaskbar="False"
@@ -38,10 +38,12 @@
             <!--Option Name-->
             <TextBlock Text="{Binding SelectedPreference.Name, FallbackValue={x:Static dm:Variables.PreferenceName}}"
                        FontSize="20"
+                       TextWrapping="Wrap"
                        Margin="0,0,0,10"/>
             <!--Option Description-->
             <TextBlock Text="{Binding SelectedPreference.Description, FallbackValue={x:Static dm:Variables.PreferenceDescription}}"
                        Opacity="100"
+                       TextWrapping="Wrap"
                        Margin="0,0,0,10"/>
             <!--File Conflict Options-->
             <StackPanel IsVisible="{Binding SelectedPreference.Name, Converter={StaticResource stringComparisonConverter} ConverterParameter='File Conflict Options', FallbackValue={x:Static dm:Variables.True}}">
