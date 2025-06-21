@@ -64,6 +64,8 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddAssetsFromFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddAssetsFromFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> CreatePackFileCommand { get; }
     public ReactiveCommand<Unit, Unit> CreateManifestFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractCheckedFilesCommand { get; }
@@ -106,6 +108,8 @@ public class MainViewModel : SavedSettingsViewModel
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
+        AddAssetsFromFilesCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFiles);
+        AddAssetsFromFolderCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFolder);
         CreatePackFileCommand = ReactiveCommand.CreateFromTask(CreatePackFile);
         CreateManifestFileCommand = ReactiveCommand.CreateFromTask(CreateManifestFile);
         ExtractCheckedFilesCommand = ReactiveCommand.CreateFromTask(ExtractCheckedFiles);
@@ -378,6 +382,61 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
+    /// Adds the specified assets to the selected asset file.
+    /// </summary>
+    private async Task AddAssets(List<string> files)
+    {
+        if (files.Count == 0) return;
+
+        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+        {
+            DataContext = new WriterViewModel(SelectedAssetFile!, files),
+            AutoClose = true
+        });
+        AssetFileViewModel newFile = new(new AssetFile(SelectedAssetFile!.FullName, SelectedAssetFile.Type))
+        {
+            IsChecked = SelectedAssetFile.IsChecked,
+            ShowDataFiles = SelectedAssetFile.ShowDataFiles
+        };
+        _sourceAssetFiles.Replace(SelectedAssetFile, newFile);
+        SelectedAssetFile = newFile;
+    }
+
+    /// <summary>
+    /// Opens a file dialog that allows the user to add assets to the selected asset file.
+    /// </summary>
+    private async Task AddAssetsFromFiles()
+    {
+        IFilesService filesService = App.GetService<IFilesService>();
+        IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = true,
+            SuggestedStartLocation = await InputFolder
+        });
+
+        if (files.Count == 0) return;
+
+        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        await AddAssets([.. files.Select(x => x.Path.LocalPath)]);
+    }
+
+    /// <summary>
+    /// Opens a folder dialog that allows the user to add assets from it to the selected asset file.
+    /// </summary>
+    private async Task AddAssetsFromFolder()
+    {
+        IFilesService filesService = App.GetService<IFilesService>();
+        if (await filesService.OpenFolderAsync(new FolderPickerOpenOptions
+        {
+            AllowMultiple = true,
+            SuggestedStartLocation = await InputFolder
+        }) is not IStorageFolder folder) return;
+        InputDirectory = folder.Path.LocalPath;
+        List<string> files = [.. Directory.EnumerateFiles(InputDirectory, "*", SearchOption.AllDirectories)];
+        await AddAssets(files);
+    }
+
+    /// <summary>
     /// Opens a save file dialog that allows the user to create an asset .pack file.
     /// </summary>
     private async Task CreatePackFile() => await CreateAssetFile(AssetType.Pack);
@@ -409,6 +468,7 @@ public class MainViewModel : SavedSettingsViewModel
         {
             _sourceAssetFiles.Replace(existingFile, newFile);
             newFile.IsChecked = existingFile.IsChecked;
+            newFile.ShowDataFiles = existingFile.ShowDataFiles;
         }
         else
         {

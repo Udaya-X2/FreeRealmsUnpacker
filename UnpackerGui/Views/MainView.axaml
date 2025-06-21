@@ -188,6 +188,7 @@
                                                        Height="14"/>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
+                                    <!--Data File Context Menu-->
                                     <ListBox.ContextMenu>
                                         <ContextMenu>
                                             <MenuItem Header="Remove"
@@ -204,6 +205,7 @@
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
+                    <!--Asset File Context Menu-->
                     <ListBox.ContextMenu>
                         <ContextMenu IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <MenuItem Header="Remove"
@@ -214,8 +216,13 @@
                             <MenuItem Header="Copy Full File Path"
                                       Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
                                       CommandParameter="{Binding SelectedAssetFile.FullName}"/>
+                            <Separator/>
                             <MenuItem Header="Extract To..."
                                       Command="{Binding ExtractSelectedFileCommand}"/>
+                            <MenuItem Header="Add Assets..."
+                                      Command="{Binding AddAssetsFromFilesCommand}"/>
+                            <MenuItem Header="Add Assets from Folder..."
+                                      Command="{Binding AddAssetsFromFolderCommand}"/>
                             <MenuItem Header="Add Asset .dat Files..."
                                       IsVisible="{Binding SelectedAssetFile.FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                                       Command="{Binding AddDataFilesCommand}"/>
@@ -369,6 +376,7 @@
                           BorderBrush="Gray"
                           DoubleTapped="AssetGrid_DoubleTapped"
                           Sorting="AssetGrid_Sorting">
+                    <!--Asset DataGrid Columns-->
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="2*"
                                             MinWidth="90"
@@ -400,6 +408,7 @@
                                             Header="CRC-32"
                                             Binding="{Binding Crc32}"/>
                     </DataGrid.Columns>
+                    <!--Asset Row Context Menu-->
                     <DataGrid.ContextMenu>
                         <ContextMenu IsVisible="{Binding !!SelectedAssets.Count}">
                             <MenuItem Header="Open"

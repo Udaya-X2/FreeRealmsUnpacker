@@ -84,6 +84,8 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
     public FileInfo Info => _assetFile.Info;
 
+    public AssetType Type => _assetFile.Type;
+
     public AssetType FileType => _assetFile.FileType;
 
     public AssetType DirectoryType => _assetFile.DirectoryType;
@@ -99,6 +101,10 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     }
 
     public AssetReader OpenRead() => _assetFile.OpenRead();
+
+    public AssetWriter OpenWrite() => _assetFile.OpenWrite();
+
+    public AssetWriter OpenAppend() => _assetFile.OpenAppend();
 
     public int IndexOf(AssetInfo item) => Assets.IndexOf(item);
 
