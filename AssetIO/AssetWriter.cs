@@ -9,11 +9,12 @@ public abstract class AssetWriter : IDisposable
     /// Writes an asset with the name and contents of the given file to the asset file(s).
     /// </summary>
     /// <param name="file">The path of the file to write as an asset.</param>
+    /// <returns>The asset written.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public virtual void Write(string file) => Write(new FileInfo(file));
+    public virtual Asset Write(string file) => Write(new FileInfo(file));
 
     /// <summary>
     /// Writes an asset with the name and contents of the given file to the asset file(s).
@@ -23,12 +24,13 @@ public abstract class AssetWriter : IDisposable
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public virtual void Write(FileInfo file)
+    /// <returns>The asset written.</returns>
+    public virtual Asset Write(FileInfo file)
     {
         ArgumentNullException.ThrowIfNull(file);
 
         using FileStream stream = file.OpenRead();
-        Write(file.Name, stream);
+        return Write(file.Name, stream);
     }
 
     /// <summary>
@@ -36,11 +38,12 @@ public abstract class AssetWriter : IDisposable
     /// </summary>
     /// <param name="name">The name of the asset.</param>
     /// <param name="buffer">The buffer containing the data to write to the asset.</param>
+    /// <returns>The asset written.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public virtual void Write(string name, byte[] buffer)
+    public virtual Asset Write(string name, byte[] buffer)
         => Write(name, buffer, 0, buffer.Length);
 
     /// <summary>
@@ -52,18 +55,19 @@ public abstract class AssetWriter : IDisposable
     /// The zero-based byte offset in <paramref name="buffer"/> from which to begin copying bytes.
     /// </param>
     /// <param name="count">The maximum number of bytes to write.</param>
+    /// <returns>The asset written.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public virtual void Write(string name, byte[] buffer, int index, int count)
+    public virtual Asset Write(string name, byte[] buffer, int index, int count)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(buffer);
         if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
 
         using MemoryStream ms = new(buffer, index, count);
-        Write(name, ms);
+        return Write(name, ms);
     }
 
     /// <summary>
@@ -71,11 +75,12 @@ public abstract class AssetWriter : IDisposable
     /// </summary>
     /// <param name="name">The name of the asset.</param>
     /// <param name="stream">The stream from which the contents of the asset will be copied.</param>
+    /// <returns>The asset written.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public abstract void Write(string name, Stream stream);
+    public abstract Asset Write(string name, Stream stream);
 
     /// <inheritdoc cref="Dispose()"/>
     protected abstract void Dispose(bool disposing);

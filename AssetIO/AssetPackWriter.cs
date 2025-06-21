@@ -105,7 +105,7 @@ public class AssetPackWriter : AssetWriter
     /// Writes an asset with the given name and stream contents to the .pack file.
     /// </summary>
     /// <inheritdoc/>
-    public override void Write(string name, Stream stream)
+    public override Asset Write(string name, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -114,59 +114,57 @@ public class AssetPackWriter : AssetWriter
 
         try
         {
-            checked
+            int length = GetByteCountUTF8(name);
+            int assetInfoSize = length + AssetFieldsSize;
+            uint offset = checked((uint)_packStream.Length);
+            uint size = 0u;
+            uint crc32 = 0u;
+            int bytesRead;
+
+            // If current asset exceeds the space of this asset info chunk, proceed to the next asset chunk.
+            if (_chunkSize + assetInfoSize > AssetInfoChunkSize)
             {
-                int length = GetByteCountUTF8(name);
-                int assetInfoSize = length + AssetFieldsSize;
-                uint offset = (uint)_packStream.Length;
-                uint size = 0u;
-                uint crc32 = 0u;
-                int bytesRead;
-
-                // If current asset exceeds the space of this asset info chunk, proceed to the next asset chunk.
-                if (_chunkSize + assetInfoSize > AssetInfoChunkSize)
-                {
-                    // Write the offset of the next asset info chunk and the number of assets at the start of the chunk.
-                    _packStream.Position = _chunkOffset;
-                    _packWriter.Write(offset);
-                    _packWriter.Write(_numAssets);
-
-                    // Reset asset info chunk related fields.
-                    _chunkOffset = offset;
-                    _chunkSize = AssetInfoHeaderSize;
-                    _numAssets = 0;
-
-                    // Start the next asset content chunk at the end of the next asset info chunk.
-                    offset += AssetInfoChunkSize;
-                    _packStream.SetLength(offset);
-                }
-
-                _packStream.Position = offset;
-
-                // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
-                while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) != 0)
-                {
-                    // Compute the CRC-32/size of the asset while the data is being written.
-                    _packStream.Write(_buffer, 0, bytesRead);
-                    crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
-                    size += (uint)bytesRead;
-                }
-
-                if (size == 0)
-                {
-                    offset = 0;
-                }
-
-                // Index the asset in the asset info chunk.
-                _packStream.Position = _chunkOffset + _chunkSize;
-                _packWriter.Write(length);
-                _packStream.Write(_nameBuffer, 0, length);
+                // Write the offset of the next asset info chunk and the number of assets at the start of the chunk.
+                _packStream.Position = _chunkOffset;
                 _packWriter.Write(offset);
-                _packWriter.Write(size);
-                _packWriter.Write(crc32);
-                _chunkSize += assetInfoSize;
-                _numAssets++;
+                _packWriter.Write(_numAssets);
+
+                // Reset asset info chunk related fields.
+                _chunkOffset = offset;
+                _chunkSize = AssetInfoHeaderSize;
+                _numAssets = 0;
+
+                // Start the next asset content chunk at the end of the next asset info chunk.
+                checked { offset += AssetInfoChunkSize; }
+                _packStream.SetLength(offset);
             }
+
+            _packStream.Position = offset;
+
+            // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
+            while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) != 0)
+            {
+                // Compute the CRC-32/size of the asset while the data is being written.
+                _packStream.Write(_buffer, 0, bytesRead);
+                crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
+                checked { size += (uint)bytesRead; }
+            }
+
+            if (size == 0)
+            {
+                offset = 0;
+            }
+
+            // Index the asset in the asset info chunk.
+            _packStream.Position = _chunkOffset + _chunkSize;
+            _packWriter.Write(length);
+            _packStream.Write(_nameBuffer, 0, length);
+            _packWriter.Write(offset);
+            _packWriter.Write(size);
+            _packWriter.Write(crc32);
+            _chunkSize += assetInfoSize;
+            _numAssets++;
+            return new Asset(name, offset, size, crc32);
         }
         catch (OverflowException ex)
         {

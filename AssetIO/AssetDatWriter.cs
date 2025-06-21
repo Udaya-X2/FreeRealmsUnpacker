@@ -109,7 +109,7 @@ public class AssetDatWriter : AssetWriter
     /// Writes an asset with the given name and stream contents to the manifest.dat file and asset .dat file(s).
     /// </summary>
     /// <inheritdoc/>
-    public override void Write(string name, Stream stream)
+    public override Asset Write(string name, Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentException.ThrowIfNullOrEmpty(name);
@@ -154,6 +154,7 @@ public class AssetDatWriter : AssetWriter
         _manifestWriter.Write(crc32);
         _manifestStream.Seek(MaxAssetNameLength - length, SeekOrigin.Current); // Pad with null bytes
         _offset += size;
+        return new Asset(name, offset, size, crc32);
     }
 
     /// <summary>
