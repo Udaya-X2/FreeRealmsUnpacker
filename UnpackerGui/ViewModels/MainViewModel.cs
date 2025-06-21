@@ -502,7 +502,8 @@ public class MainViewModel : SavedSettingsViewModel
         OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(OutputDirectory, assetFiles, ConflictOptions)
+            DataContext = new ExtractionViewModel(OutputDirectory, assetFiles, ConflictOptions),
+            AutoClose = true
         });
     }
 
@@ -523,7 +524,8 @@ public class MainViewModel : SavedSettingsViewModel
             DataContext = new ExtractionViewModel(OutputDirectory,
                                                   SelectedAssets.Cast<AssetInfo>(),
                                                   SelectedAssets.Count,
-                                                  ConflictOptions)
+                                                  ConflictOptions),
+            AutoClose = true
         });
     }
 
