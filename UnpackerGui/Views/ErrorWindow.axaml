@@ -27,7 +27,7 @@
             <TextBlock HorizontalAlignment="Left"
                        MaxHeight="128"
                        Text="{Binding Message, FallbackValue={x:Static dm:Variables.ErrorMessage}}"
-                       TextWrapping="Wrap"
+                       TextWrapping="WrapWithOverflow"
                        TextTrimming="CharacterEllipsis"
                        Grid.Column="1"/>
         </Grid>
