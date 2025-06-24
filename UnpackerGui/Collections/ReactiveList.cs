@@ -53,7 +53,11 @@ public class ReactiveList<T> : ObservableCollection<T>, IObservableCollection<T>
     }
 
     /// <inheritdoc cref="List{T}.Capacity"/>
-    public int Capacity { get => _items.Capacity; set => _items.Capacity = value; }
+    public int Capacity
+    {
+        get => _items.Capacity;
+        set => _items.Capacity = value;
+    }
 
     /// <summary>
     /// Gets or sets whether change notifications are enabled.
