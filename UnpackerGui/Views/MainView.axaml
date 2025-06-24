@@ -189,9 +189,11 @@
                                             <MenuItem Header="Remove"
                                                       Command="{Binding RemoveDataFilesCommand}"/>
                                             <MenuItem Header="Open Containing Folder"
+                                                      IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                                       Command="{Binding Source={StaticResource commands} Path=OpenFileCommand}"
                                                       CommandParameter="{Binding SelectedDataFile?.DirectoryName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
                                             <MenuItem Header="Copy Full File Path"
+                                                      IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                                       Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
                                                       CommandParameter="{Binding SelectedDataFile?.FullName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
                                         </ContextMenu>
