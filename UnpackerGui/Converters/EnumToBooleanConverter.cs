@@ -10,7 +10,11 @@ public class EnumToBooleanConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value?.GetType() is Type valueType && Enum.TryParse(valueType, parameter as string, out object? result))
+        if (value == null)
+        {
+            return false;
+        }
+        else if (value.GetType() is Type valueType && Enum.TryParse(valueType, parameter as string, out object? result))
         {
             if (valueType.IsDefined(typeof(FlagsAttribute)))
             {

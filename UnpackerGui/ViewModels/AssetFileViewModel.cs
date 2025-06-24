@@ -82,6 +82,8 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
 
     public string FullName => _assetFile.FullName;
 
+    public string? DirectoryName => _assetFile.DirectoryName;
+
     public FileInfo Info => _assetFile.Info;
 
     public AssetType Type => _assetFile.Type;

@@ -8,6 +8,10 @@ public static class Variables
 {
     /* MainWindow Design Variables */
     public static readonly AssetFileViewModel[]? AssetFiles;
+    public const string UnknownPath = "???";
+    public const string PropertyGridPath = UnknownPath;
+    public const string PropertyGridCount = "-1";
+    public const string PropertyGridSize = "-1 KB";
 
     /* ProgressWindow Design Variables */
     public const string ProgressMessage = "Progress Message";

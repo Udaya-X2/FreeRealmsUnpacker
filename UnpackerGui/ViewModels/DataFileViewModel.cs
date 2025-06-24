@@ -8,4 +8,5 @@ public class DataFileViewModel(string path, AssetFileViewModel assetFile) : View
     public FileInfo Info { get; } = new(path);
     public string FullName => Info.FullName;
     public string Name => Info.Name;
+    public string? DirectoryName => Info.DirectoryName;
 }

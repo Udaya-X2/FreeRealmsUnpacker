@@ -102,6 +102,11 @@ public class AssetFile : IEnumerable<Asset>
     public virtual string FullName => Info.FullName;
 
     /// <summary>
+    /// Gets a string representing the directory's full path..
+    /// </summary>
+    public virtual string? DirectoryName => Info.DirectoryName;
+
+    /// <summary>
     /// Gets the number of assets in the asset file.
     /// </summary>
     public virtual int Count => FileType switch
