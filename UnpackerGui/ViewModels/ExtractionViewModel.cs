@@ -24,7 +24,7 @@ public class ExtractionViewModel : ProgressViewModel
     {
         Maximum = assetFiles.Sum(x => x.Count);
         _outputDir = outputDir;
-        _extractionAssetFiles = assetFiles.Select(x => new ExtractionAssetFile(x.Info, x.OpenRead, x.Assets));
+        _extractionAssetFiles = assetFiles.Select(x => new ExtractionAssetFile(x.Name, x.OpenRead, x));
         _conflictOptions = conflictOptions;
     }
 
@@ -40,7 +40,7 @@ public class ExtractionViewModel : ProgressViewModel
         Maximum = count ?? assets.Count();
         _outputDir = outputDir;
         _extractionAssetFiles = assets.GroupBy(x => x.AssetFile)
-                                      .Select(x => new ExtractionAssetFile(x.Key.Info, x.Key.OpenRead, x));
+                                      .Select(x => new ExtractionAssetFile(x.Key.Name, x.Key.OpenRead, x));
         _conflictOptions = conflictOptions;
     }
 
@@ -62,7 +62,7 @@ public class ExtractionViewModel : ProgressViewModel
 
         foreach (ExtractionAssetFile assetFile in _extractionAssetFiles)
         {
-            Message = $"Extracting {assetFile.Info.Name}";
+            Message = $"Extracting {assetFile.Name}";
             using AssetReader reader = assetFile.OpenRead();
 
             foreach (AssetInfo asset in assetFile.Assets)

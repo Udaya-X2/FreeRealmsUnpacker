@@ -77,5 +77,14 @@ namespace UnpackerGui {
                 return ResourceManager.GetString("Argument_RangeNotFound", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Collection is read-only..
+        /// </summary>
+        internal static string NotSupported_ReadOnlyCollection {
+            get {
+                return ResourceManager.GetString("NotSupported_ReadOnlyCollection", resourceCulture);
+            }
+        }
     }
 }

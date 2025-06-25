@@ -123,4 +123,7 @@
   <data name="Argument_RangeNotFound" xml:space="preserve">
     <value>The specified range of items was not found in the collection.</value>
   </data>
+  <data name="NotSupported_ReadOnlyCollection" xml:space="preserve">
+    <value>Collection is read-only.</value>
+  </data>
 </root>

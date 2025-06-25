@@ -77,10 +77,13 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> UncheckAllFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveCheckedFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveSelectedFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> RenameSelectedFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> DeleteSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ReloadSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ConvertSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
+    public ReactiveCommand<Unit, Unit> SelectFileCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _assetFiles;
@@ -122,10 +125,13 @@ public class MainViewModel : SavedSettingsViewModel
         UncheckAllFilesCommand = ReactiveCommand.Create(UncheckAllFiles);
         RemoveCheckedFilesCommand = ReactiveCommand.Create(RemoveCheckedFiles);
         RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
+        RenameSelectedFileCommand = ReactiveCommand.CreateFromTask(RenameSelectedFile);
+        DeleteSelectedFileCommand = ReactiveCommand.Create(DeleteSelectedFile);
         ReloadSelectedFileCommand = ReactiveCommand.Create(ReloadSelectedFile);
         ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
+        SelectFileCommand = ReactiveCommand.Create(SelectFile);
 
         // Observe any changes in the asset files.
         _sourceAssetFiles = new SourceList<AssetFileViewModel>();
@@ -356,7 +362,7 @@ public class MainViewModel : SavedSettingsViewModel
         InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
         SelectedAssetFile?.DataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
                                                     .Except(SelectedAssetFile.DataFiles.Select(x => x.FullName))
-                                                    .Select(x => new DataFileViewModel(x, SelectedAssetFile)));
+                                                    .Select(x => new DataFileViewModel(x)));
     }
 
     /// <summary>
@@ -453,7 +459,8 @@ public class MainViewModel : SavedSettingsViewModel
             SuggestedStartLocation = await OutputFolder,
             SuggestedFileName = isPackFile ? "Assets_000.pack" : "Assets_manifest.dat",
             FileTypeChoices = isPackFile ? FileTypeFilters.PackFiles : FileTypeFilters.ManifestFiles,
-            ShowOverwritePrompt = true
+            ShowOverwritePrompt = true,
+            Title = "Create"
         }) is not IStorageFile file) return;
         AssetFile assetFile = new(file.Path.LocalPath, assetType);
         OutputDirectory = assetFile.Info.DirectoryName ?? "";
@@ -628,6 +635,31 @@ public class MainViewModel : SavedSettingsViewModel
     private void RemoveSelectedFile() => _sourceAssetFiles.Remove(SelectedAssetFile!);
 
     /// <summary>
+    /// Opens a save file dialog that allows the user to rename the selected asset file.
+    /// </summary>
+    private async Task RenameSelectedFile()
+    {
+        IFilesService filesService = App.GetService<IFilesService>();
+        if (await filesService.SaveFileAsync(new FilePickerSaveOptions
+        {
+            SuggestedStartLocation = await filesService.TryGetFolderFromPathAsync(SelectedAssetFile!.DirectoryName!),
+            SuggestedFileName = SelectedAssetFile.Name,
+            ShowOverwritePrompt = true,
+            Title = "Rename"
+        }) is not IStorageFile file) return;
+        SelectedAssetFile.MoveTo(file.Path.LocalPath);
+    }
+
+    /// <summary>
+    /// Deletes the selected asset file.
+    /// </summary>
+    private void DeleteSelectedFile()
+    {
+        SelectedAssetFile!.Delete();
+        RemoveSelectedFile();
+    }
+
+    /// <summary>
     /// Reloads the selected asset file.
     /// </summary>
     private void ReloadSelectedFile()
@@ -686,4 +718,9 @@ public class MainViewModel : SavedSettingsViewModel
         SelectedAsset = null;
         SelectedAssets.Clear();
     }
+
+    /// <summary>
+    /// Selects the asset file containing the selected asset.
+    /// </summary>
+    private void SelectFile() => SelectedAssetFile = AssetFiles.First(x => x.Contains(SelectedAsset!));
 }
