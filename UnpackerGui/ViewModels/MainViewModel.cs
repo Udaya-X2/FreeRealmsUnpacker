@@ -77,6 +77,7 @@ public class MainViewModel : SavedSettingsViewModel
     public ReactiveCommand<Unit, Unit> UncheckAllFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveCheckedFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveSelectedFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> ReloadSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ConvertSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
@@ -121,6 +122,7 @@ public class MainViewModel : SavedSettingsViewModel
         UncheckAllFilesCommand = ReactiveCommand.Create(UncheckAllFiles);
         RemoveCheckedFilesCommand = ReactiveCommand.Create(RemoveCheckedFiles);
         RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
+        ReloadSelectedFileCommand = ReactiveCommand.Create(ReloadSelectedFile);
         ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
@@ -393,13 +395,7 @@ public class MainViewModel : SavedSettingsViewModel
             DataContext = new WriterViewModel(SelectedAssetFile!, files),
             AutoClose = true
         });
-        AssetFileViewModel newFile = new(new AssetFile(SelectedAssetFile!.FullName, SelectedAssetFile.Type))
-        {
-            IsChecked = SelectedAssetFile.IsChecked,
-            ShowDataFiles = SelectedAssetFile.ShowDataFiles
-        };
-        _sourceAssetFiles.Replace(SelectedAssetFile, newFile);
-        SelectedAssetFile = newFile;
+        ReloadSelectedFile();
     }
 
     /// <summary>
@@ -462,20 +458,18 @@ public class MainViewModel : SavedSettingsViewModel
         AssetFile assetFile = new(file.Path.LocalPath, assetType);
         OutputDirectory = assetFile.Info.DirectoryName ?? "";
         assetFile.Create();
-        AssetFileViewModel newFile = new(assetFile);
 
         if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel existingFile)
         {
-            _sourceAssetFiles.Replace(existingFile, newFile);
-            newFile.IsChecked = existingFile.IsChecked;
-            newFile.ShowDataFiles = existingFile.ShowDataFiles;
+            SelectedAssetFile = existingFile;
+            ReloadSelectedFile();
         }
         else
         {
+            AssetFileViewModel newFile = new(assetFile);
             _sourceAssetFiles.Add(newFile);
+            SelectedAssetFile = newFile;
         }
-
-        SelectedAssetFile = newFile;
     }
 
     /// <summary>
@@ -632,6 +626,16 @@ public class MainViewModel : SavedSettingsViewModel
     /// Removes the selected asset file.
     /// </summary>
     private void RemoveSelectedFile() => _sourceAssetFiles.Remove(SelectedAssetFile!);
+
+    /// <summary>
+    /// Reloads the selected asset file.
+    /// </summary>
+    private void ReloadSelectedFile()
+    {
+        AssetFileViewModel newFile = SelectedAssetFile!.Reload();
+        _sourceAssetFiles.Replace(SelectedAssetFile, newFile);
+        SelectedAssetFile = newFile;
+    }
 
     /// <summary>
     /// Converts the selected asset file from a .pack.temp file to a .pack file.

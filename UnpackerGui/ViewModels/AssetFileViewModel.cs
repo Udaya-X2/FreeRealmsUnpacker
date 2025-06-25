@@ -129,6 +129,21 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     IEnumerator IEnumerable.GetEnumerator() => Assets.GetEnumerator();
 
     /// <summary>
+    /// Reloads the asset file, returning a new <see cref="AssetFileViewModel"/> with the updated data.
+    /// </summary>
+    public AssetFileViewModel Reload(CancellationToken token = default)
+    {
+        _assetFile.Refresh();
+        return new(_assetFile, token)
+        {
+            _isChecked = _isChecked,
+            _showDataFiles = _showDataFiles,
+            _isValidated = false,
+            _selectedDataFile = null
+        };
+    }
+
+    /// <summary>
     /// Removes the selected data files from the asset file.
     /// </summary>
     private void RemoveDataFiles()

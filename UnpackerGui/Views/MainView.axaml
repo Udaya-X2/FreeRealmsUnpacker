@@ -213,6 +213,8 @@
                             <MenuItem Header="Copy Full File Path"
                                       Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
                                       CommandParameter="{Binding SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
+                            <MenuItem Header="Reload"
+                                      Command="{Binding ReloadSelectedFileCommand}"/>
                             <Separator/>
                             <MenuItem Header="Extract To..."
                                       Command="{Binding ExtractSelectedFileCommand}"/>

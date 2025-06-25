@@ -102,7 +102,7 @@ public class AssetFile : IEnumerable<Asset>
     public virtual string FullName => Info.FullName;
 
     /// <summary>
-    /// Gets a string representing the directory's full path..
+    /// Gets a string representing the directory's full path.
     /// </summary>
     public virtual string? DirectoryName => Info.DirectoryName;
 
@@ -190,6 +190,16 @@ public class AssetFile : IEnumerable<Asset>
             default:
                 throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type));
         }
+    }
+
+    /// <summary>
+    /// Refreshes the asset file's attributes and related data files.
+    /// </summary>
+    /// <exception cref="IOException"/>
+    public virtual void Refresh()
+    {
+        Info.Refresh();
+        DataFiles = FileType == AssetType.Dat ? ClientDirectory.EnumerateDataFiles(Info) : [];
     }
 
     /// <summary>
