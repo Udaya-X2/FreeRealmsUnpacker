@@ -80,7 +80,7 @@ public partial class App : Application
     /// <summary>
     /// Sets the current application's clipboard text to the specified value.
     /// </summary>
-    public static async void SetClipboardText(string? text)
+    public static async Task SetClipboardText(string? text)
     {
         if (Current?.Clipboard?.SetTextAsync(text) is Task task)
         {

@@ -11,7 +11,7 @@ public class StaticCommands
 
     static StaticCommands()
     {
-        CopyCommand = ReactiveCommand.Create<string>(App.SetClipboardText);
+        CopyCommand = ReactiveCommand.CreateFromTask<string>(App.SetClipboardText);
         OpenFileCommand = ReactiveCommand.Create<string>(OpenFile);
     }
 

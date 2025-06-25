@@ -85,8 +85,11 @@ public partial class MainView : UserControl
         mainViewModel.ClearSelectedAssetsCommand.Invoke();
     }
 
-    private void AssetGrid_ContextMenu_Copy(object? sender, RoutedEventArgs e)
-        => App.SetClipboardText((assetGrid.CurrentColumn.GetCellContent(assetGrid.SelectedItem) as TextBlock)?.Text);
+    private async void AssetGrid_ContextMenu_Copy(object? sender, RoutedEventArgs e)
+    {
+        string? text = (assetGrid.CurrentColumn.GetCellContent(assetGrid.SelectedItem) as TextBlock)?.Text;
+        await App.SetClipboardText(text);
+    }
 
     private void ListBox_Drop(ListBox sender, DragEventArgs e)
     {
