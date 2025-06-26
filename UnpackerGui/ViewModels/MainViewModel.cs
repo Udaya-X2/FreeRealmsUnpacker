@@ -4,6 +4,7 @@ using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
+using FluentIcons.Common;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -126,7 +127,7 @@ public class MainViewModel : SavedSettingsViewModel
         RemoveCheckedFilesCommand = ReactiveCommand.Create(RemoveCheckedFiles);
         RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
         RenameSelectedFileCommand = ReactiveCommand.CreateFromTask(RenameSelectedFile);
-        DeleteSelectedFileCommand = ReactiveCommand.Create(DeleteSelectedFile);
+        DeleteSelectedFileCommand = ReactiveCommand.CreateFromTask(DeleteSelectedFile);
         ReloadSelectedFileCommand = ReactiveCommand.Create(ReloadSelectedFile);
         ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
@@ -652,12 +653,16 @@ public class MainViewModel : SavedSettingsViewModel
     }
 
     /// <summary>
-    /// Deletes the selected asset file.
+    /// Opens a confirm dialog that allows the user to delete the selected asset file.
     /// </summary>
-    private void DeleteSelectedFile()
+    private async Task DeleteSelectedFile()
     {
-        SelectedAssetFile!.Delete();
-        RemoveSelectedFile();
+        string message = $"Are you sure you want to permanently delete this file?\n\n{SelectedAssetFile}";
+        if (await App.GetService<IDialogService>().ShowConfirmDialog(message, Icon.Delete))
+        {
+            SelectedAssetFile!.Delete();
+            RemoveSelectedFile();
+        }
     }
 
     /// <summary>

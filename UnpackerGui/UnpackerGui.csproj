@@ -47,6 +47,9 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>SR.resx</DependentUpon>
       </Compile>
+      <Compile Update="Views\ConfirmWindow.axaml.cs">
+        <DependentUpon>ConfirmWindow.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

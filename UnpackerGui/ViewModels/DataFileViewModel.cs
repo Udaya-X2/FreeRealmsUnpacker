@@ -1,14 +1,27 @@
 ﻿using ReactiveUI;
 using System.IO;
+using UnpackerGui.Converters;
 
 namespace UnpackerGui.ViewModels;
 
-public class DataFileViewModel(string path) : ViewModelBase
+public class DataFileViewModel : ViewModelBase
 {
-    private readonly FileInfo _info = new(path);
+    private readonly FileInfo _info;
+    private readonly string _size;
 
+    public DataFileViewModel(string path)
+    {
+        _info = new(path);
+        _size = FileSizeConverter.GetFileSize(_info.Length);
+    }
+
+    /// <inheritdoc cref="FileInfo.Name"/>
     public string Name => _info.Name;
+
+    /// <inheritdoc cref="FileSystemInfo.FullName"/>
     public string FullName => _info.FullName;
+
+    /// <inheritdoc cref="FileInfo.DirectoryName"/>
     public string? DirectoryName => _info.DirectoryName;
 
     /// <summary>
@@ -29,4 +42,10 @@ public class DataFileViewModel(string path) : ViewModelBase
     /// Permanently deletes the data file.
     /// </summary>
     public void Delete() => _info.Delete();
+
+    /// <summary>
+    /// Returns a string representation of the data file's properties.
+    /// </summary>
+    /// <returns>A string representation of the data file's properties.</returns>
+    public override string ToString() => $"{Name}\nSize: {_size}\nLocation: {DirectoryName}";
 }

@@ -21,7 +21,7 @@ public class FileSizeConverter : IValueConverter
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => null;
 
-    private static string GetFileSize(long i) => (i < 0 ? -i : i) switch
+    public static string GetFileSize(long i) => (i < 0 ? -i : i) switch
     {
         >= 1L << 60 => $"{(i >> 50) / 1024.0:0.##} EB",
         >= 1L << 50 => $"{(i >> 40) / 1024.0:0.##} PB",

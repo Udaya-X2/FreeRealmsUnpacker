@@ -1,5 +1,6 @@
 ﻿using AssetIO;
 using Avalonia.Controls;
+using FluentIcons.Common;
 using System.Linq;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
@@ -39,6 +40,14 @@ public static class Variables
     /* AboutWindow Design Variables */
     public const string Version = "Version X.X.X";
     public const string Copyright = "Copyright © Udaya";
+
+    /* ConfirmWindow Design Variables */
+    public const string ConfirmMessage1 = "Are you sure you want to permanently delete this file?\n\nAssets_001.pack" +
+        "\nType: Game, Pack\nCount: 6120\nSize: 48.35 MB\nLocation: C:\\Program Files\\Sony Online Entertainment\\In" +
+        "stalled Games\\Free Realms";
+    public const string ConfirmMessage2 = "Are you sure you want to permanently delete this file?\n\nAssets_001.dat" +
+        "\nSize: 200 MB\nLocation: C:\\Program Files\\Sony Online Entertainment\\Installed Games\\Free Realms";
+    public const Icon ConfirmIcon = Icon.QuestionCircle;
 
     /* Generic Design Variables */
     public const bool True = true;

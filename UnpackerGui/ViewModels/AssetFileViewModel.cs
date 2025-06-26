@@ -1,6 +1,7 @@
 ﻿using AssetIO;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using FluentIcons.Common;
 using ReactiveUI;
 using System;
 using System.Collections;
@@ -11,6 +12,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
+using UnpackerGui.Converters;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
@@ -74,7 +76,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
             SelectedDataFiles = [];
             ShowDataFilesCommand = ReactiveCommand.Create(() => ShowDataFiles ^= true);
             RemoveDataFilesCommand = ReactiveCommand.Create(RemoveDataFiles);
-            DeleteDataFilesCommand = ReactiveCommand.Create(DeleteDataFiles);
+            DeleteDataFilesCommand = ReactiveCommand.CreateFromTask(DeleteDataFiles);
             RenameDataFileCommand = ReactiveCommand.CreateFromTask(RenameDataFile);
         }
     }
@@ -200,12 +202,18 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     }
 
     /// <summary>
-    /// Deletes the selected data files.
+    /// Opens a confirm dialog that allows the user to delete the selected data files.
     /// </summary>
-    private void DeleteDataFiles()
+    private async Task DeleteDataFiles()
     {
-        SelectedDataFiles!.ForEach(x => x.Delete());
-        RemoveDataFiles();
+        string message = SelectedDataFiles!.Count == 1
+            ? $"Are you sure you want to permanently delete this file?\n\n{SelectedDataFile}"
+            : $"Are you sure you want to permanently delete these {SelectedDataFiles.Count} files?";
+        if (await App.GetService<IDialogService>().ShowConfirmDialog(message, Icon.Delete))
+        {
+            SelectedDataFiles!.ForEach(x => x.Delete());
+            RemoveDataFiles();
+        }
     }
 
     /// <summary>
@@ -259,4 +267,12 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// <inheritdoc/>
     bool ICollection<AssetInfo>.Remove(AssetInfo item)
         => throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
+
+    /// <summary>
+    /// Returns a string representation of the asset file's properties.
+    /// </summary>
+    /// <returns>A string representation of the asset file's properties.</returns>
+    public override string ToString()
+        => $"{Name}\nType: {Type}\nCount: {Count}\n"
+           + $"Size: {FileSizeConverter.GetFileSize(Size)}\nLocation: {DirectoryName}";
 }
