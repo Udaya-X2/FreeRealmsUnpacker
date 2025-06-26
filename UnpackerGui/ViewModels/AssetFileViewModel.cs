@@ -11,6 +11,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
+using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
 
@@ -221,6 +222,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
             Title = "Rename"
         }) is not IStorageFile file) return;
         SelectedDataFile.MoveTo(file.Path.LocalPath);
+        DataFiles!.Remove(x => x != SelectedDataFile && x.FullName == SelectedDataFile.FullName);
     }
 
     /// <inheritdoc/>

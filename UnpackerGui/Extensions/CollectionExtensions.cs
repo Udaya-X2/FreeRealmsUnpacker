@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using DynamicData;
+using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using UnpackerGui.Collections;
@@ -7,7 +9,7 @@ using UnpackerGui.ViewModels;
 namespace UnpackerGui.Extensions;
 
 /// <summary>
-/// Provides extension methods for converting collections with change notifications.
+/// Provides extension methods for specialized collections.
 /// </summary>
 public static class CollectionExtensions
 {
@@ -29,4 +31,27 @@ public static class CollectionExtensions
         FilterViewModel<TResult> filter)
         where TParam : IEnumerable<TResult>, INotifyCollectionChanged, INotifyPropertyChanged
         => new(items, filter);
+
+    /// <summary>
+    /// Removes the first element of the list that matches the specified predicate.
+    /// </summary>
+    public static void Remove<T>(this ISourceList<T> items, Predicate<T> match) where T : notnull
+        => items.Edit(x => x.Remove(match));
+
+    /// <summary>
+    /// Removes the first element of the list that matches the specified predicate.
+    /// </summary>
+    public static void Remove<T>(this IExtendedList<T> list, Predicate<T> match)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            T item = list[i];
+
+            if (match(item))
+            {
+                list.RemoveAt(i);
+                break;
+            }
+        }
+    }
 }

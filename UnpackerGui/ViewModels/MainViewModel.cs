@@ -648,6 +648,7 @@ public class MainViewModel : SavedSettingsViewModel
             Title = "Rename"
         }) is not IStorageFile file) return;
         SelectedAssetFile.MoveTo(file.Path.LocalPath);
+        _sourceAssetFiles.Remove(x => x != SelectedAssetFile && x.FullName == SelectedAssetFile.FullName);
     }
 
     /// <summary>
