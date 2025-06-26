@@ -33,15 +33,24 @@
         </Grid>
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button Content="Yes"
+            <Button HotKey="Y"
                     Margin="0 0 10 0"
                     Width="80"
                     HorizontalContentAlignment="Center"
-                    Click="Yes_Button_Click"/>
+                    Click="Yes_Button_Click">
+                <TextBlock>
+                    <Underline>Y</Underline>es
+                </TextBlock>
+            </Button>
             <Button Content="No"
+                    HotKey="N"
                     Width="80"
                     HorizontalContentAlignment="Center"
-                    Click="No_Button_Click"/>
+                    Click="No_Button_Click">
+                <TextBlock>
+                    <Underline>N</Underline>o
+                </TextBlock>
+            </Button>
         </StackPanel>
     </StackPanel>
 </Window>
