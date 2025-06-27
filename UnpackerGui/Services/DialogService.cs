@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls;
-using FluentIcons.Common;
 using System;
 using System.Threading.Tasks;
 using UnpackerGui.ViewModels;

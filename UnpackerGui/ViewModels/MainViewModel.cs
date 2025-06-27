@@ -9,6 +9,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,6 +17,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
+using UnpackerGui.Config;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
@@ -24,7 +26,7 @@ using UnpackerGui.Views;
 
 namespace UnpackerGui.ViewModels;
 
-public class MainViewModel : SavedSettingsViewModel
+public class MainViewModel : ViewModelBase
 {
     /// <summary>
     /// Gets the selected assets.
@@ -55,6 +57,11 @@ public class MainViewModel : SavedSettingsViewModel
     /// Gets the validation options to filter the assets shown.
     /// </summary>
     public ValidationOptionsViewModel<AssetInfo> ValidationOptions { get; }
+
+    /// <summary>
+    /// Gets the application settings.
+    /// </summary>
+    public ISettings Settings { get; }
 
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
@@ -170,7 +177,8 @@ public class MainViewModel : SavedSettingsViewModel
 
         // Initialize other view models.
         _about = new AboutViewModel();
-        _preferences = new PreferencesViewModel(this);
+        _preferences = new PreferencesViewModel();
+        Settings = App.GetSettings();
     }
 
     /// <summary>
@@ -223,13 +231,13 @@ public class MainViewModel : SavedSettingsViewModel
     /// Gets the default location to input files/folders asynchronously.
     /// </summary>
     private Task<IStorageFolder?> InputFolder
-        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(InputDirectory);
+        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(Settings.InputDirectory);
 
     /// <summary>
     /// Gets the default location to output files/folders asynchronously.
     /// </summary>
     private Task<IStorageFolder?> OutputFolder
-        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(OutputDirectory);
+        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(Settings.OutputDirectory);
 
     /// <summary>
     /// Opens the Preferences window.
@@ -257,10 +265,11 @@ public class MainViewModel : SavedSettingsViewModel
             SuggestedStartLocation = await InputFolder
         }) is not IStorageFolder folder) return;
 
-        InputDirectory = folder.Path.LocalPath;
-        List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(InputDirectory,
-                                                                             AssetFilter,
-                                                                             requireFullType: !AddUnknownAssets)
+        Settings.InputDirectory = folder.Path.LocalPath;
+        List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(Settings.InputDirectory,
+                                                                             Settings.AssetFilter,
+                                                                             SearchOption.AllDirectories,
+                                                                             !Settings.AddUnknownAssets)
                                                         .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)];
 
         if (assetFiles.Count > 0)
@@ -288,7 +297,7 @@ public class MainViewModel : SavedSettingsViewModel
 
         if (files.Count == 0) return;
 
-        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        Settings.InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
         List<AssetFile> assetFiles = [.. files.Select(x => x.Path.LocalPath)
                                               .Except(AssetFiles.Select(x => x.FullName))
                                               .Select(x => new AssetFile(x))];
@@ -330,7 +339,7 @@ public class MainViewModel : SavedSettingsViewModel
 
         if (files.Count == 0) return;
 
-        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        Settings.InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
         List<AssetFile> assetFiles = [.. files.Select(x => x.Path.LocalPath)
                                               .Except(AssetFiles.Select(x => x.FullName))
                                               .Select(x => new AssetFile(x, assetType))];
@@ -360,7 +369,7 @@ public class MainViewModel : SavedSettingsViewModel
 
         if (files.Count == 0) return;
 
-        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        Settings.InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
         SelectedAssetFile?.DataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
                                                     .Except(SelectedAssetFile.DataFiles.Select(x => x.FullName))
                                                     .Select(x => new DataFileViewModel(x)));
@@ -419,7 +428,7 @@ public class MainViewModel : SavedSettingsViewModel
 
         if (files.Count == 0) return;
 
-        InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
+        Settings.InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
         await AddAssets([.. files.Select(x => x.Path.LocalPath)]);
     }
 
@@ -434,8 +443,8 @@ public class MainViewModel : SavedSettingsViewModel
             AllowMultiple = true,
             SuggestedStartLocation = await InputFolder
         }) is not IStorageFolder folder) return;
-        InputDirectory = folder.Path.LocalPath;
-        List<string> files = [.. Directory.EnumerateFiles(InputDirectory, "*", SearchOption.AllDirectories)];
+        Settings.InputDirectory = folder.Path.LocalPath;
+        List<string> files = [.. Directory.EnumerateFiles(Settings.InputDirectory, "*", SearchOption.AllDirectories)];
         await AddAssets(files);
     }
 
@@ -464,7 +473,7 @@ public class MainViewModel : SavedSettingsViewModel
             Title = "Create"
         }) is not IStorageFile file) return;
         AssetFile assetFile = new(file.Path.LocalPath, assetType);
-        OutputDirectory = assetFile.Info.DirectoryName ?? "";
+        Settings.OutputDirectory = assetFile.Info.DirectoryName ?? "";
         assetFile.Create();
 
         if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel existingFile)
@@ -501,10 +510,10 @@ public class MainViewModel : SavedSettingsViewModel
             SuggestedStartLocation = await OutputFolder
         }) is not IStorageFolder folder) return;
 
-        OutputDirectory = folder.Path.LocalPath;
+        Settings.OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(OutputDirectory, assetFiles, ConflictOptions),
+            DataContext = new ExtractionViewModel(Settings.OutputDirectory, assetFiles, Settings.ConflictOptions),
             AutoClose = true
         });
     }
@@ -520,13 +529,13 @@ public class MainViewModel : SavedSettingsViewModel
             SuggestedStartLocation = await OutputFolder
         }) is not IStorageFolder folder) return;
 
-        OutputDirectory = folder.Path.LocalPath;
+        Settings.OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(OutputDirectory,
+            DataContext = new ExtractionViewModel(Settings.OutputDirectory,
                                                   SelectedAssets.Cast<AssetInfo>(),
                                                   SelectedAssets.Count,
-                                                  ConflictOptions),
+                                                  Settings.ConflictOptions),
             AutoClose = true
         });
     }
@@ -544,9 +553,9 @@ public class MainViewModel : SavedSettingsViewModel
         }) is not IStorageFile file) return;
 
         // Extracting without conflict options here since the explorer will display an overwrite prompt.
-        OutputDirectory = Path.GetDirectoryName(file.Path.LocalPath) ?? "";
+        Settings.OutputDirectory = Path.GetDirectoryName(file.Path.LocalPath) ?? "";
         using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
-        reader.ExtractTo(SelectedAsset with { Name = file.Name }, OutputDirectory);
+        reader.ExtractTo(SelectedAsset with { Name = file.Name }, Settings.OutputDirectory);
     }
 
     /// <summary>

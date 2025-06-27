@@ -4,13 +4,17 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Config.Net;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
+using System.IO;
 using System.Reactive;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
+using UnpackerGui.Config;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -34,6 +38,11 @@ public partial class App : Application
     /// </summary>
     public IClipboard? Clipboard { get; private set; }
 
+    /// <summary>
+    /// Gets the application's settings.
+    /// </summary>
+    public ISettings? Settings { get; private set; }
+
     /// <inheritdoc/>
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -46,6 +55,7 @@ public partial class App : Application
         {
             AppDomain.CurrentDomain.UnhandledException += OnFatalException;
             RxApp.DefaultExceptionHandler = Observer.Create<Exception>(OnRecoverableException);
+            Settings = ReadSettings();
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()
@@ -89,6 +99,14 @@ public partial class App : Application
     }
 
     /// <summary>
+    /// Gets the current application's settings.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static ISettings GetSettings()
+        => Current?.Settings ?? throw new InvalidOperationException("Application settings not initialized.");
+
+    /// <summary>
     /// Shuts down the application.
     /// </summary>
     public static void ShutDown()
@@ -106,6 +124,13 @@ public partial class App : Application
     {
         if (e.ExceptionObject is not Exception exception) return;
         if (Current?.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop) return;
+
+        // If no windows are open, create a crash log file instead.
+        if (desktop.Windows.Count == 0)
+        {
+            File.WriteAllText($"crash_{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.log", exception.ToString());
+            return;
+        }
 
         // Disable all open windows.
         desktop.Windows.ForEach(x => x.IsEnabled = false);
@@ -127,4 +152,25 @@ public partial class App : Application
     /// </summary>
     private static async void OnRecoverableException(Exception exception)
         => await GetService<IDialogService>().ShowErrorDialog(exception);
+
+    /// <summary>
+    /// Reads the application's settings from the settings file.
+    /// </summary>
+    /// <returns>The application settings.</returns>
+    private static ISettings ReadSettings()
+    {
+        const string SettingsFile = "settings.json";
+
+        try
+        {
+            return new ConfigurationBuilder<ISettings>().UseJsonFile(SettingsFile)
+                                                        .Build();
+        }
+        catch (JsonException)
+        {
+            File.Delete(SettingsFile);
+            return new ConfigurationBuilder<ISettings>().UseJsonFile(SettingsFile)
+                                                        .Build();
+        }
+    }
 }

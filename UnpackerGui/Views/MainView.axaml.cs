@@ -52,7 +52,7 @@ public partial class MainView : UserControl
 #if DEBUG
             case (KeyModifiers.Alt, Key.D):
                 System.Diagnostics.Debug.Write($"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} ");
-                System.Diagnostics.Debug.WriteLine($"{DesignMode.Variables.AssetFiles is null}");
+                System.Diagnostics.Debug.WriteLine($"{App.GetSettings().ShowName ^= true}");
                 break;
 #endif
             case (KeyModifiers.Alt, Key.C):

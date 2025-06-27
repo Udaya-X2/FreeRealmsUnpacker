@@ -3,20 +3,20 @@ using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
 using System.Reactive;
+using UnpackerGui.Config;
 
 namespace UnpackerGui.ViewModels;
 
 public class PreferencesViewModel : ViewModelBase
 {
     public ReadOnlyObservableCollection<PreferenceViewModel> Preferences { get; }
+    public ISettings Settings { get; }
 
     public ReactiveCommand<string, Unit> UpdateAssetFilterCommand { get; }
 
-    private readonly MainViewModel _mainViewModel;
-
     private PreferenceViewModel _selectedPreference;
 
-    public PreferencesViewModel(MainViewModel mainViewModel)
+    public PreferencesViewModel()
     {
         Preferences = new ReadOnlyObservableCollection<PreferenceViewModel>(
         [
@@ -24,8 +24,8 @@ public class PreferencesViewModel : ViewModelBase
             new PreferenceViewModel("Folder Options", "Check the types of assets to add when opening a folder.")
         ]);
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
-        _mainViewModel = mainViewModel;
         _selectedPreference = Preferences[0];
+        Settings = App.GetSettings();
     }
 
     public PreferenceViewModel SelectedPreference
@@ -34,23 +34,5 @@ public class PreferencesViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedPreference, value);
     }
 
-    public FileConflictOptions ConflictOptions
-    {
-        get => _mainViewModel.ConflictOptions;
-        set => _mainViewModel.ConflictOptions = value;
-    }
-
-    public AssetType AssetFilter
-    {
-        get => _mainViewModel.AssetFilter;
-        set => _mainViewModel.AssetFilter = value;
-    }
-
-    public bool AddUnknownAssets
-    {
-        get => _mainViewModel.AddUnknownAssets;
-        set => _mainViewModel.AddUnknownAssets = value;
-    }
-
-    private void UpdateAssetFilter(string value) => AssetFilter ^= Enum.Parse<AssetType>(value);
+    private void UpdateAssetFilter(string value) => Settings.AssetFilter ^= Enum.Parse<AssetType>(value);
 }

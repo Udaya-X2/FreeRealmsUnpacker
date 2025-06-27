@@ -355,14 +355,14 @@
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="BottomEdgeAlignedRight">
                                 <CheckBox Content="Name"
-                                          IsChecked="{Binding ShowName}"/>
+                                          IsChecked="{Binding Settings.ShowName}"/>
                                 <CheckBox Content="Offset"
-                                          IsChecked="{Binding ShowOffset}"/>
+                                          IsChecked="{Binding Settings.ShowOffset}"/>
                                 <CheckBox Content="Size"
                                           IsThreeState="True"
-                                          IsChecked="{Binding ShowSize}"/>
+                                          IsChecked="{Binding Settings.ShowSize}"/>
                                 <CheckBox Content="CRC-32"
-                                          IsChecked="{Binding ShowCrc32}"/>
+                                          IsChecked="{Binding Settings.ShowCrc32}"/>
                                 <CheckBox Content="Valid"
                                           IsThreeState="True"
                                           IsChecked="{Binding ValidationOptions.ShowValid}"
@@ -390,31 +390,31 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="2*"
                                             MinWidth="90"
-                                            IsVisible="{Binding ShowName}"
+                                            IsVisible="{Binding Settings.ShowName}"
                                             Header="Name"
                                             Binding="{Binding Name}"/>
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
-                                            IsVisible="{Binding ShowOffset}"
+                                            IsVisible="{Binding Settings.ShowOffset}"
                                             Header="Offset"
                                             Binding="{Binding Offset}"/>
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
-                                            IsVisible="{Binding ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
+                                            IsVisible="{Binding Settings.ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
                                             Header="Size"
                                             Binding="{Binding Size, Converter={StaticResource fileSizeConverter} Mode=OneWay}"/>
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
-                                            IsVisible="{Binding !!ShowSize, FallbackValue={x:Static dm:Variables.False}}"
+                                            IsVisible="{Binding !!Settings.ShowSize, FallbackValue={x:Static dm:Variables.False}}"
                                             Header="Size"
                                             Binding="{Binding Size}"/>
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
-                                            IsVisible="{Binding ShowCrc32}"
+                                            IsVisible="{Binding Settings.ShowCrc32}"
                                             Header="CRC-32"
                                             Binding="{Binding Crc32}"/>
                     </DataGrid.Columns>
