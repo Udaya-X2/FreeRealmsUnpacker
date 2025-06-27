@@ -15,7 +15,9 @@
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         SizeToContent="Height"
-        CanResize="False">
+        CanResize="False"
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded">
     <StackPanel Margin="20">
         <Grid ColumnDefinitions="Auto,*"
               HorizontalAlignment="Left"

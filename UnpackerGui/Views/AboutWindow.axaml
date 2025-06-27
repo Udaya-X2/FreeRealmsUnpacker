@@ -7,7 +7,7 @@
         xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         xmlns:ic="using:FluentIcons.Avalonia"
         xmlns:commands="clr-namespace:UnpackerGui.Commands"
-        x:Class="UnpackerGui.AboutWindow"
+        x:Class="UnpackerGui.Views.AboutWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="About Free Realms Unpacker"
@@ -16,7 +16,9 @@
         x:DataType="vm:AboutViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
+        CanResize="False"
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded">
     <Window.Resources>
         <commands:StaticCommands x:Key="commands"/>
     </Window.Resources>

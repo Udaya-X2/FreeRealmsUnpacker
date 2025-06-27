@@ -6,7 +6,7 @@
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
         xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         xmlns:ic="using:FluentIcons.Avalonia"
-        x:Class="UnpackerGui.PreferencesWindow"
+        x:Class="UnpackerGui.Views.PreferencesWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="Preferences"
@@ -15,7 +15,9 @@
         x:DataType="vm:PreferencesViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        CanResize="False">
+        CanResize="False"
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded">
     <Window.Resources>
         <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
         <conv:StringComparisonConverter x:Key="stringComparisonConverter"/>
