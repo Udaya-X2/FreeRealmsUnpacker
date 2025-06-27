@@ -2,8 +2,9 @@
 
 namespace UnpackerGui.ViewModels;
 
-public class ConfirmViewModel(string message, Icon icon) : ViewModelBase
+public class ConfirmViewModel() : ViewModelBase
 {
-    public string Message { get; } = message;
-    public Icon Icon { get; } = icon;
+    public string Title { get; init; } = "Confirmation";
+    public string Message { get; init; } = "";
+    public Icon Icon { get; init; } = Icon.QuestionCircle;
 }

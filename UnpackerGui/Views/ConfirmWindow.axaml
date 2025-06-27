@@ -8,9 +8,10 @@
         x:Class="UnpackerGui.Views.ConfirmWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
-        Title="Confirmation"
+        Title="{Binding Title}"
         Width="450"
         Height="150"
+        d:DesignHeight="200"
         x:DataType="vm:ConfirmViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
@@ -27,7 +28,7 @@
             <StackPanel Grid.Column="1">
             <TextBlock HorizontalAlignment="Left"
                        MaxHeight="200"
-                       Text="{Binding Message, FallbackValue={x:Static dm:Variables.ConfirmMessage2}}"
+                       Text="{Binding Message, FallbackValue={x:Static dm:Variables.ConfirmMessage1}}"
                        TextWrapping="Wrap"/>
             </StackPanel>
         </Grid>

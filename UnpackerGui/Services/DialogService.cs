@@ -36,15 +36,12 @@ public class DialogService(Window window) : IDialogService
         await ShowDialog(owner, errorWindow, terminal);
     }
 
-    public async Task<bool> ShowConfirmDialog(string message, Icon icon = Icon.QuestionCircle, bool terminal = false)
-        => await ShowConfirmDialog(_owner, message, icon, terminal);
+    public async Task<bool> ShowConfirmDialog(ConfirmViewModel confirm, bool terminal = false)
+        => await ShowConfirmDialog(_owner, confirm, terminal);
 
-    public static async Task<bool> ShowConfirmDialog(Window owner,
-                                                     string message,
-                                                     Icon icon = Icon.QuestionCircle,
-                                                     bool terminal = false)
+    public static async Task<bool> ShowConfirmDialog(Window owner, ConfirmViewModel confirm, bool terminal = false)
     {
-        ConfirmWindow window = new() { DataContext = new ConfirmViewModel(message, icon) };
+        ConfirmWindow window = new() { DataContext = confirm };
         await ShowDialog(owner, window, terminal);
         return window.Confirmed;
     }

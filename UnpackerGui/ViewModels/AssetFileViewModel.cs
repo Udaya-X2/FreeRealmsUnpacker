@@ -206,12 +206,16 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// </summary>
     private async Task DeleteDataFiles()
     {
-        string message = SelectedDataFiles!.Count == 1
-            ? $"Are you sure you want to permanently delete this file?\n\n{SelectedDataFile}"
-            : $"Are you sure you want to permanently delete these {SelectedDataFiles.Count} files?";
-        if (await App.GetService<IDialogService>().ShowConfirmDialog(message, Icon.Delete))
+        if (await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
         {
-            SelectedDataFiles!.ForEach(x => x.Delete());
+            Title = SelectedDataFiles!.Count == 1 ? "Delete File" : "Delete Multiple Files",
+            Message = SelectedDataFiles.Count == 1
+            ? $"Are you sure you want to permanently delete this file?\n\n{SelectedDataFile}"
+            : $"Are you sure you want to permanently delete these {SelectedDataFiles.Count} files?",
+            Icon = Icon.Delete
+        }))
+        {
+            SelectedDataFiles.ForEach(x => x.Delete());
             RemoveDataFiles();
         }
     }

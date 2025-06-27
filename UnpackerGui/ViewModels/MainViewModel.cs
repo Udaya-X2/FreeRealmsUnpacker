@@ -657,8 +657,12 @@ public class MainViewModel : SavedSettingsViewModel
     /// </summary>
     private async Task DeleteSelectedFile()
     {
-        string message = $"Are you sure you want to permanently delete this file?\n\n{SelectedAssetFile}";
-        if (await App.GetService<IDialogService>().ShowConfirmDialog(message, Icon.Delete))
+        if (await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
+        {
+            Title = "Delete File",
+            Message = $"Are you sure you want to permanently delete this file?\n\n{SelectedAssetFile}",
+            Icon = Icon.Delete
+        }))
         {
             SelectedAssetFile!.Delete();
             RemoveSelectedFile();
