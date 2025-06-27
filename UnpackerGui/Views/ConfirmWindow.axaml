@@ -14,7 +14,9 @@
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         SizeToContent="Height"
-        CanResize="False">
+        CanResize="False"
+        Loaded="Window_Loaded"
+        Unloaded="Window_Unloaded">
     <StackPanel Margin="15">
         <Grid ColumnDefinitions="Auto,*"
               HorizontalAlignment="Left"
@@ -32,8 +34,7 @@
         </Grid>
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right">
-            <Button HotKey="Y"
-                    Margin="0 0 10 0"
+            <Button Margin="0 0 10 0"
                     Width="80"
                     HorizontalContentAlignment="Center"
                     Click="Yes_Button_Click">
@@ -42,7 +43,6 @@
                 </TextBlock>
             </Button>
             <Button Content="No"
-                    HotKey="N"
                     Width="80"
                     HorizontalContentAlignment="Center"
                     Click="No_Button_Click">

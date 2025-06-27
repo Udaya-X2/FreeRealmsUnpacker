@@ -32,7 +32,7 @@ public partial class MainView : UserControl
         assetGrid.SelectionChanged += mainViewModel.SelectedAssets.Refresh;
         _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= mainViewModel.SelectedAssets.Refresh));
 
-        // Add hotkey/drag-and-drop event handlers.
+        // Add hotkey/drag-and-drop event handlers (workaround for Linux).
         _cleanUp.Add(KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown));
         _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop));
 
