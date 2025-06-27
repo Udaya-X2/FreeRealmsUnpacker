@@ -10,14 +10,12 @@
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="{Binding Title}"
         Width="450"
-        Height="150"
-        d:DesignHeight="200"
         x:DataType="vm:ConfirmViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         SizeToContent="Height"
         CanResize="False">
-    <StackPanel Margin="20">
+    <StackPanel Margin="15">
         <Grid ColumnDefinitions="Auto,*"
               HorizontalAlignment="Left"
               Margin="0 0 0 15">
