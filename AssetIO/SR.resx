@@ -121,7 +121,7 @@
     <value>Buffer cannot be null.</value>
   </data>
   <data name="ArgumentOutOfRange_Integer" xml:space="preserve">
-    <value>Specified integer '{0}' was not in the range [{1}, {2}].</value>
+    <value>Specified integer "{0}" was not in the range [{1}, {2}].</value>
   </data>
   <data name="ArgumentOutOfRange_NeedNonNegNum" xml:space="preserve">
     <value>Non-negative number required.</value>
@@ -130,7 +130,7 @@
     <value>Asset size exceeds the length of the buffer.</value>
   </data>
   <data name="Argument_InvalidAssetType" xml:space="preserve">
-    <value>Invalid asset type; exactly one file flag and at most one directory flag must be set: '{0}'.</value>
+    <value>Invalid asset type; exactly one file flag and at most one directory flag must be set: "{0}".</value>
   </data>
   <data name="Argument_InvalidOffLen" xml:space="preserve">
     <value>Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.</value>
@@ -142,7 +142,7 @@
     <value>Stream was not writable.</value>
   </data>
   <data name="EndOfStream_AssetFile" xml:space="preserve">
-    <value>End of file reached before assets were parsed: '{0}'.</value>
+    <value>End of file reached before assets were parsed: "{0}".</value>
   </data>
   <data name="EndOfStream_Stream" xml:space="preserve">
     <value>Unable to read beyond the end of the stream.</value>
@@ -151,13 +151,13 @@
     <value>Too many bytes in what should have been a 7-bit encoded integer.</value>
   </data>
   <data name="IO_AssetEOF" xml:space="preserve">
-    <value>The asset '{0}' extends past the end of '{1}'.</value>
+    <value>The asset "{0}" extends past the end of "{1}".</value>
   </data>
   <data name="IO_BadAsset" xml:space="preserve">
-    <value>Invalid asset data at offset {0} in '{1}'.</value>
+    <value>Invalid asset data at offset {0} in "{1}".</value>
   </data>
   <data name="IO_BadManifest" xml:space="preserve">
-    <value>Manifest.dat file was not divided in chunks of 148: '{0}'.</value>
+    <value>Manifest.dat file was not divided in chunks of 148: "{0}".</value>
   </data>
   <data name="IO_InvalidDecimalBits" xml:space="preserve">
     <value>Decimal constructor requires an array or span of four valid decimal bytes.</value>
@@ -166,33 +166,33 @@
     <value>EndianBinaryReader encountered an invalid string length of {0} characters.</value>
   </data>
   <data name="IO_NoMoreAssetDatFilesRead" xml:space="preserve">
-    <value>Ran out of asset .dat files while reading '{0}'.</value>
+    <value>Ran out of asset .dat files while reading "{0}".</value>
   </data>
   <data name="Overflow_TooManyAssets" xml:space="preserve">
-    <value>Number of assets exceeds the maximum integer value: '{0}'.</value>
+    <value>Number of assets exceeds the maximum integer value: "{0}".</value>
   </data>
   <data name="Argument_CantInferAssetType" xml:space="preserve">
-    <value>Unable to infer asset type from the specified file name: '{0}'.</value>
+    <value>Unable to infer asset type from the specified file name: "{0}".</value>
   </data>
   <data name="Overflow_CantAddAsset" xml:space="preserve">
-    <value>Cannot add '{0}' to '{1}'; asset .pack file exceeds maximum capacity.</value>
+    <value>Cannot add "{0}" to "{1}"; asset .pack file exceeds maximum capacity.</value>
   </data>
   <data name="IO_BadAssetDat" xml:space="preserve">
-    <value>Asset .dat file has an incorrect size ({0} != 209715200): '{1}'.</value>
+    <value>Asset .dat file has an incorrect size ({0} != 209715200): "{1}".</value>
   </data>
   <data name="IO_NoMoreAssetDatFilesWrite" xml:space="preserve">
-    <value>Ran out of asset .dat files while writing '{0}'.</value>
+    <value>Ran out of asset .dat files while writing "{0}".</value>
   </data>
   <data name="NotSupported_PackTempWrite" xml:space="preserve">
     <value>Writing to .pack.temp files is not supported; convert the file to .pack first.</value>
   </data>
   <data name="IO_BadAssetInfo" xml:space="preserve">
-    <value>Invalid asset info at offset {0} in '{1}'; listed assets exceed size of 8192 bytes.</value>
+    <value>Invalid asset info at offset {0} in "{1}"; listed assets exceed size of 8192 bytes.</value>
   </data>
   <data name="IO_CrcMismatch" xml:space="preserve">
-    <value>The asset '{0}' does not match the expected CRC-32 ({1} != {2}) in '{3}'.</value>
+    <value>The asset "{0}" does not match the expected CRC-32 ({1} != {2}) in "{3}".</value>
   </data>
   <data name="Argument_InvalidAssetName" xml:space="preserve">
-    <value>Cannot add '{0}' to '{1}'; asset name length exceeds 128 bytes.</value>
+    <value>Cannot add "{0}" to "{1}"; asset name length exceeds 128 bytes.</value>
   </data>
 </root>

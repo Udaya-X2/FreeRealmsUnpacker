@@ -61,7 +61,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to infer asset type from the specified file name: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unable to infer asset type from the specified file name: &quot;{0}&quot;..
         /// </summary>
         internal static string Argument_CantInferAssetType {
             get {
@@ -79,7 +79,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot add &apos;{0}&apos; to &apos;{1}&apos;; asset name length exceeds 128 bytes..
+        ///   Looks up a localized string similar to Cannot add &quot;{0}&quot; to &quot;{1}&quot;; asset name length exceeds 128 bytes..
         /// </summary>
         internal static string Argument_InvalidAssetName {
             get {
@@ -88,7 +88,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and at most one directory flag must be set: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Invalid asset type; exactly one file flag and at most one directory flag must be set: &quot;{0}&quot;..
         /// </summary>
         internal static string Argument_InvalidAssetType {
             get {
@@ -133,7 +133,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specified integer &apos;{0}&apos; was not in the range [{1}, {2}]..
+        ///   Looks up a localized string similar to Specified integer &quot;{0}&quot; was not in the range [{1}, {2}]..
         /// </summary>
         internal static string ArgumentOutOfRange_Integer {
             get {
@@ -151,7 +151,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to End of file reached before assets were parsed: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to End of file reached before assets were parsed: &quot;{0}&quot;..
         /// </summary>
         internal static string EndOfStream_AssetFile {
             get {
@@ -178,7 +178,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The asset &apos;{0}&apos; extends past the end of &apos;{1}&apos;..
+        ///   Looks up a localized string similar to The asset &quot;{0}&quot; extends past the end of &quot;{1}&quot;..
         /// </summary>
         internal static string IO_AssetEOF {
             get {
@@ -187,7 +187,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid asset data at offset {0} in &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Invalid asset data at offset {0} in &quot;{1}&quot;..
         /// </summary>
         internal static string IO_BadAsset {
             get {
@@ -196,7 +196,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset .dat file has an incorrect size ({0} != 209715200): &apos;{1}&apos;..
+        ///   Looks up a localized string similar to Asset .dat file has an incorrect size ({0} != 209715200): &quot;{1}&quot;..
         /// </summary>
         internal static string IO_BadAssetDat {
             get {
@@ -205,7 +205,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid asset info at offset {0} in &apos;{1}&apos;; listed assets exceed size of 8192 bytes..
+        ///   Looks up a localized string similar to Invalid asset info at offset {0} in &quot;{1}&quot;; listed assets exceed size of 8192 bytes..
         /// </summary>
         internal static string IO_BadAssetInfo {
             get {
@@ -214,7 +214,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Manifest.dat file was not divided in chunks of 148: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Manifest.dat file was not divided in chunks of 148: &quot;{0}&quot;..
         /// </summary>
         internal static string IO_BadManifest {
             get {
@@ -223,7 +223,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The asset &apos;{0}&apos; does not match the expected CRC-32 ({1} != {2}) in &apos;{3}&apos;..
+        ///   Looks up a localized string similar to The asset &quot;{0}&quot; does not match the expected CRC-32 ({1} != {2}) in &quot;{3}&quot;..
         /// </summary>
         internal static string IO_CrcMismatch {
             get {
@@ -250,7 +250,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ran out of asset .dat files while reading &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Ran out of asset .dat files while reading &quot;{0}&quot;..
         /// </summary>
         internal static string IO_NoMoreAssetDatFilesRead {
             get {
@@ -259,7 +259,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ran out of asset .dat files while writing &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Ran out of asset .dat files while writing &quot;{0}&quot;..
         /// </summary>
         internal static string IO_NoMoreAssetDatFilesWrite {
             get {
@@ -277,7 +277,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot add &apos;{0}&apos; to &apos;{1}&apos;; asset .pack file exceeds maximum capacity..
+        ///   Looks up a localized string similar to Cannot add &quot;{0}&quot; to &quot;{1}&quot;; asset .pack file exceeds maximum capacity..
         /// </summary>
         internal static string Overflow_CantAddAsset {
             get {
@@ -286,7 +286,7 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Number of assets exceeds the maximum integer value: &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Number of assets exceeds the maximum integer value: &quot;{0}&quot;..
         /// </summary>
         internal static string Overflow_TooManyAssets {
             get {
