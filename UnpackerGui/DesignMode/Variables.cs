@@ -35,8 +35,9 @@ public static class Variables
 
     /* PreferencesWindow Design Variables */
     public static readonly ReadOnlyObservableCollection<PreferenceViewModel>? Preferences;
-    public static string? PreferenceName => Preferences?[0].Name;
-    public static string? PreferenceDescription => Preferences?[0].Description;
+    public static PreferenceViewModel? SelectedPreference => Preferences?[0];
+    public static string? PreferenceName => SelectedPreference?.Name;
+    public static string? PreferenceDescription => SelectedPreference?.Description;
 
     /* AboutWindow Design Variables */
     public const string Version = "Version X.X.X";

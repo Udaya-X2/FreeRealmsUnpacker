@@ -1,8 +1,8 @@
 ﻿using AssetIO;
-using Avalonia.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Reactive;
 using UnpackerGui.Config;
 
@@ -14,8 +14,10 @@ public class PreferencesViewModel : ViewModelBase
     public ISettings Settings { get; }
 
     public ReactiveCommand<string, Unit> UpdateAssetFilterCommand { get; }
+    public ReactiveCommand<Unit, Unit> UpdateSearchOptionCommand { get; }
 
     private PreferenceViewModel _selectedPreference;
+    private int _selectedIndex;
 
     public PreferencesViewModel()
     {
@@ -26,6 +28,7 @@ public class PreferencesViewModel : ViewModelBase
             new PreferenceViewModel("Misc Options", "Other options that don't fit the previous categories.")
         ]);
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
+        UpdateSearchOptionCommand = ReactiveCommand.Create(UpdateSearchOption);
         _selectedPreference = Preferences[0];
         Settings = App.GetSettings();
     }
@@ -36,5 +39,13 @@ public class PreferencesViewModel : ViewModelBase
         set => this.RaiseAndSetIfChanged(ref _selectedPreference, value);
     }
 
+    public int SelectedIndex
+    {
+        get => _selectedIndex;
+        set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
+    }
+
     private void UpdateAssetFilter(string value) => Settings.AssetFilter ^= Enum.Parse<AssetType>(value);
+
+    private void UpdateSearchOption() => Settings.SearchOption ^= SearchOption.AllDirectories;
 }

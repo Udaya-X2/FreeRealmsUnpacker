@@ -1,5 +1,6 @@
 ﻿using AssetIO;
 using System.ComponentModel;
+using System.IO;
 
 namespace UnpackerGui.Config;
 
@@ -52,6 +53,12 @@ public interface ISettings : INotifyPropertyChanged
     /// </summary>
     [DefaultValue(false)]
     bool AddUnknownAssets { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to search for assets in folders recursively.
+    /// </summary>
+    [DefaultValue(SearchOption.AllDirectories)]
+    SearchOption SearchOption { get; set; }
 
     /// <summary>
     /// Gets or sets whether to ask the user to confirm file deletion.

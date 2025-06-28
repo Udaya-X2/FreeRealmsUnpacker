@@ -258,7 +258,7 @@ public class MainViewModel : ViewModelBase
         Settings.InputDirectory = folder.Path.LocalPath;
         List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(Settings.InputDirectory,
                                                                              Settings.AssetFilter,
-                                                                             SearchOption.AllDirectories,
+                                                                             Settings.SearchOption,
                                                                              !Settings.AddUnknownAssets)
                                                         .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)];
 
