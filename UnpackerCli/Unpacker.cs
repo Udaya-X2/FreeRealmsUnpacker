@@ -306,7 +306,7 @@ public partial class Unpacker
     /// Formats the specified number as a file size string.
     /// </summary>
     /// <returns>The formatted string.</returns>
-    private static string FormatFileSize(long i) => (i < 0 ? -i : i) switch
+    private static string FormatFileSize(long i) => i switch
     {
         >= 1L << 60 => $"{(i >> 50) / 1024.0:0.##} EB",
         >= 1L << 50 => $"{(i >> 40) / 1024.0:0.##} PB",
