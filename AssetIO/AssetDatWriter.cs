@@ -215,8 +215,15 @@ public class AssetDatWriter : AssetWriter
                 _manifestStream.SetLength(_manifestStream.Position); // Set length to include null byte padding.
                 _manifestStream.Dispose();
                 _manifestWriter.Dispose();
-                _dataFileEnumerator.Dispose();
                 _dataStream.Dispose();
+
+                // Remove any unused asset .dat files.
+                while (_dataFileEnumerator.MoveNext() && File.Exists(_dataFileEnumerator.Current))
+                {
+                    File.Delete(_dataFileEnumerator.Current);
+                }
+
+                _dataFileEnumerator.Dispose();
             }
 
             _disposed = true;
