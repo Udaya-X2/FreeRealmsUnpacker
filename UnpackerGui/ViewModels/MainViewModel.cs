@@ -103,7 +103,6 @@ public class MainViewModel : ViewModelBase
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
     private IDisposable? _validationHandler;
-    private bool _isValidatingAssets;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MainViewModel"/> class.
@@ -167,8 +166,9 @@ public class MainViewModel : ViewModelBase
         Assets = ValidatedAssets.Filter(SearchOptions);
 
         // Toggle asset validation when requested.
-        this.WhenAnyValue(x => x.IsValidatingAssets)
-            .Subscribe(_ => ToggleValidationCommand.Invoke());
+        Settings = App.GetSettings();
+        Settings.WhenAnyValue(x => x.ValidateAssets)
+                .Subscribe(_ => ToggleValidationCommand.Invoke());
 
         // Need to clear selected assets to avoid the UI freezing when a large
         // number of assets are selected while more assets are added/removed.
@@ -178,7 +178,6 @@ public class MainViewModel : ViewModelBase
         // Initialize other view models.
         _about = new AboutViewModel();
         _preferences = new PreferencesViewModel();
-        Settings = App.GetSettings();
     }
 
     /// <summary>
@@ -216,15 +215,6 @@ public class MainViewModel : ViewModelBase
     {
         get => _selectedAsset;
         set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
-    }
-
-    /// <summary>
-    /// Gets or sets whether to validate assets in checked files.
-    /// </summary>
-    public bool IsValidatingAssets
-    {
-        get => _isValidatingAssets;
-        set => this.RaiseAndSetIfChanged(ref _isValidatingAssets, value);
     }
 
     /// <summary>
@@ -563,7 +553,7 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private async Task ToggleValidation()
     {
-        if (IsValidatingAssets)
+        if (Settings.ValidateAssets)
         {
             using (ValidatedAssets.SuspendNotifications())
             {

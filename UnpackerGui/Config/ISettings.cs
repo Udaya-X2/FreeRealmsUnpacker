@@ -30,6 +30,12 @@ public interface ISettings : INotifyPropertyChanged
     bool ShowCrc32 { get; set; }
 
     /// <summary>
+    /// Gets or sets whether to validate assets in checked files.
+    /// </summary>
+    [DefaultValue(false)]
+    bool ValidateAssets { get; set; }
+
+    /// <summary>
     /// Gets or sets how to handle assets with conflicting names.
     /// </summary>
     [DefaultValue(FileConflictOptions.Overwrite)]

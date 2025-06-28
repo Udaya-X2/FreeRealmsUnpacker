@@ -344,7 +344,7 @@
                                   Name="validateAssetsButton"
                                   Margin="5 0 0 0"
                                   ToolTip.Tip="Validate Assets (ALT+V)"
-                                  IsChecked="{Binding IsValidatingAssets, Mode=TwoWay}">
+                                  IsChecked="{Binding Settings.ValidateAssets, Mode=TwoWay}">
                         <ic:FluentIcon Icon="Shield"/>
                     </ToggleButton>
                     <!--Display Options Dropdown Menu-->
@@ -366,7 +366,7 @@
                                 <CheckBox Content="Valid"
                                           IsThreeState="True"
                                           IsChecked="{Binding ValidationOptions.ShowValid}"
-                                          IsEnabled="{Binding IsValidatingAssets}"/>
+                                          IsEnabled="{Binding Settings.ValidateAssets}"/>
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                     </DropDownButton>
