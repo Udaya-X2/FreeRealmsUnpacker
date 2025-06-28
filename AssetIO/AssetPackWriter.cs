@@ -77,6 +77,12 @@ public class AssetPackWriter : AssetWriter
                         throw new IOException(string.Format(SR.IO_BadAssetInfo, _chunkOffset, _packStream.Name));
                     }
                 }
+
+                // Expand the last asset info chunk if necessary.
+                if (_packStream.Length < _chunkOffset + AssetInfoChunkSize)
+                {
+                    _packStream.SetLength(_chunkOffset + AssetInfoChunkSize);
+                }
             }
             // Otherwise, create an empty asset info chunk at the start of the .pack file.
             else

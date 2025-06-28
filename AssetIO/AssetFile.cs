@@ -143,6 +143,7 @@ public class AssetFile : IEnumerable<Asset>
     /// Creates an <see cref="AssetWriter"/> that writes to the asset file and related data files.
     /// </summary>
     /// <returns>A new <see cref="AssetReader"/> that writes to the asset file and related data files.</returns>
+    /// <exception cref="NotSupportedException"/>
     public virtual AssetWriter OpenWrite() => FileType switch
     {
         AssetType.Pack => new AssetPackWriter(FullName),
