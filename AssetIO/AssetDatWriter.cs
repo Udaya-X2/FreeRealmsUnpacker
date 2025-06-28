@@ -218,12 +218,13 @@ public class AssetDatWriter : AssetWriter
                 _dataStream.Dispose();
 
                 // Remove any unused asset .dat files.
-                while (_dataFileEnumerator.MoveNext() && File.Exists(_dataFileEnumerator.Current))
+                using (_dataFileEnumerator)
                 {
-                    File.Delete(_dataFileEnumerator.Current);
+                    while (_dataFileEnumerator.MoveNext() && File.Exists(_dataFileEnumerator.Current))
+                    {
+                        File.Delete(_dataFileEnumerator.Current);
+                    }
                 }
-
-                _dataFileEnumerator.Dispose();
             }
 
             _disposed = true;
