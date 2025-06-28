@@ -133,15 +133,6 @@ namespace AssetIO {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specified integer &quot;{0}&quot; was not in the range [{1}, {2}]..
-        /// </summary>
-        internal static string ArgumentOutOfRange_Integer {
-            get {
-                return ResourceManager.GetString("ArgumentOutOfRange_Integer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Non-negative number required..
         /// </summary>
         internal static string ArgumentOutOfRange_NeedNonNegNum {
@@ -174,6 +165,24 @@ namespace AssetIO {
         internal static string Format_Bad7BitInt {
             get {
                 return ResourceManager.GetString("Format_Bad7BitInt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specified integer &quot;{0}&quot; was not in the range [1, 128]..
+        /// </summary>
+        internal static string InvalidAsset_Name {
+            get {
+                return ResourceManager.GetString("InvalidAsset_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specified integer &quot;{0}&quot; was not in the range [0, 9223372036854775807]..
+        /// </summary>
+        internal static string InvalidAsset_Offset {
+            get {
+                return ResourceManager.GetString("InvalidAsset_Offset", resourceCulture);
             }
         }
         

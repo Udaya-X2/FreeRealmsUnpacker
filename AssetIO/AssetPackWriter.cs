@@ -67,7 +67,7 @@ public class AssetPackWriter : AssetWriter
                 // Compute the size of the last asset info chunk.
                 for (uint i = 0; i < _numAssets; i++)
                 {
-                    int length = ClientFile.ValidateRange(reader.ReadInt32(), 1, MaxAssetNameLength);
+                    int length = ClientFile.ValidateNameLength(reader.ReadInt32());
                     int assetIndexSize = length + AssetFieldsSize;
                     _packStream.Seek(assetIndexSize - sizeof(int), SeekOrigin.Current);
                     _chunkSize += assetIndexSize;
@@ -90,10 +90,10 @@ public class AssetPackWriter : AssetWriter
                 _packStream.SetLength(AssetInfoChunkSize);
             }
         }
-        catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytes)
+        catch (InvalidAssetException ex)
         {
             using var _ = this;
-            throw new IOException(string.Format(SR.IO_BadAsset, _packStream.Position - bytes, _packStream.Name), ex);
+            throw new IOException(string.Format(SR.IO_BadAsset, _packStream.Position - ex.Size, _packStream.Name), ex);
         }
         catch (EndOfStreamException ex)
         {

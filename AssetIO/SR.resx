@@ -120,8 +120,8 @@
   <data name="ArgumentNull_Buffer" xml:space="preserve">
     <value>Buffer cannot be null.</value>
   </data>
-  <data name="ArgumentOutOfRange_Integer" xml:space="preserve">
-    <value>Specified integer "{0}" was not in the range [{1}, {2}].</value>
+  <data name="InvalidAsset_Name" xml:space="preserve">
+    <value>Specified integer "{0}" was not in the range [1, 128].</value>
   </data>
   <data name="ArgumentOutOfRange_NeedNonNegNum" xml:space="preserve">
     <value>Non-negative number required.</value>
@@ -194,5 +194,8 @@
   </data>
   <data name="Argument_InvalidAssetName" xml:space="preserve">
     <value>Cannot add "{0}" to "{1}"; asset name length exceeds 128 bytes.</value>
+  </data>
+  <data name="InvalidAsset_Offset" xml:space="preserve">
+    <value>Specified integer "{0}" was not in the range [0, 9223372036854775807].</value>
   </data>
 </root>

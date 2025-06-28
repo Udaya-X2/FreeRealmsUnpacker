@@ -1,8 +1,6 @@
 ﻿using AssetIO.EndianBinaryIO;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace AssetIO;
@@ -98,16 +96,16 @@ public static partial class ClientFile
             {
                 try
                 {
-                    int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
+                    int length = ValidateNameLength(reader.ReadInt32());
                     string name = reader.ReadString(length);
                     uint offset = reader.ReadUInt32();
                     uint size = reader.ReadUInt32();
                     uint crc32 = reader.ReadUInt32();
                     asset = new Asset(name, offset, size, crc32);
                 }
-                catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytesRead)
+                catch (InvalidAssetException ex)
                 {
-                    throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
+                    throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - ex.Size, stream.Name), ex);
                 }
                 catch (EndOfStreamException ex)
                 {
@@ -319,17 +317,17 @@ public static partial class ClientFile
         {
             try
             {
-                int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
+                int length = ValidateNameLength(reader.ReadInt32());
                 string name = reader.ReadString(length);
-                long offset = ValidateRange(reader.ReadInt64(), minValue: 0, maxValue: long.MaxValue);
+                long offset = ValidateOffset(reader.ReadInt64());
                 uint size = reader.ReadUInt32();
                 uint crc32 = reader.ReadUInt32();
                 asset = new Asset(name, offset, size, crc32);
                 stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
             }
-            catch (ArgumentOutOfRangeException ex) when (ex.Data["BytesRead"] is int bytesRead)
+            catch (InvalidAssetException ex)
             {
-                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - bytesRead, stream.Name), ex);
+                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - ex.Size, stream.Name), ex);
             }
 
             yield return asset;
@@ -543,7 +541,7 @@ public static partial class ClientFile
                 }
             }
             // Stop iteration if an error occurs due to cut off data in the file.
-            catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
+            catch (Exception ex) when (ex is InvalidAssetException or EndOfStreamException)
             {
                 break;
             }
@@ -637,7 +635,7 @@ public static partial class ClientFile
 
                 while (currAsset++ < numAssets)
                 {
-                    int length = ValidateRange(reader.ReadInt32(), minValue: 1, maxValue: MaxAssetNameLength);
+                    int length = ValidateNameLength(reader.ReadInt32());
                     stream.Seek(length, SeekOrigin.Current);
                     uint offset = reader.ReadUInt32();
                     uint size = reader.ReadUInt32();
@@ -651,7 +649,7 @@ public static partial class ClientFile
             }
             while (nextOffset != 0);
         }
-        catch (Exception ex) when (ex is ArgumentOutOfRangeException or EndOfStreamException)
+        catch (Exception ex) when (ex is InvalidAssetException or EndOfStreamException)
         {
             // If the current asset info chunk contains at least one valid asset, fix the error by cutting
             // it off at the last valid asset. Otherwise, cut the file off at the previous asset info chunk.
@@ -901,27 +899,26 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Throws an exception if the specified integer is outside the given range.
+    /// Throws an exception if the specified integer is outside of the range [1, <see cref="MaxAssetNameLength"/>].
     /// </summary>
     /// <param name="value">The integer value to check.</param>
-    /// <param name="minValue">The minimum allowed value.</param>
-    /// <param name="maxValue">The maximum allowed value.</param>
     /// <returns>The specified integer.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"/>
-    internal static T ValidateRange<T>(T value, T minValue, T maxValue) where T : unmanaged, IBinaryInteger<T>
-    {
-        if (minValue <= value && value <= maxValue)
-        {
-            return value;
-        }
-        else
-        {
-            string message = string.Format(SR.ArgumentOutOfRange_Integer, value, minValue, maxValue);
-            ArgumentOutOfRangeException exception = new(message, innerException: null);
-            exception.Data["BytesRead"] = Unsafe.SizeOf<T>();
-            throw exception;
-        }
-    }
+    /// <exception cref="InvalidAssetException"/>
+    internal static int ValidateNameLength(int value)
+        => value is >= 1 and <= MaxAssetNameLength
+        ? value
+        : throw new InvalidAssetException(string.Format(SR.InvalidAsset_Name, value), sizeof(int));
+
+    /// <summary>
+    /// Throws an exception if the specified integer is negative.
+    /// </summary>
+    /// <param name="value">The integer value to check.</param>
+    /// <returns>The specified integer.</returns>
+    /// <exception cref="InvalidAssetException"/>
+    private static long ValidateOffset(long value)
+        => value >= 0
+        ? value
+        : throw new InvalidAssetException(string.Format(SR.InvalidAsset_Offset, value), sizeof(long));
 
     /// <summary>
     /// Checks whether the contents of the files are the same.
