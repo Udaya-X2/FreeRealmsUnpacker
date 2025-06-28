@@ -12,6 +12,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
+using UnpackerGui.Config;
 using UnpackerGui.Converters;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
@@ -27,7 +28,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// <remarks>This is only used by asset files with the <see cref="AssetType.Dat"/> flag set.</remarks>
     public ReactiveList<DataFileViewModel>? DataFiles { get; }
 
-
     /// <summary>
     /// Gets the selected data files.
     /// </summary>
@@ -38,6 +38,11 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// Gets the total size of all assets in the file.
     /// </summary>
     public long Size { get; }
+
+    /// <summary>
+    /// Gets the application's settings.
+    /// </summary>
+    public ISettings Settings { get; }
 
     public ReactiveCommand<Unit, bool>? ShowDataFilesCommand { get; }
     public ReactiveCommand<Unit, Unit>? RemoveDataFilesCommand { get; }
@@ -59,6 +64,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     {
         _assets = [];
         _assetFile = assetFile;
+        Settings = App.GetSettings();
 
         if (Design.IsDesignMode) return;
 
@@ -206,7 +212,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// </summary>
     private async Task DeleteDataFiles()
     {
-        if (await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
+        if (!Settings.ConfirmDelete || await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
         {
             Title = SelectedDataFiles!.Count == 1 ? "Delete File" : "Delete Multiple Files",
             Message = SelectedDataFiles.Count == 1
@@ -215,7 +221,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
             Icon = Icon.Delete
         }))
         {
-            SelectedDataFiles.ForEach(x => x.Delete());
+            SelectedDataFiles!.ForEach(x => x.Delete());
             RemoveDataFiles();
         }
     }

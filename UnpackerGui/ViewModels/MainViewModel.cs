@@ -59,7 +59,7 @@ public class MainViewModel : ViewModelBase
     public ValidationOptionsViewModel<AssetInfo> ValidationOptions { get; }
 
     /// <summary>
-    /// Gets the application settings.
+    /// Gets the application's settings.
     /// </summary>
     public ISettings Settings { get; }
 
@@ -666,7 +666,7 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private async Task DeleteSelectedFile()
     {
-        if (await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
+        if (!Settings.ConfirmDelete || await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
         {
             Title = "Delete File",
             Message = $"Are you sure you want to permanently delete this file?\n\n{SelectedAssetFile}",

@@ -115,6 +115,12 @@
                           Command="{Binding UpdateAssetFilterCommand}"
                           CommandParameter="Temp"/>
             </StackPanel>
+            <!--Misc Options-->
+            <StackPanel IsVisible="{Binding SelectedPreference.Name, Converter={StaticResource stringComparisonConverter}, ConverterParameter='Misc Options', FallbackValue={x:Static dm:Variables.False}}">
+                <CheckBox Content="Show File Delete Dialog"
+                          ToolTip.Tip="Display a warning message before deleting a file."
+                          IsChecked="{Binding Settings.ConfirmDelete}"/>
+            </StackPanel>
         </StackPanel>
     </DockPanel>
 </Window>

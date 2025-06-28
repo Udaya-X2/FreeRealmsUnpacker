@@ -1,4 +1,5 @@
 ﻿using AssetIO;
+using Avalonia.Controls;
 using ReactiveUI;
 using System;
 using System.Collections.ObjectModel;
@@ -21,7 +22,8 @@ public class PreferencesViewModel : ViewModelBase
         Preferences = new ReadOnlyObservableCollection<PreferenceViewModel>(
         [
             new PreferenceViewModel("File Conflict Options", "Select how to extract assets with conflicting names."),
-            new PreferenceViewModel("Folder Options", "Check the types of assets to add when opening a folder.")
+            new PreferenceViewModel("Folder Options", "Check the types of assets to add when opening a folder."),
+            new PreferenceViewModel("Misc Options", "Other options that don't fit the previous categories.")
         ]);
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
         _selectedPreference = Preferences[0];

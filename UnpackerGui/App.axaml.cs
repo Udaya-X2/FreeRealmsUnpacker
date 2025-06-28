@@ -71,6 +71,7 @@ public partial class App : Application
         if (Design.IsDesignMode)
         {
             RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
+            Settings = new ConfigurationBuilder<ISettings>().Build();
         }
 
         base.OnFrameworkInitializationCompleted();

@@ -48,6 +48,12 @@ public interface ISettings : INotifyPropertyChanged
     bool AddUnknownAssets { get; set; }
 
     /// <summary>
+    /// Gets or sets whether to ask the user to confirm file deletion.
+    /// </summary>
+    [DefaultValue(true)]
+    bool ConfirmDelete { get; set; }
+
+    /// <summary>
     /// Gets or sets the default location to input files/folders.
     /// </summary>
     [DefaultValue("")]

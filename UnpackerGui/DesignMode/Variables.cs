@@ -1,6 +1,7 @@
 ﻿using AssetIO;
 using Avalonia.Controls;
 using FluentIcons.Common;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
@@ -33,9 +34,9 @@ public static class Variables
     public const int FlipImageAngle = 180;
 
     /* PreferencesWindow Design Variables */
-    public static readonly string[]? Preferences;
-    public const string PreferenceName = "File Conflict Options";
-    public const string PreferenceDescription = "Select how to extract assets with conflicting names.";
+    public static readonly ReadOnlyObservableCollection<PreferenceViewModel>? Preferences;
+    public static string? PreferenceName => Preferences?[0].Name;
+    public static string? PreferenceDescription => Preferences?[0].Description;
 
     /* AboutWindow Design Variables */
     public const string Version = "Version X.X.X";
@@ -81,11 +82,7 @@ public static class Variables
                 new AssetInfo("img5865697909579607231.dds", 41520, 2172, 348218531, assetFiles[0]),
                 new AssetInfo("img9858373679194077357.dds", 43692, 2172, 509118986, assetFiles[0]),
             ];
-            Preferences =
-            [
-                "File Conflict Options",
-                "Folder Options"
-            ];
+            Preferences = new PreferencesViewModel().Preferences;
         }
     }
 }
