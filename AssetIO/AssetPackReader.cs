@@ -230,8 +230,8 @@ public class AssetPackReader : AssetReader
         {
             if (disposing)
             {
-                _assetStream.Dispose();
                 ArrayPool<byte>.Shared.Return(_buffer);
+                _assetStream.Dispose();
             }
 
             _disposed = true;

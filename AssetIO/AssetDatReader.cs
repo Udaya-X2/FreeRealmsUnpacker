@@ -303,8 +303,8 @@ public class AssetDatReader : AssetReader
         {
             if (disposing)
             {
-                Array.ForEach(_assetStreams, x => x.Dispose());
                 ArrayPool<byte>.Shared.Return(_buffer);
+                Array.ForEach(_assetStreams, x => x.Dispose());
             }
 
             _disposed = true;

@@ -203,6 +203,8 @@ public class AssetPackWriter : AssetWriter
         {
             if (disposing)
             {
+                ArrayPool<byte>.Shared.Return(_buffer);
+
                 // Flush the current asset info chunk if necessary, setting the next chunk offset
                 // to the start of the .pack file and writing the number of assets in this chunk.
                 if (_numAssets > 0)
@@ -214,7 +216,6 @@ public class AssetPackWriter : AssetWriter
 
                 _packStream.Dispose();
                 _packWriter.Dispose();
-                ArrayPool<byte>.Shared.Return(_buffer);
             }
 
             _disposed = true;

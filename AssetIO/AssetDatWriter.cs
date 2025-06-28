@@ -211,13 +211,12 @@ public class AssetDatWriter : AssetWriter
         {
             if (disposing)
             {
-                // Set length to include null byte padding, if necessary.
-                _manifestStream.SetLength(_manifestStream.Position);
+                ArrayPool<byte>.Shared.Return(_buffer);
+                _manifestStream.SetLength(_manifestStream.Position); // Set length to include null byte padding.
                 _manifestStream.Dispose();
                 _manifestWriter.Dispose();
                 _dataFileEnumerator.Dispose();
                 _dataStream.Dispose();
-                ArrayPool<byte>.Shared.Return(_buffer);
             }
 
             _disposed = true;
