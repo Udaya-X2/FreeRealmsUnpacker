@@ -300,6 +300,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ExtractPackAssets(string packFile,
                                          string destDir,
@@ -582,7 +583,6 @@ public static partial class ClientFile
     /// <param name="manifestFile">The manifest.dat file to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ValidateManifestAssets(string manifestFile)
         => ValidateManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(manifestFile));
@@ -595,7 +595,6 @@ public static partial class ClientFile
     /// <param name="dataFiles">The asset .dat files to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ValidateManifestAssets(string manifestFile, IEnumerable<string> dataFiles)
     {
@@ -674,6 +673,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
     public static int GetPackTempAssetCount(string packTempFile)
         => EnumeratePackTempAssets(packTempFile).Count();
 

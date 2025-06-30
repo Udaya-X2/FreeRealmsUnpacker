@@ -21,6 +21,7 @@ public class AssetPackReader : AssetReader
     /// <param name="packFile">The asset .pack file to read.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public AssetPackReader(string packFile)
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);

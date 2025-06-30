@@ -20,7 +20,9 @@ public class AssetDatReader : AssetReader
     /// Initializes a new instance of the <see cref="AssetDatReader"/> class for the specified asset .dat files.
     /// </summary>
     /// <param name="dataFiles">The asset .dat files to read.</param>
+    /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public AssetDatReader(IEnumerable<string> dataFiles)
     {
         ArgumentNullException.ThrowIfNull(dataFiles);

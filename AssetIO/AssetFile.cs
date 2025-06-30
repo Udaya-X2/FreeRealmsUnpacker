@@ -109,6 +109,9 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Gets the number of assets in the asset file.
     /// </summary>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
     public virtual int Count => FileType switch
     {
         AssetType.Pack => ClientFile.GetPackAssetCount(FullName),
@@ -120,6 +123,9 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Gets the assets in the asset file.
     /// </summary>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
     public virtual Asset[] Assets => FileType switch
     {
         AssetType.Pack => ClientFile.GetPackAssets(FullName),
@@ -132,6 +138,7 @@ public class AssetFile : IEnumerable<Asset>
     /// Creates an <see cref="AssetReader"/> that reads from the asset file or related data files.
     /// </summary>
     /// <returns>A new <see cref="AssetReader"/> that reads from the asset file or related data files.</returns>
+    /// <exception cref="IOException"/>
     public virtual AssetReader OpenRead() => (FileType & ~AssetType.Temp) switch
     {
         AssetType.Pack => new AssetPackReader(FullName),
@@ -143,6 +150,7 @@ public class AssetFile : IEnumerable<Asset>
     /// Creates an <see cref="AssetWriter"/> that writes to the asset file and related data files.
     /// </summary>
     /// <returns>A new <see cref="AssetReader"/> that writes to the asset file and related data files.</returns>
+    /// <exception cref="IOException"/>
     /// <exception cref="NotSupportedException"/>
     public virtual AssetWriter OpenWrite() => FileType switch
     {
@@ -156,6 +164,9 @@ public class AssetFile : IEnumerable<Asset>
     /// Creates an <see cref="AssetWriter"/> that appends to the asset file and related data files.
     /// </summary>
     /// <returns>A new <see cref="AssetReader"/> that appends to the asset file and related data files.</returns>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="NotSupportedException"/>
     public virtual AssetWriter OpenAppend() => FileType switch
     {
         AssetType.Pack => new AssetPackWriter(FullName, append: true),
@@ -167,7 +178,36 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Creates or overwrites the asset file.
     /// </summary>
+    /// <exception cref="IOException"/>
+    /// <exception cref="NotSupportedException"/>
     public virtual void Create() => OpenWrite().Dispose();
+
+    /// <summary>
+    /// Extracts the assets from the asset file to the given directory.
+    /// </summary>
+    /// <param name="destDir">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public virtual void ExtractAssets(string destDir, FileConflictOptions options = FileConflictOptions.Overwrite)
+    {
+        ArgumentNullException.ThrowIfNull(destDir);
+
+        switch (FileType)
+        {
+            case AssetType.Pack:
+                ClientFile.ExtractPackAssets(FullName, destDir, options);
+                break;
+            case AssetType.Dat:
+                ClientFile.ExtractManifestAssets(FullName, DataFiles, destDir, options);
+                break;
+            case AssetType.Pack | AssetType.Temp:
+                ClientFile.ExtractPackTempAssets(FullName, destDir, options);
+                break;
+            default:
+                throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type));
+        }
+    }
 
     /// <inheritdoc cref="RemoveAssets(ISet{Asset})"/>
     public virtual void RemoveAssets(IEnumerable<Asset> assets) => RemoveAssets(assets.ToHashSet());
@@ -201,7 +241,6 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Throws an exception if the asset file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>
-    /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public virtual void ValidateAssets()
@@ -236,6 +275,8 @@ public class AssetFile : IEnumerable<Asset>
     /// Returns an enumerable collection of the assets in the asset file.
     /// </summary>
     /// <returns>An enumerable collection of the assets in the asset file.</returns>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
     public virtual IEnumerable<Asset> EnumerateAssets() => FileType switch
     {
         AssetType.Pack => ClientFile.EnumeratePackAssets(FullName),
