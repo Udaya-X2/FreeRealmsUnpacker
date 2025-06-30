@@ -382,6 +382,7 @@
                           CanUserReorderColumns="True"
                           CanUserResizeColumns="True"
                           GridLinesVisibility="All"
+                          HorizontalScrollBarVisibility="Disabled"
                           BorderThickness="1"
                           BorderBrush="Gray"
                           DoubleTapped="AssetGrid_DoubleTapped"
