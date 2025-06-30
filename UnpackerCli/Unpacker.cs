@@ -1,7 +1,6 @@
 ﻿using AssetIO;
 using McMaster.Extensions.CommandLineUtils;
 using ShellProgressBar;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 
@@ -326,7 +325,6 @@ public partial class Unpacker
     /// ticks and an <paramref name="assetType"/>-dependent color,
     /// or <see langword="null"/> if progress bars are disabled.
     /// </returns>
-    /// <exception cref="InvalidEnumArgumentException"/>
     private ProgressBar? CreateProgressBar(AssetType assetType, IEnumerable<AssetFile> assetFiles)
     {
         if (NoProgressBars || ListAssets || ListFiles || CountAssets) return null;

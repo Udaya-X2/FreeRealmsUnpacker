@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace AssetIO;
+﻿namespace AssetIO;
 
 /// <summary>
 /// Provides random access reading operations on Free Realms asset file(s).
@@ -68,7 +66,7 @@ public abstract class AssetReader : IDisposable
     /// <returns>The extracted file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="InvalidEnumArgumentException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
     public FileInfo ExtractTo(Asset asset, string dirPath, FileConflictOptions options, out bool fileExtracted)
@@ -101,7 +99,7 @@ public abstract class AssetReader : IDisposable
     /// <see langword="true"/> if the asset can be extracted to
     /// <paramref name="filePath"/>; otherwise, <see langword="false"/>.
     /// </returns>
-    /// <exception cref="InvalidEnumArgumentException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     private bool TryGetExtractionPath(Asset asset, string dirPath, FileConflictOptions options, out string filePath)
     {
         filePath = Path.Combine(dirPath, asset.Name);
@@ -181,7 +179,7 @@ public abstract class AssetReader : IDisposable
                 }
                 break;
             default:
-                throw new InvalidEnumArgumentException(nameof(options), (int)options, options.GetType());
+                throw new ArgumentOutOfRangeException(nameof(options), SR.ArgumentOutOfRange_Enum);
         }
 
         return true;

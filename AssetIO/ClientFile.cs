@@ -300,6 +300,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ExtractPackAssets(string packFile,
@@ -484,6 +485,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="IOException"/>
     public static void ExtractManifestAssets(string manifestFile,
                                              string destDir,
@@ -500,6 +502,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="IOException"/>
     public static void ExtractManifestAssets(string manifestFile,
                                              IEnumerable<string> dataFiles,
@@ -685,6 +688,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="IOException"/>
     public static void ExtractPackTempAssets(string packTempFile,
                                              string destDir,

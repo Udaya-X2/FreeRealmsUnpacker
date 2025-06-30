@@ -198,4 +198,7 @@
   <data name="InvalidAsset_Offset" xml:space="preserve">
     <value>Specified integer "{0}" was not in the range [0, 9223372036854775807].</value>
   </data>
+  <data name="ArgumentOutOfRange_Enum" xml:space="preserve">
+    <value>Enum value was out of legal range.</value>
+  </data>
 </root>

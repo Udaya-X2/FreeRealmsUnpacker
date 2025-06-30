@@ -187,6 +187,7 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     /// <param name="destDir">The destination directory path.</param>
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public virtual void ExtractAssets(string destDir, FileConflictOptions options = FileConflictOptions.Overwrite)

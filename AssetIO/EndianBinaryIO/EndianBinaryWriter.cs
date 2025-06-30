@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-using System.Buffers.Binary;
-using System.ComponentModel;
+﻿using System.Buffers.Binary;
 using System.Text;
 
 namespace AssetIO.EndianBinaryIO;
@@ -34,7 +32,7 @@ internal class EndianBinaryWriter : BinaryWriter
     /// </summary>
     /// <param name="output">The output stream.</param>
     /// <param name="endianness">Specifies the order in which bytes are read.</param>
-    /// <exception cref="InvalidEnumArgumentException">
+    /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
     /// </exception>
     /// <inheritdoc cref="BinaryWriter(Stream)"/>
@@ -60,7 +58,7 @@ internal class EndianBinaryWriter : BinaryWriter
     /// <param name="output">The output stream.</param>
     /// <param name="endianness">Specifies the order in which bytes are read.</param>
     /// <param name="encoding">The character encoding to use.</param>
-    /// <exception cref="InvalidEnumArgumentException">
+    /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
     /// </exception>
     /// <inheritdoc cref="BinaryWriter(Stream, Encoding)"/>
@@ -80,7 +78,7 @@ internal class EndianBinaryWriter : BinaryWriter
     /// <see langword="true"/> to leave the stream open after the <see cref="EndianBinaryWriter"/>
     /// object is disposed; otherwise, <see langword="false"/>.
     /// </param>
-    /// <exception cref="InvalidEnumArgumentException">
+    /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
     /// </exception>
     /// <inheritdoc cref="BinaryWriter(Stream, Encoding, bool)"/>
@@ -93,7 +91,7 @@ internal class EndianBinaryWriter : BinaryWriter
         {
             Endian.Little => true,
             Endian.Big => false,
-            _ => throw new InvalidEnumArgumentException(nameof(endianness), (int)endianness, endianness.GetType()),
+            _ => throw new ArgumentOutOfRangeException(nameof(endianness), SR.ArgumentOutOfRange_Enum),
         };
     }
 

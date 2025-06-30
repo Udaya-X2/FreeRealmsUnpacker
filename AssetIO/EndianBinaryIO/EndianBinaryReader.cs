@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Binary;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -46,7 +45,7 @@ internal class EndianBinaryReader : IDisposable
     /// <param name="endianness">Specifies the order in which bytes are read.</param>
     /// <exception cref="ArgumentException">The stream does not support reading or is already closed.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> is <see langword="null"/>.</exception>
-    /// <exception cref="InvalidEnumArgumentException">
+    /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
     /// </exception>
     public EndianBinaryReader(Stream input, Endian endianness)
@@ -80,7 +79,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ArgumentNullException">
     /// <paramref name="encoding"/> or <paramref name="input"/> is <see langword="null"/>.
     /// </exception>
-    /// <exception cref="InvalidEnumArgumentException">
+    /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
     /// </exception>
     public EndianBinaryReader(Stream input, Endian endianness, Encoding encoding)
@@ -103,7 +102,7 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ArgumentNullException">
     /// <paramref name="encoding"/> or <paramref name="input"/> is <see langword="null"/>.
     /// </exception>
-    /// <exception cref="InvalidEnumArgumentException">
+    /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
     /// </exception>
     public EndianBinaryReader(Stream input, Endian endianness, Encoding encoding, bool leaveOpen)
@@ -125,7 +124,7 @@ internal class EndianBinaryReader : IDisposable
         {
             Endian.Little => true,
             Endian.Big => false,
-            _ => throw new InvalidEnumArgumentException(nameof(endianness), (int)endianness, endianness.GetType()),
+            _ => throw new ArgumentOutOfRangeException(nameof(endianness), SR.ArgumentOutOfRange_Enum),
         };
     }
 
