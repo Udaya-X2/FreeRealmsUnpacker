@@ -110,6 +110,7 @@ public class AssetPackWriter : AssetWriter
     /// <summary>
     /// Writes an asset with the given name and stream contents to the .pack file.
     /// </summary>
+    /// <exception cref="OverflowException"/>
     /// <inheritdoc/>
     public override Asset Write(string name, Stream stream)
     {

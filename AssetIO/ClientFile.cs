@@ -702,7 +702,8 @@ public static partial class ClientFile
     }
 
     /// <summary>
-    /// Attempts to scan the specified .pack.temp file for errors and create a fix for the first invalid asset group.
+    /// Attempts to scan the specified .pack.temp file for errors
+    /// and create a fix for the first invalid asset info chunk.
     /// </summary>
     /// <param name="packTempFile">The asset .pack.temp file to fix.</param>
     /// <param name="fix">On return, contains a fix for the .pack.temp file or an undefined value on failure.</param>
@@ -712,7 +713,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public static bool TryGetPackTempFix(string packTempFile, out FixedAssetGroup fix)
+    public static bool TryGetPackTempFix(string packTempFile, out FixedAssetChunk fix)
     {
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
@@ -834,7 +835,7 @@ public static partial class ClientFile
     {
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
-        if (TryGetPackTempFix(packTempFile, out FixedAssetGroup fix))
+        if (TryGetPackTempFix(packTempFile, out FixedAssetChunk fix))
         {
             fix.FixPackTempFile(packTempFile);
             assetFile = new AssetFile(RenamePackTempFile(packTempFile).FullName);
