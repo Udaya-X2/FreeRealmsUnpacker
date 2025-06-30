@@ -138,6 +138,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
     /// <exception cref="OverflowException"/>
     public static int GetPackAssetCount(string packFile)
     {
@@ -188,8 +189,8 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
     /// <exception cref="OverflowException"/>
-    /// <exception cref="PathTooLongException"/>
     public static void AppendPackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);
@@ -216,8 +217,8 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
     /// <exception cref="OverflowException"/>
-    /// <exception cref="PathTooLongException"/>
     public static void WritePackAssets(string packFile, IEnumerable<FileInfo> assets)
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);
@@ -299,6 +300,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static void ExtractPackAssets(string packFile,
                                          string destDir,
                                          FileConflictOptions options = FileConflictOptions.Overwrite)
@@ -377,6 +379,7 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
+    /// <exception cref="OverflowException"/>
     public static Asset[] GetManifestAssets(string manifestFile)
     {
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
@@ -431,7 +434,7 @@ public static partial class ClientFile
     /// <param name="assets">The files to append as assets to the manifest.dat file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="PathTooLongException"/>
+    /// <exception cref="IOException"/>
     public static void AppendManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
@@ -457,7 +460,7 @@ public static partial class ClientFile
     /// <param name="assets">The files to write as assets to the manifest.dat file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="PathTooLongException"/>
+    /// <exception cref="IOException"/>
     public static void WriteManifestAssets(string manifestFile, IEnumerable<FileInfo> assets)
     {
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
@@ -480,6 +483,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static void ExtractManifestAssets(string manifestFile,
                                              string destDir,
                                              FileConflictOptions options = FileConflictOptions.Overwrite)
@@ -495,6 +499,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static void ExtractManifestAssets(string manifestFile,
                                              IEnumerable<string> dataFiles,
                                              string destDir,
@@ -533,7 +538,6 @@ public static partial class ClientFile
     /// <param name="assets">The assets to remove from the manifest.dat file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void RemoveManifestAssets(string manifestFile, IEnumerable<string> dataFiles, ISet<Asset> assets)
     {
@@ -618,6 +622,7 @@ public static partial class ClientFile
     /// <returns>An enumerable collection of the valid assets in the specified .pack.temp file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static IEnumerable<Asset> EnumeratePackTempAssets(string packTempFile)
     {
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
@@ -636,7 +641,7 @@ public static partial class ClientFile
                 }
             }
             // Stop iteration if an error occurs due to cut off data in the file.
-            catch (Exception ex) when (ex is InvalidAssetException or EndOfStreamException)
+            catch (Exception ex) when (ex is EndOfStreamException || ex.InnerException is InvalidAssetException)
             {
                 break;
             }
@@ -657,6 +662,7 @@ public static partial class ClientFile
     /// <returns>Gets the valid assets in the specified .pack.temp file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static Asset[] GetPackTempAssets(string packTempFile)
         => [.. EnumeratePackTempAssets(packTempFile)];
 
@@ -667,6 +673,7 @@ public static partial class ClientFile
     /// <returns>An number of the valid assets in the specified .pack.temp file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static int GetPackTempAssetCount(string packTempFile)
         => EnumeratePackTempAssets(packTempFile).Count();
 
@@ -678,6 +685,7 @@ public static partial class ClientFile
     /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static void ExtractPackTempAssets(string packTempFile,
                                              string destDir,
                                              FileConflictOptions options = FileConflictOptions.Overwrite)
@@ -703,6 +711,7 @@ public static partial class ClientFile
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static bool TryGetPackTempFix(string packTempFile, out FixedAssetGroup fix)
     {
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
@@ -744,7 +753,7 @@ public static partial class ClientFile
             }
             while (nextOffset != 0);
         }
-        catch (Exception ex) when (ex is InvalidAssetException or EndOfStreamException)
+        catch (Exception ex) when (ex is EndOfStreamException or InvalidAssetException)
         {
             // If the current asset info chunk contains at least one valid asset, fix the error by cutting
             // it off at the last valid asset. Otherwise, cut the file off at the previous asset info chunk.
@@ -763,6 +772,7 @@ public static partial class ClientFile
     /// <returns>The renamed .pack file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static FileInfo RenamePackTempFile(string packTempFile)
     {
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
@@ -819,6 +829,7 @@ public static partial class ClientFile
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
     public static bool TryConvertPackTempFile(string packTempFile, [MaybeNullWhen(false)] out AssetFile assetFile)
     {
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
@@ -840,7 +851,6 @@ public static partial class ClientFile
     /// <param name="packTempFile">The asset .pack.temp file to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public static void ValidatePackTempAssets(string packTempFile)
     {
