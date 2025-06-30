@@ -4,44 +4,35 @@ using System.Data;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
+using UnpackerGui.Config;
 using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
 
 public class ExtractionViewModel : ProgressViewModel
 {
-    private readonly IEnumerable<ExtractionAssetFile> _extractionAssetFiles;
-    private readonly string _outputDir;
-    private readonly FileConflictOptions _conflictOptions;
+    private readonly IEnumerable<AssetFileSelection> _assetFiles;
+    private readonly ISettings _settings;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExtractionViewModel"/>
-    /// class from the specified output directory and asset files.
+    /// Initializes a new instance of the <see cref="ExtractionViewModel"/> class from the specified asset files.
     /// </summary>
-    public ExtractionViewModel(string outputDir,
-                               IEnumerable<AssetFileViewModel> assetFiles,
-                               FileConflictOptions conflictOptions = FileConflictOptions.Overwrite)
+    public ExtractionViewModel(IEnumerable<AssetFileViewModel> assetFiles)
     {
         Maximum = assetFiles.Sum(x => x.Count);
-        _outputDir = outputDir;
-        _extractionAssetFiles = assetFiles.Select(x => new ExtractionAssetFile(x.Name, x.OpenRead, x));
-        _conflictOptions = conflictOptions;
+        _assetFiles = assetFiles.Select(x => new AssetFileSelection(x, x));
+        _settings = App.GetSettings();
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ExtractionViewModel"/>
-    /// class from the specified output directory and assets.
+    /// Initializes a new instance of the <see cref="ExtractionViewModel"/> class from the specified assets.
     /// </summary>
-    public ExtractionViewModel(string outputDir,
-                               IEnumerable<AssetInfo> assets,
-                               int? count = null,
-                               FileConflictOptions conflictOptions = FileConflictOptions.Overwrite)
+    public ExtractionViewModel(IEnumerable<AssetInfo> assets, int? count = null)
     {
         Maximum = count ?? assets.Count();
-        _outputDir = outputDir;
-        _extractionAssetFiles = assets.GroupBy(x => x.AssetFile)
-                                      .Select(x => new ExtractionAssetFile(x.Key.Name, x.Key.OpenRead, x));
-        _conflictOptions = conflictOptions;
+        _assetFiles = assets.GroupBy(x => x.AssetFile)
+                            .Select(x => new AssetFileSelection(x.Key, x));
+        _settings = App.GetSettings();
     }
 
     /// <inheritdoc/>
@@ -54,21 +45,21 @@ public class ExtractionViewModel : ProgressViewModel
     protected override void CommandAction(CancellationToken token) => ExtractAssets(token);
 
     /// <summary>
-    /// Extracts the assets from each extraction asset file to the output directory.
+    /// Extracts the selected assets from each asset file to the output directory.
     /// </summary>
     private void ExtractAssets(CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
 
-        foreach (ExtractionAssetFile assetFile in _extractionAssetFiles)
+        foreach (AssetFileSelection assetFile in _assetFiles)
         {
-            Message = $"Extracting {assetFile.Name}";
-            using AssetReader reader = assetFile.OpenRead();
+            Message = $"Extracting {assetFile.File.Name}";
+            using AssetReader reader = assetFile.File.OpenRead();
 
-            foreach (AssetInfo asset in assetFile.Assets)
+            foreach (AssetInfo asset in assetFile.SelectedAssets)
             {
                 token.ThrowIfCancellationRequested();
-                reader.ExtractTo(asset, _outputDir, _conflictOptions);
+                reader.ExtractTo(asset, _settings.OutputDirectory, _settings.ConflictOptions);
                 Tick();
             }
         }

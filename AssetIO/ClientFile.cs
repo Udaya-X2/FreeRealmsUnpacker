@@ -231,6 +231,41 @@ public static partial class ClientFile
         }
     }
 
+    /// <inheritdoc cref="RemovePackAssets(string, ISet{Asset})"/>
+    public static void RemovePackAssets(string packFile, IEnumerable<Asset> assets)
+        => RemovePackAssets(packFile, assets.ToHashSet());
+
+    /// <summary>
+    /// Removes the specified assets from the given .pack file.
+    /// </summary>
+    /// <param name="packFile">The asset .pack file to modify.</param>
+    /// <param name="assets">The assets to remove from the .pack file.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void RemovePackAssets(string packFile, ISet<Asset> assets)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(packFile);
+        ArgumentNullException.ThrowIfNull(assets);
+
+        string tempFile = $"{packFile}_{Path.GetRandomFileName()}";
+
+        using (AssetPackReader reader = new(packFile))
+        using (AssetPackWriter writer = new(tempFile))
+        {
+            foreach (Asset asset in EnumeratePackAssets(packFile))
+            {
+                if (!assets.Contains(asset))
+                {
+                    writer.Write(asset.Name, reader.Read(asset));
+                }
+            }
+        }
+
+        File.Move(tempFile, packFile, overwrite: true);
+    }
+
     /// <summary>
     /// Throws an exception if the specified .pack file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>
@@ -473,6 +508,66 @@ public static partial class ClientFile
         foreach (Asset asset in EnumerateManifestAssets(manifestFile))
         {
             reader.ExtractTo(asset, destDir, options);
+        }
+    }
+
+    /// <inheritdoc cref="RemoveManifestAssets(string, IEnumerable{string}, ISet{Asset})"/>
+    public static void RemoveManifestAssets(string manifestFile, IEnumerable<Asset> assets)
+        => RemoveManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(manifestFile), assets.ToHashSet());
+
+    /// <inheritdoc cref="RemoveManifestAssets(string, IEnumerable{string}, ISet{Asset})"/>
+    public static void RemoveManifestAssets(string manifestFile, ISet<Asset> assets)
+        => RemoveManifestAssets(manifestFile, ClientDirectory.EnumerateDataFiles(manifestFile), assets);
+
+    /// <inheritdoc cref="RemoveManifestAssets(string, IEnumerable{string}, ISet{Asset})"/>
+    public static void RemoveManifestAssets(string manifestFile,
+                                            IEnumerable<string> dataFiles,
+                                            IEnumerable<Asset> assets)
+        => RemoveManifestAssets(manifestFile, dataFiles, assets.ToHashSet());
+
+    /// <summary>
+    /// Removes the specified assets from the given manifest.dat file.
+    /// </summary>
+    /// <param name="manifestFile">The manifest.dat file to modify.</param>
+    /// <param name="dataFiles">The asset .dat files to modify.</param>
+    /// <param name="assets">The assets to remove from the manifest.dat file.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void RemoveManifestAssets(string manifestFile, IEnumerable<string> dataFiles, ISet<Asset> assets)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
+        ArgumentNullException.ThrowIfNull(dataFiles);
+        ArgumentNullException.ThrowIfNull(assets);
+
+        string tempFile = $"{manifestFile}_{Path.GetRandomFileName()}";
+
+        using (AssetDatReader reader = new(dataFiles))
+        using (AssetDatWriter writer = new(tempFile))
+        {
+            foreach (Asset asset in EnumerateManifestAssets(manifestFile))
+            {
+                if (!assets.Contains(asset))
+                {
+                    writer.Write(asset.Name, reader.Read(asset));
+                }
+            }
+        }
+
+        File.Move(tempFile, manifestFile, overwrite: true);
+        using IEnumerator<string> dataFileEnumerator = dataFiles.GetEnumerator();
+
+        foreach (string tempDataFile in ClientDirectory.EnumerateDataFiles(tempFile))
+        {
+            dataFileEnumerator.MoveNext();
+            string dataFile = dataFileEnumerator.Current;
+            File.Move(tempDataFile, dataFile, overwrite: true);
+        }
+
+        while (dataFileEnumerator.MoveNext() && File.Exists(dataFileEnumerator.Current))
+        {
+            File.Delete(dataFileEnumerator.Current);
         }
     }
 

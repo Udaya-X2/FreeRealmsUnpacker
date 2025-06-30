@@ -91,6 +91,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ConvertSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
+    public ReactiveCommand<Unit, Unit> DeleteSelectedAssetsCommand { get; }
     public ReactiveCommand<Unit, Unit> SelectFileCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
@@ -138,6 +139,7 @@ public class MainViewModel : ViewModelBase
         ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
+        DeleteSelectedAssetsCommand = ReactiveCommand.CreateFromTask(DeleteSelectedAssets);
         SelectFileCommand = ReactiveCommand.Create(SelectFile);
 
         // Observe any changes in the asset files.
@@ -503,7 +505,7 @@ public class MainViewModel : ViewModelBase
         Settings.OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(Settings.OutputDirectory, assetFiles, Settings.ConflictOptions),
+            DataContext = new ExtractionViewModel(assetFiles),
             AutoClose = true
         });
     }
@@ -522,10 +524,7 @@ public class MainViewModel : ViewModelBase
         Settings.OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(Settings.OutputDirectory,
-                                                  SelectedAssets.Cast<AssetInfo>(),
-                                                  SelectedAssets.Count,
-                                                  Settings.ConflictOptions),
+            DataContext = new ExtractionViewModel(SelectedAssets.Cast<AssetInfo>(), SelectedAssets.Count),
             AutoClose = true
         });
     }
@@ -671,11 +670,21 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Reloads the selected asset file.
     /// </summary>
-    private void ReloadSelectedFile()
+    private void ReloadSelectedFile() => ReloadFile(SelectedAssetFile!);
+
+    /// <summary>
+    /// Reloads the specified asset file.
+    /// </summary>
+    private void ReloadFile(AssetFileViewModel assetFile)
     {
-        AssetFileViewModel newFile = SelectedAssetFile!.Reload();
-        _sourceAssetFiles.Replace(SelectedAssetFile, newFile);
-        SelectedAssetFile = newFile;
+        bool refreshSelected = assetFile == SelectedAssetFile;
+        AssetFileViewModel reloadedFile = assetFile.Reload();
+        _sourceAssetFiles.Replace(assetFile, reloadedFile);
+
+        if (refreshSelected)
+        {
+            SelectedAssetFile = reloadedFile;
+        }
     }
 
     /// <summary>
@@ -726,6 +735,35 @@ public class MainViewModel : ViewModelBase
     {
         SelectedAsset = null;
         SelectedAssets.Clear();
+    }
+
+    /// <summary>
+    /// Deletes all selected assets from their corresponding asset files.
+    /// </summary>
+    private async Task DeleteSelectedAssets()
+    {
+        if (!Settings.ConfirmDelete || await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
+        {
+            Title = SelectedAssets.Count == 1 ? "Delete Asset" : "Delete Multiple Assets",
+            Message = SelectedAssets.Count == 1
+            ? $"Are you sure you want to permanently delete this asset?\n\n{SelectedAsset}"
+            : $"Are you sure you want to permanently delete these {SelectedAssets.Count} assets?",
+            Icon = Icon.Delete
+        }))
+        {
+            using (Assets.SuspendNotifications())
+            {
+                DeleteViewModel deleteViewModel = new(SelectedAssets.Cast<AssetInfo>());
+                await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+                {
+                    DataContext = deleteViewModel,
+                    AutoClose = true
+                });
+                AssetFiles.Where(x => deleteViewModel.ModifiedFiles.Contains(x))
+                          .ToList()
+                          .ForEach(ReloadFile);
+            }
+        }
     }
 
     /// <summary>

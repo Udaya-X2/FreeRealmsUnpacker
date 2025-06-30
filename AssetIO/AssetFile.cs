@@ -169,6 +169,35 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     public virtual void Create() => OpenWrite().Dispose();
 
+    /// <inheritdoc cref="RemoveAssets(ISet{Asset})"/>
+    public virtual void RemoveAssets(IEnumerable<Asset> assets) => RemoveAssets(assets.ToHashSet());
+
+    /// <summary>
+    /// Removes the specified assets from the asset file.
+    /// </summary>
+    /// <param name="assets">The assets to remove from the asset file.</param>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public virtual void RemoveAssets(ISet<Asset> assets)
+    {
+        ArgumentNullException.ThrowIfNull(assets);
+
+        switch (FileType)
+        {
+            case AssetType.Pack:
+                ClientFile.RemovePackAssets(FullName, assets);
+                break;
+            case AssetType.Dat:
+                ClientFile.RemoveManifestAssets(FullName, DataFiles, assets);
+                break;
+            case AssetType.Pack | AssetType.Temp:
+                throw new NotSupportedException(SR.NotSupported_PackTempWrite);
+            default:
+                throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type));
+        }
+    }
+
     /// <summary>
     /// Throws an exception if the asset file is invalid or contains assets with CRC-32 mismatches.
     /// </summary>

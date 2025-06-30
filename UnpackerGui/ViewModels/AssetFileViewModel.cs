@@ -154,6 +154,11 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         set => throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
+    /// <summary>
+    /// Returns the backing asset file.
+    /// </summary>
+    public static implicit operator AssetFile(AssetFileViewModel assetFile) => assetFile._assetFile;
+
     /// <inheritdoc cref="AssetFile.OpenRead"/>
     public AssetReader OpenRead() => _assetFile.OpenRead();
 

@@ -52,7 +52,8 @@ public partial class MainView : UserControl
 #if DEBUG
             case (KeyModifiers.Alt, Key.D):
                 System.Diagnostics.Debug.Write($"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} ");
-                System.Diagnostics.Debug.WriteLine($"{App.GetSettings().SearchOption}");
+                string message = $"{new Models.AssetInfo("", 0, 0, 0, null!) == new AssetIO.Asset("", 0, 0, 0)}";
+                System.Diagnostics.Debug.WriteLine(message);
                 break;
 #endif
             case (KeyModifiers.Alt, Key.C):

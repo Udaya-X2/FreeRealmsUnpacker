@@ -427,6 +427,9 @@
                             <MenuItem Header="Copy"
                                       IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                       Click="AssetGrid_ContextMenu_Copy"/>
+                            <MenuItem Header="Delete"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                      Command="{Binding DeleteSelectedAssetsCommand}"/>
                             <MenuItem Header="Select Asset File"
                                       IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                       Command="{Binding SelectFileCommand}"/>
@@ -437,6 +440,9 @@
                             <MenuItem Header="Extract Selected Assets..."
                                       IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
                                       Command="{Binding ExtractSelectedAssetsCommand}"/>
+                            <MenuItem Header="Delete Selected Assets"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
+                                      Command="{Binding DeleteSelectedAssetsCommand}"/>
                         </ContextMenu>
                     </DataGrid.ContextMenu>
                 </DataGrid>
