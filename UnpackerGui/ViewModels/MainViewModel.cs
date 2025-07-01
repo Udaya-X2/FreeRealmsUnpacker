@@ -465,7 +465,7 @@ public class MainViewModel : ViewModelBase
             Title = "Create"
         }) is not IStorageFile file) return;
         AssetFile assetFile = new(file.Path.LocalPath, assetType);
-        Settings.OutputDirectory = assetFile.Info.DirectoryName ?? "";
+        Settings.OutputDirectory = assetFile.DirectoryName ?? "";
         assetFile.Create();
 
         if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel existingFile)

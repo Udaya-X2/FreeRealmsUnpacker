@@ -20,11 +20,11 @@ public abstract class AssetWriter : IDisposable
     /// Writes an asset with the name and contents of the given file to the asset file(s).
     /// </summary>
     /// <param name="file">The file to write as an asset.</param>
+    /// <returns>The asset written.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    /// <returns>The asset written.</returns>
     public virtual Asset Write(FileInfo file)
     {
         ArgumentNullException.ThrowIfNull(file);
