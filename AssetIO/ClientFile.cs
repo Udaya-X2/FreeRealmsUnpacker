@@ -728,6 +728,23 @@ public static partial class ClientFile
     }
 
     /// <summary>
+    /// Fixes the first invalid asset info chunk in the specified .pack.temp file.
+    /// </summary>
+    /// <param name="packTempFile">The asset .pack.temp file to fix.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static void FixPackTempFile(string packTempFile)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
+
+        if (TryGetPackTempFix(packTempFile, out FixedAssetChunk fix))
+        {
+            fix.FixPackTempFile(packTempFile);
+        }
+    }
+
+    /// <summary>
     /// Attempts to scan the specified .pack.temp file for errors
     /// and create a fix for the first invalid asset info chunk.
     /// </summary>
@@ -792,6 +809,10 @@ public static partial class ClientFile
         return false;
     }
 
+    /// <inheritdoc cref="RenamePackTempFile(FileInfo)"/>
+    public static FileInfo RenamePackTempFile(string packTempFile)
+        => RenamePackTempFile(new FileInfo(packTempFile));
+
     /// <summary>
     /// Renames the specified .pack.temp file to a .pack file.
     /// </summary>
@@ -800,13 +821,12 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public static FileInfo RenamePackTempFile(string packTempFile)
+    public static FileInfo RenamePackTempFile(FileInfo packTempFile)
     {
-        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
+        ArgumentNullException.ThrowIfNull(packTempFile);
 
-        FileInfo file = new(packTempFile);
-        string name = file.Name;
-        string dirName = file.DirectoryName!;
+        string name = packTempFile.Name;
+        string dirName = packTempFile.DirectoryName!;
         string newPath;
 
         // Remove the current file extension.
@@ -816,7 +836,7 @@ public static partial class ClientFile
         }
         else
         {
-            name = name[..^file.Extension.Length];
+            name = name[..^packTempFile.Extension.Length];
         }
 
         // Increment the 3-digit number in the file name if another .pack file is already using it.
@@ -828,7 +848,7 @@ public static partial class ClientFile
             {
                 newPath = Path.Combine(dirName, $"{name}{digits++:D3}.pack");
             }
-            while (File.Exists(newPath) && !FilesEqual(packTempFile, newPath));
+            while (File.Exists(newPath) && !FilesEqual(packTempFile.FullName, newPath));
         }
         // If the file name doesn't end with 3 digits, append a digit and increment it if needed.
         else
@@ -836,40 +856,38 @@ public static partial class ClientFile
             digits = 2;
             newPath = Path.Combine(dirName, $"{name}.pack");
 
-            while (File.Exists(newPath) && !FilesEqual(packTempFile, newPath))
+            while (File.Exists(newPath) && !FilesEqual(packTempFile.FullName, newPath))
             {
                 newPath = Path.Combine(dirName, $"{name} ({digits++}).pack");
             }
         }
 
-        file.MoveTo(newPath, overwrite: true);
-        return file;
+        packTempFile.MoveTo(newPath, overwrite: true);
+        return packTempFile;
     }
 
+    /// <inheritdoc cref="ConvertPackTempFile(FileInfo)"/>
+    public static AssetFile ConvertPackTempFile(AssetFile packTempFile)
+        => new(ConvertPackTempFile(packTempFile.FullName).FullName, packTempFile.Type & ~AssetType.Temp);
+
+    /// <inheritdoc cref="ConvertPackTempFile(FileInfo)"/>
+    public static FileInfo ConvertPackTempFile(string packTempFile)
+        => ConvertPackTempFile(new FileInfo(packTempFile));
+
     /// <summary>
-    /// Attempts to convert the specified .pack.temp file to a .pack file.
+    /// Converts the specified .pack.temp file to a .pack file.
     /// </summary>
     /// <param name="packTempFile">The asset .pack.temp file to convert.</param>
-    /// <param name="assetFile">On return, contains the converted .pack file or an undefined value on failure.</param>
-    /// <returns>
-    /// <see langword="true"/> if the asset .temp file was converted; otherwise, <see langword="false"/>.
-    /// </returns>
+    /// <returns>The converted .pack file.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public static bool TryConvertPackTempFile(string packTempFile, [MaybeNullWhen(false)] out AssetFile assetFile)
+    public static FileInfo ConvertPackTempFile(FileInfo packTempFile)
     {
-        ArgumentException.ThrowIfNullOrEmpty(packTempFile);
+        ArgumentNullException.ThrowIfNull(packTempFile);
 
-        if (TryGetPackTempFix(packTempFile, out FixedAssetChunk fix))
-        {
-            fix.FixPackTempFile(packTempFile);
-            assetFile = new AssetFile(RenamePackTempFile(packTempFile).FullName);
-            return true;
-        }
-
-        assetFile = null;
-        return false;
+        FixPackTempFile(packTempFile.FullName);
+        return RenamePackTempFile(packTempFile);
     }
 
     /// <summary>

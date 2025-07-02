@@ -692,24 +692,19 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private void ConvertSelectedFile()
     {
-        if (ClientFile.TryConvertPackTempFile(SelectedAssetFile!.FullName, out AssetFile? assetFile))
-        {
-            if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel convertedFile)
-            {
-                _sourceAssetFiles.Remove(SelectedAssetFile);
-            }
-            else
-            {
-                convertedFile = new AssetFileViewModel(assetFile) { IsChecked = SelectedAssetFile.IsChecked };
-                _sourceAssetFiles.Replace(SelectedAssetFile, convertedFile);
-            }
+        AssetFile assetFile = ClientFile.ConvertPackTempFile(SelectedAssetFile!);
 
-            SelectedAssetFile = convertedFile;
+        if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel convertedFile)
+        {
+            _sourceAssetFiles.Remove(SelectedAssetFile!);
         }
         else
         {
-            throw new Exception($"Unable to convert '{SelectedAssetFile.FullName}' to a .pack file.");
+            convertedFile = new AssetFileViewModel(assetFile) { IsChecked = SelectedAssetFile!.IsChecked };
+            _sourceAssetFiles.Replace(SelectedAssetFile, convertedFile);
         }
+
+        SelectedAssetFile = convertedFile;
     }
 
     /// <summary>
