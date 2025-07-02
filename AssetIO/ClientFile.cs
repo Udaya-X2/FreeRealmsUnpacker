@@ -252,19 +252,29 @@ public static partial class ClientFile
 
         string tempFile = $"{packFile}_{Path.GetRandomFileName()}";
 
-        using (AssetPackReader reader = new(packFile))
-        using (AssetPackWriter writer = new(tempFile))
+        try
         {
+            using AssetPackReader reader = new(packFile);
+            using AssetPackWriter writer = new(tempFile);
+
+            // Copy the non-removed assets to a temp .pack file.
             foreach (Asset asset in EnumeratePackAssets(packFile))
             {
                 if (!assets.Contains(asset))
                 {
-                    writer.Write(asset.Name, reader.Read(asset));
+                    reader.CopyTo(asset, writer);
                 }
             }
-        }
 
-        File.Move(tempFile, packFile, overwrite: true);
+            // Replace the original .pack file with the temp .pack file.
+            File.Move(tempFile, packFile, overwrite: true);
+        }
+        catch
+        {
+            // Attempt to delete the temp .pack file if an error occurs.
+            TryDeleteFiles([tempFile]);
+            throw;
+        }
     }
 
     /// <summary>
@@ -551,31 +561,43 @@ public static partial class ClientFile
 
         string tempFile = $"{manifestFile}_{Path.GetRandomFileName()}";
 
-        using (AssetDatReader reader = new(dataFiles))
-        using (AssetDatWriter writer = new(tempFile))
+        try
         {
+            using AssetDatReader reader = new(dataFiles);
+            using AssetDatWriter writer = new(tempFile);
+
+            // Copy the non-removed assets to temp manifest.dat and asset .dat files.
             foreach (Asset asset in EnumerateManifestAssets(manifestFile))
             {
                 if (!assets.Contains(asset))
                 {
-                    writer.Write(asset.Name, reader.Read(asset));
+                    reader.CopyTo(asset, writer);
                 }
             }
+
+            // Replace the original manifest.dat file with the temp manifest.dat file.
+            File.Move(tempFile, manifestFile, overwrite: true);
+            using IEnumerator<string> dataFileEnumerator = dataFiles.GetEnumerator();
+
+            // Replace the original asset .dat files with the temp asset .dat files.
+            foreach (string tempDataFile in ClientDirectory.EnumerateDataFiles(tempFile))
+            {
+                dataFileEnumerator.MoveNext();
+                string dataFile = dataFileEnumerator.Current;
+                File.Move(tempDataFile, dataFile, overwrite: true);
+            }
+
+            // Delete any unused asset .dat files.
+            while (dataFileEnumerator.MoveNext() && File.Exists(dataFileEnumerator.Current))
+            {
+                File.Delete(dataFileEnumerator.Current);
+            }
         }
-
-        File.Move(tempFile, manifestFile, overwrite: true);
-        using IEnumerator<string> dataFileEnumerator = dataFiles.GetEnumerator();
-
-        foreach (string tempDataFile in ClientDirectory.EnumerateDataFiles(tempFile))
+        catch
         {
-            dataFileEnumerator.MoveNext();
-            string dataFile = dataFileEnumerator.Current;
-            File.Move(tempDataFile, dataFile, overwrite: true);
-        }
-
-        while (dataFileEnumerator.MoveNext() && File.Exists(dataFileEnumerator.Current))
-        {
-            File.Delete(dataFileEnumerator.Current);
+            // Attempt to delete the temp files if an error occurs.
+            TryDeleteFiles(ClientDirectory.EnumerateDataFiles(tempFile).Prepend(tempFile));
+            throw;
         }
     }
 
@@ -1066,5 +1088,22 @@ public static partial class ClientFile
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Attempts to delete the specified files.
+    /// </summary>
+    private static void TryDeleteFiles(IEnumerable<string> files)
+    {
+        foreach (string file in files)
+        {
+            try
+            {
+                File.Delete(file);
+            }
+            catch
+            {
+            }
+        }
     }
 }

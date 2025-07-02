@@ -49,6 +49,17 @@ public abstract class AssetReader : IDisposable
     /// <exception cref="ObjectDisposedException"/>
     public abstract void CopyTo(Asset asset, Stream destination);
 
+    /// <summary>
+    /// Reads the bytes of the specified asset from the asset file(s) and writes them to another asset writer.
+    /// </summary>
+    /// <param name="asset">The asset to copy.</param>
+    /// <param name="writer">The asset writer to which the contents of the asset will be copied.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract void CopyTo(Asset asset, AssetWriter writer);
+
     /// <inheritdoc cref="ExtractTo(Asset, string, FileConflictOptions, out bool)"/>
     public FileInfo ExtractTo(Asset asset, string dirPath, FileConflictOptions options = FileConflictOptions.Overwrite)
         => ExtractTo(asset, dirPath, options, out _);

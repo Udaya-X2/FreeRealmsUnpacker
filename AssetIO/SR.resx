@@ -201,4 +201,13 @@
   <data name="ArgumentOutOfRange_Enum" xml:space="preserve">
     <value>Enum value was out of legal range.</value>
   </data>
+  <data name="InvalidOperation_NoAssetToWrite" xml:space="preserve">
+    <value>Cannot write to an asset that does not exist. Call Add to create an asset or specify the asset name in Write.</value>
+  </data>
+  <data name="InvalidOperation_NoAssetToFlush" xml:space="preserve">
+    <value>Cannot flush an asset that does not exist. Call Add to create an asset.</value>
+  </data>
+  <data name="IO_AssetTooLong2GB" xml:space="preserve">
+    <value>The asset "{0}" is too long. This operation is limited to supporting assets less than 2 gigabytes in size.</value>
+  </data>
 </root>

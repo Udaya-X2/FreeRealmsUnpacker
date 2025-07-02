@@ -1,6 +1,7 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Force.Crc32;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace AssetIO;
@@ -25,6 +26,11 @@ public class AssetPackWriter : AssetWriter
     private uint _chunkOffset;
     private int _chunkSize;
     private uint _numAssets;
+    private int _assetNameLength;
+    private string? _assetName;
+    private uint _assetOffset;
+    private uint _assetSize;
+    private uint _assetCrc32;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetPackWriter"/> class for the specified asset .pack file.
@@ -108,75 +114,146 @@ public class AssetPackWriter : AssetWriter
     }
 
     /// <summary>
-    /// Writes an asset with the given name and stream contents to the .pack file.
+    /// Gets whether data can be written to the current asset.
     /// </summary>
-    /// <exception cref="OverflowException"/>
+    [MemberNotNullWhen(true, nameof(_assetName), nameof(Asset))]
+    public override bool CanWrite => _assetName != null;
+
+    /// <summary>
+    /// Gets the current asset being written to the .pack file.
+    /// </summary>
+    public override Asset? Asset => CanWrite ? new Asset(_assetName, _assetOffset, _assetSize, _assetCrc32) : null;
+
+    /// <summary>
+    /// Adds a new asset with the specified name to the .pack file.
+    /// </summary>
     /// <inheritdoc/>
-    public override Asset Write(string name, Stream stream)
+    /// <exception cref="OverflowException"/>
+    public override void Add(string name)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentException.ThrowIfNullOrEmpty(name);
-        ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (CanWrite) IndexAsset();
 
         try
         {
-            int length = GetByteCountUTF8(name);
-            int assetInfoSize = length + AssetFieldsSize;
-            uint offset = checked((uint)_packStream.Length);
-            uint size = 0u;
-            uint crc32 = 0u;
-            int bytesRead;
+            _assetNameLength = GetByteCountUTF8(name);
+            _assetOffset = checked((uint)_packStream.Length);
+            _assetSize = 0u;
+            _assetCrc32 = 0u;
 
             // If current asset exceeds the space of this asset info chunk, proceed to the next asset chunk.
-            if (_chunkSize + assetInfoSize > AssetInfoChunkSize)
+            if (_chunkSize + _assetNameLength + AssetFieldsSize > AssetInfoChunkSize)
             {
                 // Write the offset of the next asset info chunk and the number of assets at the start of the chunk.
                 _packStream.Position = _chunkOffset;
-                _packWriter.Write(offset);
+                _packWriter.Write(_assetOffset);
                 _packWriter.Write(_numAssets);
 
                 // Reset asset info chunk related fields.
-                _chunkOffset = offset;
+                _chunkOffset = _assetOffset;
                 _chunkSize = AssetInfoHeaderSize;
                 _numAssets = 0;
 
                 // Start the next asset content chunk at the end of the next asset info chunk.
-                checked { offset += AssetInfoChunkSize; }
-                _packStream.SetLength(offset);
+                checked { _assetOffset += AssetInfoChunkSize; }
+                _packStream.SetLength(_assetOffset);
             }
 
-            _packStream.Position = offset;
-
-            // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
-            while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) != 0)
-            {
-                // Compute the CRC-32/size of the asset while the data is being written.
-                _packStream.Write(_buffer, 0, bytesRead);
-                crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
-                checked { size += (uint)bytesRead; }
-            }
-
-            if (size == 0)
-            {
-                offset = 0;
-            }
-
-            // Index the asset in the asset info chunk.
-            _packStream.Position = _chunkOffset + _chunkSize;
-            _packWriter.Write(length);
-            _packStream.Write(_nameBuffer, 0, length);
-            _packWriter.Write(offset);
-            _packWriter.Write(size);
-            _packWriter.Write(crc32);
-            _chunkSize += assetInfoSize;
-            _numAssets++;
-            return new Asset(name, offset, size, crc32);
+            _packStream.Position = _assetOffset;
+            _assetName = name;
         }
         catch (OverflowException ex)
         {
             throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, name, _packStream.Name), ex);
         }
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="OverflowException"/>
+    public override void Write(Stream stream)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
+
+        try
+        {
+            int bytesRead;
+
+            // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
+            while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) > 0)
+            {
+                // Compute the CRC-32/size of the asset while the data is being written.
+                _packStream.Write(_buffer, 0, bytesRead);
+                _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, _buffer, 0, bytesRead);
+                checked { _assetSize += (uint)bytesRead; }
+            }
+        }
+        catch (OverflowException ex)
+        {
+            throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, _assetName, _packStream.Name), ex);
+        }
+    }
+
+    /// <inheritdoc/>
+    /// <exception cref="OverflowException"/>
+    public override void Write(byte[] buffer, int index, int count)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
+
+        try
+        {
+            // Compute the CRC-32/size of the asset while the data is being written.
+            _packStream.Write(buffer, index, count);
+            _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, buffer, index, count);
+            checked { _assetSize += (uint)count; }
+        }
+        catch (OverflowException ex)
+        {
+            throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, _assetName, _packStream.Name), ex);
+        }
+    }
+
+    /// <summary>
+    /// Writes the current asset to the .pack file.
+    /// </summary>
+    /// <inheritdoc/>
+    public override Asset Flush()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToFlush);
+
+        Asset asset = new(_assetName, _assetOffset, _assetSize, _assetCrc32);
+        IndexAsset();
+        return asset;
+    }
+
+    /// <summary>
+    /// Indexes the current asset in the asset info chunk.
+    /// </summary>
+    private void IndexAsset()
+    {
+        if (_assetSize == 0)
+        {
+            _assetOffset = 0;
+        }
+
+        _packStream.Position = _chunkOffset + _chunkSize;
+        _packWriter.Write(_assetNameLength);
+        _packStream.Write(_nameBuffer, 0, _assetNameLength);
+        _packWriter.Write(_assetOffset);
+        _packWriter.Write(_assetSize);
+        _packWriter.Write(_assetCrc32);
+        _chunkSize += _assetNameLength + AssetFieldsSize;
+        _numAssets++;
+        _assetName = null;
     }
 
     /// <summary>
@@ -213,6 +290,11 @@ public class AssetPackWriter : AssetWriter
                     _packStream.Position = _chunkOffset;
                     _packWriter.Write(0u);
                     _packWriter.Write(_numAssets);
+                }
+                // Index the current asset, if necessary.
+                if (CanWrite)
+                {
+                    IndexAsset();
                 }
 
                 _packStream.Dispose();

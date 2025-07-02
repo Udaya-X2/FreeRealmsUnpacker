@@ -1,6 +1,7 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Force.Crc32;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace AssetIO;
@@ -21,11 +22,15 @@ public class AssetDatWriter : AssetWriter
     private readonly byte[] _buffer;
     private readonly byte[] _nameBuffer;
 
+    private bool _disposed;
     private IEnumerator<string> _dataFileEnumerator;
     private FileStream _dataStream;
     private int _dataFileIdx;
-    private long _offset;
-    private bool _disposed;
+    private int _assetNameLength;
+    private string? _assetName;
+    private long _assetOffset;
+    private uint _assetSize;
+    private uint _assetCrc32;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetDatWriter"/> class for the specified manifest.dat file.
@@ -74,7 +79,7 @@ public class AssetDatWriter : AssetWriter
                 }
 
                 long size = _dataStream.Length;
-                _offset += size;
+                _assetOffset += size;
 
                 while (size >= MaxAssetDatSize)
                 {
@@ -85,7 +90,7 @@ public class AssetDatWriter : AssetWriter
 
                     _dataStream = GetNextDataStream();
                     size = _dataStream.Length;
-                    _offset += size;
+                    _assetOffset += size;
                 }
             }
         }
@@ -106,24 +111,44 @@ public class AssetDatWriter : AssetWriter
     }
 
     /// <summary>
-    /// Writes an asset with the given name and stream contents to the manifest.dat file and asset .dat file(s).
+    /// Gets whether data can be written to the current asset.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(_assetName), nameof(Asset))]
+    public override bool CanWrite => _assetName != null;
+
+    /// <summary>
+    /// Gets the current asset being written to the manifest.dat file and asset .dat file(s).
+    /// </summary>
+    public override Asset? Asset => CanWrite ? new Asset(_assetName, _assetOffset, _assetSize, _assetCrc32) : null;
+
+    /// <summary>
+    /// Adds a new asset with the specified name to the manifest .dat file and asset .dat file(s).
     /// </summary>
     /// <inheritdoc/>
-    public override Asset Write(string name, Stream stream)
+    public override void Add(string name)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentException.ThrowIfNullOrEmpty(name);
+        if (CanWrite) IndexAsset();
+
+        _assetNameLength = GetByteCountUTF8(name);
+        _assetName = name;
+        _assetSize = 0u;
+        _assetCrc32 = 0u;
+    }
+
+    /// <inheritdoc/>
+    public override void Write(Stream stream)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
 
-        int length = GetByteCountUTF8(name);
-        long offset;
-        uint size = 0u;
-        uint crc32 = 0u;
         int bytesRead;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
-        while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) != 0)
+        while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) > 0)
         {
             int spaceLeft = MaxAssetDatSize - (int)_dataStream.Position;
 
@@ -141,20 +166,80 @@ public class AssetDatWriter : AssetWriter
             }
 
             // Compute the CRC-32/size of the asset while the data is being written.
-            crc32 = Crc32Algorithm.Append(crc32, _buffer, 0, bytesRead);
-            size += (uint)bytesRead;
+            _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, _buffer, 0, bytesRead);
+            _assetSize += (uint)bytesRead;
+        }
+    }
+
+    /// <inheritdoc/>
+    public override void Write(byte[] buffer, int index, int count)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
+
+        while (count > 0)
+        {
+            int spaceLeft = MaxAssetDatSize - (int)_dataStream.Position;
+            int bytesWritten;
+
+            // If the asset content exceeds the remaining space in the current asset
+            // .dat file, write the overflow bytes to the next asset .dat file.
+            if (spaceLeft < count)
+            {
+                bytesWritten = spaceLeft;
+                _dataStream.Write(buffer, index, bytesWritten);
+                _dataStream = GetNextDataStream();
+            }
+            else
+            {
+                bytesWritten = count;
+                _dataStream.Write(buffer, index, bytesWritten);
+            }
+
+            // Compute the CRC-32/size of the asset while the data is being written.
+            _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, buffer, index, bytesWritten);
+            _assetSize += (uint)bytesWritten;
+            index += bytesWritten;
+            count -= bytesWritten;
+        }
+    }
+
+    /// <summary>
+    /// Writes the current asset to the manifest.dat file.
+    /// </summary>
+    /// <inheritdoc/>
+    public override Asset Flush()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToFlush);
+
+        Asset asset = new(_assetName, _assetOffset, _assetSize, _assetCrc32);
+        IndexAsset();
+        return asset;
+    }
+
+    /// <summary>
+    /// Indexes the current asset in the manifest.dat file.
+    /// </summary>
+    private void IndexAsset()
+    {
+        if (_assetSize == 0)
+        {
+            _assetOffset = 0;
         }
 
-        // Index the asset in the manifest.dat file.
-        offset = size != 0 ? _offset : 0;
-        _manifestWriter.Write(length);
-        _manifestStream.Write(_nameBuffer, 0, length);
-        _manifestWriter.Write(offset);
-        _manifestWriter.Write(size);
-        _manifestWriter.Write(crc32);
-        _manifestStream.Seek(MaxAssetNameLength - length, SeekOrigin.Current); // Pad with null bytes
-        _offset += size;
-        return new Asset(name, offset, size, crc32);
+        _manifestWriter.Write(_assetNameLength);
+        _manifestStream.Write(_nameBuffer, 0, _assetNameLength);
+        _manifestWriter.Write(_assetOffset);
+        _manifestWriter.Write(_assetSize);
+        _manifestWriter.Write(_assetCrc32);
+        _manifestStream.Seek(MaxAssetNameLength - _assetNameLength, SeekOrigin.Current); // Pad with null bytes
+        _assetOffset += _assetSize;
+        _assetName = null;
     }
 
     /// <summary>
@@ -212,7 +297,15 @@ public class AssetDatWriter : AssetWriter
             if (disposing)
             {
                 ArrayPool<byte>.Shared.Return(_buffer);
-                _manifestStream.SetLength(_manifestStream.Position); // Set length to include null byte padding.
+
+                // Index the current asset, if necessary.
+                if (CanWrite)
+                {
+                    IndexAsset();
+                }
+
+                // Set length to include null byte padding.
+                _manifestStream.SetLength(_manifestStream.Position);
                 _manifestStream.Dispose();
                 _manifestWriter.Dispose();
                 _dataStream.Dispose();

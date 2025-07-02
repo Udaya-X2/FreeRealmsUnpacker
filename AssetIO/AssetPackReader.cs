@@ -67,6 +67,23 @@ public class AssetPackReader : AssetReader
     }
 
     /// <summary>
+    /// Reads the bytes of the specified asset from the .pack file and writes them to another asset writer.
+    /// </summary>
+    /// <inheritdoc/>
+    public override void CopyTo(Asset asset, AssetWriter writer)
+    {
+        ArgumentNullException.ThrowIfNull(asset);
+        ArgumentNullException.ThrowIfNull(writer);
+
+        writer.Add(asset.Name);
+
+        foreach (int bytesRead in InternalRead(asset))
+        {
+            writer.Write(_buffer, 0, bytesRead);
+        }
+    }
+
+    /// <summary>
     /// Reads the bytes of the specified asset from the .pack file and computes its CRC-32 value.
     /// </summary>
     /// <returns>The CRC-32 checksum value of the specified asset.</returns>

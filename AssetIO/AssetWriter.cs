@@ -1,10 +1,76 @@
-﻿namespace AssetIO;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace AssetIO;
 
 /// <summary>
 /// Provides sequential asset writing operations on Free Realms asset file(s).
 /// </summary>
 public abstract class AssetWriter : IDisposable
 {
+    /// <summary>
+    /// Gets whether data can be written to the current asset.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(Asset))]
+    public abstract bool CanWrite { get; }
+
+    /// <summary>
+    /// Gets the current asset being written to the asset file(s).
+    /// </summary>
+    public abstract Asset? Asset { get; }
+
+    /// <summary>
+    /// Adds a new asset with the specified name to the asset file(s).
+    /// </summary>
+    /// <param name="name">The name of the asset.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract void Add(string name);
+
+    /// <summary>
+    /// Writes the contents of the specified stream to the current asset.
+    /// </summary>
+    /// <param name="stream">The stream to read.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="InvalidOperationException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract void Write(Stream stream);
+
+    /// <summary>
+    /// Writes the current asset to the asset file(s).
+    /// </summary>
+    /// <returns>The asset written.</returns>
+    /// <exception cref="InvalidOperationException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract Asset Flush();
+
+    /// <summary>
+    /// Writes a region of a byte array to the current asset.
+    /// </summary>
+    /// <param name="buffer">A byte array containing the data to write.</param>
+    /// <param name="index">
+    /// The index of the first byte to read from <paramref name="buffer"/> and to write to the asset.
+    /// </param>
+    /// <param name="count">
+    /// The number of bytes to read from <paramref name="buffer"/> and to write to the asset.
+    /// </param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
+    /// <exception cref="InvalidOperationException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public virtual void Write(byte[] buffer, int index, int count) => Write(new MemoryStream(buffer, index, count));
+
+    /// <summary>
+    /// Writes a byte array to the current asset.
+    /// </summary>
+    /// <param name="buffer">A byte array containing the data to write.</param>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="InvalidOperationException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public virtual void Write(byte[] buffer) => Write(buffer, 0, buffer.Length);
+
     /// <summary>
     /// Writes an asset with the name and contents of the given file to the asset file(s).
     /// </summary>
@@ -34,43 +100,6 @@ public abstract class AssetWriter : IDisposable
     }
 
     /// <summary>
-    /// Writes an asset with the given name and bytes to the asset file(s).
-    /// </summary>
-    /// <param name="name">The name of the asset.</param>
-    /// <param name="buffer">The buffer containing the data to write to the asset.</param>
-    /// <returns>The asset written.</returns>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
-    public virtual Asset Write(string name, byte[] buffer)
-        => Write(name, buffer, 0, buffer.Length);
-
-    /// <summary>
-    /// Writes an asset with the given name and bytes to the asset file(s).
-    /// </summary>
-    /// <param name="name">The name of the asset.</param>
-    /// <param name="buffer">The buffer containing the data to write to the asset.</param>
-    /// <param name="index">
-    /// The zero-based byte offset in <paramref name="buffer"/> from which to begin copying bytes.
-    /// </param>
-    /// <param name="count">The maximum number of bytes to write.</param>
-    /// <returns>The asset written.</returns>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
-    public virtual Asset Write(string name, byte[] buffer, int index, int count)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name);
-        ArgumentNullException.ThrowIfNull(buffer);
-        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
-
-        using MemoryStream ms = new(buffer, index, count);
-        return Write(name, ms);
-    }
-
-    /// <summary>
     /// Writes an asset with the given name and stream contents to the asset file(s).
     /// </summary>
     /// <param name="name">The name of the asset.</param>
@@ -80,7 +109,58 @@ public abstract class AssetWriter : IDisposable
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public abstract Asset Write(string name, Stream stream);
+    public virtual Asset Write(string name, Stream stream)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(stream);
+        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+
+        Add(name);
+        Write(stream);
+        return Flush();
+    }
+
+    /// <summary>
+    /// Writes an asset with the given name and bytes to the asset file(s).
+    /// </summary>
+    /// <param name="name">The name of the asset.</param>
+    /// <param name="buffer">A byte array containing the data to write.</param>
+    /// <returns>The asset written.</returns>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public virtual Asset Write(string name, byte[] buffer) => Write(name, buffer, 0, buffer.Length);
+
+    /// <summary>
+    /// Writes an asset with the given name and bytes to the asset file(s).
+    /// </summary>
+    /// <param name="name">The name of the asset.</param>
+    /// <param name="buffer">A byte array containing the data to write.</param>
+    /// <param name="index">
+    /// The index of the first byte to read from <paramref name="buffer"/> and to write to the asset.
+    /// </param>
+    /// <param name="count">
+    /// The number of bytes to read from <paramref name="buffer"/> and to write to the asset.
+    /// </param>
+    /// <returns>The asset written.</returns>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
+    /// <exception cref="IOException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public virtual Asset Write(string name, byte[] buffer, int index, int count)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+
+        Add(name);
+        Write(buffer, index, count);
+        return Flush();
+    }
 
     /// <inheritdoc cref="Dispose()"/>
     protected abstract void Dispose(bool disposing);

@@ -196,11 +196,38 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot flush an asset that does not exist. Call Add to create an asset..
+        /// </summary>
+        internal static string InvalidOperation_NoAssetToFlush {
+            get {
+                return ResourceManager.GetString("InvalidOperation_NoAssetToFlush", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot write to an asset that does not exist. Call Add to create an asset or specify the asset name in Write..
+        /// </summary>
+        internal static string InvalidOperation_NoAssetToWrite {
+            get {
+                return ResourceManager.GetString("InvalidOperation_NoAssetToWrite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The asset &quot;{0}&quot; extends past the end of &quot;{1}&quot;..
         /// </summary>
         internal static string IO_AssetEOF {
             get {
                 return ResourceManager.GetString("IO_AssetEOF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The asset &quot;{0}&quot; is too long. This operation is limited to supporting assets less than 2 gigabytes in size..
+        /// </summary>
+        internal static string IO_AssetTooLong2GB {
+            get {
+                return ResourceManager.GetString("IO_AssetTooLong2GB", resourceCulture);
             }
         }
         
