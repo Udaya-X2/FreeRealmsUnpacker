@@ -440,7 +440,7 @@ public class MainViewModel : ViewModelBase
             SuggestedStartLocation = await InputFolder
         }) is not IStorageFolder folder) return;
         Settings.InputDirectory = folder.Path.LocalPath;
-        List<string> files = [.. Directory.EnumerateFiles(Settings.InputDirectory, "*", SearchOption.AllDirectories)];
+        List<string> files = [.. Directory.EnumerateFiles(Settings.InputDirectory, "*", Settings.SearchOption)];
         await AddAssets(files);
     }
 
