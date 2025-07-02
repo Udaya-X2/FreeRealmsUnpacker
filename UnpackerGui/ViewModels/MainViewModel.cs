@@ -85,6 +85,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> UncheckAllFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveCheckedFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> RemoveSelectedFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> CopySelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> RenameSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> DeleteSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedFileCommand { get; }
@@ -134,6 +135,7 @@ public class MainViewModel : ViewModelBase
         UncheckAllFilesCommand = ReactiveCommand.Create(UncheckAllFiles);
         RemoveCheckedFilesCommand = ReactiveCommand.Create(RemoveCheckedFiles);
         RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
+        CopySelectedFileCommand = ReactiveCommand.CreateFromTask(CopySelectedFile);
         RenameSelectedFileCommand = ReactiveCommand.CreateFromTask(RenameSelectedFile);
         DeleteSelectedFileCommand = ReactiveCommand.CreateFromTask(DeleteSelectedFile);
         ClearSelectedFileCommand = ReactiveCommand.CreateFromTask(ClearSelectedFile);
@@ -636,6 +638,49 @@ public class MainViewModel : ViewModelBase
     private void RemoveSelectedFile() => _sourceAssetFiles.Remove(SelectedAssetFile!);
 
     /// <summary>
+    /// Opens a save file dialog that allows the user to copy the selected asset file.
+    /// </summary>
+    private async Task CopySelectedFile()
+    {
+        IFilesService filesService = App.GetService<IFilesService>();
+        if (await filesService.SaveFileAsync(new FilePickerSaveOptions
+        {
+            SuggestedStartLocation = await filesService.TryGetFolderFromPathAsync(SelectedAssetFile!.DirectoryName!),
+            SuggestedFileName = GetCopyFileName(SelectedAssetFile.Name, SelectedAssetFile.DirectoryName ?? ""),
+            ShowOverwritePrompt = true,
+            Title = "Copy"
+        }) is not IStorageFile file) return;
+        if (!SelectedAssetFile.CopyTo(file.Path.LocalPath)) return;
+
+        if (AssetFiles.FirstOrDefault(x => x.FullName == file.Path.LocalPath) is AssetFileViewModel assetFile)
+        {
+            SelectedAssetFile = assetFile;
+            ReloadSelectedFile();
+        }
+        else
+        {
+            assetFile = new AssetFileViewModel(new AssetFile(file.Path.LocalPath, SelectedAssetFile.Type));
+            _sourceAssetFiles.Add(assetFile);
+            SelectedAssetFile = assetFile;
+        }
+    }
+
+    /// <summary>
+    /// Returns a unique copy file name based on the given file name and directory name.
+    /// </summary>
+    private static string GetCopyFileName(string fileName, string dirName)
+    {
+        string copyFileName = $"Copy of {fileName}";
+
+        for (int i = 2; File.Exists(Path.Combine(dirName, copyFileName)); i++)
+        {
+            copyFileName = $"Copy ({i}) of {fileName}";
+        }
+
+        return copyFileName;
+    }
+
+    /// <summary>
     /// Opens a save file dialog that allows the user to rename the selected asset file.
     /// </summary>
     private async Task RenameSelectedFile()
@@ -648,7 +693,7 @@ public class MainViewModel : ViewModelBase
             ShowOverwritePrompt = true,
             Title = "Rename"
         }) is not IStorageFile file) return;
-        SelectedAssetFile.MoveTo(file.Path.LocalPath);
+        if (!SelectedAssetFile.MoveTo(file.Path.LocalPath)) return;
         _sourceAssetFiles.Remove(x => x != SelectedAssetFile && x.FullName == SelectedAssetFile.FullName);
     }
 

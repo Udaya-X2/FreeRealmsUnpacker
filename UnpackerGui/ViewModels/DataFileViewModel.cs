@@ -25,17 +25,31 @@ public class DataFileViewModel : ViewModelBase
     public string? DirectoryName => _info.DirectoryName;
 
     /// <summary>
+    /// Copies the data file to a new file.
+    /// </summary>
+    /// <returns><see langword="true"/> if the data file was copied; otherwise, <see langword="false"/>.</returns>
+    public bool CopyTo(string destFileName)
+    {
+        if (FullName == destFileName) return false;
+
+        _info.CopyTo(destFileName, overwrite: true);
+        return true;
+    }
+
+    /// <summary>
     /// Moves the data file to a new location, providing the option to specify a new file name.
     /// </summary>
-    public void MoveTo(string destFileName)
+    /// <returns><see langword="true"/> if the data file was moved; otherwise, <see langword="false"/>.</returns>
+    public bool MoveTo(string destFileName)
     {
-        if (FullName != destFileName)
-        {
-            _info.MoveTo(destFileName, overwrite: true);
-            this.RaisePropertyChanged(nameof(Name));
-            this.RaisePropertyChanged(nameof(FullName));
-            this.RaisePropertyChanged(nameof(DirectoryName));
-        }
+        if (FullName == destFileName) return false;
+
+        _info.MoveTo(destFileName, overwrite: true);
+        this.RaisePropertyChanged(nameof(Name));
+        this.RaisePropertyChanged(nameof(FullName));
+        this.RaisePropertyChanged(nameof(DirectoryName));
+
+        return true;
     }
 
     /// <summary>

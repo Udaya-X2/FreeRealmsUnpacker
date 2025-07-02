@@ -169,17 +169,41 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     public AssetWriter OpenAppend() => _assetFile.OpenAppend();
 
     /// <summary>
+    /// Copies the existing asset file to a new file.
+    /// </summary>
+    /// <returns><see langword="true"/> if the asset file was copied; otherwise, <see langword="false"/>.</returns>
+    public bool CopyTo(string destFileName)
+    {
+        if (FullName == destFileName) return false;
+
+        _assetFile.Info.CopyTo(destFileName, overwrite: true);
+
+        if (FileType != AssetType.Dat) return true;
+
+        var dataFiles = Enumerable.Zip(DataFiles!, ClientDirectory.EnumerateDataFilesInfinite(destFileName));
+
+        foreach ((DataFileViewModel srcDataFile, string destDataFile) in dataFiles)
+        {
+            srcDataFile.CopyTo(destDataFile);
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Moves the asset file to a new location, providing the option to specify a new file name.
     /// </summary>
-    public void MoveTo(string destFileName)
+    /// <returns><see langword="true"/> if the asset file was moved; otherwise, <see langword="false"/>.</returns>
+    public bool MoveTo(string destFileName)
     {
-        if (FullName != destFileName)
-        {
-            _assetFile.Info.MoveTo(destFileName, overwrite: true);
-            this.RaisePropertyChanged(nameof(Name));
-            this.RaisePropertyChanged(nameof(FullName));
-            this.RaisePropertyChanged(nameof(DirectoryName));
-        }
+        if (FullName == destFileName) return false;
+
+        _assetFile.Info.MoveTo(destFileName, overwrite: true);
+        this.RaisePropertyChanged(nameof(Name));
+        this.RaisePropertyChanged(nameof(FullName));
+        this.RaisePropertyChanged(nameof(DirectoryName));
+
+        return true;
     }
 
     /// <summary>

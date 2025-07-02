@@ -215,6 +215,8 @@
                                       Command="{Binding RemoveSelectedFileCommand}"/>
                             <MenuItem Header="Delete"
                                       Command="{Binding DeleteSelectedFileCommand}"/>
+                            <MenuItem Header="Copy..."
+                                      Command="{Binding CopySelectedFileCommand}"/>
                             <MenuItem Header="Rename..."
                                       Command="{Binding RenameSelectedFileCommand}"/>
                             <MenuItem Header="Reload File"
