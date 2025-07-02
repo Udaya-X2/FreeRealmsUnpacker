@@ -209,7 +209,15 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// <summary>
     /// Permanently deletes the asset file.
     /// </summary>
-    public void Delete() => _assetFile.Info.Delete();
+    public void Delete()
+    {
+        _assetFile.Info.Delete();
+
+        if (FileType == AssetType.Dat && Settings.DeleteDataFiles)
+        {
+            DataFiles!.ForEach(x => x.Delete());
+        }
+    }
 
     /// <summary>
     /// Creates or overwrites the asset file.

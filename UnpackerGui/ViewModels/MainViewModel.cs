@@ -706,7 +706,11 @@ public class MainViewModel : ViewModelBase
         {
             Title = "Delete File",
             Message = $"Are you sure you want to permanently delete this file?\n\n{SelectedAssetFile}",
-            Icon = Icon.Delete
+            Icon = Icon.Delete,
+            CheckBoxMessage = "Delete asset .dat files",
+            CheckBoxCommand = ReactiveCommand.Create(() => Settings.DeleteDataFiles ^= true),
+            IsChecked = Settings.DeleteDataFiles,
+            ShowCheckBox = SelectedAssetFile!.FileType == AssetType.Dat
         }))
         {
             SelectedAssetFile!.Delete();

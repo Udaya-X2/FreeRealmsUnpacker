@@ -67,6 +67,12 @@ public interface ISettings : INotifyPropertyChanged
     bool ConfirmDelete { get; set; }
 
     /// <summary>
+    /// Gets or sets whether to delete a manifest.dat file's accompanying asset .dat files.
+    /// </summary>
+    [DefaultValue(true)]
+    bool DeleteDataFiles { get; set; }
+
+    /// <summary>
     /// Gets or sets the default location to input files/folders.
     /// </summary>
     [DefaultValue("")]
