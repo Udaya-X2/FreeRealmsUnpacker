@@ -722,8 +722,7 @@ public class MainViewModel : ViewModelBase
         if (!Settings.ConfirmDelete || await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
         {
             Title = "Clear File",
-            Message = $"Are you sure you want to clear all assets from this file?\n\n{SelectedAssetFile}",
-            Icon = Icon.Delete
+            Message = $"Are you sure you want to clear all assets from this file?\n\n{SelectedAssetFile}"
         }))
         {
             SelectedAssetFile!.Create();
