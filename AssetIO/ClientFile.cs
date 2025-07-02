@@ -254,15 +254,16 @@ public static partial class ClientFile
 
         try
         {
-            using AssetPackReader reader = new(packFile);
-            using AssetPackWriter writer = new(tempFile);
-
-            // Copy the non-removed assets to a temp .pack file.
-            foreach (Asset asset in EnumeratePackAssets(packFile))
+            using (AssetPackReader reader = new(packFile))
+            using (AssetPackWriter writer = new(tempFile))
             {
-                if (!assets.Contains(asset))
+                // Copy the non-removed assets to a temp .pack file.
+                foreach (Asset asset in EnumeratePackAssets(packFile))
                 {
-                    reader.CopyTo(asset, writer);
+                    if (!assets.Contains(asset))
+                    {
+                        reader.CopyTo(asset, writer);
+                    }
                 }
             }
 
@@ -563,15 +564,16 @@ public static partial class ClientFile
 
         try
         {
-            using AssetDatReader reader = new(dataFiles);
-            using AssetDatWriter writer = new(tempFile);
-
-            // Copy the non-removed assets to temp manifest.dat and asset .dat files.
-            foreach (Asset asset in EnumerateManifestAssets(manifestFile))
+            using (AssetDatReader reader = new(dataFiles))
+            using (AssetDatWriter writer = new(tempFile))
             {
-                if (!assets.Contains(asset))
+                // Copy the non-removed assets to temp manifest.dat and asset .dat files.
+                foreach (Asset asset in EnumerateManifestAssets(manifestFile))
                 {
-                    reader.CopyTo(asset, writer);
+                    if (!assets.Contains(asset))
+                    {
+                        reader.CopyTo(asset, writer);
+                    }
                 }
             }
 
