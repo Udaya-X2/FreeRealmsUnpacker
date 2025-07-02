@@ -188,11 +188,11 @@
                                         <ContextMenu>
                                             <MenuItem Header="Close"
                                                       Command="{Binding RemoveDataFilesCommand}"/>
+                                            <MenuItem Header="Delete"
+                                                      Command="{Binding DeleteDataFilesCommand}"/>
                                             <MenuItem Header="Rename..."
                                                       IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                                       Command="{Binding RenameDataFileCommand}"/>
-                                            <MenuItem Header="Delete"
-                                                      Command="{Binding DeleteDataFilesCommand}"/>
                                             <Separator IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"/>
                                             <MenuItem Header="Copy Full File Path"
                                                       IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
@@ -213,12 +213,15 @@
                         <ContextMenu IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <MenuItem Header="Close"
                                       Command="{Binding RemoveSelectedFileCommand}"/>
-                            <MenuItem Header="Rename..."
-                                      Command="{Binding RenameSelectedFileCommand}"/>
                             <MenuItem Header="Delete"
                                       Command="{Binding DeleteSelectedFileCommand}"/>
-                            <MenuItem Header="Reload"
+                            <MenuItem Header="Rename..."
+                                      Command="{Binding RenameSelectedFileCommand}"/>
+                            <MenuItem Header="Reload File"
                                       Command="{Binding ReloadSelectedFileCommand}"/>
+                            <MenuItem Header="Clear Assets"
+                                      IsVisible="{Binding !!SelectedAssetFile?.Count}"
+                                      Command="{Binding ClearSelectedFileCommand}"/>
                             <Separator/>
                             <MenuItem Header="Copy Full File Path"
                                       Command="{Binding Source={StaticResource commands} Path=CopyCommand}"

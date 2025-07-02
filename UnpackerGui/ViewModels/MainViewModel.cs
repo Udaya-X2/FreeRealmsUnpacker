@@ -87,6 +87,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> RemoveSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> RenameSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> DeleteSelectedFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> ClearSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ReloadSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ConvertSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
@@ -135,6 +136,7 @@ public class MainViewModel : ViewModelBase
         RemoveSelectedFileCommand = ReactiveCommand.Create(RemoveSelectedFile);
         RenameSelectedFileCommand = ReactiveCommand.CreateFromTask(RenameSelectedFile);
         DeleteSelectedFileCommand = ReactiveCommand.CreateFromTask(DeleteSelectedFile);
+        ClearSelectedFileCommand = ReactiveCommand.CreateFromTask(ClearSelectedFile);
         ReloadSelectedFileCommand = ReactiveCommand.Create(ReloadSelectedFile);
         ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
         OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
@@ -664,6 +666,23 @@ public class MainViewModel : ViewModelBase
         {
             SelectedAssetFile!.Delete();
             RemoveSelectedFile();
+        }
+    }
+
+    /// <summary>
+    /// Opens a confirm dialog that allows the user to clear all assets from the selected asset file.
+    /// </summary>
+    private async Task ClearSelectedFile()
+    {
+        if (!Settings.ConfirmDelete || await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
+        {
+            Title = "Clear File",
+            Message = $"Are you sure you want to clear all assets from this file?\n\n{SelectedAssetFile}",
+            Icon = Icon.Delete
+        }))
+        {
+            SelectedAssetFile!.Create();
+            ReloadSelectedFile();
         }
     }
 

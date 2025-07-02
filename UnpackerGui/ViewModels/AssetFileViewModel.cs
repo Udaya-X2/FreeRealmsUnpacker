@@ -188,6 +188,11 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     public void Delete() => _assetFile.Info.Delete();
 
     /// <summary>
+    /// Creates or overwrites the asset file.
+    /// </summary>
+    public void Create() => _assetFile.Create();
+
+    /// <summary>
     /// Reloads the asset file, returning a new <see cref="AssetFileViewModel"/> with the updated data.
     /// </summary>
     public AssetFileViewModel Reload(CancellationToken token = default)
