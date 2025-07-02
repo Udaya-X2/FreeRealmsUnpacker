@@ -16,7 +16,7 @@ public abstract class AssetReader : IDisposable
     public virtual byte[] Read(Asset asset)
     {
         ArgumentNullException.ThrowIfNull(asset);
-
+        if (asset.Size > Array.MaxLength) throw new IOException(string.Format(SR.IO_AssetTooLong2GB, asset.Name));
         if (asset.Size == 0) return [];
 
         byte[] bytes = new byte[asset.Size];
