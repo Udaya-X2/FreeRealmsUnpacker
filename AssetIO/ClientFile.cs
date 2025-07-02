@@ -250,7 +250,7 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(packFile);
         ArgumentNullException.ThrowIfNull(assets);
 
-        string tempFile = $"{packFile}_{Path.GetRandomFileName()}";
+        string tempFile = GetTempFileName(packFile);
 
         try
         {
@@ -559,7 +559,7 @@ public static partial class ClientFile
         ArgumentNullException.ThrowIfNull(dataFiles);
         ArgumentNullException.ThrowIfNull(assets);
 
-        string tempFile = $"{manifestFile}_{Path.GetRandomFileName()}";
+        string tempFile = GetTempFileName(manifestFile);
 
         try
         {
@@ -1106,6 +1106,30 @@ public static partial class ClientFile
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Returns an unused, random file name with the given prefix.
+    /// </summary>
+    /// <returns>An unused, random file name with the given prefix.</returns>
+    /// <exception cref="IOException"/>
+    private static string GetTempFileName(string prefix)
+    {
+        string tempFileName;
+        int i = 0;
+
+        do
+        {
+            tempFileName = $"{prefix}{Path.GetRandomFileName()}";
+
+            if (!File.Exists(tempFileName))
+            {
+                return tempFileName;
+            }
+        }
+        while (i++ < 100);
+
+        throw new IOException(string.Format(SR.IO_CantCreateTempFile, tempFileName));
     }
 
     /// <summary>

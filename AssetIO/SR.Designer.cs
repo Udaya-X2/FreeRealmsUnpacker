@@ -268,6 +268,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot create temporary file &quot;{0}&quot;; the file already exists..
+        /// </summary>
+        internal static string IO_CantCreateTempFile {
+            get {
+                return ResourceManager.GetString("IO_CantCreateTempFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The asset &quot;{0}&quot; does not match the expected CRC-32 ({1} != {2}) in &quot;{3}&quot;..
         /// </summary>
         internal static string IO_CrcMismatch {
