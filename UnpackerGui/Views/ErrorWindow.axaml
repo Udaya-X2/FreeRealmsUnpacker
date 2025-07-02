@@ -10,7 +10,6 @@
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="Error"
         Width="450"
-        Height="150"
         x:DataType="vm:ErrorViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
@@ -27,10 +26,9 @@
                            Margin="0 0 15 0"
                            Grid.Column="0"/>
             <TextBlock HorizontalAlignment="Left"
-                       MaxHeight="128"
+                       MaxHeight="200"
                        Text="{Binding Message, FallbackValue={x:Static dm:Variables.ErrorMessage}}"
-                       TextWrapping="WrapWithOverflow"
-                       TextTrimming="CharacterEllipsis"
+                       TextWrapping="Wrap"
                        Grid.Column="1"/>
         </Grid>
         <Button Command="{Binding ShowDetailsCommand}"
