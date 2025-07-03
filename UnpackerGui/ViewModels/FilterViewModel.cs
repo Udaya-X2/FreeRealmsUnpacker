@@ -10,7 +10,7 @@ namespace UnpackerGui.ViewModels;
 /// <typeparam name="T">The type of the item to filter.</typeparam>
 public abstract class FilterViewModel<T> : ViewModelBase
 {
-    private static readonly Func<T, bool> truePredicate = _ => true;
+    private static readonly Func<T, bool> s_truePredicate = _ => true;
 
     private Func<T, bool> _isMatch;
 
@@ -19,7 +19,7 @@ public abstract class FilterViewModel<T> : ViewModelBase
     /// </summary>
     public FilterViewModel()
     {
-        _isMatch = truePredicate;
+        _isMatch = s_truePredicate;
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public abstract class FilterViewModel<T> : ViewModelBase
     /// <summary>
     /// Returns <see langword="true"/> if the filter condition is always satisfied; otherwise, <see langword="false"/>.
     /// </summary>
-    public virtual bool IsAlwaysMatch => _isMatch == truePredicate;
+    public virtual bool IsAlwaysMatch => _isMatch == s_truePredicate;
 
     /// <summary>
     /// Updates the match predicate.

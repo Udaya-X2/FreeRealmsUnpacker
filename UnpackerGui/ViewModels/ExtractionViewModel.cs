@@ -4,7 +4,6 @@ using System.Data;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
-using UnpackerGui.Config;
 using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
@@ -12,7 +11,7 @@ namespace UnpackerGui.ViewModels;
 public class ExtractionViewModel : ProgressViewModel
 {
     private readonly IEnumerable<AssetFileSelection> _assetFiles;
-    private readonly ISettings _settings;
+    private readonly SettingsViewModel _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtractionViewModel"/> class from the specified asset files.

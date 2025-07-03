@@ -4,14 +4,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
-using UnpackerGui.Config;
 
 namespace UnpackerGui.ViewModels;
 
 public class PreferencesViewModel : ViewModelBase
 {
     public ReadOnlyObservableCollection<PreferenceViewModel> Preferences { get; }
-    public ISettings Settings { get; }
+    public SettingsViewModel Settings { get; }
 
     public ReactiveCommand<string, Unit> UpdateAssetFilterCommand { get; }
     public ReactiveCommand<Unit, Unit> UpdateSearchOptionCommand { get; }

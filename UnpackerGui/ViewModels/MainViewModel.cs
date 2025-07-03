@@ -17,7 +17,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
-using UnpackerGui.Config;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
@@ -61,7 +60,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Gets the application's settings.
     /// </summary>
-    public ISettings Settings { get; }
+    public SettingsViewModel Settings { get; }
 
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }

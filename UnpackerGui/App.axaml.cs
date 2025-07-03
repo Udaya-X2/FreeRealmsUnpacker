@@ -4,17 +4,16 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Config.Net;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
 using System.IO;
 using System.Reactive;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
-using UnpackerGui.Config;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -23,6 +22,16 @@ namespace UnpackerGui;
 
 public partial class App : Application
 {
+    private const string SettingsFile = "settings.json";
+
+    private static readonly JsonSerializerOptions s_jsonOptions;
+
+    static App()
+    {
+        s_jsonOptions = new JsonSerializerOptions() { WriteIndented = true };
+        s_jsonOptions.Converters.Add(new JsonStringEnumConverter());
+    }
+
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
     /// </summary>
@@ -41,7 +50,7 @@ public partial class App : Application
     /// <summary>
     /// Gets the application's settings.
     /// </summary>
-    public ISettings? Settings { get; private set; }
+    public SettingsViewModel? Settings { get; private set; }
 
     /// <inheritdoc/>
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
@@ -55,7 +64,7 @@ public partial class App : Application
         {
             AppDomain.CurrentDomain.UnhandledException += OnFatalException;
             RxApp.DefaultExceptionHandler = Observer.Create<Exception>(OnRecoverableException);
-            Settings = ReadSettings();
+            ReadSettings();
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()
@@ -66,12 +75,16 @@ public partial class App : Application
                                               .AddSingleton<IDialogService>(dialogService)
                                               .BuildServiceProvider();
             Clipboard = desktop.MainWindow.Clipboard;
-            desktop.Exit += (s, e) => filesService.Dispose();
+            desktop.Exit += (s, e) =>
+            {
+                filesService.Dispose();
+                SaveSettings();
+            };
         }
         if (Design.IsDesignMode)
         {
             RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
-            Settings = new ConfigurationBuilder<ISettings>().Build();
+            Settings = new SettingsViewModel();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -104,7 +117,7 @@ public partial class App : Application
     /// </summary>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static ISettings GetSettings()
+    public static SettingsViewModel GetSettings()
         => Current?.Settings ?? throw new InvalidOperationException("Application settings not initialized.");
 
     /// <summary>
@@ -158,20 +171,31 @@ public partial class App : Application
     /// Reads the application's settings from the settings file.
     /// </summary>
     /// <returns>The application settings.</returns>
-    private static ISettings ReadSettings()
+    private void ReadSettings()
     {
-        const string SettingsFile = "settings.json";
-
         try
         {
-            return new ConfigurationBuilder<ISettings>().UseJsonFile(SettingsFile)
-                                                        .Build();
+            using FileStream stream = File.OpenRead(SettingsFile);
+            Settings = JsonSerializer.Deserialize<SettingsViewModel>(stream, s_jsonOptions) ?? new SettingsViewModel();
         }
-        catch (JsonException)
+        catch
         {
-            File.Delete(SettingsFile);
-            return new ConfigurationBuilder<ISettings>().UseJsonFile(SettingsFile)
-                                                        .Build();
+            Settings = new SettingsViewModel();
+        }
+    }
+
+    /// <summary>
+    /// Saves the application's settings to the settings file.
+    /// </summary>
+    private void SaveSettings()
+    {
+        try
+        {
+            using FileStream fs = File.Open(SettingsFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+            JsonSerializer.SerializeAsync(fs, Settings, s_jsonOptions);
+        }
+        catch
+        {
         }
     }
 }

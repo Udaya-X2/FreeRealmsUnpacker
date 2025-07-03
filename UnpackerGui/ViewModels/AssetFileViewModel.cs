@@ -12,7 +12,6 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
-using UnpackerGui.Config;
 using UnpackerGui.Converters;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
@@ -42,7 +41,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// <summary>
     /// Gets the application's settings.
     /// </summary>
-    public ISettings Settings { get; }
+    public SettingsViewModel Settings { get; }
 
     public ReactiveCommand<Unit, bool>? ShowDataFilesCommand { get; }
     public ReactiveCommand<Unit, Unit>? RemoveDataFilesCommand { get; }
