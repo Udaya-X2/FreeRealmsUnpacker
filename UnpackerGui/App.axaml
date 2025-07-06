@@ -14,6 +14,14 @@
         <ResourceDictionary>
             <FontFamily x:Key="ContentControlThemeFontFamily">Tahoma</FontFamily>
             <sys:Double x:Key="ControlContentThemeFontSize">12</sys:Double>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key='Light'>
+                    <SolidColorBrush x:Key='HoverBrush'>Black</SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key='Dark'>
+                    <SolidColorBrush x:Key='HoverBrush'>White</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

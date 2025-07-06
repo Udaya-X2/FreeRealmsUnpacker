@@ -7,10 +7,11 @@ using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reactive;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
@@ -24,13 +25,7 @@ public partial class App : Application
 {
     private const string SettingsFile = "settings.json";
 
-    private static readonly JsonSerializerOptions s_jsonOptions;
-
-    static App()
-    {
-        s_jsonOptions = new JsonSerializerOptions() { WriteIndented = true };
-        s_jsonOptions.Converters.Add(new JsonStringEnumConverter());
-    }
+    private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
 
     /// <summary>
     /// Gets the current <see cref="App"/> instance in use.
@@ -121,6 +116,24 @@ public partial class App : Application
         => Current?.Settings ?? throw new InvalidOperationException("Application settings not initialized.");
 
     /// <summary>
+    /// Tries to get the application resource with the specified key.
+    /// </summary>
+    /// <typeparam name="T">The type of the resource</typeparam>
+    /// <returns>The application resource.</returns>
+    public static bool TryGetResource<T>(object key, [NotNullWhen(true)] out T? value)
+    {
+        if ((Current?.TryGetResource(key, Current.ActualThemeVariant, out object? resource) ?? false)
+            && resource is T typedResource)
+        {
+            value = typedResource;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    /// <summary>
     /// Shuts down the application.
     /// </summary>
     public static void ShutDown()
@@ -192,7 +205,7 @@ public partial class App : Application
         try
         {
             using FileStream fs = File.Open(SettingsFile, FileMode.Create, FileAccess.Write, FileShare.Read);
-            JsonSerializer.SerializeAsync(fs, Settings, s_jsonOptions);
+            JsonSerializer.Serialize(fs, Settings, s_jsonOptions);
         }
         catch
         {

@@ -71,6 +71,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
+    public ReactiveCommand<string, Unit> AddRecentFileCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetsFromFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetsFromFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> CreatePackFileCommand { get; }
@@ -121,6 +122,7 @@ public class MainViewModel : ViewModelBase
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
+        AddRecentFileCommand = ReactiveCommand.CreateFromTask<string>(AddRecentFile);
         AddAssetsFromFilesCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFiles);
         AddAssetsFromFolderCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFolder);
         CreatePackFileCommand = ReactiveCommand.CreateFromTask(CreatePackFile);
@@ -267,62 +269,34 @@ public class MainViewModel : ViewModelBase
                                                                              !Settings.AddUnknownAssets)
                                                         .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)];
 
-        if (assetFiles.Count > 0)
+        if (assetFiles.Count == 0) return;
+
+        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
-            {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
-                AutoClose = true
-            });
-        }
+            DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+            AutoClose = true
+        });
     }
 
     /// <summary>
     /// Opens a file dialog that allows the user to add .pack or manifest.dat files to the source asset files.
     /// </summary>
-    private async Task AddAssetFiles()
-    {
-        IFilesService filesService = App.GetService<IFilesService>();
-        IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
-        {
-            AllowMultiple = true,
-            FileTypeFilter = FileTypeFilters.AssetFiles,
-            SuggestedStartLocation = await InputFolder
-        });
-
-        if (files.Count == 0) return;
-
-        Settings.InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
-        List<AssetFile> assetFiles = [.. files.Select(x => x.Path.LocalPath)
-                                              .Except(AssetFiles.Select(x => x.FullName))
-                                              .Select(x => new AssetFile(x))];
-
-        if (assetFiles.Count > 0)
-        {
-            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
-            {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
-                AutoClose = true
-            });
-        }
-    }
+    private async Task AddAssetFiles() => await AddAssetFiles(FileTypeFilters.AssetFiles, null);
 
     /// <summary>
     /// Opens a file dialog that allows the user to add .pack files to the source asset files.
     /// </summary>
-    private async Task AddPackFiles()
-        => await AddAssetFiles(AssetType.Pack, FileTypeFilters.PackFiles);
+    private async Task AddPackFiles() => await AddAssetFiles(FileTypeFilters.PackFiles, AssetType.Pack);
 
     /// <summary>
     /// Opens a file dialog that allows the user to add manifest.dat files to the source asset files.
     /// </summary>
-    private async Task AddManifestFiles()
-        => await AddAssetFiles(AssetType.Dat, FileTypeFilters.ManifestFiles);
+    private async Task AddManifestFiles() => await AddAssetFiles(FileTypeFilters.ManifestFiles, AssetType.Dat);
 
     /// <summary>
     /// Opens a file dialog that allows the user to add asset files of the specified type to the source asset files.
     /// </summary>
-    private async Task AddAssetFiles(AssetType assetType, FilePickerFileType[] fileTypeFilter)
+    private async Task AddAssetFiles(FilePickerFileType[] fileTypeFilter, AssetType? assetType)
     {
         IFilesService filesService = App.GetService<IFilesService>();
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
@@ -335,18 +309,7 @@ public class MainViewModel : ViewModelBase
         if (files.Count == 0) return;
 
         Settings.InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
-        List<AssetFile> assetFiles = [.. files.Select(x => x.Path.LocalPath)
-                                              .Except(AssetFiles.Select(x => x.FullName))
-                                              .Select(x => new AssetFile(x, assetType))];
-
-        if (assetFiles.Count > 0)
-        {
-            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
-            {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
-                AutoClose = true
-            });
-        }
+        await AddFiles(files.Select(x => x.Path.LocalPath), assetType);
     }
 
     /// <summary>
@@ -365,7 +328,7 @@ public class MainViewModel : ViewModelBase
         if (files.Count == 0) return;
 
         Settings.InputDirectory = Path.GetDirectoryName(files[0].Path.LocalPath) ?? "";
-        SelectedAssetFile?.DataFiles?.AddRange(files.Select(x => x.Path.LocalPath)
+        SelectedAssetFile!.DataFiles!.AddRange(files.Select(x => x.Path.LocalPath)
                                                     .Except(SelectedAssetFile.DataFiles.Select(x => x.FullName))
                                                     .Select(x => new DataFileViewModel(x)));
     }
@@ -373,26 +336,66 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Adds the specified files to the source asset files.
     /// </summary>
-    private async Task AddFiles(IEnumerable<string> files)
-    {
-        List<AssetFile> assetFiles = [.. files.Except(AssetFiles.Select(x => x.FullName))
-                                              .Select(x =>
-                                              {
-                                                  // Discard the file if we cannot infer its asset type from its name.
-                                                  AssetType type = ClientFile.InferAssetType(x, requireFullType: false);
-                                                  return type.IsValid() ? new AssetFile(x, type) : null;
-                                              })
-                                              .WhereNotNull()];
+    private async Task AddFiles(IEnumerable<string> files) => await AddFiles(files, strict: false);
 
-        if (assetFiles.Count > 0)
+    /// <summary>
+    /// Adds the specified files to the source asset files, using the given options.
+    /// </summary>
+    private async Task AddFiles(IEnumerable<string> files,
+                                AssetType? assetType = null,
+                                bool requireFullType = false,
+                                bool strict = true,
+                                bool selectFile = false,
+                                bool reloadFile = false)
+    {
+        List<AssetFile> newAssetFiles = [];
+        List<AssetFileViewModel> existingAssetFiles = [];
+        Dictionary<string, AssetFileViewModel> nameToAssetFile = AssetFiles.ToDictionary(x => x.FullName);
+
+        foreach (string file in files)
         {
+            if (nameToAssetFile.TryGetValue(file, out AssetFileViewModel? assetFile))
+            {
+                existingAssetFiles.Add(assetFile);
+                continue;
+            }
+
+            AssetType type = assetType ?? ClientFile.InferAssetType(file, requireFullType, strict);
+
+            if (type == 0) continue;
+
+            newAssetFiles.Add(new AssetFile(file, type));
+        }
+
+        if (newAssetFiles.Count > 0)
+        {
+            Settings.RecentFiles.AddFiles(newAssetFiles.Select(x => x.FullName));
             await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
             {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                DataContext = new ReaderViewModel(_sourceAssetFiles, newAssetFiles),
                 AutoClose = true
             });
         }
+        else if (reloadFile)
+        {
+            existingAssetFiles[0] = ReloadFile(existingAssetFiles[0]);
+        }
+        if (selectFile)
+        {
+            AssetFileViewModel? assetFile = existingAssetFiles.FirstOrDefault();
+            assetFile ??= AssetFiles.FirstOrDefault(x => (AssetFile)x == newAssetFiles[0]);
+
+            if (assetFile != null)
+            {
+                SelectedAssetFile = assetFile;
+            }
+        }
     }
+
+    /// <summary>
+    /// Adds the specified recent file to the source asset files.
+    /// </summary>
+    private async Task AddRecentFile(string file) => await AddFiles([file], selectFile: true);
 
     /// <summary>
     /// Adds the specified assets to the selected asset file.
@@ -470,18 +473,7 @@ public class MainViewModel : ViewModelBase
         AssetFile assetFile = new(file.Path.LocalPath, assetType);
         Settings.OutputDirectory = assetFile.DirectoryName ?? "";
         assetFile.Create();
-
-        if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel existingFile)
-        {
-            SelectedAssetFile = existingFile;
-            ReloadSelectedFile();
-        }
-        else
-        {
-            AssetFileViewModel newFile = new(assetFile);
-            _sourceAssetFiles.Add(newFile);
-            SelectedAssetFile = newFile;
-        }
+        await AddFiles([assetFile.FullName], selectFile: true, reloadFile: true);
     }
 
     /// <summary>
@@ -650,18 +642,7 @@ public class MainViewModel : ViewModelBase
             Title = "Copy"
         }) is not IStorageFile file) return;
         if (!SelectedAssetFile.CopyTo(file.Path.LocalPath)) return;
-
-        if (AssetFiles.FirstOrDefault(x => x.FullName == file.Path.LocalPath) is AssetFileViewModel assetFile)
-        {
-            SelectedAssetFile = assetFile;
-            ReloadSelectedFile();
-        }
-        else
-        {
-            assetFile = new AssetFileViewModel(new AssetFile(file.Path.LocalPath, SelectedAssetFile.Type));
-            _sourceAssetFiles.Add(assetFile);
-            SelectedAssetFile = assetFile;
-        }
+        await AddFiles([file.Path.LocalPath], selectFile: true, reloadFile: true);
     }
 
     /// <summary>
@@ -741,7 +722,7 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Reloads the specified asset file.
     /// </summary>
-    private void ReloadFile(AssetFileViewModel assetFile)
+    private AssetFileViewModel ReloadFile(AssetFileViewModel assetFile)
     {
         bool refreshSelected = assetFile == SelectedAssetFile;
         AssetFileViewModel reloadedFile = assetFile.Reload();
@@ -751,6 +732,8 @@ public class MainViewModel : ViewModelBase
         {
             SelectedAssetFile = reloadedFile;
         }
+
+        return reloadedFile;
     }
 
     /// <summary>
@@ -822,7 +805,7 @@ public class MainViewModel : ViewModelBase
                 });
                 AssetFiles.Where(x => deleteViewModel.ModifiedFiles.Contains(x))
                           .ToList()
-                          .ForEach(ReloadFile);
+                          .ForEach(x => ReloadFile(x));
             }
         }
     }

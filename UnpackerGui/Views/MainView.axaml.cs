@@ -4,9 +4,11 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using UnpackerGui.Collections;
 using UnpackerGui.Extensions;
 using UnpackerGui.ViewModels;
 
@@ -51,9 +53,10 @@ public partial class MainView : UserControl
         {
 #if DEBUG
             case (KeyModifiers.Alt, Key.D):
-                System.Diagnostics.Debug.Write($"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} ");
-                string message = $"{new Models.AssetInfo("", 0, 0, 0, null!) == new AssetIO.Asset("", 0, 0, 0)}";
-                System.Diagnostics.Debug.WriteLine(message);
+                static string Date() => $"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]}";
+                //System.Diagnostics.Debug.Write(date);
+                App.GetSettings().RecentFiles.ForEach(x => Debug.WriteLine($"{Date()} {x}"));
+                //System.Diagnostics.Debug.WriteLine(message);
                 break;
 #endif
             case (KeyModifiers.Alt, Key.C):

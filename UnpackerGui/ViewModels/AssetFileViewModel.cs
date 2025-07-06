@@ -228,8 +228,9 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// </summary>
     public AssetFileViewModel Reload(CancellationToken token = default)
     {
-        _assetFile.Refresh();
-        return new(_assetFile, token)
+        AssetFile assetFile = new(_assetFile.FullName, _assetFile.Type);
+        assetFile.Refresh();
+        return new(assetFile, token)
         {
             _isChecked = _isChecked,
             _showDataFiles = _showDataFiles,

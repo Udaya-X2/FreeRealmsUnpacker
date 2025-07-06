@@ -20,6 +20,7 @@
         <conv:BooleanToStringConverter x:Key="booleanToStringConverter"/>
         <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="expressionConverter"/>
+        <conv:ColorOpacityConverter x:Key="colorOpacityConverter"/>
         <commands:StaticCommands x:Key="commands"/>
     </UserControl.Resources>
     <UserControl.Styles>
@@ -63,6 +64,38 @@
                     <!--Create Manifest File-->
                     <MenuItem Header="Asset manifest.dat File..."
                               Command="{Binding CreateManifestFileCommand}"/>
+                </MenuItem>
+                <!--Recent Files Submenu-->
+                <MenuItem Header="Recent Files"
+                          ItemsSource="{Binding Settings.RecentFiles}"
+                          IsVisible="{Binding !!Settings.RecentFiles.Count}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem">
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <MenuItem Background="{TemplateBinding Background}">
+                                        <MenuItem.Header>
+                                            <TextBlock Text="{Binding}"/>
+                                        </MenuItem.Header>
+                                        <MenuItem.Styles>
+                                            <Style Selector="MenuItem:pointerover">
+                                                <Setter Property="Background">
+                                                    <MultiBinding Converter="{StaticResource colorOpacityConverter}">
+                                                        <Binding Source="{DynamicResource HoverBrush}"/>
+                                                        <Binding Source="0.1"/>
+                                                    </MultiBinding>
+                                                </Setter>
+                                            </Style>
+                                        </MenuItem.Styles>
+                                    </MenuItem>
+                                </ControlTemplate>
+                            </Setter>
+                            <Setter Property="Command"
+                                    Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFileCommand}"/>
+                            <Setter Property="CommandParameter"
+                                    Value="{Binding}"/>
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
                 </MenuItem>
                 <Separator/>
                 <!--Exit-->

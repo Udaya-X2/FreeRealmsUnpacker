@@ -1,6 +1,8 @@
 ﻿using AssetIO;
 using ReactiveUI;
 using System.IO;
+using System.Text.Json.Serialization;
+using UnpackerGui.Collections;
 
 namespace UnpackerGui.ViewModels;
 
@@ -68,6 +70,7 @@ public class SettingsViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets how to handle assets with conflicting names.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<FileConflictOptions>))]
     public FileConflictOptions ConflictOptions
     {
         get => _conflictOptions;
@@ -77,6 +80,7 @@ public class SettingsViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets which assets to search for in folders.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<AssetType>))]
     public AssetType AssetFilter
     {
         get => _assetFilter;
@@ -95,6 +99,7 @@ public class SettingsViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets whether to search for assets in folders recursively.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<SearchOption>))]
     public SearchOption SearchOption
     {
         get => _searchOption;
@@ -136,4 +141,10 @@ public class SettingsViewModel : ViewModelBase
         get => _outputDirectory;
         set => this.RaiseAndSetIfChanged(ref _outputDirectory, value);
     }
+
+    /// <summary>
+    /// Gets or sets the recently used files.
+    /// </summary>
+    [JsonConverter(typeof(JsonRecentFileCollectionConverter))]
+    public RecentFileCollection RecentFiles { get; init; } = [];
 }
