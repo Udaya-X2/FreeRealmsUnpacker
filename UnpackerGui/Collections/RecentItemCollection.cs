@@ -100,6 +100,8 @@ public class RecentItemCollection<T> : ObservableCollectionExtended<T>
 
         if (idx != -1)
         {
+            if (idx == 0) return;
+
             RemoveAt(idx);
         }
 
