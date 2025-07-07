@@ -373,7 +373,7 @@ public class MainViewModel : ViewModelBase
 
         if (newAssetFiles.Count > 0)
         {
-            Settings.RecentFiles.AddFiles(newAssetFiles.Select(x => x.FullName));
+            Settings.RecentFiles.AddItems(newAssetFiles.Select(x => x.FullName));
             await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
             {
                 DataContext = new ReaderViewModel(_sourceAssetFiles, newAssetFiles),

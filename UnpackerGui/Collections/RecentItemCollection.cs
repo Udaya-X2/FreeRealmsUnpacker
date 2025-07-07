@@ -6,58 +6,58 @@ using System.Linq;
 namespace UnpackerGui.Collections;
 
 /// <summary>
-/// Represents an observable collection of recent files.
+/// Represents an observable collection of recent items.
 /// </summary>
-public class RecentFileCollection : ObservableCollectionExtended<string>
+public class RecentItemCollection<T> : ObservableCollectionExtended<T>
 {
     private const int DefaultCapacity = 10;
 
     private int _capacity;
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RecentFileCollection"/> with the default capacity.
+    /// Initializes a new instance of <see cref="RecentItemCollection{T}"/> with the default capacity.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException"/>
-    public RecentFileCollection()
+    public RecentItemCollection()
         : this(DefaultCapacity)
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RecentFileCollection"/> with the specified capacity.
+    /// Initializes a new instance of <see cref="RecentItemCollection{T}"/> with the specified capacity.
     /// </summary>
-    /// <param name="capacity">The maximum number of files allowed.</param>
+    /// <param name="capacity">The maximum number of items allowed.</param>
     /// <exception cref="ArgumentOutOfRangeException"/>
-    public RecentFileCollection(int capacity)
+    public RecentItemCollection(int capacity)
     {
         Capacity = capacity;
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RecentFileCollection"/>
+    /// Initializes a new instance of <see cref="RecentItemCollection{T}"/>
     /// from the specified collection, with the default capacity.
     /// </summary>
-    /// <param name="collection">The collection whose elements are added to the files.</param>
+    /// <param name="collection">The collection whose elements are added to the items.</param>
     /// <exception cref="ArgumentNullException"/>
-    public RecentFileCollection(IEnumerable<string> collection)
+    public RecentItemCollection(IEnumerable<T> collection)
         : this(collection, DefaultCapacity)
     {
 
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="RecentFileCollection"/>
+    /// Initializes a new instance of <see cref="RecentItemCollection{T}"/>
     /// from the specified collection, with the given capacity.
     /// </summary>
-    /// <param name="collection">The collection whose elements are added to the files.</param>
-    /// <param name="capacity">The maximum number of files allowed.</param>
+    /// <param name="collection">The collection whose elements are added to the items.</param>
+    /// <param name="capacity">The maximum number of items allowed.</param>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="ArgumentOutOfRangeException"/>
-    public RecentFileCollection(IEnumerable<string> collection, int capacity)
+    public RecentItemCollection(IEnumerable<T> collection, int capacity)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(capacity);
 
-        foreach (string item in collection.TakeLast(capacity))
+        foreach (T item in collection.TakeLast(capacity))
         {
             base.InsertItem(Count, item);
         }
@@ -66,7 +66,7 @@ public class RecentFileCollection : ObservableCollectionExtended<string>
     }
 
     /// <summary>
-    /// The maximum number of files allowed.
+    /// The maximum number of items allowed.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException"/>
     public int Capacity
@@ -81,11 +81,11 @@ public class RecentFileCollection : ObservableCollectionExtended<string>
     }
 
     /// <summary>
-    /// Adds the specified files to the collection.
+    /// Adds the specified items to the collection.
     /// </summary>
-    /// <param name="collection">The collection of files to add.</param>
+    /// <param name="collection">The collection of items to add.</param>
     /// <exception cref="ArgumentNullException"><paramref name="collection"/> is null.</exception>
-    public void AddFiles(IEnumerable<string> collection)
+    public void AddItems(IEnumerable<T> collection)
     {
         using (SuspendNotifications())
         {
@@ -94,7 +94,7 @@ public class RecentFileCollection : ObservableCollectionExtended<string>
     }
 
     /// <inheritdoc/>
-    protected override void InsertItem(int index, string item)
+    protected override void InsertItem(int index, T item)
     {
         int idx = IndexOf(item);
 

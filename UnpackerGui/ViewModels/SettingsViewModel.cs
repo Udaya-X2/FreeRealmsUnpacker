@@ -145,6 +145,6 @@ public class SettingsViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets the recently used files.
     /// </summary>
-    [JsonConverter(typeof(JsonRecentFileCollectionConverter))]
-    public RecentFileCollection RecentFiles { get; init; } = [];
+    [JsonConverter(typeof(JsonRecentItemCollectionConverter<string>))]
+    public RecentItemCollection<string> RecentFiles { get; init; } = [];
 }
