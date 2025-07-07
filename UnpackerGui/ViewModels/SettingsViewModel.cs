@@ -147,4 +147,10 @@ public class SettingsViewModel : ViewModelBase
     /// </summary>
     [JsonConverter(typeof(JsonRecentItemCollectionConverter<string>))]
     public RecentItemCollection<string> RecentFiles { get; init; } = [];
+
+    /// <summary>
+    /// Gets or sets the recently used folders.
+    /// </summary>
+    [JsonConverter(typeof(JsonRecentItemCollectionConverter<string>))]
+    public RecentItemCollection<string> RecentFolders { get; init; } = [];
 }

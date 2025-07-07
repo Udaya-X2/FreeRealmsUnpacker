@@ -74,6 +74,8 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<string, Unit> AddRecentFileCommand { get; }
     public ReactiveCommand<Unit, Unit> AddRecentFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> EmptyRecentFilesCommand { get; }
+    public ReactiveCommand<string, Unit> AddRecentFolderCommand { get; }
+    public ReactiveCommand<Unit, Unit> EmptyRecentFoldersCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetsFromFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetsFromFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> CreatePackFileCommand { get; }
@@ -127,6 +129,8 @@ public class MainViewModel : ViewModelBase
         AddRecentFileCommand = ReactiveCommand.CreateFromTask<string>(AddRecentFile);
         AddRecentFilesCommand = ReactiveCommand.CreateFromTask(AddRecentFiles);
         EmptyRecentFilesCommand = ReactiveCommand.Create(EmptyRecentFiles);
+        AddRecentFolderCommand = ReactiveCommand.CreateFromTask<string>(AddRecentFolder);
+        EmptyRecentFoldersCommand = ReactiveCommand.Create(EmptyRecentFolders);
         AddAssetsFromFilesCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFiles);
         AddAssetsFromFolderCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFolder);
         CreatePackFileCommand = ReactiveCommand.CreateFromTask(CreatePackFile);
@@ -267,7 +271,15 @@ public class MainViewModel : ViewModelBase
         }) is not IStorageFolder folder) return;
 
         Settings.InputDirectory = folder.Path.LocalPath;
-        List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(Settings.InputDirectory,
+        await AddFolder(Settings.InputDirectory);
+    }
+
+    /// <summary>
+    /// Adds the asset files in the specified folder to the source asset files.
+    /// </summary>
+    private async Task AddFolder(string folder)
+    {
+        List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(folder,
                                                                              Settings.AssetFilter,
                                                                              Settings.SearchOption,
                                                                              !Settings.AddUnknownAssets)
@@ -275,6 +287,7 @@ public class MainViewModel : ViewModelBase
 
         if (assetFiles.Count == 0) return;
 
+        Settings.RecentFolders.Add(folder);
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
             DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
@@ -412,6 +425,16 @@ public class MainViewModel : ViewModelBase
     private void EmptyRecentFiles() => Settings.RecentFiles.Clear();
 
     /// <summary>
+    /// Adds the asset files in the specified recent folder to the source asset files.
+    /// </summary>
+    private async Task AddRecentFolder(string folder) => await AddFolder(folder);
+
+    /// <summary>
+    /// Clears the list of recent folders.
+    /// </summary>
+    private void EmptyRecentFolders() => Settings.RecentFolders.Clear();
+
+    /// <summary>
     /// Adds the specified assets to the selected asset file.
     /// </summary>
     private async Task AddAssets(List<string> files)
@@ -455,6 +478,7 @@ public class MainViewModel : ViewModelBase
             AllowMultiple = true,
             SuggestedStartLocation = await InputFolder
         }) is not IStorageFolder folder) return;
+
         Settings.InputDirectory = folder.Path.LocalPath;
         List<string> files = [.. Directory.EnumerateFiles(Settings.InputDirectory, "*", Settings.SearchOption)];
         await AddAssets(files);
@@ -484,6 +508,7 @@ public class MainViewModel : ViewModelBase
             ShowOverwritePrompt = true,
             Title = "Create"
         }) is not IStorageFile file) return;
+
         AssetFile assetFile = new(file.Path.LocalPath, assetType);
         Settings.OutputDirectory = assetFile.DirectoryName ?? "";
         assetFile.Create();
@@ -656,6 +681,7 @@ public class MainViewModel : ViewModelBase
             Title = "Copy"
         }) is not IStorageFile file) return;
         if (!SelectedAssetFile.CopyTo(file.Path.LocalPath)) return;
+
         await AddFiles([file.Path.LocalPath], selectFile: true, reloadFile: true);
     }
 
@@ -688,6 +714,7 @@ public class MainViewModel : ViewModelBase
             Title = "Rename"
         }) is not IStorageFile file) return;
         if (!SelectedAssetFile.MoveTo(file.Path.LocalPath)) return;
+
         _sourceAssetFiles.Remove(x => x != SelectedAssetFile && x.FullName == SelectedAssetFile.FullName);
     }
 

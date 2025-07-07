@@ -108,7 +108,52 @@
                 <MenuItem Header="Empty Recent Files"
                           IsVisible="{Binding !!Settings.RecentFiles.Count}"
                           Command="{Binding EmptyRecentFilesCommand}"/>
-                <Separator/>
+                <!--Recent Folders Section-->
+                <Separator>
+                    <Separator.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                            <Binding Source="{Binding !!Settings.RecentFiles.Count}"/>
+                            <Binding Source="{Binding !!Settings.RecentFolders.Count}"/>
+                        </MultiBinding>
+                    </Separator.IsVisible>
+                </Separator>
+                <!--Recent Folders List-->
+                <MenuItem Header="Recent Folders"
+                          ItemsSource="{Binding Settings.RecentFolders}"
+                          IsVisible="{Binding !!Settings.RecentFolders.Count}">
+                    <MenuItem.ItemContainerTheme>
+                        <ControlTheme TargetType="MenuItem">
+                            <Setter Property="Template">
+                                <ControlTemplate>
+                                    <MenuItem Background="{TemplateBinding Background}"
+                                              CommandParameter="{Binding}">
+                                        <MenuItem.Header>
+                                            <TextBlock Text="{Binding ., Converter={StaticResource pathConverter}}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </MenuItem.Header>
+                                        <MenuItem.Styles>
+                                            <Style Selector="MenuItem:pointerover">
+                                                <Setter Property="Background">
+                                                    <MultiBinding Converter="{StaticResource colorOpacityConverter}">
+                                                        <Binding Source="{DynamicResource HoverBrush}"/>
+                                                        <Binding Source="0.1"/>
+                                                    </MultiBinding>
+                                                </Setter>
+                                            </Style>
+                                        </MenuItem.Styles>
+                                    </MenuItem>
+                                </ControlTemplate>
+                            </Setter>
+                            <Setter Property="Command"
+                                    Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFolderCommand}"/>
+                        </ControlTheme>
+                    </MenuItem.ItemContainerTheme>
+                </MenuItem>
+                <!--Empty Recent Folders-->
+                <MenuItem Header="Empty Recent Folders"
+                          IsVisible="{Binding !!Settings.RecentFolders.Count}"
+                          Command="{Binding EmptyRecentFoldersCommand}"/>
+                <Separator IsVisible="{Binding !!Settings.RecentFolders.Count}"/>
                 <!--Exit-->
                 <MenuItem Header="Exit"
                           Command="{Binding ExitCommand}"/>
