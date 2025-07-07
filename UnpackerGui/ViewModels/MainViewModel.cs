@@ -72,6 +72,8 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
     public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
     public ReactiveCommand<string, Unit> AddRecentFileCommand { get; }
+    public ReactiveCommand<Unit, Unit> AddRecentFilesCommand { get; }
+    public ReactiveCommand<Unit, Unit> EmptyRecentFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetsFromFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetsFromFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> CreatePackFileCommand { get; }
@@ -123,6 +125,8 @@ public class MainViewModel : ViewModelBase
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
         AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
         AddRecentFileCommand = ReactiveCommand.CreateFromTask<string>(AddRecentFile);
+        AddRecentFilesCommand = ReactiveCommand.CreateFromTask(AddRecentFiles);
+        EmptyRecentFilesCommand = ReactiveCommand.Create(EmptyRecentFiles);
         AddAssetsFromFilesCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFiles);
         AddAssetsFromFolderCommand = ReactiveCommand.CreateFromTask(AddAssetsFromFolder);
         CreatePackFileCommand = ReactiveCommand.CreateFromTask(CreatePackFile);
@@ -396,6 +400,16 @@ public class MainViewModel : ViewModelBase
     /// Adds the specified recent file to the source asset files.
     /// </summary>
     private async Task AddRecentFile(string file) => await AddFiles([file], selectFile: true);
+
+    /// <summary>
+    /// Adds all recent files to the source asset files.
+    /// </summary>
+    private async Task AddRecentFiles() => await AddFiles(Settings.RecentFiles);
+
+    /// <summary>
+    /// Clears the list of recent files.
+    /// </summary>
+    private void EmptyRecentFiles() => Settings.RecentFiles.Clear();
 
     /// <summary>
     /// Adds the specified assets to the selected asset file.

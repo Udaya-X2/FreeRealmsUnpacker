@@ -66,7 +66,9 @@
                     <MenuItem Header="Asset manifest.dat File..."
                               Command="{Binding CreateManifestFileCommand}"/>
                 </MenuItem>
-                <!--Recent Files Submenu-->
+                <!--Recent Files Section-->
+                <Separator IsVisible="{Binding !!Settings.RecentFiles.Count}"/>
+                <!--Recent Files List-->
                 <MenuItem Header="Recent Files"
                           ItemsSource="{Binding Settings.RecentFiles}"
                           IsVisible="{Binding !!Settings.RecentFiles.Count}">
@@ -74,7 +76,8 @@
                         <ControlTheme TargetType="MenuItem">
                             <Setter Property="Template">
                                 <ControlTemplate>
-                                    <MenuItem Background="{TemplateBinding Background}">
+                                    <MenuItem Background="{TemplateBinding Background}"
+                                              CommandParameter="{Binding}">
                                         <MenuItem.Header>
                                             <TextBlock Text="{Binding ., Converter={StaticResource pathConverter}}"
                                                        TextTrimming="CharacterEllipsis"/>
@@ -94,11 +97,17 @@
                             </Setter>
                             <Setter Property="Command"
                                     Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFileCommand}"/>
-                            <Setter Property="CommandParameter"
-                                    Value="{Binding}"/>
                         </ControlTheme>
                     </MenuItem.ItemContainerTheme>
                 </MenuItem>
+                <!--Open All Recent Files-->
+                <MenuItem Header="Open All Recent Files"
+                          IsVisible="{Binding !!Settings.RecentFiles.Count}"
+                          Command="{Binding AddRecentFilesCommand}"/>
+                <!--Empty Recent Files-->
+                <MenuItem Header="Empty Recent Files"
+                          IsVisible="{Binding !!Settings.RecentFiles.Count}"
+                          Command="{Binding EmptyRecentFilesCommand}"/>
                 <Separator/>
                 <!--Exit-->
                 <MenuItem Header="Exit"
