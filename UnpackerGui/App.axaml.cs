@@ -120,12 +120,12 @@ public partial class App : Application
     /// </summary>
     /// <typeparam name="T">The type of the resource</typeparam>
     /// <returns>The application resource.</returns>
+    /// <exception cref="InvalidCastException"/>
     public static bool TryGetResource<T>(object key, [NotNullWhen(true)] out T? value)
     {
-        if ((Current?.TryGetResource(key, Current.ActualThemeVariant, out object? resource) ?? false)
-            && resource is T typedResource)
+        if (Current?.TryGetResource(key, Current.ActualThemeVariant, out object? resource) ?? false)
         {
-            value = typedResource;
+            value = (T)resource!;
             return true;
         }
 

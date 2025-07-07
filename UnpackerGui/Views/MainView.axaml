@@ -21,6 +21,7 @@
         <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="expressionConverter"/>
         <conv:ColorOpacityConverter x:Key="colorOpacityConverter"/>
+        <conv:PathConverter x:Key="pathConverter"/>
         <commands:StaticCommands x:Key="commands"/>
     </UserControl.Resources>
     <UserControl.Styles>
@@ -75,7 +76,8 @@
                                 <ControlTemplate>
                                     <MenuItem Background="{TemplateBinding Background}">
                                         <MenuItem.Header>
-                                            <TextBlock Text="{Binding}"/>
+                                            <TextBlock Text="{Binding ., Converter={StaticResource pathConverter}}"
+                                                       TextTrimming="CharacterEllipsis"/>
                                         </MenuItem.Header>
                                         <MenuItem.Styles>
                                             <Style Selector="MenuItem:pointerover">

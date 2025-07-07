@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -55,7 +56,10 @@ public partial class MainView : UserControl
             case (KeyModifiers.Alt, Key.D):
                 static string Date() => $"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]}";
                 //System.Diagnostics.Debug.Write(date);
-                App.GetSettings().RecentFiles.ForEach(x => Debug.WriteLine($"{Date()} {x}"));
+                //App.GetSettings().RecentFiles.ForEach(x => Debug.WriteLine($"{Date()} {x}"));
+                App.Current?.Resources.ForEach(x => Debug.WriteLine($"{Date()} {x.Key} -> {x.Value}"));
+                App.Current?.Styles.ForEach(x => Debug.WriteLine($"{Date()} {x}"));
+                Debug.Write(App.TryGetResource("ControlContentThemeFontSize", out double fontSize) ? fontSize : -1);
                 //System.Diagnostics.Debug.WriteLine(message);
                 break;
 #endif
