@@ -369,7 +369,7 @@ public class MainViewModel : ViewModelBase
         List<AssetFileViewModel> existingAssetFiles = [];
         Dictionary<string, AssetFileViewModel> nameToAssetFile = AssetFiles.ToDictionary(x => x.FullName);
 
-        foreach (string file in files)
+        foreach (string file in files.Distinct())
         {
             if (nameToAssetFile.TryGetValue(file, out AssetFileViewModel? assetFile))
             {
