@@ -91,20 +91,56 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     public virtual AssetType DirectoryType => Type.GetDirectoryType();
 
-    /// <summary>
-    /// Gets the name of the asset file.
-    /// </summary>
-    public virtual string Name => Info.Name;
+    /// <inheritdoc cref="FileSystemInfo.Attributes"/>
+    public virtual FileAttributes Attributes => Info.Attributes;
 
-    /// <summary>
-    /// Gets the full path of the asset file.
-    /// </summary>
+    /// <inheritdoc cref="FileSystemInfo.CreationTime"/>
+    public virtual DateTime CreationTime => Info.CreationTime;
+
+    /// <inheritdoc cref="FileSystemInfo.CreationTimeUtc"/>
+    public virtual DateTime CreationTimeUtc => Info.CreationTimeUtc;
+
+    /// <inheritdoc cref="FileInfo.Directory"/>
+    public virtual DirectoryInfo? Directory => Info.Directory;
+
+    /// <inheritdoc cref="FileInfo.DirectoryName"/>
+    public virtual string? DirectoryName => Info.DirectoryName;
+
+    /// <inheritdoc cref="FileInfo.Exists"/>
+    public virtual bool Exists => Info.Exists;
+
+    /// <inheritdoc cref="FileSystemInfo.Extension"/>
+    public virtual string Extension => Info.Extension;
+
+    /// <inheritdoc cref="FileSystemInfo.FullName"/>
     public virtual string FullName => Info.FullName;
 
-    /// <summary>
-    /// Gets a string representing the directory's full path.
-    /// </summary>
-    public virtual string? DirectoryName => Info.DirectoryName;
+    /// <inheritdoc cref="FileInfo.IsReadOnly"/>
+    public virtual bool IsReadOnly => Info.IsReadOnly;
+
+    /// <inheritdoc cref="FileSystemInfo.LastAccessTime"/>
+    public virtual DateTime LastAccessTime => Info.LastAccessTime;
+
+    /// <inheritdoc cref="FileSystemInfo.LastAccessTimeUtc"/>
+    public virtual DateTime LastAccessTimeUtc => Info.LastAccessTimeUtc;
+
+    /// <inheritdoc cref="FileSystemInfo.LastWriteTime"/>
+    public virtual DateTime LastWriteTime => Info.LastWriteTime;
+
+    /// <inheritdoc cref="FileSystemInfo.LastWriteTimeUtc"/>
+    public virtual DateTime LastWriteTimeUtc => Info.LastWriteTimeUtc;
+
+    /// <inheritdoc cref="FileInfo.Length"/>
+    public virtual long Length => Info.Length;
+
+    /// <inheritdoc cref="FileSystemInfo.LinkTarget"/>
+    public virtual string? LinkTarget => Info.LinkTarget;
+
+    /// <inheritdoc cref="FileInfo.Name"/>
+    public virtual string Name => Info.Name;
+
+    /// <inheritdoc cref="FileSystemInfo.UnixFileMode"/>
+    public virtual UnixFileMode UnixFileMode => Info.UnixFileMode;
 
     /// <summary>
     /// Gets the number of assets in the asset file.
@@ -193,7 +229,7 @@ public class AssetFile : IEnumerable<Asset>
     public virtual void ExtractAssets(string destDir, FileConflictOptions options = FileConflictOptions.Overwrite)
     {
         ArgumentNullException.ThrowIfNull(destDir);
-
+        
         switch (FileType)
         {
             case AssetType.Pack:
