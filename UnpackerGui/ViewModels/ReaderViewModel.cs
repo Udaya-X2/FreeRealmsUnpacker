@@ -3,16 +3,20 @@ using DynamicData;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using UnpackerGui.Collections;
 
 namespace UnpackerGui.ViewModels;
 
 public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
-                             IList<AssetFile> inputAssetFiles) : ProgressViewModel
+                             IList<AssetFile> inputAssetFiles,
+                             bool updateRecentFiles = false) : ProgressViewModel
 {
     private readonly ISourceList<AssetFileViewModel> _sourceAssetFiles = sourceAssetFiles
         ?? throw new ArgumentNullException(nameof(sourceAssetFiles));
     private readonly IList<AssetFile> _inputAssetFiles = inputAssetFiles
         ?? throw new ArgumentNullException(nameof(inputAssetFiles));
+    private readonly RecentItemCollection<string>? _recentFiles = updateRecentFiles
+        ? App.GetSettings().RecentFiles : null;
 
     /// <inheritdoc/>
     public override int Maximum => _inputAssetFiles.Count;
@@ -31,14 +35,25 @@ public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
         token.ThrowIfCancellationRequested();
 
         AssetFileViewModel[] assetFileViewModels = new AssetFileViewModel[Maximum];
+        AssetFile? assetFile = null;
+        using var _ = _recentFiles?.SuspendNotifications();
 
-        for (int i = 0; i < _inputAssetFiles.Count; i++)
+        try
         {
-            token.ThrowIfCancellationRequested();
-            AssetFile assetFile = _inputAssetFiles[i];
-            Message = $"Reading {assetFile.Name}";
-            assetFileViewModels[i] = new AssetFileViewModel(assetFile, token);
-            Tick();
+            while (Value < Maximum)
+            {
+                token.ThrowIfCancellationRequested();
+                assetFile = _inputAssetFiles[Value];
+                Message = $"Reading {assetFile.Name}";
+                assetFileViewModels[Value] = new AssetFileViewModel(assetFile, token);
+                _recentFiles?.Add(assetFile.FullName);
+                Tick();
+            }
+        }
+        catch when (_recentFiles != null && assetFile != null)
+        {
+            _recentFiles.Remove(assetFile.FullName);
+            throw;
         }
 
         _sourceAssetFiles.AddRange(assetFileViewModels);

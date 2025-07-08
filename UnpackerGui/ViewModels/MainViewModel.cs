@@ -279,20 +279,29 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private async Task AddFolder(string folder)
     {
-        List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(folder,
-                                                                             Settings.AssetFilter,
-                                                                             Settings.SearchOption,
-                                                                             !Settings.AddUnknownAssets)
-                                                        .ExceptBy(AssetFiles.Select(x => x.FullName), x => x.FullName)];
-
-        if (assetFiles.Count == 0) return;
-
-        Settings.RecentFolders.Add(folder);
-        await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+        try
         {
-            DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
-            AutoClose = true
-        });
+            List<AssetFile> assetFiles = [.. ClientDirectory.EnumerateAssetFiles(folder,
+                                                                                 Settings.AssetFilter,
+                                                                                 Settings.SearchOption,
+                                                                                 !Settings.AddUnknownAssets)
+                                                            .ExceptBy(AssetFiles.Select(x => x.FullName),
+                                                                      x => x.FullName)];
+
+            if (assetFiles.Count == 0) return;
+
+            Settings.RecentFolders.Add(folder);
+            await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
+            {
+                DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
+                AutoClose = true
+            });
+        }
+        catch
+        {
+            Settings.RecentFolders.Remove(folder);
+            throw;
+        }
     }
 
     /// <summary>
@@ -371,25 +380,32 @@ public class MainViewModel : ViewModelBase
 
         foreach (string file in files.Distinct())
         {
-            if (nameToAssetFile.TryGetValue(file, out AssetFileViewModel? assetFile))
+            try
             {
-                existingAssetFiles.Add(assetFile);
-                continue;
+                if (nameToAssetFile.TryGetValue(file, out AssetFileViewModel? assetFile))
+                {
+                    existingAssetFiles.Add(assetFile);
+                    continue;
+                }
+
+                AssetType type = assetType ?? ClientFile.InferAssetType(file, requireFullType, strict);
+
+                if (type == 0) continue;
+
+                newAssetFiles.Add(new AssetFile(file, type));
             }
-
-            AssetType type = assetType ?? ClientFile.InferAssetType(file, requireFullType, strict);
-
-            if (type == 0) continue;
-
-            newAssetFiles.Add(new AssetFile(file, type));
+            catch
+            {
+                Settings.RecentFiles.Remove(file);
+                throw;
+            }
         }
 
         if (newAssetFiles.Count > 0)
         {
-            Settings.RecentFiles.AddItems(newAssetFiles.Select(x => x.FullName));
             await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
             {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, newAssetFiles),
+                DataContext = new ReaderViewModel(_sourceAssetFiles, newAssetFiles, updateRecentFiles: true),
                 AutoClose = true
             });
         }

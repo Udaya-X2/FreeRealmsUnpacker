@@ -80,36 +80,13 @@ public class RecentItemCollection<T> : ObservableCollectionExtended<T>
         }
     }
 
-    /// <summary>
-    /// Adds the specified items to the collection.
-    /// </summary>
-    /// <param name="collection">The collection of items to add.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="collection"/> is null.</exception>
-    public void AddItems(IEnumerable<T> collection)
-    {
-        using (SuspendNotifications())
-        {
-            AddRange(collection);
-        }
-    }
-
     /// <inheritdoc/>
     protected override void InsertItem(int index, T item)
     {
         int idx = IndexOf(item);
-
-        if (idx != -1)
-        {
-            if (idx == 0) return;
-
-            RemoveAt(idx);
-        }
-
+        if (idx == 0) return;
+        if (idx > 0) RemoveAt(idx);
         base.InsertItem(0, item);
-
-        if (Count > Capacity)
-        {
-            RemoveItem(Count - 1);
-        }
+        if (Count > Capacity) RemoveItem(Count - 1);
     }
 }
