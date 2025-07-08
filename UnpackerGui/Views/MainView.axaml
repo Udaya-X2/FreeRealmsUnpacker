@@ -521,33 +521,37 @@
                                             Header="Type"
                                             Binding="{Binding Type}"/>
                     </DataGrid.Columns>
-                    <!--Asset Row Context Menu-->
-                    <DataGrid.ContextMenu>
-                        <ContextMenu IsVisible="{Binding !!SelectedAssets.Count}">
-                            <MenuItem Header="Open"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                      Command="{Binding OpenSelectedAssetCommand}"/>
-                            <MenuItem Header="Copy"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                      Click="AssetGrid_ContextMenu_Copy"/>
-                            <MenuItem Header="Delete"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                      Command="{Binding DeleteSelectedAssetsCommand}"/>
-                            <MenuItem Header="Select Asset File"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                      Command="{Binding SelectFileCommand}"/>
-                            <Separator IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"/>
-                            <MenuItem Header="Save As..."
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                      Command="{Binding SaveSelectedAssetCommand}"/>
-                            <MenuItem Header="Extract Selected Assets..."
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
-                                      Command="{Binding ExtractSelectedAssetsCommand}"/>
-                            <MenuItem Header="Delete Selected Assets"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
-                                      Command="{Binding DeleteSelectedAssetsCommand}"/>
-                        </ContextMenu>
-                    </DataGrid.ContextMenu>
+                    <DataGrid.Styles>
+                        <!--Asset Row Context Menu-->
+                        <Style Selector="DataGridRow">
+                            <Setter Property="ContextMenu">
+                                <ContextMenu>
+                                    <MenuItem Header="Open"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              Command="{Binding $parent[DataGrid].DataContext.OpenSelectedAssetCommand}"/>
+                                    <MenuItem Header="Copy"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              Click="AssetGrid_ContextMenu_Copy"/>
+                                    <MenuItem Header="Delete"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
+                                    <MenuItem Header="Select Asset File"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              Command="{Binding $parent[DataGrid].DataContext.SelectFileCommand}"/>
+                                    <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"/>
+                                    <MenuItem Header="Save As..."
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              Command="{Binding $parent[DataGrid].DataContext.SaveSelectedAssetCommand}"/>
+                                    <MenuItem Header="Extract Selected Assets..."
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
+                                              Command="{Binding $parent[DataGrid].DataContext.ExtractSelectedAssetsCommand}"/>
+                                    <MenuItem Header="Delete Selected Assets"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
+                                              Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
+                                </ContextMenu>
+                            </Setter>
+                        </Style>
+                    </DataGrid.Styles>
                 </DataGrid>
                 <!--#/# Info Bar-->
                 <StackPanel Grid.Row="2"
