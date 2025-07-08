@@ -433,7 +433,13 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Adds all recent files to the source asset files.
     /// </summary>
-    private async Task AddRecentFiles() => await AddFiles(Settings.RecentFiles);
+    private async Task AddRecentFiles()
+    {
+        using (Settings.RecentFiles.ReverseInsert())
+        {
+            await AddFiles(Settings.RecentFiles);
+        }
+    }
 
     /// <summary>
     /// Clears the list of recent files.
