@@ -95,6 +95,18 @@ public class RecentItemCollection<T> : ObservableCollectionExtended<T>
     }
 
     /// <inheritdoc/>
+    protected override void SetItem(int index, T item)
+    {
+        int idx = IndexOf(item);
+
+        if (idx == index) return;
+
+        base.SetItem(index, item);
+
+        if (idx >= 0) RemoveAt(idx);
+    }
+
+    /// <inheritdoc/>
     protected override void InsertItem(int index, T item)
     {
         if (_insertStart)
