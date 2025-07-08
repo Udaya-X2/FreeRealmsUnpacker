@@ -12,6 +12,7 @@ public class SettingsViewModel : ViewModelBase
     private bool _showOffset = true;
     private bool? _showSize = null;
     private bool _showCrc32 = true;
+    private bool _showType = false;
     private bool _validateAssets = false;
     private FileConflictOptions _conflictOptions = FileConflictOptions.Overwrite;
     private AssetType _assetFilter = AssetType.All;
@@ -56,6 +57,15 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _showCrc32;
         set => this.RaiseAndSetIfChanged(ref _showCrc32, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show the asset's file type.
+    /// </summary>
+    public bool ShowType
+    {
+        get => _showType;
+        set => this.RaiseAndSetIfChanged(ref _showType, value);
     }
 
     /// <summary>

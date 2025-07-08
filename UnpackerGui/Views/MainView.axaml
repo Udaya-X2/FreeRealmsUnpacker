@@ -457,6 +457,8 @@
                                           IsChecked="{Binding Settings.ShowSize}"/>
                                 <CheckBox Content="CRC-32"
                                           IsChecked="{Binding Settings.ShowCrc32}"/>
+                                <CheckBox Content="Type"
+                                          IsChecked="{Binding Settings.ShowType}"/>
                                 <CheckBox Content="Valid"
                                           IsThreeState="True"
                                           IsChecked="{Binding ValidationOptions.ShowValid}"
@@ -499,7 +501,7 @@
                                             MaxWidth="150"
                                             IsVisible="{Binding Settings.ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
                                             Header="Size"
-                                            Binding="{Binding Size, Converter={StaticResource fileSizeConverter} Mode=OneWay}"/>
+                                            Binding="{Binding Size, Converter={StaticResource fileSizeConverter}, Mode=OneWay}"/>
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
@@ -512,6 +514,12 @@
                                             IsVisible="{Binding Settings.ShowCrc32}"
                                             Header="CRC-32"
                                             Binding="{Binding Crc32}"/>
+                        <DataGridTextColumn Width=".8*"
+                                            MinWidth="70"
+                                            MaxWidth="150"
+                                            IsVisible="{Binding Settings.ShowType, FallbackValue={x:Static dm:Variables.False}}"
+                                            Header="Type"
+                                            Binding="{Binding Type}"/>
                     </DataGrid.Columns>
                     <!--Asset Row Context Menu-->
                     <DataGrid.ContextMenu>

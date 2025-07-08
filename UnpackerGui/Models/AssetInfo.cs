@@ -1,6 +1,7 @@
 ﻿using AssetIO;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnpackerGui.Converters;
 
 namespace UnpackerGui.Models;
@@ -21,6 +22,11 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     /// assets for equality by value, regardless of derived type.
     /// </summary>
     public static readonly EqualityComparer<Asset> Comparer = EqualityComparer<Asset>.Create(Equals, GetHashCode);
+
+    /// <summary>
+    /// Gets the file type of the asset.
+    /// </summary>
+    public string Type { get; } = Path.GetExtension(Name);
 
     /// <summary>
     /// Gets or sets the CRC-32 value of the asset in the corresponding asset file.
