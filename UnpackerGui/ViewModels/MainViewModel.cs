@@ -727,10 +727,11 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private async Task RenameSelectedFile()
     {
+        string oldPath = SelectedAssetFile!.FullName;
         IFilesService filesService = App.GetService<IFilesService>();
         if (await filesService.SaveFileAsync(new FilePickerSaveOptions
         {
-            SuggestedStartLocation = await filesService.TryGetFolderFromPathAsync(SelectedAssetFile!.DirectoryName!),
+            SuggestedStartLocation = await filesService.TryGetFolderFromPathAsync(SelectedAssetFile.DirectoryName!),
             SuggestedFileName = SelectedAssetFile.Name,
             ShowOverwritePrompt = true,
             Title = "Rename"
@@ -738,6 +739,7 @@ public class MainViewModel : ViewModelBase
         if (!SelectedAssetFile.MoveTo(file.Path.LocalPath)) return;
 
         _sourceAssetFiles.Remove(x => x != SelectedAssetFile && x.FullName == SelectedAssetFile.FullName);
+        Settings.RecentFiles.ReplaceOrAdd(oldPath, file.Path.LocalPath);
     }
 
     /// <summary>
@@ -756,8 +758,10 @@ public class MainViewModel : ViewModelBase
             ShowCheckBox = SelectedAssetFile!.FileType == AssetType.Dat
         }))
         {
-            SelectedAssetFile!.Delete();
+            string oldPath = SelectedAssetFile!.FullName;
+            SelectedAssetFile.Delete();
             RemoveSelectedFile();
+            Settings.RecentFiles.Remove(oldPath);
         }
     }
 
@@ -804,7 +808,8 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     private void ConvertSelectedFile()
     {
-        AssetFile assetFile = ClientFile.ConvertPackTempFile(SelectedAssetFile!);
+        string oldPath = SelectedAssetFile!.FullName;
+        AssetFile assetFile = ClientFile.ConvertPackTempFile(SelectedAssetFile);
 
         if (AssetFiles.FirstOrDefault(x => x.FullName == assetFile.FullName) is AssetFileViewModel convertedFile)
         {
@@ -817,6 +822,7 @@ public class MainViewModel : ViewModelBase
         }
 
         SelectedAssetFile = convertedFile;
+        Settings.RecentFiles.ReplaceOrAdd(oldPath, convertedFile.FullName);
     }
 
     /// <summary>

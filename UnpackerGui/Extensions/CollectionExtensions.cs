@@ -45,9 +45,7 @@ public static class CollectionExtensions
     {
         for (int i = 0; i < list.Count; i++)
         {
-            T item = list[i];
-
-            if (match(item))
+            if (match(list[i]))
             {
                 list.RemoveAt(i);
                 break;
