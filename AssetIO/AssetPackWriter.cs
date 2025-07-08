@@ -283,6 +283,11 @@ public class AssetPackWriter : AssetWriter
             {
                 ArrayPool<byte>.Shared.Return(_buffer);
 
+                // Index the current asset, if necessary.
+                if (CanWrite)
+                {
+                    IndexAsset();
+                }
                 // Flush the current asset info chunk if necessary, setting the next chunk offset
                 // to the start of the .pack file and writing the number of assets in this chunk.
                 if (_numAssets > 0)
@@ -290,11 +295,6 @@ public class AssetPackWriter : AssetWriter
                     _packStream.Position = _chunkOffset;
                     _packWriter.Write(0u);
                     _packWriter.Write(_numAssets);
-                }
-                // Index the current asset, if necessary.
-                if (CanWrite)
-                {
-                    IndexAsset();
                 }
 
                 _packStream.Dispose();
