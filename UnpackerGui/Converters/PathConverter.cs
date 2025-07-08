@@ -27,20 +27,29 @@ public class PathConverter : IValueConverter
     /// </summary>
     private static string FormatDisplayPath(string path)
     {
+        path = NormalizePath(path, out string[] parts);
+
         if (!App.TryGetResource("ContentControlThemeFontFamily", out FontFamily? fontFamily)) return path;
         if (!App.TryGetResource("ControlContentThemeFontSize", out double fontSize)) return path;
 
         double width = GetDisplayWidth(path, fontFamily, fontSize);
-        return width > MaxWidth ? ShortenPath(path, fontFamily, fontSize) : path;
+        return width > MaxWidth ? ShortenPath(path, parts, fontFamily, fontSize) : path;
+    }
+
+    /// <summary>
+    /// Normalizes the specified path.
+    /// </summary>
+    private static string NormalizePath(string path, out string[] parts)
+    {
+        parts = SplitPath(path);
+        return Path.Join(parts);
     }
 
     /// <summary>
     /// Shortens the specified path to fit within the width limitation, if possible.
     /// </summary>
-    private static string ShortenPath(string path, FontFamily fontFamily, double fontSize)
+    private static string ShortenPath(string path, string[] parts, FontFamily fontFamily, double fontSize)
     {
-        string[] parts = SplitPath(path);
-
         if (parts.Length < 3) return path;
 
         parts[1] = "...";
