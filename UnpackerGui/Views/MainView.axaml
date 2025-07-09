@@ -531,7 +531,7 @@
                                               Command="{Binding $parent[DataGrid].DataContext.OpenSelectedAssetCommand}"/>
                                     <MenuItem Header="Copy"
                                               IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                              Click="AssetGrid_ContextMenu_Copy"/>
+                                              Click="AssetGridRow_ContextMenu_Copy"/>
                                     <MenuItem Header="Delete"
                                               IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
@@ -548,6 +548,18 @@
                                     <MenuItem Header="Delete Selected Assets"
                                               IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
+                                </ContextMenu>
+                            </Setter>
+                        </Style>
+                        <!--DataGrid Column Header Context Menu-->
+                        <Style Selector="DataGridColumnHeader">
+                            <Setter Property="ContextMenu">
+                                <ContextMenu>
+                                    <MenuItem Header="Hide"
+                                              Click="AssetGridColumnHeader_ContextMenu_Hide"/>
+                                    <MenuItem Header="Copy"
+                                              IsVisible="{Binding !!$parent[DataGrid].DataContext.Assets.Count}"
+                                              Click="AssetGridColumnHeader_ContextMenu_Copy"/>
                                 </ContextMenu>
                             </Setter>
                         </Style>

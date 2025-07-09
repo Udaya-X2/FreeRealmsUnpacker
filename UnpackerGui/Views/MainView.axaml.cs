@@ -1,16 +1,19 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Text;
 using UnpackerGui.Collections;
+using UnpackerGui.Converters;
 using UnpackerGui.Extensions;
+using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -93,7 +96,7 @@ public partial class MainView : UserControl
         mainViewModel.ClearSelectedAssetsCommand.Invoke();
     }
 
-    private async void AssetGrid_ContextMenu_Copy(object? sender, RoutedEventArgs e)
+    private async void AssetGridRow_ContextMenu_Copy(object? sender, RoutedEventArgs e)
     {
         string? text = (assetGrid.CurrentColumn.GetCellContent(assetGrid.SelectedItem) as TextBlock)?.Text;
         await App.SetClipboardText(text);
@@ -105,5 +108,48 @@ public partial class MainView : UserControl
         if (e.Data.Get(DataFormats.Files) is not IEnumerable<IStorageItem> files) return;
 
         mainViewModel.AddFilesCommand.Invoke(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
+    }
+
+    private void AssetGridColumnHeader_ContextMenu_Hide(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { Parent.Parent.Parent: DataGridColumnHeader { Content: string colName } }) return;
+        if (App.Current?.Settings is not SettingsViewModel settings) return;
+
+        _ = colName switch
+        {
+            "Name" => settings.ShowName = false,
+            "Offset" => settings.ShowOffset = false,
+            "Size" => settings.ShowSize = false,
+            "CRC-32" => settings.ShowCrc32 = false,
+            "Type" => settings.ShowType = false,
+            _ => false
+        };
+    }
+
+    private async void AssetGridColumnHeader_ContextMenu_Copy(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem { Parent.Parent.Parent: DataGridColumnHeader { Content: string colName } }) return;
+        if (App.Current?.Settings is not SettingsViewModel settings) return;
+
+        Func<AssetInfo, string> selector = colName switch
+        {
+            "Name" => static x => x.Name,
+            "Offset" => static x => x.Offset.ToString(),
+            "Size" when settings.ShowSize is null => static x => FileSizeConverter.GetFileSize(x.Size),
+            "Size" => static x => x.Size.ToString(),
+            "CRC-32" => static x => x.Crc32.ToString(),
+            "Type" => static x => x.Type.ToString(),
+            _ => _ => ""
+        };
+        StringBuilder sb = new();
+        assetGrid.SelectAll();
+
+        foreach (AssetInfo asset in assetGrid.SelectedItems)
+        {
+            sb.AppendLine(selector(asset));
+        }
+
+        assetGrid.SelectedItems.Clear();
+        await App.SetClipboardText(sb.ToString());
     }
 }
