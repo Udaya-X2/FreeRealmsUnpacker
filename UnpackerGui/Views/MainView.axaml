@@ -308,12 +308,14 @@
                                 <ContextMenu>
                                     <MenuItem Header="Close"
                                               Command="{Binding $parent[ListBox].DataContext.RemoveSelectedFileCommand}"/>
+                                    <Separator/>
                                     <MenuItem Header="Delete"
                                               Command="{Binding $parent[ListBox].DataContext.DeleteSelectedFileCommand}"/>
                                     <MenuItem Header="Copy..."
                                               Command="{Binding $parent[ListBox].DataContext.CopySelectedFileCommand}"/>
                                     <MenuItem Header="Rename..."
                                               Command="{Binding $parent[ListBox].DataContext.RenameSelectedFileCommand}"/>
+                                    <Separator/>
                                     <MenuItem Header="Reload File"
                                               Command="{Binding $parent[ListBox].DataContext.ReloadSelectedFileCommand}"/>
                                     <MenuItem Header="Clear Assets"
