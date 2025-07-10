@@ -22,6 +22,7 @@
         <conv:ExpressionConverter x:Key="expressionConverter"/>
         <conv:ColorOpacityConverter x:Key="colorOpacityConverter"/>
         <conv:PathConverter x:Key="pathConverter"/>
+        <conv:PluralConverter x:Key="pluralConverter"/>
         <commands:StaticCommands x:Key="commands"/>
     </UserControl.Resources>
     <UserControl.Styles>
@@ -547,16 +548,19 @@
                                     <MenuItem Header="Open"
                                               IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.OpenSelectedAssetCommand}"/>
-                                    <MenuItem Header="Copy"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                              Click="AssetGridRow_ContextMenu_Copy"/>
                                     <MenuItem Header="Delete"
                                               IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
+                                    <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"/>
+                                    <MenuItem Header="Copy"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              Click="AssetGridRow_ContextMenu_Copy"/>
+                                    <MenuItem Header="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource pluralConverter}, ConverterParameter=Copy Row}"
+                                              Click="AssetGridRow_ContextMenu_CopyRows"/>
                                     <MenuItem Header="Select Asset File"
                                               IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.SelectFileCommand}"/>
-                                    <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"/>
+                                    <Separator/>
                                     <MenuItem Header="Save As..."
                                               IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.SaveSelectedAssetCommand}"/>

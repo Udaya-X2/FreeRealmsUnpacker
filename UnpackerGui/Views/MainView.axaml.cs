@@ -103,6 +103,9 @@ public partial class MainView : UserControl
         await App.SetClipboardText(text);
     }
 
+    private async void AssetGridRow_ContextMenu_CopyRows(object? sender, RoutedEventArgs e)
+        => await CopyAssetsToClipboard(assetGrid.SelectedItems);
+
     private void ListBox_Drop(ListBox sender, DragEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;
