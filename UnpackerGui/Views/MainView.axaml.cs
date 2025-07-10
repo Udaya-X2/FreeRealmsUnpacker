@@ -5,6 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -42,7 +43,7 @@ public partial class MainView : UserControl
         assetGrid.KeyBindings.Add(new KeyBinding
         {
             Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
-            Command = ReactiveCommand.Create(() => CopySelectedAssets(false))
+            Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
         });
         _cleanUp.Add(KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown));
         _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop));
@@ -145,9 +146,10 @@ public partial class MainView : UserControl
         await App.SetClipboardText(sb.ToString());
     }
 
-    private async void AssetGrid_Copy(object? sender, RoutedEventArgs e) => await CopySelectedAssets(true);
+    private async void AssetGrid_Copy(object? sender, RoutedEventArgs e)
+        => await CopyAssetsToClipboard(assetGrid.CollectionView);
 
-    private async Task CopySelectedAssets(bool selectAll)
+    private async Task CopyAssetsToClipboard(IEnumerable assets)
     {
         if (App.Current?.Settings is not SettingsViewModel settings) return;
         if (assetGrid.Columns.Where(x => x.IsVisible).ToArray() is not DataGridColumn[] { Length: > 0 } cols) return;
@@ -156,15 +158,14 @@ public partial class MainView : UserControl
         Func<AssetInfo, string>[] selectors = [.. colNames.Select(x => GetAssetInfoSelector(settings, x))];
         string[] values = new string[selectors.Length];
         StringBuilder sb = new();
-
-        if (selectAll) assetGrid.SelectAll();
-        if (assetGrid.SelectedItems.Count > 0 && settings.CopyColumnHeaders)
+        
+        if (settings.CopyColumnHeaders)
         {
             sb.AppendJoin(settings.ClipboardSeparator, colNames);
             sb.Append(settings.ClipboardLineSeparator);
         }
 
-        foreach (AssetInfo asset in assetGrid.SelectedItems)
+        foreach (AssetInfo asset in assets)
         {
             for (int i = 0; i < values.Length; i++)
             {
@@ -175,7 +176,6 @@ public partial class MainView : UserControl
             sb.Append(settings.ClipboardLineSeparator);
         }
 
-        if (selectAll) assetGrid.SelectedItems.Clear();
         await App.SetClipboardText(sb.ToString());
     }
 
