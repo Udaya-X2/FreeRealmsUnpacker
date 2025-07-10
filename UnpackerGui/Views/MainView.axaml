@@ -488,6 +488,7 @@
                           HorizontalScrollBarVisibility="Disabled"
                           BorderThickness="1"
                           BorderBrush="Gray"
+                          ClipboardCopyMode="None"
                           DoubleTapped="AssetGrid_DoubleTapped"
                           Sorting="AssetGrid_Sorting">
                     <!--Asset DataGrid Columns-->

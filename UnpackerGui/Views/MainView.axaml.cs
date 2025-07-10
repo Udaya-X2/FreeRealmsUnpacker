@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +11,7 @@ using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
-using UnpackerGui.Collections;
+using System.Threading.Tasks;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
@@ -38,6 +39,11 @@ public partial class MainView : UserControl
         _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= mainViewModel.SelectedAssets.Refresh));
 
         // Add hotkey/drag-and-drop event handlers (workaround for Linux).
+        assetGrid.KeyBindings.Add(new KeyBinding
+        {
+            Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
+            Command = ReactiveCommand.Create(() => CopySelectedAssets(false))
+        });
         _cleanUp.Add(KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown));
         _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop));
 
@@ -56,13 +62,8 @@ public partial class MainView : UserControl
         {
 #if DEBUG
             case (KeyModifiers.Alt, Key.D):
-                static string Date() => $"{DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]}";
-                //System.Diagnostics.Debug.Write(date);
-                //App.GetSettings().RecentFiles.ForEach(x => Debug.WriteLine($"{Date()} {x}"));
-                App.Current?.Resources.ForEach(x => Debug.WriteLine($"{Date()} {x.Key} -> {x.Value}"));
-                App.Current?.Styles.ForEach(x => Debug.WriteLine($"{Date()} {x}"));
-                Debug.Write(App.TryGetResource("ControlContentThemeFontSize", out double fontSize) ? fontSize : -1);
-                //System.Diagnostics.Debug.WriteLine(message);
+                static void Print(object? x) => Debug.WriteLine($"{DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} {x}");
+                assetGrid.KeyBindings.ForEach(Print);
                 break;
 #endif
             case (KeyModifiers.Alt, Key.C):
@@ -144,7 +145,9 @@ public partial class MainView : UserControl
         await App.SetClipboardText(sb.ToString());
     }
 
-    private async void AssetGrid_Copy(object? sender, RoutedEventArgs e)
+    private async void AssetGrid_Copy(object? sender, RoutedEventArgs e) => await CopySelectedAssets(true);
+
+    private async Task CopySelectedAssets(bool selectAll)
     {
         if (App.Current?.Settings is not SettingsViewModel settings) return;
         if (assetGrid.Columns.Where(x => x.IsVisible).ToArray() is not DataGridColumn[] { Length: > 0 } cols) return;
@@ -153,8 +156,8 @@ public partial class MainView : UserControl
         Func<AssetInfo, string>[] selectors = [.. colNames.Select(x => GetAssetInfoSelector(settings, x))];
         string[] values = new string[selectors.Length];
         StringBuilder sb = new();
-        assetGrid.SelectAll();
 
+        if (selectAll) assetGrid.SelectAll();
         if (assetGrid.SelectedItems.Count > 0 && settings.CopyColumnHeaders)
         {
             sb.AppendJoin(settings.ClipboardSeparator, colNames);
@@ -172,7 +175,7 @@ public partial class MainView : UserControl
             sb.Append(settings.ClipboardLineSeparator);
         }
 
-        assetGrid.SelectedItems.Clear();
+        if (selectAll) assetGrid.SelectedItems.Clear();
         await App.SetClipboardText(sb.ToString());
     }
 
