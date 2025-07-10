@@ -21,6 +21,7 @@
     <Window.Resources>
         <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="expressionConverter"/>
+        <conv:ControlStringConverter x:Key="controlStringConverter"/>
     </Window.Resources>
     <!--Base Panel-->
     <DockPanel Margin="10">
@@ -128,7 +129,40 @@
             <StackPanel IsVisible="{Binding SelectedIndex, Converter={StaticResource expressionConverter}, ConverterParameter=\=2, FallbackValue={x:Static dm:Variables.False}}">
                 <CheckBox Content="Show File Delete Dialog"
                           ToolTip.Tip="Display a warning message before deleting a file."
-                          IsChecked="{Binding Settings.ConfirmDelete}"/>
+                          IsChecked="{Binding Settings.ConfirmDelete, FallbackValue={x:Static dm:Variables.True}}"/>
+                <CheckBox Content="Copy Column Headers"
+                          ToolTip.Tip="Include the column headers when copying assets to the clipboard."
+                          IsChecked="{Binding Settings.CopyColumnHeaders, FallbackValue={x:Static dm:Variables.False}}"/>
+                <DockPanel>
+                    <TextBlock Text="Clipboard Separator: "
+                               ToolTip.Tip="The separator to use when copying assets to the clipboard."
+                               VerticalAlignment="Center"
+                               Margin="0 0 5 0">
+                    </TextBlock>
+                    <TextBox Text="{Binding Settings.ClipboardSeparator, FallbackValue={x:Static dm:Variables.ClipboardSeparator}}"
+                             HorizontalAlignment="Left"
+                             AcceptsTab="True"
+                             MinWidth="25"
+                             MinHeight="0"
+                             ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                </DockPanel>
+                <DockPanel Margin="0 5 0 0">
+                    <TextBlock Text="Clipboard Line Separator: "
+                               ToolTip.Tip="The line separator to use when copying assets to the clipboard."
+                               VerticalAlignment="Center"
+                               Margin="0 0 5 0">
+                    </TextBlock>
+                    <ComboBox SelectedItem="{Binding Settings.ClipboardLineSeparator, FallbackValue={x:Static dm:Variables.ClipboardLineSeparator}}"
+                              ItemsSource="{Binding LineSeparators, FallbackValue={x:Static dm:Variables.LineSeparators}}"
+                              MinHeight="0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ., Converter={StaticResource controlStringConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </DockPanel>
             </StackPanel>
         </StackPanel>
     </DockPanel>

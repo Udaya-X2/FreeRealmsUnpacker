@@ -1,5 +1,6 @@
 ﻿using AssetIO;
 using ReactiveUI;
+using System;
 using System.IO;
 using System.Text.Json.Serialization;
 using UnpackerGui.Collections;
@@ -20,6 +21,9 @@ public class SettingsViewModel : ViewModelBase
     private SearchOption _searchOption = SearchOption.AllDirectories;
     private bool _confirmDelete = true;
     private bool _deleteDataFiles = true;
+    private bool _copyColumnHeaders = false;
+    private string _clipboardSeparator = "\t";
+    private string _clipboardLineSeparator = Environment.NewLine;
     private string _inputDirectory = "";
     private string _outputDirectory = "";
 
@@ -132,6 +136,33 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _deleteDataFiles;
         set => this.RaiseAndSetIfChanged(ref _deleteDataFiles, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to include the column headers when copying assets to the clipboard.
+    /// </summary>
+    public bool CopyColumnHeaders
+    {
+        get => _copyColumnHeaders;
+        set => this.RaiseAndSetIfChanged(ref _copyColumnHeaders, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the separator used when copying assets to the clipboard.
+    /// </summary>
+    public string ClipboardSeparator
+    {
+        get => _clipboardSeparator;
+        set => this.RaiseAndSetIfChanged(ref _clipboardSeparator, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the line separator used when copying assets to the clipboard.
+    /// </summary>
+    public string ClipboardLineSeparator
+    {
+        get => _clipboardLineSeparator;
+        set => this.RaiseAndSetIfChanged(ref _clipboardLineSeparator, value);
     }
 
     /// <summary>

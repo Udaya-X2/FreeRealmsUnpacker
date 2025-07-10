@@ -39,6 +39,11 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     public bool IsValid => Crc32 == FileCrc32;
 
     /// <summary>
+    /// Gets the file size of the asset.
+    /// </summary>
+    public string FileSize => FileSizeConverter.GetFileSize(Size);
+
+    /// <summary>
     /// Initializes a new instance of <see cref="AssetInfo"/> by copying the properties of the specified asset and file.
     /// </summary>
     /// <param name="asset">The Free Realms asset.</param>
@@ -53,8 +58,7 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     /// </summary>
     /// <returns>A string representation of the asset's properties.</returns>
     public override string ToString()
-        => $"{Name}\nSize: {FileSizeConverter.GetFileSize(Size)}\n"
-           + $"File: {AssetFile.Name}\nLocation: {AssetFile.DirectoryName}";
+        => $"{Name}\nSize: {FileSize}\nFile: {AssetFile.Name}\nLocation: {AssetFile.DirectoryName}";
 
     /// <summary>
     /// Checks whether the two assets are equal by value, regardless of derived type.

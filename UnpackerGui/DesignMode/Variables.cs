@@ -1,6 +1,7 @@
 ﻿using AssetIO;
 using Avalonia.Controls;
 using FluentIcons.Common;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnpackerGui.Models;
@@ -38,6 +39,9 @@ public static class Variables
     public static PreferenceViewModel? SelectedPreference => Preferences?[0];
     public static string? PreferenceName => SelectedPreference?.Name;
     public static string? PreferenceDescription => SelectedPreference?.Description;
+    public static string? ClipboardSeparator => ",";
+    public static readonly IReadOnlyList<string>? LineSeparators;
+    public static string? ClipboardLineSeparator => LineSeparators?[0];
 
     /* AboutWindow Design Variables */
     public const string Version = "Version X.X.X";
@@ -83,7 +87,9 @@ public static class Variables
                 new AssetInfo("img5865697909579607231.dds", 41520, 2172, 348218531, assetFiles[0]),
                 new AssetInfo("img9858373679194077357.dds", 43692, 2172, 509118986, assetFiles[0]),
             ];
-            Preferences = new PreferencesViewModel().Preferences;
+            PreferencesViewModel preferencesViewModel = new();
+            Preferences = preferencesViewModel.Preferences;
+            LineSeparators = preferencesViewModel.LineSeparators;
         }
     }
 }

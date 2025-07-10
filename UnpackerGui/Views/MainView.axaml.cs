@@ -11,7 +11,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using UnpackerGui.Collections;
-using UnpackerGui.Converters;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
@@ -57,7 +56,7 @@ public partial class MainView : UserControl
         {
 #if DEBUG
             case (KeyModifiers.Alt, Key.D):
-                static string Date() => $"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]}";
+                static string Date() => $"{DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]}";
                 //System.Diagnostics.Debug.Write(date);
                 //App.GetSettings().RecentFiles.ForEach(x => Debug.WriteLine($"{Date()} {x}"));
                 App.Current?.Resources.ForEach(x => Debug.WriteLine($"{Date()} {x.Key} -> {x.Value}"));
@@ -122,7 +121,7 @@ public partial class MainView : UserControl
             "Size" => settings.ShowSize = false,
             "CRC-32" => settings.ShowCrc32 = false,
             "Type" => settings.ShowType = false,
-            _ => false
+            _ => throw new ArgumentException($"Cannot hide unknown column: \"{colName}\"")
         };
     }
 
@@ -131,25 +130,60 @@ public partial class MainView : UserControl
         if (sender is not MenuItem { Parent.Parent.Parent: DataGridColumnHeader { Content: string colName } }) return;
         if (App.Current?.Settings is not SettingsViewModel settings) return;
 
-        Func<AssetInfo, string> selector = colName switch
-        {
-            "Name" => static x => x.Name,
-            "Offset" => static x => x.Offset.ToString(),
-            "Size" when settings.ShowSize is null => static x => FileSizeConverter.GetFileSize(x.Size),
-            "Size" => static x => x.Size.ToString(),
-            "CRC-32" => static x => x.Crc32.ToString(),
-            "Type" => static x => x.Type.ToString(),
-            _ => _ => ""
-        };
+        Func<AssetInfo, string> selector = GetAssetInfoSelector(settings, colName);
         StringBuilder sb = new();
         assetGrid.SelectAll();
 
         foreach (AssetInfo asset in assetGrid.SelectedItems)
         {
-            sb.AppendLine(selector(asset));
+            sb.Append(selector(asset));
+            sb.Append(settings.ClipboardLineSeparator);
         }
 
         assetGrid.SelectedItems.Clear();
         await App.SetClipboardText(sb.ToString());
     }
+
+    private async void AssetGrid_Copy(object? sender, RoutedEventArgs e)
+    {
+        if (App.Current?.Settings is not SettingsViewModel settings) return;
+        if (assetGrid.Columns.Where(x => x.IsVisible).ToArray() is not DataGridColumn[] { Length: > 0 } cols) return;
+
+        string[] colNames = [.. cols.Select(x => (string)x.Header)];
+        Func<AssetInfo, string>[] selectors = [.. colNames.Select(x => GetAssetInfoSelector(settings, x))];
+        string[] values = new string[selectors.Length];
+        StringBuilder sb = new();
+        assetGrid.SelectAll();
+
+        if (assetGrid.SelectedItems.Count > 0 && settings.CopyColumnHeaders)
+        {
+            sb.AppendJoin(settings.ClipboardSeparator, colNames);
+            sb.Append(settings.ClipboardLineSeparator);
+        }
+
+        foreach (AssetInfo asset in assetGrid.SelectedItems)
+        {
+            for (int i = 0; i < values.Length; i++)
+            {
+                values[i] = selectors[i](asset);
+            }
+
+            sb.AppendJoin(settings.ClipboardSeparator, values);
+            sb.Append(settings.ClipboardLineSeparator);
+        }
+
+        assetGrid.SelectedItems.Clear();
+        await App.SetClipboardText(sb.ToString());
+    }
+
+    private static Func<AssetInfo, string> GetAssetInfoSelector(SettingsViewModel settings, string? name) => name switch
+    {
+        "Name" => static x => x.Name,
+        "Offset" => static x => x.Offset.ToString(),
+        "Size" when settings.ShowSize is null => static x => x.FileSize,
+        "Size" => static x => x.Size.ToString(),
+        "CRC-32" => static x => x.Crc32.ToString(),
+        "Type" => static x => x.Type,
+        _ => throw new ArgumentException($"Could not acquire selector for unknown name: \"{name}\"")
+    };
 }
