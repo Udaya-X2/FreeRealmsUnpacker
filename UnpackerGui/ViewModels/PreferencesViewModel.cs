@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
+using System.Reflection;
 
 namespace UnpackerGui.ViewModels;
 
@@ -16,6 +17,7 @@ public class PreferencesViewModel : ViewModelBase
 
     public ReactiveCommand<string, Unit> UpdateAssetFilterCommand { get; }
     public ReactiveCommand<Unit, Unit> UpdateSearchOptionCommand { get; }
+    public ReactiveCommand<Unit, Unit> ResetSettingsCommand { get; }
 
     private PreferenceViewModel _selectedPreference;
     private int _selectedIndex;
@@ -29,10 +31,11 @@ public class PreferencesViewModel : ViewModelBase
             new PreferenceViewModel("Misc Options", "Other options that don't fit the previous categories.")
         ]);
         LineSeparators = ["\r\n", "\n", "\r"];
+        Settings = App.GetSettings();
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
         UpdateSearchOptionCommand = ReactiveCommand.Create(UpdateSearchOption);
+        ResetSettingsCommand = ReactiveCommand.Create(ResetSettings);
         _selectedPreference = Preferences[0];
-        Settings = App.GetSettings();
     }
 
     public PreferenceViewModel SelectedPreference
@@ -50,4 +53,15 @@ public class PreferencesViewModel : ViewModelBase
     private void UpdateAssetFilter(string value) => Settings.AssetFilter ^= Enum.Parse<AssetType>(value);
 
     private void UpdateSearchOption() => Settings.SearchOption ^= SearchOption.AllDirectories;
+
+    private void ResetSettings()
+    {
+        SettingsViewModel settings = new();
+        const BindingFlags BindingAttr = BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public;
+
+        foreach (PropertyInfo property in Settings.GetType().GetProperties(BindingAttr))
+        {
+            property.SetValue(Settings, property.GetValue(settings));
+        }
+    }
 }

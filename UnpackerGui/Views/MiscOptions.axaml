@@ -54,5 +54,9 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
         </DockPanel>
+        <Button Content="Reset Settings"
+                Margin="0 5 0 0"
+                Command="{Binding ResetSettingsCommand}"
+                ToolTip.Tip="Reset all settings to the default values."/>
     </StackPanel>
 </UserControl>

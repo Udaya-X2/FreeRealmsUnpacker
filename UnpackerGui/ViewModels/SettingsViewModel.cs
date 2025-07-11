@@ -26,6 +26,8 @@ public class SettingsViewModel : ViewModelBase
     private string _clipboardLineSeparator = Environment.NewLine;
     private string _inputDirectory = "";
     private string _outputDirectory = "";
+    private RecentItemCollection<string> _recentFiles = [];
+    private RecentItemCollection<string> _recentFolders = [];
 
     /// <summary>
     /// Gets or sets whether to show the asset's name.
@@ -187,11 +189,19 @@ public class SettingsViewModel : ViewModelBase
     /// Gets or sets the recently used files.
     /// </summary>
     [JsonConverter(typeof(JsonRecentItemCollectionConverter<string>))]
-    public RecentItemCollection<string> RecentFiles { get; init; } = [];
+    public RecentItemCollection<string> RecentFiles
+    {
+        get => _recentFiles;
+        set => this.RaiseAndSetIfChanged(ref _recentFiles, value);
+    }
 
     /// <summary>
     /// Gets or sets the recently used folders.
     /// </summary>
     [JsonConverter(typeof(JsonRecentItemCollectionConverter<string>))]
-    public RecentItemCollection<string> RecentFolders { get; init; } = [];
+    public RecentItemCollection<string> RecentFolders
+    {
+        get => _recentFolders;
+        set => this.RaiseAndSetIfChanged(ref _recentFolders, value);
+    }
 }
