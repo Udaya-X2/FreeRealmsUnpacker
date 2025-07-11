@@ -49,6 +49,15 @@
       <Compile Update="Views\ConfirmWindow.axaml.cs">
         <DependentUpon>ConfirmWindow.axaml</DependentUpon>
       </Compile>
+      <Compile Update="Views\FileConflictOptionsView.axaml.cs">
+        <DependentUpon>FileConflictOptionsView.axaml</DependentUpon>
+      </Compile>
+      <Compile Update="Views\FolderOptionsView.axaml.cs">
+        <DependentUpon>FolderOptionsView.axaml</DependentUpon>
+      </Compile>
+      <Compile Update="Views\MiscellaneousView.axaml.cs">
+        <DependentUpon>MiscellaneousView.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

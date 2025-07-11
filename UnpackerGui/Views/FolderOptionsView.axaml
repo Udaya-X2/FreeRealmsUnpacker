@@ -10,7 +10,7 @@
              mc:Ignorable="d"
              d:DesignWidth="300"
              d:DesignHeight="200"
-             x:Class="UnpackerGui.Views.FolderOptions"
+             x:Class="UnpackerGui.Views.FolderOptionsView"
              x:DataType="vm:PreferencesViewModel">
     <UserControl.Resources>
         <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>

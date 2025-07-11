@@ -4,9 +4,9 @@ using Avalonia.Markup.Xaml;
 
 namespace UnpackerGui.Views;
 
-public partial class FileConflictOptions : UserControl
+public partial class MiscellaneousView : UserControl
 {
-    public FileConflictOptions()
+    public MiscellaneousView()
     {
         InitializeComponent();
     }

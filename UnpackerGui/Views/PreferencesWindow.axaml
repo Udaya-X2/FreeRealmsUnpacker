@@ -51,9 +51,9 @@
                        TextWrapping="Wrap"
                        Margin="0,0,0,10"/>
             <!--Option Views-->
-            <views:FileConflictOptions IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter} ConverterParameter=\=0, FallbackValue={x:Static dm:Variables.True}}"/>
-            <views:FolderOptions IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1, FallbackValue={x:Static dm:Variables.False}}"/>
-            <views:MiscOptions IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=2, FallbackValue={x:Static dm:Variables.False}}"/>
+            <views:FileConflictOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter} ConverterParameter=\=0, FallbackValue={x:Static dm:Variables.True}}"/>
+            <views:FolderOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1, FallbackValue={x:Static dm:Variables.False}}"/>
+            <views:MiscellaneousView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=2, FallbackValue={x:Static dm:Variables.False}}"/>
         </StackPanel>
     </DockPanel>
 </Window>
