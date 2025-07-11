@@ -1,0 +1,46 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+             xmlns:conv="clr-namespace:UnpackerGui.Converters"
+             xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:views="clr-namespace:UnpackerGui.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="300"
+             d:DesignHeight="200"
+             x:Class="UnpackerGui.Views.FileConflictOptions"
+             x:DataType="vm:PreferencesViewModel">
+    <UserControl.Resources>
+        <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
+        <conv:ControlStringConverter x:Key="ControlStringConverter"/>
+    </UserControl.Resources>
+    <StackPanel>
+        <RadioButton GroupName="FileSettings.ConflictOptions"
+                     Content="Overwrite"
+                     ToolTip.Tip="Overwrite the existing file."
+                     IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay, FallbackValue={x:Static dm:Variables.True}}"/>
+        <RadioButton GroupName="FileSettings.ConflictOptions"
+                     Content="Skip"
+                     ToolTip.Tip="Skip the file."
+                     IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Skip, Mode=TwoWay}"/>
+        <RadioButton GroupName="FileSettings.ConflictOptions"
+                     Content="Rename"
+                     ToolTip.Tip="Add a number to the new file's name."
+                     IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Rename, Mode=TwoWay}"/>
+        <RadioButton GroupName="FileSettings.ConflictOptions"
+                     Content="Make Directory"
+                     ToolTip.Tip="Create a directory with a number added to its name for the new file."
+                     IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MkDir, Mode=TwoWay}"/>
+        <RadioButton GroupName="FileSettings.ConflictOptions"
+                     Content="Make Subdirectory"
+                     ToolTip.Tip="Create a subdirectory with a distinct name for each file."
+                     IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MkSubdir, Mode=TwoWay}"/>
+        <RadioButton GroupName="FileSettings.ConflictOptions"
+                     Content="Make Subdirectory Tree"
+                     ToolTip.Tip="Create a subdirectory with a directory for each file."
+                     IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"/>
+    </StackPanel>
+</UserControl>
