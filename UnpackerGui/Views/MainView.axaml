@@ -16,14 +16,14 @@
              Loaded="MainView_Loaded"
              Unloaded="MainView_Unloaded">
     <UserControl.Resources>
-        <conv:FileSizeConverter x:Key="fileSizeConverter"/>
-        <conv:BooleanToStringConverter x:Key="booleanToStringConverter"/>
-        <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
-        <conv:ExpressionConverter x:Key="expressionConverter"/>
-        <conv:ColorOpacityConverter x:Key="colorOpacityConverter"/>
-        <conv:PathConverter x:Key="pathConverter"/>
-        <conv:PluralConverter x:Key="pluralConverter"/>
-        <commands:StaticCommands x:Key="commands"/>
+        <conv:FileSizeConverter x:Key="FileSizeConverter"/>
+        <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
+        <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
+        <conv:ColorOpacityConverter x:Key="ColorOpacityConverter"/>
+        <conv:PathConverter x:Key="PathConverter"/>
+        <conv:PluralConverter x:Key="PluralConverter"/>
+        <commands:StaticCommands x:Key="Commands"/>
     </UserControl.Resources>
     <UserControl.Styles>
         <!--Hide Validation Error Messages-->
@@ -80,13 +80,13 @@
                                     <MenuItem Background="{TemplateBinding Background}"
                                               CommandParameter="{Binding}">
                                         <MenuItem.Header>
-                                            <TextBlock Text="{Binding ., Converter={StaticResource pathConverter}}"
+                                            <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
                                                        TextTrimming="CharacterEllipsis"/>
                                         </MenuItem.Header>
                                         <MenuItem.Styles>
                                             <Style Selector="MenuItem:pointerover">
                                                 <Setter Property="Background">
-                                                    <MultiBinding Converter="{StaticResource colorOpacityConverter}">
+                                                    <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
                                                         <Binding Source="{DynamicResource HoverBrush}"/>
                                                         <Binding Source="0.1"/>
                                                     </MultiBinding>
@@ -129,13 +129,13 @@
                                     <MenuItem Background="{TemplateBinding Background}"
                                               CommandParameter="{Binding}">
                                         <MenuItem.Header>
-                                            <TextBlock Text="{Binding ., Converter={StaticResource pathConverter}}"
+                                            <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
                                                        TextTrimming="CharacterEllipsis"/>
                                         </MenuItem.Header>
                                         <MenuItem.Styles>
                                             <Style Selector="MenuItem:pointerover">
                                                 <Setter Property="Background">
-                                                    <MultiBinding Converter="{StaticResource colorOpacityConverter}">
+                                                    <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
                                                         <Binding Source="{DynamicResource HoverBrush}"/>
                                                         <Binding Source="0.1"/>
                                                     </MultiBinding>
@@ -237,7 +237,7 @@
                                 <StackPanel Orientation="Horizontal"
                                             VerticalAlignment="Center"
                                             Height="14">
-                                    <Button IsVisible="{Binding FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
+                                    <Button IsVisible="{Binding FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                                             Command="{Binding ShowDataFilesCommand}">
                                         <Button.Template>
                                             <ControlTemplate>
@@ -283,16 +283,16 @@
                                                     <MenuItem Header="Delete"
                                                               Command="{Binding $parent[ListBox].DataContext.DeleteDataFilesCommand}"/>
                                                     <MenuItem Header="Rename..."
-                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                                               Command="{Binding $parent[ListBox].DataContext.RenameDataFileCommand}"/>
-                                                    <Separator IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"/>
+                                                    <Separator IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"/>
                                                     <MenuItem Header="Copy Full File Path"
-                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                                              Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
+                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                                              Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
                                                               CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.FullName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
                                                     <MenuItem Header="Open Containing Folder"
-                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
-                                                              Command="{Binding Source={StaticResource commands} Path=OpenFileCommand}"
+                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                                              Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
                                                               CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.DirectoryName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
                                                 </ContextMenu>
                                             </Setter>
@@ -324,10 +324,10 @@
                                               Command="{Binding $parent[ListBox].DataContext.ClearSelectedFileCommand}"/>
                                     <Separator/>
                                     <MenuItem Header="Copy Full File Path"
-                                              Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
+                                              Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
                                               CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
                                     <MenuItem Header="Open Containing Folder"
-                                              Command="{Binding Source={StaticResource commands} Path=OpenFileCommand}"
+                                              Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
                                               CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.DirectoryName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
                                     <Separator/>
                                     <MenuItem Header="Extract To..."
@@ -337,10 +337,10 @@
                                     <MenuItem Header="Add Assets from Folder..."
                                               Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFolderCommand}"/>
                                     <MenuItem Header="Add Asset .dat Files..."
-                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay, FallbackValue={x:Static dm:Variables.False}}"
+                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay, FallbackValue={x:Static dm:Variables.False}}"
                                               Command="{Binding $parent[ListBox].DataContext.AddDataFilesCommand}"/>
                                     <MenuItem Header="Convert To .pack File"
-                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay, FallbackValue={x:Static dm:Variables.False}}"
+                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay, FallbackValue={x:Static dm:Variables.False}}"
                                               Command="{Binding $parent[ListBox].DataContext.ConvertSelectedFileCommand}"/>
                                     <Separator/>
                                     <MenuItem Header="Properties"
@@ -393,8 +393,8 @@
                              ToolTip.Tip="The total size of all assets in this file."/>
                     <TextBox Grid.Row="2"
                              Grid.Column="1"
-                             Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource fileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"
-                             ToolTip.Tip="{Binding SelectedAssetFile?.Size, Converter={StaticResource fileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"/>
+                             Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"
+                             ToolTip.Tip="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"/>
                 </Grid>
             </Grid>
             <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
@@ -517,7 +517,7 @@
                                             MaxWidth="150"
                                             IsVisible="{Binding Settings.ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
                                             Header="Size"
-                                            Binding="{Binding Size, Converter={StaticResource fileSizeConverter}, Mode=OneWay}"/>
+                                            Binding="{Binding Size, Converter={StaticResource FileSizeConverter}, Mode=OneWay}"/>
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
@@ -543,29 +543,29 @@
                             <Setter Property="ContextMenu">
                                 <ContextMenu>
                                     <MenuItem Header="Open"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.OpenSelectedAssetCommand}"/>
                                     <MenuItem Header="Delete"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
-                                    <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"/>
+                                    <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"/>
                                     <MenuItem Header="Copy"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                               Click="AssetGridRow_ContextMenu_Copy"/>
-                                    <MenuItem Header="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource pluralConverter}, ConverterParameter=Copy Row}"
+                                    <MenuItem Header="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource PluralConverter}, ConverterParameter=Copy Row}"
                                               Click="AssetGridRow_ContextMenu_CopyRows"/>
                                     <MenuItem Header="Select Asset File"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.SelectFileCommand}"/>
                                     <Separator/>
                                     <MenuItem Header="Save As..."
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=\=1}}"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.SaveSelectedAssetCommand}"/>
                                     <MenuItem Header="Extract Selected Assets..."
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.ExtractSelectedAssetsCommand}"/>
                                     <MenuItem Header="Delete Selected Assets"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource expressionConverter}, ConverterParameter=>1}}"
+                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
                                               Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
                                 </ContextMenu>
                             </Setter>
@@ -626,7 +626,7 @@
                     <StackPanel Orientation="Horizontal"
                                 Margin="0 0 10 0"
                                 IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource booleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
+                                ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource BooleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
                         <ic:FluentIcon Icon="Warning"
                                        Margin="0 0 5 0"
                                        IsVisible="{Binding !ValidationOptions.ShowValid}"/>

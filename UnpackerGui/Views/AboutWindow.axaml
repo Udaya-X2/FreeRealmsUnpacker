@@ -20,7 +20,7 @@
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
     <Window.Resources>
-        <commands:StaticCommands x:Key="commands"/>
+        <commands:StaticCommands x:Key="Commands"/>
     </Window.Resources>
     <DockPanel>
         <Image Source="avares://UnpackerGui/Assets/unpacker.ico"
@@ -55,7 +55,7 @@
                 <Button.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy Link"
-                                  Command="{Binding Source={StaticResource commands} Path=CopyCommand}"
+                                  Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
                                   CommandParameter="{Binding SourceCodeUrl}"/>
                     </ContextMenu>
                 </Button.ContextMenu>

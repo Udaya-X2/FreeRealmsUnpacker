@@ -19,9 +19,9 @@
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
     <Window.Resources>
-        <conv:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
-        <conv:ExpressionConverter x:Key="expressionConverter"/>
-        <conv:ControlStringConverter x:Key="controlStringConverter"/>
+        <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
+        <conv:ControlStringConverter x:Key="ControlStringConverter"/>
     </Window.Resources>
     <!--Base Panel-->
     <DockPanel Margin="10">
@@ -50,53 +50,53 @@
                        TextWrapping="Wrap"
                        Margin="0,0,0,10"/>
             <!--File Conflict Options-->
-            <StackPanel IsVisible="{Binding SelectedIndex, Converter={StaticResource expressionConverter} ConverterParameter=\=0, FallbackValue={x:Static dm:Variables.True}}">
+            <StackPanel IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter} ConverterParameter=\=0, FallbackValue={x:Static dm:Variables.True}}">
                 <RadioButton GroupName="FileSettings.ConflictOptions"
                              Content="Overwrite"
                              ToolTip.Tip="Overwrite the existing file."
-                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay, FallbackValue={x:Static dm:Variables.True}}"/>
+                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Overwrite, Mode=TwoWay, FallbackValue={x:Static dm:Variables.True}}"/>
                 <RadioButton GroupName="FileSettings.ConflictOptions"
                              Content="Skip"
                              ToolTip.Tip="Skip the file."
-                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Skip, Mode=TwoWay}"/>
+                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Skip, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileSettings.ConflictOptions"
                              Content="Rename"
                              ToolTip.Tip="Add a number to the new file's name."
-                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Rename, Mode=TwoWay}"/>
+                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Rename, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileSettings.ConflictOptions"
                              Content="Make Directory"
                              ToolTip.Tip="Create a directory with a number added to its name for the new file."
-                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkDir, Mode=TwoWay}"/>
+                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MkDir, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileSettings.ConflictOptions"
                              Content="Make Subdirectory"
                              ToolTip.Tip="Create a subdirectory with a distinct name for each file."
-                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkSubdir, Mode=TwoWay}"/>
+                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MkSubdir, Mode=TwoWay}"/>
                 <RadioButton GroupName="FileSettings.ConflictOptions"
                              Content="Make Subdirectory Tree"
                              ToolTip.Tip="Create a subdirectory with a directory for each file."
-                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"/>
+                             IsChecked="{Binding Settings.ConflictOptions, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=MkTree, Mode=TwoWay}"/>
             </StackPanel>
             <!--Folder Options-->
-            <DockPanel IsVisible="{Binding SelectedIndex, Converter={StaticResource expressionConverter}, ConverterParameter=\=1, FallbackValue={x:Static dm:Variables.False}}">
+            <DockPanel IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1, FallbackValue={x:Static dm:Variables.False}}">
                 <StackPanel Margin="0 0 15 0">
                     <CheckBox Content="Game Assets"
                               ToolTip.Tip="Assets for the game, typically located in the &quot;Free Realms/&quot; directory."
-                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateAssetFilterCommand}"
                               CommandParameter="Game"/>
                     <CheckBox Content="TCG Assets"
                               ToolTip.Tip="Image assets for the TCG, typically located in the &quot;Free Realms/assets/&quot; directory."
-                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateAssetFilterCommand}"
                               CommandParameter="Tcg"/>
                     <CheckBox Content="Resource Assets"
                               ToolTip.Tip="Resource assets for the TCG, typically located in the &quot;Free Realms/tcg/&quot; directory."
-                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateAssetFilterCommand}"
                               CommandParameter="Resource"/>
                     <CheckBox Content="PS3 Assets"
                               ToolTip.Tip="Assets for the PS3 version of the game, typically located in the &quot;NPUA30048/USRDIR/&quot; or &quot;NPEA00299/USRDIR/&quot; directory."
-                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=PS3, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PS3, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateAssetFilterCommand}"
                               CommandParameter="PS3"/>
                     <CheckBox Content="Unknown Assets"
@@ -106,27 +106,27 @@
                 <StackPanel>
                     <CheckBox Content="Pack Assets"
                               ToolTip.Tip="Asset .pack files, which consist of both asset information and content."
-                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateAssetFilterCommand}"
                               CommandParameter="Pack"/>
                     <CheckBox Content="Dat Assets"
                               ToolTip.Tip="Asset .dat files, which come with a manifest.dat file consisting of asset information."
-                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateAssetFilterCommand}"
                               CommandParameter="Dat"/>
                     <CheckBox Content="Temp Assets"
                               ToolTip.Tip="Asset .temp files, which retain a portion of the original asset data."
-                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=Temp, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Temp, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateAssetFilterCommand}"
                               CommandParameter="Temp"/>
                     <CheckBox Content="Recursive Search"
                               ToolTip.Tip="Search for assets in folders recursively."
-                              IsChecked="{Binding Settings.SearchOption, Converter={StaticResource enumToBooleanConverter}, ConverterParameter=AllDirectories, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                              IsChecked="{Binding Settings.SearchOption, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=AllDirectories, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                               Command="{Binding UpdateSearchOptionCommand}"/>
                 </StackPanel>
             </DockPanel>
             <!--Misc Options-->
-            <StackPanel IsVisible="{Binding SelectedIndex, Converter={StaticResource expressionConverter}, ConverterParameter=\=2, FallbackValue={x:Static dm:Variables.False}}">
+            <StackPanel IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=2, FallbackValue={x:Static dm:Variables.False}}">
                 <CheckBox Content="Show File Delete Dialog"
                           ToolTip.Tip="Display a warning message before deleting a file."
                           IsChecked="{Binding Settings.ConfirmDelete, FallbackValue={x:Static dm:Variables.True}}"/>
@@ -158,7 +158,7 @@
                               MinHeight="0">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding ., Converter={StaticResource controlStringConverter}}"/>
+                                <TextBlock Text="{Binding ., Converter={StaticResource ControlStringConverter}}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
