@@ -354,51 +354,45 @@
                 <Grid Grid.Row="2"
                       Margin="0 5 0 0"
                       RowDefinitions="*,*,*"
-                      ColumnDefinitions="*,2.5*"
+                      ColumnDefinitions="Auto,*"
                       IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <Grid.Styles>
+                        <Style Selector="TextBox">
+                            <Setter Property="MinWidth"
+                                    Value="0"/>
+                            <Setter Property="MinHeight"
+                                    Value="0"/>
+                            <Setter Property="CornerRadius"
+                                    Value="0"/>
+                            <Setter Property="IsReadOnly"
+                                    Value="True"/>
+                        </Style>
+                    </Grid.Styles>
                     <!--Path-->
                     <TextBox Grid.Row="0"
                              Grid.Column="0"
-                             CornerRadius="0"
-                             IsReadOnly="True"
-                             VerticalAlignment="Center"
                              Text="Path"
                              ToolTip.Tip="The full path of this file."/>
                     <TextBox Grid.Row="0"
                              Grid.Column="1"
-                             CornerRadius="0"
-                             IsReadOnly="True"
-                             VerticalAlignment="Center"
                              Text="{Binding SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.PropertyGridPath}}"
                              ToolTip.Tip="{Binding SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.PropertyGridPath}}"/>
                     <!--Count-->
                     <TextBox Grid.Row="1"
                              Grid.Column="0"
-                             CornerRadius="0"
-                             IsReadOnly="True"
-                             VerticalAlignment="Center"
                              Text="Count"
                              ToolTip.Tip="The number of assets contained in this file."/>
                     <TextBox Grid.Row="1"
                              Grid.Column="1"
-                             CornerRadius="0"
-                             IsReadOnly="True"
-                             VerticalAlignment="Center"
                              Text="{Binding SelectedAssetFile?.Count, FallbackValue={x:Static dm:Variables.PropertyGridCount}}"
                              ToolTip.Tip="{Binding SelectedAssetFile?.Count, FallbackValue={x:Static dm:Variables.PropertyGridCount}}"/>
                     <!--Size-->
                     <TextBox Grid.Row="2"
                              Grid.Column="0"
-                             CornerRadius="0"
-                             IsReadOnly="True"
-                             VerticalAlignment="Center"
                              Text="Size"
                              ToolTip.Tip="The total size of all assets in this file."/>
                     <TextBox Grid.Row="2"
                              Grid.Column="1"
-                             CornerRadius="0"
-                             IsReadOnly="True"
-                             VerticalAlignment="Center"
                              Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource fileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"
                              ToolTip.Tip="{Binding SelectedAssetFile?.Size, Converter={StaticResource fileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"/>
                 </Grid>
