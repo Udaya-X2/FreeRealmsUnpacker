@@ -65,6 +65,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutCommand { get; }
+    public ReactiveCommand<Unit, Unit> ShowPropertiesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetFolderCommand { get; }
     public ReactiveCommand<Unit, Unit> AddAssetFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
@@ -120,6 +121,7 @@ public class MainViewModel : ViewModelBase
         ExitCommand = ReactiveCommand.Create(App.ShutDown);
         ShowPreferencesCommand = ReactiveCommand.CreateFromTask(ShowPreferences);
         ShowAboutCommand = ReactiveCommand.CreateFromTask(ShowAbout);
+        ShowPropertiesCommand = ReactiveCommand.CreateFromTask(ShowProperties);
         AddAssetFolderCommand = ReactiveCommand.CreateFromTask(AddAssetFolder);
         AddAssetFilesCommand = ReactiveCommand.CreateFromTask(AddAssetFiles);
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
@@ -258,6 +260,14 @@ public class MainViewModel : ViewModelBase
     private async Task ShowAbout() => await App.GetService<IDialogService>().ShowDialog(new AboutWindow
     {
         DataContext = _about
+    });
+
+    /// <summary>
+    /// Opens the properties window for the selected asset file.
+    /// </summary>
+    private async Task ShowProperties() => await App.GetService<IDialogService>().ShowDialog(new PropertiesWindow
+    {
+        DataContext = SelectedAssetFile!.Refresh()
     });
 
     /// <summary>

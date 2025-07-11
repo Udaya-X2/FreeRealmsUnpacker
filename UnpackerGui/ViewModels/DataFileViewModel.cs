@@ -48,7 +48,6 @@ public class DataFileViewModel : ViewModelBase
         this.RaisePropertyChanged(nameof(Name));
         this.RaisePropertyChanged(nameof(FullName));
         this.RaisePropertyChanged(nameof(DirectoryName));
-
         return true;
     }
 

@@ -299,14 +299,10 @@ public class AssetFile : IEnumerable<Asset>
     }
 
     /// <summary>
-    /// Refreshes the asset file's attributes and related data files.
+    /// Refreshes the asset file's attributes.
     /// </summary>
     /// <exception cref="IOException"/>
-    public virtual void Refresh()
-    {
-        Info.Refresh();
-        DataFiles = FileType == AssetType.Dat ? ClientDirectory.EnumerateDataFiles(Info) : [];
-    }
+    public virtual void Refresh() => Info.Refresh();
 
     /// <summary>
     /// Returns an enumerable collection of the assets in the asset file.

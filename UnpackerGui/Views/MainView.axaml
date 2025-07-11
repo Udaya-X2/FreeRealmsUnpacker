@@ -342,6 +342,9 @@
                                     <MenuItem Header="Convert To .pack File"
                                               IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource enumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay, FallbackValue={x:Static dm:Variables.False}}"
                                               Command="{Binding $parent[ListBox].DataContext.ConvertSelectedFileCommand}"/>
+                                    <Separator/>
+                                    <MenuItem Header="Properties"
+                                              Command="{Binding $parent[ListBox].DataContext.ShowPropertiesCommand}"/>
                                 </ContextMenu>
                             </Setter>
                         </Style>

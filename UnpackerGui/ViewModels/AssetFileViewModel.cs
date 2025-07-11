@@ -6,6 +6,7 @@ using ReactiveUI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -122,15 +123,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         set => this.RaiseAndSetIfChanged(ref _selectedDataFile, value);
     }
 
-    /// <inheritdoc cref="AssetFile.Name"/>
-    public string Name => _assetFile.Name;
-
-    /// <inheritdoc cref="AssetFile.FullName"/>
-    public string FullName => _assetFile.FullName;
-
-    /// <inheritdoc cref="AssetFile.DirectoryName"/>
-    public string? DirectoryName => _assetFile.DirectoryName;
-
     /// <inheritdoc cref="AssetFile.Type"/>
     public AssetType Type => _assetFile.Type;
 
@@ -140,11 +132,62 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// <inheritdoc cref="AssetFile.DirectoryType"/>
     public AssetType DirectoryType => _assetFile.DirectoryType;
 
+    /// <inheritdoc cref="FileSystemInfo.Attributes"/>
+    public FileAttributes Attributes => _assetFile.Attributes;
+
+    /// <inheritdoc cref="FileSystemInfo.CreationTime"/>
+    public DateTime CreationTime => _assetFile.CreationTime;
+
+    /// <inheritdoc cref="FileSystemInfo.CreationTimeUtc"/>
+    public DateTime CreationTimeUtc => _assetFile.CreationTimeUtc;
+
+    /// <inheritdoc cref="FileInfo.Directory"/>
+    public DirectoryInfo? Directory => _assetFile.Directory;
+
+    /// <inheritdoc cref="FileInfo.DirectoryName"/>
+    public string? DirectoryName => _assetFile.DirectoryName;
+
+    /// <inheritdoc cref="FileInfo.Exists"/>
+    public bool Exists => _assetFile.Exists;
+
+    /// <inheritdoc cref="FileSystemInfo.Extension"/>
+    public string Extension => _assetFile.Extension;
+
+    /// <inheritdoc cref="FileSystemInfo.FullName"/>
+    public string FullName => _assetFile.FullName;
+
+    /// <inheritdoc cref="FileInfo.IsReadOnly"/>
+    public bool IsReadOnly => _assetFile.IsReadOnly;
+
+    /// <inheritdoc cref="FileSystemInfo.LastAccessTime"/>
+    public DateTime LastAccessTime => _assetFile.LastAccessTime;
+
+    /// <inheritdoc cref="FileSystemInfo.LastAccessTimeUtc"/>
+    public DateTime LastAccessTimeUtc => _assetFile.LastAccessTimeUtc;
+
+    /// <inheritdoc cref="FileSystemInfo.LastWriteTime"/>
+    public DateTime LastWriteTime => _assetFile.LastWriteTime;
+
+    /// <inheritdoc cref="FileSystemInfo.LastWriteTimeUtc"/>
+    public DateTime LastWriteTimeUtc => _assetFile.LastWriteTimeUtc;
+
+    /// <inheritdoc cref="FileInfo.Length"/>
+    public long Length => _assetFile.Length;
+
+    /// <inheritdoc cref="FileSystemInfo.LinkTarget"/>
+    public string? LinkTarget => _assetFile.LinkTarget;
+
+    /// <inheritdoc cref="FileInfo.Name"/>
+    public string Name => _assetFile.Name;
+
+    /// <inheritdoc cref="FileSystemInfo.UnixFileMode"/>
+    public UnixFileMode UnixFileMode => _assetFile.UnixFileMode;
+
     /// <inheritdoc/>
     public int Count => _assets.Count;
 
     /// <inheritdoc/>
-    public bool IsReadOnly => true;
+    bool ICollection<AssetInfo>.IsReadOnly => true;
 
     /// <inheritdoc/>
     public AssetInfo this[int index]
@@ -201,7 +244,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         this.RaisePropertyChanged(nameof(Name));
         this.RaisePropertyChanged(nameof(FullName));
         this.RaisePropertyChanged(nameof(DirectoryName));
-
         return true;
     }
 
@@ -222,6 +264,15 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// Creates or overwrites the asset file.
     /// </summary>
     public void Create() => _assetFile.Create();
+
+    /// <summary>
+    /// Refreshes the asset file's attributes, returning a reference to this instance after the operation is completed.
+    /// </summary>
+    public AssetFileViewModel Refresh()
+    {
+        _assetFile.Refresh();
+        return this;
+    }
 
     /// <summary>
     /// Reloads the asset file, returning a new <see cref="AssetFileViewModel"/> with the updated data.
