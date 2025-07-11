@@ -71,7 +71,8 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> AddPackFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddManifestFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> AddDataFilesCommand { get; }
-    public ReactiveCommand<IEnumerable<string>, Unit> AddFilesCommand { get; }
+    public ReactiveCommand<string[], Unit> AddArgumentFilesCommand { get; }
+    public ReactiveCommand<IEnumerable<string>, Unit> AddDragDropFilesCommand { get; }
     public ReactiveCommand<string, Unit> AddRecentFileCommand { get; }
     public ReactiveCommand<Unit, Unit> AddRecentFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> EmptyRecentFilesCommand { get; }
@@ -127,7 +128,8 @@ public class MainViewModel : ViewModelBase
         AddPackFilesCommand = ReactiveCommand.CreateFromTask(AddPackFiles);
         AddManifestFilesCommand = ReactiveCommand.CreateFromTask(AddManifestFiles);
         AddDataFilesCommand = ReactiveCommand.CreateFromTask(AddDataFiles);
-        AddFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddFiles);
+        AddArgumentFilesCommand = ReactiveCommand.CreateFromTask<string[]>(AddArgumentFiles);
+        AddDragDropFilesCommand = ReactiveCommand.CreateFromTask<IEnumerable<string>>(AddDragDropFiles);
         AddRecentFileCommand = ReactiveCommand.CreateFromTask<string>(AddRecentFile);
         AddRecentFilesCommand = ReactiveCommand.CreateFromTask(AddRecentFiles);
         EmptyRecentFilesCommand = ReactiveCommand.Create(EmptyRecentFiles);
@@ -370,9 +372,14 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Adds the specified files to the source asset files.
+    /// Adds the specified argument files to the source asset files.
     /// </summary>
-    private async Task AddFiles(IEnumerable<string> files) => await AddFiles(files, strict: false);
+    private Task AddArgumentFiles(string[] files) => files.Length == 0 ? Task.CompletedTask : AddFiles(files);
+
+    /// <summary>
+    /// Adds the specified drag-and-drop files to the source asset files.
+    /// </summary>
+    private async Task AddDragDropFiles(IEnumerable<string> files) => await AddFiles(files, strict: false);
 
     /// <summary>
     /// Adds the specified files to the source asset files, using the given options.

@@ -51,7 +51,7 @@ public partial class MainView : UserControl
         // If arguments were passed to the application, load them in as asset files.
         if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { Args: string[] args })
         {
-            mainViewModel.AddFilesCommand.Execute(args);
+            mainViewModel.AddArgumentFilesCommand.Execute(args);
         }
     }
 
@@ -111,7 +111,7 @@ public partial class MainView : UserControl
         if (DataContext is not MainViewModel mainViewModel) return;
         if (e.Data.Get(DataFormats.Files) is not IEnumerable<IStorageItem> files) return;
 
-        mainViewModel.AddFilesCommand.Invoke(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
+        mainViewModel.AddDragDropFilesCommand.Invoke(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
     }
 
     private void AssetGridColumnHeader_ContextMenu_Hide(object? sender, RoutedEventArgs e)
