@@ -40,7 +40,7 @@
         <TextBox Grid.Row="0"
                  Grid.Column="1"
                  Text="{Binding Name}"
-                 ToolTip.Tip="The name of the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="1"
                  Grid.Column="0"
                  Text="Location"
@@ -48,7 +48,7 @@
         <TextBox Grid.Row="1"
                  Grid.Column="1"
                  Text="{Binding DirectoryName}"
-                 ToolTip.Tip="The location of the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="2"
                  Grid.Column="0"
                  Text="Path"
@@ -56,7 +56,7 @@
         <TextBox Grid.Row="2"
                  Grid.Column="1"
                  Text="{Binding FullName}"
-                 ToolTip.Tip="The full path of the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="3"
                  Grid.Column="0"
                  Text="Count"
@@ -64,7 +64,7 @@
         <TextBox Grid.Row="3"
                  Grid.Column="1"
                  Text="{Binding Count}"
-                 ToolTip.Tip="The number of assets in the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="4"
                  Grid.Column="0"
                  Text="Size"
@@ -72,7 +72,7 @@
         <TextBox Grid.Row="4"
                  Grid.Column="1"
                  Text="{Binding Size}"
-                 ToolTip.Tip="The total size of all the assets in the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="5"
                  Grid.Column="0"
                  Text="Length"
@@ -80,7 +80,7 @@
         <TextBox Grid.Row="5"
                  Grid.Column="1"
                  Text="{Binding Length}"
-                 ToolTip.Tip="The size of the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="6"
                  Grid.Column="0"
                  Text="Type"
@@ -88,7 +88,7 @@
         <TextBox Grid.Row="6"
                  Grid.Column="1"
                  Text="{Binding Type}"
-                 ToolTip.Tip="The asset type of the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="7"
                  Grid.Column="0"
                  Text="Created"
@@ -96,7 +96,7 @@
         <TextBox Grid.Row="7"
                  Grid.Column="1"
                  Text="{Binding CreationTime}"
-                 ToolTip.Tip="The date the file was created."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="8"
                  Grid.Column="0"
                  Text="Accessed"
@@ -104,7 +104,7 @@
         <TextBox Grid.Row="8"
                  Grid.Column="1"
                  Text="{Binding LastAccessTime}"
-                 ToolTip.Tip="The date the file was last accessed."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="9"
                  Grid.Column="0"
                  Text="Modified"
@@ -112,7 +112,7 @@
         <TextBox Grid.Row="9"
                  Grid.Column="1"
                  Text="{Binding LastWriteTime}"
-                 ToolTip.Tip="The date the file was last modified."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
         <TextBox Grid.Row="10"
                  Grid.Column="0"
                  Text="Attributes"
@@ -120,6 +120,6 @@
         <TextBox Grid.Row="10"
                  Grid.Column="1"
                  Text="{Binding Attributes}"
-                 ToolTip.Tip="The attributes of the file."/>
+                 ToolTip.Tip="{Binding $self.Text}"/>
     </Grid>
 </Window>

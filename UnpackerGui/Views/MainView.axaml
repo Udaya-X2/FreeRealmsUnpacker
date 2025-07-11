@@ -376,7 +376,7 @@
                     <TextBox Grid.Row="0"
                              Grid.Column="1"
                              Text="{Binding SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.PropertyGridPath}}"
-                             ToolTip.Tip="{Binding SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.PropertyGridPath}}"/>
+                             ToolTip.Tip="{Binding $self.Text}"/>
                     <!--Count-->
                     <TextBox Grid.Row="1"
                              Grid.Column="0"
@@ -385,7 +385,7 @@
                     <TextBox Grid.Row="1"
                              Grid.Column="1"
                              Text="{Binding SelectedAssetFile?.Count, FallbackValue={x:Static dm:Variables.PropertyGridCount}}"
-                             ToolTip.Tip="{Binding SelectedAssetFile?.Count, FallbackValue={x:Static dm:Variables.PropertyGridCount}}"/>
+                             ToolTip.Tip="{Binding $self.Text}"/>
                     <!--Size-->
                     <TextBox Grid.Row="2"
                              Grid.Column="0"
@@ -394,7 +394,7 @@
                     <TextBox Grid.Row="2"
                              Grid.Column="1"
                              Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"
-                             ToolTip.Tip="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"/>
+                             ToolTip.Tip="{Binding $self.Text}"/>
                 </Grid>
             </Grid>
             <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
