@@ -41,7 +41,7 @@ public static class CollectionExtensions
     /// <summary>
     /// Removes the first element of the list that matches the specified predicate.
     /// </summary>
-    public static void Remove<T>(this IExtendedList<T> list, Predicate<T> match)
+    public static void Remove<T>(this IList<T> list, Predicate<T> match)
     {
         for (int i = 0; i < list.Count; i++)
         {

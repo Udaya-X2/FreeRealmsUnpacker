@@ -2,8 +2,10 @@
 using DynamicData;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using UnpackerGui.Collections;
+using UnpackerGui.Extensions;
 
 namespace UnpackerGui.ViewModels;
 
@@ -52,10 +54,27 @@ public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
         }
         catch when (_recentFiles != null && assetFile != null)
         {
-            _recentFiles.Remove(assetFile.FullName);
+            _recentFiles.Remove(x => TryGetFullPath(x) == assetFile.FullName);
             throw;
         }
 
         _sourceAssetFiles.AddRange(assetFileViewModels);
+    }
+
+    /// <summary>
+    /// <inheritdoc cref="Path.GetFullPath(string)"/>
+    /// </summary>
+    /// <param name="path"><inheritdoc cref="Path.GetFullPath(string)"/></param>
+    /// <returns><inheritdoc cref="Path.GetFullPath(string)"/></returns>
+    private static string TryGetFullPath(string path)
+    {
+        try
+        {
+            return Path.GetFullPath(path);
+        }
+        catch
+        {
+            return path;
+        }
     }
 }
