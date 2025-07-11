@@ -17,52 +17,59 @@
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
         <conv:ControlStringConverter x:Key="ControlStringConverter"/>
     </UserControl.Resources>
-    <DockPanel>
-        <StackPanel Margin="0 0 15 0">
+    <StackPanel>
+        <UniformGrid Columns="2"
+                     ColumnSpacing="30"
+                     HorizontalAlignment="Left">
             <CheckBox Content="Game Assets"
                       ToolTip.Tip="Assets for the game, typically located in the &quot;Free Realms/&quot; directory."
                       IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Game"/>
-            <CheckBox Content="TCG Assets"
-                      ToolTip.Tip="Image assets for the TCG, typically located in the &quot;Free Realms/assets/&quot; directory."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
-                      Command="{Binding UpdateAssetFilterCommand}"
-                      CommandParameter="Tcg"/>
-            <CheckBox Content="Resource Assets"
-                      ToolTip.Tip="Resource assets for the TCG, typically located in the &quot;Free Realms/tcg/&quot; directory."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
-                      Command="{Binding UpdateAssetFilterCommand}"
-                      CommandParameter="Resource"/>
-            <CheckBox Content="PS3 Assets"
-                      ToolTip.Tip="Assets for the PS3 version of the game, typically located in the &quot;NPUA30048/USRDIR/&quot; or &quot;NPEA00299/USRDIR/&quot; directory."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PS3, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
-                      Command="{Binding UpdateAssetFilterCommand}"
-                      CommandParameter="PS3"/>
-            <CheckBox Content="Unknown Assets"
-                      ToolTip.Tip="Assets with unknown names, possibly renamed or not from a Free Realms directory."
-                      IsChecked="{Binding Settings.AddUnknownAssets}"/>
-        </StackPanel>
-        <StackPanel>
             <CheckBox Content="Pack Assets"
                       ToolTip.Tip="Asset .pack files, which consist of both asset information and content."
                       IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Pack"/>
+            <CheckBox Content="TCG Assets"
+                      ToolTip.Tip="Image assets for the TCG, typically located in the &quot;Free Realms/assets/&quot; directory."
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      Command="{Binding UpdateAssetFilterCommand}"
+                      CommandParameter="Tcg"/>
             <CheckBox Content="Dat Assets"
                       ToolTip.Tip="Asset .dat files, which come with a manifest.dat file consisting of asset information."
                       IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Dat"/>
+            <CheckBox Content="Resource Assets"
+                      ToolTip.Tip="Resource assets for the TCG, typically located in the &quot;Free Realms/tcg/&quot; directory."
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      Command="{Binding UpdateAssetFilterCommand}"
+                      CommandParameter="Resource"/>
             <CheckBox Content="Temp Assets"
                       ToolTip.Tip="Asset .temp files, which retain a portion of the original asset data."
                       IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Temp, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Temp"/>
+            <CheckBox Content="PS3 Assets"
+                      ToolTip.Tip="Assets for the PS3 version of the game, typically located in the &quot;NPUA30048/USRDIR/&quot; or &quot;NPEA00299/USRDIR/&quot; directory."
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PS3, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      Command="{Binding UpdateAssetFilterCommand}"
+                      CommandParameter="PS3"/>
             <CheckBox Content="Recursive Search"
                       ToolTip.Tip="Search for assets in folders recursively."
                       IsChecked="{Binding Settings.SearchOption, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=AllDirectories, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
                       Command="{Binding UpdateSearchOptionCommand}"/>
-        </StackPanel>
-    </DockPanel>
+        </UniformGrid>
+        <DockPanel>
+            <CheckBox Content="Unknown Assets"
+                      ToolTip.Tip="Assets with unknown names, possibly renamed or not from a Free Realms directory."
+                      IsChecked="{Binding Settings.AddUnknownAssets}"/>
+            <ic:FluentIcon Icon="Warning"
+                           HorizontalAlignment="Left"
+                           Margin="5 0 0 0"
+                           IsVisible="{Binding Settings.AddUnknownAssets}"
+                           ToolTip.Tip="May add non Free Realms files, such as the .pack files used by Git in &quot;.git/objects/pack/.&quot;"/>
+        </DockPanel>
+    </StackPanel>
 </UserControl>
