@@ -52,7 +52,7 @@ public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
                 Tick();
             }
         }
-        catch when (_recentFiles != null && assetFile != null)
+        catch when (!token.IsCancellationRequested && _recentFiles != null && assetFile != null)
         {
             _recentFiles.Remove(x => TryGetFullPath(x) == assetFile.FullName);
             throw;
