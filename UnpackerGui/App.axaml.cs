@@ -121,7 +121,8 @@ public partial class App : Application
     {
         ColorTheme.Dark => ThemeVariant.Dark,
         ColorTheme.Light => ThemeVariant.Light,
-        _ => ThemeVariant.Default
+        ColorTheme.SystemDefault => ThemeVariant.Default,
+        _ => throw new ArgumentOutOfRangeException(nameof(theme), SR.ArgumentOutOfRange_Enum)
     };
 
     /// <summary>

@@ -79,6 +79,15 @@ namespace UnpackerGui {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enum value was out of legal range..
+        /// </summary>
+        internal static string ArgumentOutOfRange_Enum {
+            get {
+                return ResourceManager.GetString("ArgumentOutOfRange_Enum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Collection is read-only..
         /// </summary>
         internal static string NotSupported_ReadOnlyCollection {
