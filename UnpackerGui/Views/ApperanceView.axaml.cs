@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using FluentIcons.Common;
 using System;
 using UnpackerGui.Enums;
 
@@ -10,5 +11,6 @@ public partial class AppearanceView : UserControl
     {
         InitializeComponent();
         colorThemeComboBox.ItemsSource = Enum.GetValues<ColorTheme>();
+        iconTypeComboBox.ItemsSource = new IconVariant[] { IconVariant.Regular, IconVariant.Filled };
     }
 }

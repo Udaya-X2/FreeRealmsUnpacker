@@ -1,4 +1,5 @@
 ﻿using AssetIO;
+using FluentIcons.Common;
 using ReactiveUI;
 using System;
 using System.IO;
@@ -21,6 +22,7 @@ public class SettingsViewModel : ViewModelBase
     private bool _addUnknownAssets = false;
     private SearchOption _searchOption = SearchOption.AllDirectories;
     private ColorTheme _colorTheme = ColorTheme.SystemDefault;
+    private IconVariant _iconVariant = IconVariant.Regular;
     private bool _confirmDelete = true;
     private bool _deleteDataFiles = true;
     private bool _copyColumnHeaders = false;
@@ -141,6 +143,16 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _colorTheme;
         set => this.RaiseAndSetIfChanged(ref _colorTheme, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the Fluent icon variant.
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<IconVariant>))]
+    public IconVariant IconVariant
+    {
+        get => _iconVariant;
+        set => this.RaiseAndSetIfChanged(ref _iconVariant, value);
     }
 
     /// <summary>

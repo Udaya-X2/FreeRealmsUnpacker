@@ -18,20 +18,30 @@
         <conv:ControlStringConverter x:Key="ControlStringConverter"/>
         <conv:TitleCaseConverter x:Key="TitleCaseConverter"/>
     </UserControl.Resources>
-    <StackPanel>
+    <StackPanel Spacing="10">
         <DockPanel>
             <TextBlock Text="Color Theme:"
+                       ToolTip.Tip="The application's theme color."
                        VerticalAlignment="Center"/>
             <ComboBox Name="colorThemeComboBox"
                       MinHeight="0"
                       Margin="5 0 0 0"
-                      SelectedItem="{Binding Settings.ColorTheme}">
+                      SelectedItem="{Binding Settings.ColorTheme, FallbackValue={x:Static dm:Variables.ThemeColor}}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding ., Converter={StaticResource TitleCaseConverter}}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
+        </DockPanel>
+        <DockPanel>
+            <TextBlock Text="Icon Type:"
+                       ToolTip.Tip="The Fluent UI icon type."
+                       VerticalAlignment="Center"/>
+            <ComboBox Name="iconTypeComboBox"
+                      MinHeight="0"
+                      Margin="5 0 0 0"
+                      SelectedItem="{Binding Settings.IconVariant, FallbackValue={x:Static dm:Variables.IconType}}"/>
         </DockPanel>
     </StackPanel>
 </UserControl>

@@ -60,7 +60,7 @@ public partial class App : Application
         {
             AppDomain.CurrentDomain.UnhandledException += OnFatalException;
             RxApp.DefaultExceptionHandler = Observer.Create<Exception>(OnRecoverableException);
-            ReadSettings();
+            DataContext = ReadSettings();
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()
@@ -79,7 +79,7 @@ public partial class App : Application
         }
         if (Design.IsDesignMode)
         {
-            Settings = new SettingsViewModel() { ColorTheme = ColorTheme.Dark };
+            DataContext = Settings = new SettingsViewModel() { ColorTheme = ColorTheme.Dark };
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -193,17 +193,18 @@ public partial class App : Application
     /// Reads the application's settings from the settings file.
     /// </summary>
     /// <returns>The application settings.</returns>
-    private void ReadSettings()
+    private SettingsViewModel ReadSettings()
     {
         try
         {
             using FileStream stream = File.OpenRead(SettingsFile);
-            Settings = JsonSerializer.Deserialize<SettingsViewModel>(stream, s_jsonOptions) ?? new SettingsViewModel();
+            Settings = JsonSerializer.Deserialize<SettingsViewModel>(stream, s_jsonOptions);
         }
         catch
         {
-            Settings = new SettingsViewModel();
         }
+
+        return Settings ??= new SettingsViewModel();
     }
 
     /// <summary>

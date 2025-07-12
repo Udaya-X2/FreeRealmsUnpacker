@@ -4,6 +4,7 @@ using FluentIcons.Common;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using UnpackerGui.Enums;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
 
@@ -42,6 +43,8 @@ public static class Variables
     public static string? ClipboardSeparator => ",";
     public static readonly IReadOnlyList<string>? LineSeparators;
     public static string? ClipboardLineSeparator => LineSeparators?[0];
+    public const ColorTheme ThemeColor = ColorTheme.Dark;
+    public const IconVariant IconType = IconVariant.Regular;
 
     /* AboutWindow Design Variables */
     public const string Version = "Version X.X.X";

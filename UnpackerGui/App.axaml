@@ -1,13 +1,19 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="UnpackerGui.App"
              xmlns:sys="using:System"
+             xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             x:Class="UnpackerGui.App"
              RequestedThemeVariant="Default">
     <Application.Styles>
         <FluentTheme/>
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
         <Style Selector="DataGridCell">
             <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="ic|FluentIcon">
+            <Setter Property="IconVariant"
+                    Value="{Binding Source={x:Static Application.Current} Path=((vm:SettingsViewModel)DataContext).IconVariant}"/>
         </Style>
     </Application.Styles>
     <Application.Resources>
