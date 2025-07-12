@@ -39,29 +39,26 @@
                 <LineBreak/><LineBreak/>
                 It also includes other utilities, such as creating asset files, adding/deleting/validating assets, and fixing corrupted asset files (i.e., .pack.temp files).
             </TextBlock>
-            <Button Cursor="Hand"
-                    ToolTip.Tip="{Binding SourceCodeUrl}">
-                <Button.Template>
-                    <ControlTemplate>
-                        <TextBlock TextDecorations="Underline"
-                                   Foreground="#4493f8"
-                                   Text="Source Code"/>
-                    </ControlTemplate>
-                </Button.Template>
-                <Interaction.Behaviors>
-                    <ButtonClickEventTriggerBehavior>
-                        <InvokeCommandAction Command="{Binding OpenLinkCommand}"
-                                             CommandParameter="{Binding SourceCodeUrl}"/>
-                    </ButtonClickEventTriggerBehavior>
-                </Interaction.Behaviors>
-                <Button.ContextMenu>
+            <HyperlinkButton Content="Source Code"
+                             NavigateUri="{Binding SourceCodeUrl}"
+                             IsVisited="True"
+                             Padding="0">
+                <ToolTip.Tip>
+                    <TextBlock Text="{Binding SourceCodeUrl}"
+                               TextDecorations="{x:Null}"/>
+                </ToolTip.Tip>
+                <HyperlinkButton.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Copy Link"
-                                  Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
-                                  CommandParameter="{Binding SourceCodeUrl}"/>
+                        <MenuItem Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
+                                  CommandParameter="{Binding SourceCodeUrl}">
+                            <MenuItem.Header>
+                                <TextBlock Text="Copy Link"
+                                           TextDecorations="{x:Null}"/>
+                            </MenuItem.Header>
+                        </MenuItem>
                     </ContextMenu>
-                </Button.ContextMenu>
-            </Button>
+                </HyperlinkButton.ContextMenu>
+            </HyperlinkButton>
         </StackPanel>
     </DockPanel>
 </Window>
