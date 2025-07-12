@@ -19,7 +19,7 @@ public class DesignConfirmViewModel : ConfirmViewModel
     //public override string Message { get; init; } = """
     //    Are you sure you want to permanently delete this file?
 
-    //    Assets_001.pack
+    //    Assets_000.pack
     //    Type: Game, Pack
     //    Count: 6120
     //    Size: 48.35 MB
@@ -28,7 +28,7 @@ public class DesignConfirmViewModel : ConfirmViewModel
     //public override string Message { get; init; } = """
     //    Are you sure you want to permanently delete this file?
 
-    //    Assets_001.dat
+    //    Assets_000.dat
     //    Size: 200 MB
     //    Location: C:\Program Files\Sony Online Entertainment\Installed Games\Free Realms
     //    """;

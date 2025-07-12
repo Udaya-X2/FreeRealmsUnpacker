@@ -129,58 +129,58 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// <inheritdoc cref="AssetFile.DirectoryType"/>
     public AssetType DirectoryType => _assetFile.DirectoryType;
 
-    /// <inheritdoc cref="FileSystemInfo.Attributes"/>
+    /// <inheritdoc cref="AssetFile.Attributes"/>
     public FileAttributes Attributes => _assetFile.Attributes;
 
-    /// <inheritdoc cref="FileSystemInfo.CreationTime"/>
+    /// <inheritdoc cref="AssetFile.CreationTime"/>
     public DateTime CreationTime => _assetFile.CreationTime;
 
-    /// <inheritdoc cref="FileSystemInfo.CreationTimeUtc"/>
+    /// <inheritdoc cref="AssetFile.CreationTimeUtc"/>
     public DateTime CreationTimeUtc => _assetFile.CreationTimeUtc;
 
-    /// <inheritdoc cref="FileInfo.Directory"/>
+    /// <inheritdoc cref="AssetFile.Directory"/>
     public DirectoryInfo? Directory => _assetFile.Directory;
 
-    /// <inheritdoc cref="FileInfo.DirectoryName"/>
+    /// <inheritdoc cref="AssetFile.DirectoryName"/>
     public string? DirectoryName => _assetFile.DirectoryName;
 
-    /// <inheritdoc cref="FileInfo.Exists"/>
+    /// <inheritdoc cref="AssetFile.Exists"/>
     public bool Exists => _assetFile.Exists;
 
-    /// <inheritdoc cref="FileSystemInfo.Extension"/>
+    /// <inheritdoc cref="AssetFile.Extension"/>
     public string Extension => _assetFile.Extension;
 
-    /// <inheritdoc cref="FileSystemInfo.FullName"/>
+    /// <inheritdoc cref="AssetFile.FullName"/>
     public string FullName => _assetFile.FullName;
 
-    /// <inheritdoc cref="FileInfo.IsReadOnly"/>
+    /// <inheritdoc cref="AssetFile.IsReadOnly"/>
     public bool IsReadOnly => _assetFile.IsReadOnly;
 
-    /// <inheritdoc cref="FileSystemInfo.LastAccessTime"/>
+    /// <inheritdoc cref="AssetFile.LastAccessTime"/>
     public DateTime LastAccessTime => _assetFile.LastAccessTime;
 
-    /// <inheritdoc cref="FileSystemInfo.LastAccessTimeUtc"/>
+    /// <inheritdoc cref="AssetFile.LastAccessTimeUtc"/>
     public DateTime LastAccessTimeUtc => _assetFile.LastAccessTimeUtc;
 
-    /// <inheritdoc cref="FileSystemInfo.LastWriteTime"/>
+    /// <inheritdoc cref="AssetFile.LastWriteTime"/>
     public DateTime LastWriteTime => _assetFile.LastWriteTime;
 
-    /// <inheritdoc cref="FileSystemInfo.LastWriteTimeUtc"/>
+    /// <inheritdoc cref="AssetFile.LastWriteTimeUtc"/>
     public DateTime LastWriteTimeUtc => _assetFile.LastWriteTimeUtc;
 
-    /// <inheritdoc cref="FileInfo.Length"/>
+    /// <inheritdoc cref="AssetFile.Length"/>
     public long Length => _assetFile.Length;
 
-    /// <inheritdoc cref="FileSystemInfo.LinkTarget"/>
+    /// <inheritdoc cref="AssetFile.LinkTarget"/>
     public string? LinkTarget => _assetFile.LinkTarget;
 
-    /// <inheritdoc cref="FileInfo.Name"/>
+    /// <inheritdoc cref="AssetFile.Name"/>
     public string Name => _assetFile.Name;
 
-    /// <inheritdoc cref="FileSystemInfo.UnixFileMode"/>
+    /// <inheritdoc cref="AssetFile.UnixFileMode"/>
     public UnixFileMode UnixFileMode => _assetFile.UnixFileMode;
 
-    /// <inheritdoc/>
+    /// <inheritdoc cref="AssetFile.UnixFileMode"/>
     public int Count => _assets.Count;
 
     /// <inheritdoc/>
