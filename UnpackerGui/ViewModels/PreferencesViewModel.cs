@@ -2,16 +2,16 @@
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Reactive;
 using System.Reflection;
+using UnpackerGui.Models;
 
 namespace UnpackerGui.ViewModels;
 
 public class PreferencesViewModel : ViewModelBase
 {
-    public ReadOnlyObservableCollection<PreferenceViewModel> Preferences { get; }
+    public IReadOnlyList<Preference> Preferences { get; }
     public IReadOnlyList<string> LineSeparators { get; }
     public SettingsViewModel Settings { get; }
 
@@ -19,18 +19,18 @@ public class PreferencesViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> UpdateSearchOptionCommand { get; }
     public ReactiveCommand<Unit, Unit> ResetSettingsCommand { get; }
 
-    private PreferenceViewModel _selectedPreference;
+    private Preference _selectedPreference;
     private int _selectedIndex;
 
     public PreferencesViewModel()
     {
-        Preferences = new ReadOnlyObservableCollection<PreferenceViewModel>(
+        Preferences =
         [
-            new PreferenceViewModel("File Conflict Options", "Select how to extract assets with conflicting names."),
-            new PreferenceViewModel("Folder Options", "Check the types of assets to add when opening a folder."),
-            new PreferenceViewModel("Appearance", "Customize the display settings."),
-            new PreferenceViewModel("Miscellaneous", "Other options that don't fit the previous categories.")
-        ]);
+            new Preference("File Conflict Options", "Select how to extract assets with conflicting names."),
+            new Preference("Folder Options", "Check the types of assets to add when opening a folder."),
+            new Preference("Appearance", "Customize the display settings."),
+            new Preference("Miscellaneous", "Other options that don't fit the previous categories.")
+        ];
         LineSeparators = ["\r\n", "\n", "\r"];
         Settings = App.GetSettings();
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
@@ -39,7 +39,7 @@ public class PreferencesViewModel : ViewModelBase
         _selectedPreference = Preferences[0];
     }
 
-    public PreferenceViewModel SelectedPreference
+    public Preference SelectedPreference
     {
         get => _selectedPreference;
         set => this.RaiseAndSetIfChanged(ref _selectedPreference, value);

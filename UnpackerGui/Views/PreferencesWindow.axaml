@@ -33,7 +33,7 @@
                  Margin="0,0,15,0"
                  SelectionMode="AlwaysSelected">
             <ListBox.ItemTemplate>
-                <DataTemplate DataType="vm:PreferenceViewModel">
+                <DataTemplate>
                     <TextBlock Text="{Binding Name}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
