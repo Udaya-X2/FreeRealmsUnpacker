@@ -3,11 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reactive;
@@ -15,6 +15,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
+using UnpackerGui.Enums;
 using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
@@ -78,8 +79,7 @@ public partial class App : Application
         }
         if (Design.IsDesignMode)
         {
-            RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
-            Settings = new SettingsViewModel();
+            Settings = new SettingsViewModel() { ColorTheme = ColorTheme.Dark };
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -110,10 +110,19 @@ public partial class App : Application
     /// <summary>
     /// Gets the current application's settings.
     /// </summary>
-    /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     public static SettingsViewModel GetSettings()
         => Current?.Settings ?? throw new InvalidOperationException("Application settings not initialized.");
+
+    /// <summary>
+    /// Sets the current application's theme to the specified value.
+    /// </summary>
+    public static void SetTheme(ColorTheme theme) => Current!.RequestedThemeVariant = theme switch
+    {
+        ColorTheme.Dark => ThemeVariant.Dark,
+        ColorTheme.Light => ThemeVariant.Light,
+        _ => ThemeVariant.Default
+    };
 
     /// <summary>
     /// Tries to get the application resource with the specified key.

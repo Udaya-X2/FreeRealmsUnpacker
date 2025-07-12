@@ -28,6 +28,7 @@ public class PreferencesViewModel : ViewModelBase
         [
             new PreferenceViewModel("File Conflict Options", "Select how to extract assets with conflicting names."),
             new PreferenceViewModel("Folder Options", "Check the types of assets to add when opening a folder."),
+            new PreferenceViewModel("Appearance", "Customize the display settings."),
             new PreferenceViewModel("Miscellaneous", "Other options that don't fit the previous categories.")
         ]);
         LineSeparators = ["\r\n", "\n", "\r"];

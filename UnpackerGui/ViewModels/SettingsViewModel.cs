@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Text.Json.Serialization;
 using UnpackerGui.Collections;
+using UnpackerGui.Enums;
 
 namespace UnpackerGui.ViewModels;
 
@@ -19,6 +20,7 @@ public class SettingsViewModel : ViewModelBase
     private AssetType _assetFilter = AssetType.All;
     private bool _addUnknownAssets = false;
     private SearchOption _searchOption = SearchOption.AllDirectories;
+    private ColorTheme _colorTheme = ColorTheme.SystemDefault;
     private bool _confirmDelete = true;
     private bool _deleteDataFiles = true;
     private bool _copyColumnHeaders = false;
@@ -28,6 +30,15 @@ public class SettingsViewModel : ViewModelBase
     private string _outputDirectory = "";
     private RecentItemCollection<string> _recentFiles = [];
     private RecentItemCollection<string> _recentFolders = [];
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SettingsViewModel"/> class.
+    /// </summary>
+    public SettingsViewModel()
+    {
+        this.WhenAnyValue(x => x.ColorTheme)
+            .Subscribe(App.SetTheme);
+    }
 
     /// <summary>
     /// Gets or sets whether to show the asset's name.
@@ -120,6 +131,16 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _searchOption;
         set => this.RaiseAndSetIfChanged(ref _searchOption, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the application's theme color.
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter<ColorTheme>))]
+    public ColorTheme ColorTheme
+    {
+        get => _colorTheme;
+        set => this.RaiseAndSetIfChanged(ref _colorTheme, value);
     }
 
     /// <summary>

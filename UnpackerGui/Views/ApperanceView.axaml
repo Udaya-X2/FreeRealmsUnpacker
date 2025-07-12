@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+             xmlns:conv="clr-namespace:UnpackerGui.Converters"
+             xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:views="clr-namespace:UnpackerGui.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="300"
+             d:DesignHeight="200"
+             x:Class="UnpackerGui.Views.AppearanceView"
+             x:DataType="vm:PreferencesViewModel">
+    <UserControl.Resources>
+        <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
+        <conv:ControlStringConverter x:Key="ControlStringConverter"/>
+        <conv:TitleCaseConverter x:Key="TitleCaseConverter"/>
+    </UserControl.Resources>
+    <StackPanel>
+        <DockPanel>
+            <TextBlock Text="Color Theme:"
+                       VerticalAlignment="Center"/>
+            <ComboBox Name="colorThemeComboBox"
+                      MinHeight="0"
+                      Margin="5 0 0 0"
+                      SelectedItem="{Binding Settings.ColorTheme}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ., Converter={StaticResource TitleCaseConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </DockPanel>
+    </StackPanel>
+</UserControl>

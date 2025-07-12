@@ -25,7 +25,7 @@
                   ToolTip.Tip="Include the column headers when copying assets to the clipboard."
                   IsChecked="{Binding Settings.CopyColumnHeaders, FallbackValue={x:Static dm:Variables.False}}"/>
         <DockPanel>
-            <TextBlock Text="Clipboard Separator: "
+            <TextBlock Text="Clipboard Separator:"
                        ToolTip.Tip="The separator to use when copying assets to the clipboard."
                        VerticalAlignment="Center"
                        Margin="0 0 5 0">
@@ -39,7 +39,7 @@
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
         </DockPanel>
         <DockPanel Margin="0 5 0 0">
-            <TextBlock Text="Clipboard Line Separator: "
+            <TextBlock Text="Clipboard Line Separator:"
                        ToolTip.Tip="The line separator to use when copying assets to the clipboard."
                        VerticalAlignment="Center"
                        Margin="0 0 5 0">

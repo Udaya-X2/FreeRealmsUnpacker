@@ -55,6 +55,9 @@
       <Compile Update="Views\FolderOptionsView.axaml.cs">
         <DependentUpon>FolderOptionsView.axaml</DependentUpon>
       </Compile>
+      <Compile Update="Views\ApperanceView.axaml.cs">
+        <DependentUpon>ApperanceView.axaml</DependentUpon>
+      </Compile>
       <Compile Update="Views\MiscellaneousView.axaml.cs">
         <DependentUpon>MiscellaneousView.axaml</DependentUpon>
       </Compile>
