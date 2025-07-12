@@ -30,7 +30,11 @@ public class DialogService(Window window) : IDialogService
     {
         ErrorWindow errorWindow = new()
         {
-            DataContext = new ErrorViewModel(exception, !unhandled)
+            DataContext = new ErrorViewModel()
+            {
+                Exception = exception,
+                Handled = !unhandled
+            }
         };
         await ShowDialog(owner, errorWindow, terminal);
     }

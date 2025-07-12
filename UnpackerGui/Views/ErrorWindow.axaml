@@ -3,7 +3,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         xmlns:ic="using:FluentIcons.Avalonia"
         x:Class="UnpackerGui.Views.ErrorWindow"
         mc:Ignorable="d"
@@ -17,6 +16,9 @@
         CanResize="False"
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
+    <Design.DataContext>
+        <vm:DesignErrorViewModel/>
+    </Design.DataContext>
     <StackPanel Margin="20">
         <Grid ColumnDefinitions="Auto,*"
               HorizontalAlignment="Left"
@@ -27,7 +29,7 @@
                            Grid.Column="0"/>
             <TextBlock HorizontalAlignment="Left"
                        MaxHeight="200"
-                       Text="{Binding Message, FallbackValue={x:Static dm:Variables.ErrorMessage}}"
+                       Text="{Binding Message}"
                        TextWrapping="Wrap"
                        Grid.Column="1"/>
         </Grid>
@@ -39,7 +41,7 @@
                                IsVisible="{Binding ShowDetails}"/>
                 <ic:FluentIcon Icon="CaretDown"
                                Margin="-5 -3 1 -3"
-                               IsVisible="{Binding !ShowDetails, FallbackValue={x:Static dm:Variables.False}}"/>
+                               IsVisible="{Binding !ShowDetails}"/>
                 <TextBlock Text="Details"/>
             </StackPanel>
         </Button>
@@ -48,7 +50,7 @@
                       IsVisible="{Binding ShowDetails}">
             <TextBox IsReadOnly="True"
                      MaxHeight="128"
-                     Text="{Binding DetailsMessage, FallbackValue={x:Static dm:Variables.DetailsMessage}}"/>
+                     Text="{Binding DetailsMessage}"/>
         </ScrollViewer>
     </StackPanel>
 </Window>

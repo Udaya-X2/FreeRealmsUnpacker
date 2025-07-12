@@ -4,7 +4,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
-        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         xmlns:ic="using:FluentIcons.Avalonia"
         xmlns:commands="clr-namespace:UnpackerGui.Commands"
         x:Class="UnpackerGui.Views.AboutWindow"
@@ -19,6 +18,9 @@
         CanResize="False"
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
+    <Design.DataContext>
+        <vm:DesignAboutViewModel/>
+    </Design.DataContext>
     <Window.Resources>
         <commands:StaticCommands x:Key="Commands"/>
     </Window.Resources>
@@ -28,8 +30,8 @@
                Margin="15"/>
         <StackPanel VerticalAlignment="Center">
             <TextBlock Text="Free Realms Unpacker"/>
-            <TextBlock Text="{Binding Version, FallbackValue={x:Static dm:Variables.Version}}"/>
-            <TextBlock Text="{Binding Copyright, FallbackValue={x:Static dm:Variables.Copyright}}"
+            <TextBlock Text="{Binding Version}"/>
+            <TextBlock Text="{Binding Copyright}"
                        Margin="0,0,0,15"/>
             <TextBlock TextWrapping="Wrap"
                        Margin="0,0,20,15">

@@ -9,9 +9,9 @@ namespace UnpackerGui.ViewModels;
 
 public class AboutViewModel : ViewModelBase
 {
-    public string Version { get; }
-    public string Copyright { get; }
-    public string SourceCodeUrl { get; }
+    public virtual string Version { get; }
+    public virtual string Copyright { get; }
+    public virtual string SourceCodeUrl { get; }
 
     public ReactiveCommand<string, Unit> OpenLinkCommand { get; }
 

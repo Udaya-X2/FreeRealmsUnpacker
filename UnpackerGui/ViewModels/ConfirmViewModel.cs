@@ -6,11 +6,11 @@ namespace UnpackerGui.ViewModels;
 
 public class ConfirmViewModel() : ViewModelBase
 {
-    public string Title { get; init; } = "Confirmation";
-    public string Message { get; init; } = "";
-    public Icon Icon { get; init; } = Icon.QuestionCircle;
-    public ReactiveCommand<Unit, bool>? CheckBoxCommand { get; init; }
-    public string CheckBoxMessage { get; init; } = "";
-    public bool IsChecked { get; init; } = false;
-    public bool ShowCheckBox { get; init; } = false;
+    public virtual string Title { get; init; } = "Confirmation";
+    public virtual string Message { get; init; } = "";
+    public virtual Icon Icon { get; init; } = Icon.QuestionCircle;
+    public virtual ReactiveCommand<Unit, bool>? CheckBoxCommand { get; init; }
+    public virtual string CheckBoxMessage { get; init; } = "";
+    public virtual bool IsChecked { get; init; } = false;
+    public virtual bool ShowCheckBox { get; init; } = false;
 }

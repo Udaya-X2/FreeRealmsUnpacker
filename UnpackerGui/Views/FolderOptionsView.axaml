@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
              xmlns:conv="clr-namespace:UnpackerGui.Converters"
-             xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
              xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:views="clr-namespace:UnpackerGui.Views"
              mc:Ignorable="d"
@@ -12,10 +11,11 @@
              d:DesignHeight="200"
              x:Class="UnpackerGui.Views.FolderOptionsView"
              x:DataType="vm:PreferencesViewModel">
+    <Design.DataContext>
+        <vm:DesignPreferencesViewModel/>
+    </Design.DataContext>
     <UserControl.Resources>
         <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
-        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
-        <conv:ControlStringConverter x:Key="ControlStringConverter"/>
     </UserControl.Resources>
     <StackPanel>
         <UniformGrid Columns="2"
@@ -23,42 +23,42 @@
                      HorizontalAlignment="Left">
             <CheckBox Content="Game Assets"
                       ToolTip.Tip="Assets for the game, typically located in the &quot;Free Realms/&quot; directory."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Game, Mode=OneWay}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Game"/>
             <CheckBox Content="Pack Assets"
                       ToolTip.Tip="Asset .pack files, which consist of both asset information and content."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Pack, Mode=OneWay}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Pack"/>
             <CheckBox Content="TCG Assets"
                       ToolTip.Tip="Image assets for the TCG, typically located in the &quot;Free Realms/assets/&quot; directory."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Tcg, Mode=OneWay}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Tcg"/>
             <CheckBox Content="Dat Assets"
                       ToolTip.Tip="Asset .dat files, which come with a manifest.dat file consisting of asset information."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Dat"/>
             <CheckBox Content="Resource Assets"
                       ToolTip.Tip="Resource assets for the TCG, typically located in the &quot;Free Realms/tcg/&quot; directory."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Resource, Mode=OneWay}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Resource"/>
             <CheckBox Content="Temp Assets"
                       ToolTip.Tip="Asset .temp files, which retain a portion of the original asset data."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Temp, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Temp, Mode=OneWay}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="Temp"/>
             <CheckBox Content="PS3 Assets"
                       ToolTip.Tip="Assets for the PS3 version of the game, typically located in the &quot;NPUA30048/USRDIR/&quot; or &quot;NPEA00299/USRDIR/&quot; directory."
-                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PS3, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.AssetFilter, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=PS3, Mode=OneWay}"
                       Command="{Binding UpdateAssetFilterCommand}"
                       CommandParameter="PS3"/>
             <CheckBox Content="Recursive Search"
                       ToolTip.Tip="Search for assets in folders recursively."
-                      IsChecked="{Binding Settings.SearchOption, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=AllDirectories, Mode=OneWay, FallbackValue={x:Static dm:Variables.True}}"
+                      IsChecked="{Binding Settings.SearchOption, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=AllDirectories, Mode=OneWay}"
                       Command="{Binding UpdateSearchOptionCommand}"/>
         </UniformGrid>
         <DockPanel>

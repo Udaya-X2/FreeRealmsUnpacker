@@ -6,17 +6,15 @@ namespace UnpackerGui.ViewModels;
 
 public class ErrorViewModel : ViewModelBase
 {
-    public Exception Exception { get; }
-    public bool Handled { get; }
+    public required Exception Exception { get; init; }
+    public required bool Handled { get; init; }
 
     public ReactiveCommand<Unit, bool> ShowDetailsCommand { get; }
 
     private bool _showDetails;
 
-    public ErrorViewModel(Exception exception, bool handled)
+    public ErrorViewModel()
     {
-        Exception = exception;
-        Handled = handled;
         ShowDetailsCommand = ReactiveCommand.Create(() => ShowDetails ^= true);
     }
 

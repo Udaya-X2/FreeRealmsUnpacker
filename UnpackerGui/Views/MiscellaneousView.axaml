@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
              xmlns:conv="clr-namespace:UnpackerGui.Converters"
-             xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
              xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:views="clr-namespace:UnpackerGui.Views"
              mc:Ignorable="d"
@@ -12,6 +11,9 @@
              d:DesignHeight="200"
              x:Class="UnpackerGui.Views.MiscellaneousView"
              x:DataType="vm:PreferencesViewModel">
+    <Design.DataContext>
+        <vm:DesignPreferencesViewModel/>
+    </Design.DataContext>
     <UserControl.Resources>
         <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
@@ -20,17 +22,17 @@
     <StackPanel>
         <CheckBox Content="Show File Delete Dialog"
                   ToolTip.Tip="Display a warning message before deleting a file."
-                  IsChecked="{Binding Settings.ConfirmDelete, FallbackValue={x:Static dm:Variables.True}}"/>
+                  IsChecked="{Binding Settings.ConfirmDelete}"/>
         <CheckBox Content="Copy Column Headers"
                   ToolTip.Tip="Include the column headers when copying assets to the clipboard."
-                  IsChecked="{Binding Settings.CopyColumnHeaders, FallbackValue={x:Static dm:Variables.False}}"/>
+                  IsChecked="{Binding Settings.CopyColumnHeaders}"/>
         <DockPanel>
             <TextBlock Text="Clipboard Separator:"
                        ToolTip.Tip="The separator to use when copying assets to the clipboard."
                        VerticalAlignment="Center"
                        Margin="0 0 5 0">
             </TextBlock>
-            <TextBox Text="{Binding Settings.ClipboardSeparator, FallbackValue={x:Static dm:Variables.ClipboardSeparator}}"
+            <TextBox Text="{Binding Settings.ClipboardSeparator}}"
                      HorizontalAlignment="Left"
                      AcceptsTab="True"
                      MinWidth="25"
@@ -44,8 +46,8 @@
                        VerticalAlignment="Center"
                        Margin="0 0 5 0">
             </TextBlock>
-            <ComboBox SelectedItem="{Binding Settings.ClipboardLineSeparator, FallbackValue={x:Static dm:Variables.ClipboardLineSeparator}}"
-                      ItemsSource="{Binding LineSeparators, FallbackValue={x:Static dm:Variables.LineSeparators}}"
+            <ComboBox SelectedItem="{Binding Settings.ClipboardLineSeparator}}"
+                      ItemsSource="{Binding LineSeparators}}"
                       MinHeight="0">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>

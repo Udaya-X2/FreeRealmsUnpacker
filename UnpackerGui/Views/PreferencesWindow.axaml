@@ -4,7 +4,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
-        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         xmlns:ic="using:FluentIcons.Avalonia"
         xmlns:views="clr-namespace:UnpackerGui.Views"
         x:Class="UnpackerGui.Views.PreferencesWindow"
@@ -19,15 +18,16 @@
         CanResize="False"
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
+    <Design.DataContext>
+        <vm:DesignPreferencesViewModel/>
+    </Design.DataContext>
     <Window.Resources>
-        <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
-        <conv:ControlStringConverter x:Key="ControlStringConverter"/>
     </Window.Resources>
     <!--Base Panel-->
     <DockPanel Margin="10">
         <!--Preferences List-->
-        <ListBox ItemsSource="{Binding Preferences, FallbackValue={x:Static dm:Variables.Preferences}}"
+        <ListBox ItemsSource="{Binding Preferences}"
                  SelectedItem="{Binding SelectedPreference}"
                  SelectedIndex="{Binding SelectedIndex}"
                  Margin="0,0,15,0"
@@ -41,20 +41,20 @@
         <!--Visible Option-->
         <StackPanel>
             <!--Option Name-->
-            <TextBlock Text="{Binding SelectedPreference.Name, FallbackValue={x:Static dm:Variables.PreferenceName}}"
+            <TextBlock Text="{Binding SelectedPreference.Name}"
                        FontSize="20"
                        TextWrapping="Wrap"
                        Margin="0,0,0,10"/>
             <!--Option Description-->
-            <TextBlock Text="{Binding SelectedPreference.Description, FallbackValue={x:Static dm:Variables.PreferenceDescription}}"
+            <TextBlock Text="{Binding SelectedPreference.Description}"
                        Opacity="100"
                        TextWrapping="Wrap"
                        Margin="0,0,0,10"/>
             <!--Option Views-->
-            <views:FileConflictOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter} ConverterParameter=\=0, FallbackValue={x:Static dm:Variables.True}}"/>
-            <views:FolderOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1, FallbackValue={x:Static dm:Variables.False}}"/>
-            <views:AppearanceView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=2, FallbackValue={x:Static dm:Variables.False}}"/>
-            <views:MiscellaneousView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=3, FallbackValue={x:Static dm:Variables.False}}"/>
+            <views:FileConflictOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter} ConverterParameter=\=0}"/>
+            <views:FolderOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}"/>
+            <views:AppearanceView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=2}"/>
+            <views:MiscellaneousView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=3}"/>
         </StackPanel>
     </DockPanel>
 </Window>

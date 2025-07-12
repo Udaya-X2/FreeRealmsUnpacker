@@ -3,7 +3,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-        xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
         xmlns:ic="using:FluentIcons.Avalonia"
         x:Class="UnpackerGui.Views.ConfirmWindow"
         mc:Ignorable="d"
@@ -17,18 +16,21 @@
         CanResize="False"
         Loaded="Window_Loaded"
         Unloaded="Window_Unloaded">
+    <Design.DataContext>
+        <vm:DesignConfirmViewModel/>
+    </Design.DataContext>
     <StackPanel Margin="15">
         <Grid ColumnDefinitions="Auto,*"
               HorizontalAlignment="Left"
               Margin="0 0 0 15">
-            <ic:FluentIcon Icon="{Binding Icon, FallbackValue={x:Static dm:Variables.ConfirmIcon}}"
+            <ic:FluentIcon Icon="{Binding Icon}"
                            FontSize="64"
                            Margin="0 0 15 0"
                            Grid.Column="0"/>
             <StackPanel Grid.Column="1">
                 <TextBlock HorizontalAlignment="Left"
                            MaxHeight="200"
-                           Text="{Binding Message, FallbackValue={x:Static dm:Variables.ConfirmMessage1}}"
+                           Text="{Binding Message}"
                            TextWrapping="Wrap"/>
                 <CheckBox Margin="0 5 0 -15"
                           IsChecked="{Binding IsChecked}"
