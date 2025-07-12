@@ -900,4 +900,12 @@ public class MainViewModel : ViewModelBase
     /// Selects the asset file containing the selected asset.
     /// </summary>
     private void SelectFile() => SelectedAssetFile = AssetFiles.First(x => x.Contains(SelectedAsset!));
+
+    /// <summary>
+    /// Adds the specified asset file to the source asset files and automatically checks it.
+    /// </summary>
+    protected void AddCheckedFile(string file) => _sourceAssetFiles.Add(new AssetFileViewModel(new AssetFile(file))
+    {
+        IsChecked = true
+    });
 }

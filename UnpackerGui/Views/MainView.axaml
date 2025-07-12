@@ -6,7 +6,6 @@
              xmlns:conv="clr-namespace:UnpackerGui.Converters"
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              xmlns:commands="clr-namespace:UnpackerGui.Commands"
-             xmlns:dm="clr-namespace:UnpackerGui.DesignMode"
              xmlns:ic="using:FluentIcons.Avalonia"
              mc:Ignorable="d"
              d:DesignWidth="800"
@@ -15,6 +14,9 @@
              x:DataType="vm:MainViewModel"
              Loaded="MainView_Loaded"
              Unloaded="MainView_Unloaded">
+    <Design.DataContext>
+        <vm:DesignMainViewModel/>
+    </Design.DataContext>
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="FileSizeConverter"/>
         <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
@@ -225,7 +227,7 @@
                 </Grid>
                 <!--Asset File List-->
                 <ListBox Grid.Row="1"
-                         ItemsSource="{Binding AssetFiles, FallbackValue={x:Static dm:Variables.AssetFiles}}"
+                         ItemsSource="{Binding AssetFiles}"
                          Margin="0 5 0 0"
                          SelectionMode="Toggle"
                          SelectedItem="{Binding SelectedAssetFile}"
@@ -289,11 +291,11 @@
                                                     <MenuItem Header="Copy Full File Path"
                                                               IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                                               Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
-                                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.FullName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
+                                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.FullName}"/>
                                                     <MenuItem Header="Open Containing Folder"
                                                               IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
                                                               Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
-                                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.DirectoryName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
+                                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.DirectoryName}"/>
                                                 </ContextMenu>
                                             </Setter>
                                         </Style>
@@ -325,10 +327,10 @@
                                     <Separator/>
                                     <MenuItem Header="Copy Full File Path"
                                               Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
-                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
+                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FullName}"/>
                                     <MenuItem Header="Open Containing Folder"
                                               Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
-                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.DirectoryName, FallbackValue={x:Static dm:Variables.UnknownPath}}"/>
+                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.DirectoryName}"/>
                                     <Separator/>
                                     <MenuItem Header="Extract To..."
                                               Command="{Binding $parent[ListBox].DataContext.ExtractSelectedFileCommand}"/>
@@ -337,10 +339,10 @@
                                     <MenuItem Header="Add Assets from Folder..."
                                               Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFolderCommand}"/>
                                     <MenuItem Header="Add Asset .dat Files..."
-                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay, FallbackValue={x:Static dm:Variables.False}}"
+                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
                                               Command="{Binding $parent[ListBox].DataContext.AddDataFilesCommand}"/>
                                     <MenuItem Header="Convert To .pack File"
-                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay, FallbackValue={x:Static dm:Variables.False}}"
+                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay}"
                                               Command="{Binding $parent[ListBox].DataContext.ConvertSelectedFileCommand}"/>
                                     <Separator/>
                                     <MenuItem Header="Properties"
@@ -375,7 +377,7 @@
                              ToolTip.Tip="The full path of this file."/>
                     <TextBox Grid.Row="0"
                              Grid.Column="1"
-                             Text="{Binding SelectedAssetFile?.FullName, FallbackValue={x:Static dm:Variables.PropertyGridPath}}"
+                             Text="{Binding SelectedAssetFile?.FullName}"
                              ToolTip.Tip="{Binding $self.Text}"/>
                     <!--Count-->
                     <TextBox Grid.Row="1"
@@ -384,7 +386,7 @@
                              ToolTip.Tip="The number of assets contained in this file."/>
                     <TextBox Grid.Row="1"
                              Grid.Column="1"
-                             Text="{Binding SelectedAssetFile?.Count, FallbackValue={x:Static dm:Variables.PropertyGridCount}}"
+                             Text="{Binding SelectedAssetFile?.Count}"
                              ToolTip.Tip="{Binding $self.Text}"/>
                     <!--Size-->
                     <TextBox Grid.Row="2"
@@ -393,7 +395,7 @@
                              ToolTip.Tip="The total size of all assets in this file."/>
                     <TextBox Grid.Row="2"
                              Grid.Column="1"
-                             Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue={x:Static dm:Variables.PropertyGridSize}}"
+                             Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue=-1 B}"
                              ToolTip.Tip="{Binding $self.Text}"/>
                 </Grid>
             </Grid>
@@ -486,7 +488,7 @@
                 <DataGrid Grid.Row="1"
                           Margin="0 5 0 5"
                           x:Name="assetGrid"
-                          ItemsSource="{Binding Assets, FallbackValue={x:Static dm:Variables.Assets}}"
+                          ItemsSource="{Binding Assets}"
                           SelectedItem="{Binding SelectedAsset}"
                           IsReadOnly="True"
                           SelectionMode="Extended"
@@ -521,7 +523,7 @@
                         <DataGridTextColumn Width="*"
                                             MinWidth="90"
                                             MaxWidth="150"
-                                            IsVisible="{Binding !!Settings.ShowSize, FallbackValue={x:Static dm:Variables.False}}"
+                                            IsVisible="{Binding !!Settings.ShowSize}"
                                             Header="Size"
                                             Binding="{Binding Size}"/>
                         <DataGridTextColumn Width="*"
@@ -533,7 +535,7 @@
                         <DataGridTextColumn Width=".8*"
                                             MinWidth="70"
                                             MaxWidth="150"
-                                            IsVisible="{Binding Settings.ShowType, FallbackValue={x:Static dm:Variables.False}}"
+                                            IsVisible="{Binding Settings.ShowType}"
                                             Header="Type"
                                             Binding="{Binding Type}"/>
                     </DataGrid.Columns>

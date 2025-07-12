@@ -1,5 +1,4 @@
 ﻿using AssetIO;
-using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using FluentIcons.Common;
 using ReactiveUI;
@@ -65,8 +64,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         _assets = [];
         _assetFile = assetFile;
         Settings = App.GetSettings();
-
-        if (Design.IsDesignMode) return;
 
         foreach (Asset asset in _assetFile)
         {
