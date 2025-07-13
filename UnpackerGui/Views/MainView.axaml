@@ -2,16 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:UnpackerGui.Views"
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
              xmlns:conv="clr-namespace:UnpackerGui.Converters"
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              xmlns:commands="clr-namespace:UnpackerGui.Commands"
              xmlns:ic="using:FluentIcons.Avalonia"
              mc:Ignorable="d"
-             d:DesignWidth="800"
-             d:DesignHeight="500"
              x:Class="UnpackerGui.Views.MainView"
              x:DataType="vm:MainViewModel"
+             d:DesignWidth="800"
+             d:DesignHeight="440"
              Loaded="MainView_Loaded"
              Unloaded="MainView_Unloaded">
     <Design.DataContext>
@@ -22,7 +23,6 @@
         <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
         <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
-        <conv:PathConverter x:Key="PathConverter"/>
         <conv:PluralConverter x:Key="PluralConverter"/>
         <commands:StaticCommands x:Key="Commands"/>
     </UserControl.Resources>
@@ -43,651 +43,513 @@
             </Setter>
         </Style>
     </UserControl.Styles>
-    <!--Base Panel-->
-    <DockPanel>
-        <!--Menu Bar & Browser Selector-->
-        <StackPanel DockPanel.Dock="Top">
-            <!--Menu Bar-->
-            <Menu Height="30">
-                <!--File Menu-->
-                <MenuItem Header="File">
-                    <!--Open Submenu-->
-                    <MenuItem Header="Open">
-                        <!--Open Pack File-->
-                        <MenuItem Header="Asset .pack File..."
-                                  Command="{Binding AddPackFilesCommand}"/>
-                        <!--Open Manifest File-->
-                        <MenuItem Header="Asset manifest.dat File..."
-                                  Command="{Binding AddManifestFilesCommand}"/>
-                    </MenuItem>
-                    <!--Create Submenu-->
-                    <MenuItem Header="Create">
-                        <!--Create Pack File-->
-                        <MenuItem Header="Asset .pack File..."
-                                  Command="{Binding CreatePackFileCommand}"/>
-                        <!--Create Manifest File-->
-                        <MenuItem Header="Asset manifest.dat File..."
-                                  Command="{Binding CreateManifestFileCommand}"/>
-                    </MenuItem>
-                    <!--Recent Files Section-->
-                    <Separator IsVisible="{Binding !!Settings.RecentFiles.Count}"/>
-                    <!--Recent Files List-->
-                    <MenuItem Header="Recent Files"
-                              ItemsSource="{Binding Settings.RecentFiles}"
-                              IsVisible="{Binding !!Settings.RecentFiles.Count}">
-                        <MenuItem.ItemContainerTheme>
-                            <ControlTheme TargetType="MenuItem">
-                                <Setter Property="Template">
-                                    <ControlTemplate>
-                                        <MenuItem CommandParameter="{Binding}">
-                                            <MenuItem.Header>
-                                                <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
-                                                           TextTrimming="CharacterEllipsis"/>
-                                            </MenuItem.Header>
-                                            <MenuItem.Styles>
-                                                <Style Selector="MenuItem:pointerover">
-                                                    <Setter Property="Background"
-                                                            Value="{DynamicResource HoverBrush}"/>
-                                                </Style>
-                                            </MenuItem.Styles>
-                                        </MenuItem>
-                                    </ControlTemplate>
-                                </Setter>
-                                <Setter Property="Command"
-                                        Value="{Binding $parent[UserControl].DataContext.AddRecentFileCommand}"/>
-                            </ControlTheme>
-                        </MenuItem.ItemContainerTheme>
-                    </MenuItem>
-                    <!--Open All Recent Files-->
-                    <MenuItem Header="Open All Recent Files"
-                              IsVisible="{Binding !!Settings.RecentFiles.Count}"
-                              Command="{Binding AddRecentFilesCommand}"/>
-                    <!--Empty Recent Files-->
-                    <MenuItem Header="Empty Recent Files"
-                              IsVisible="{Binding !!Settings.RecentFiles.Count}"
-                              Command="{Binding EmptyRecentFilesCommand}"/>
-                    <!--Recent Folders Section-->
-                    <Separator>
-                        <Separator.IsVisible>
-                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                                <Binding Source="{Binding !!Settings.RecentFiles.Count}"/>
-                                <Binding Source="{Binding !!Settings.RecentFolders.Count}"/>
-                            </MultiBinding>
-                        </Separator.IsVisible>
-                    </Separator>
-                    <!--Recent Folders List-->
-                    <MenuItem Header="Recent Folders"
-                              ItemsSource="{Binding Settings.RecentFolders}"
-                              IsVisible="{Binding !!Settings.RecentFolders.Count}">
-                        <MenuItem.ItemContainerTheme>
-                            <ControlTheme TargetType="MenuItem">
-                                <Setter Property="Template">
-                                    <ControlTemplate>
-                                        <MenuItem CommandParameter="{Binding}">
-                                            <MenuItem.Header>
-                                                <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
-                                                           TextTrimming="CharacterEllipsis"/>
-                                            </MenuItem.Header>
-                                            <MenuItem.Styles>
-                                                <Style Selector="MenuItem:pointerover">
-                                                    <Setter Property="Background"
-                                                            Value="{DynamicResource HoverBrush}"/>
-                                                </Style>
-                                            </MenuItem.Styles>
-                                        </MenuItem>
-                                    </ControlTemplate>
-                                </Setter>
-                                <Setter Property="Command"
-                                        Value="{Binding $parent[UserControl].DataContext.AddRecentFolderCommand}"/>
-                            </ControlTheme>
-                        </MenuItem.ItemContainerTheme>
-                    </MenuItem>
-                    <!--Empty Recent Folders-->
-                    <MenuItem Header="Empty Recent Folders"
-                              IsVisible="{Binding !!Settings.RecentFolders.Count}"
-                              Command="{Binding EmptyRecentFoldersCommand}"/>
-                    <Separator IsVisible="{Binding !!Settings.RecentFolders.Count}"/>
-                    <!--Exit-->
-                    <MenuItem Header="Exit"
-                              Command="{Binding ExitCommand}"/>
-                </MenuItem>
-                <!--Settings Menu-->
-                <MenuItem Header="Settings">
-                    <!--Preferences-->
-                    <MenuItem Header="Preferences..."
-                              Command="{Binding ShowPreferencesCommand}"/>
-                </MenuItem>
-                <!--Help Menu-->
-                <MenuItem Header="Help">
-                    <!--About Free Realms Unpacker-->
-                    <MenuItem Header="About Free Realms Unpacker..."
-                              Command="{Binding ShowAboutCommand}"/>
-                </MenuItem>
-            </Menu>
-            <!--Browser Selector-->
-            <TabStrip Margin="5 0 5 5"
-                      CornerRadius="100"
-                      SelectedIndex="{Binding BrowserIndex}"
-                      Background="{DynamicResource BackgroundBrush}">
-                <TabStripItem Content="Asset Browser"
-                              FontSize="12"
-                              MinHeight="25"/>
-                <TabStripItem Content="Image Browser"
-                              FontSize="12"
-                              MinHeight="25"/>
-            </TabStrip>
-        </StackPanel>
-        <!--Asset Browser-->
-        <Grid DockPanel.Dock="Bottom"
-              IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=0}"
-              Grid.Row="0"
-              ColumnDefinitions="Auto,*"
-              Margin="5,-5,5,5">
-            <!--Buttons, Asset Files, Property Grid-->
-            <Grid Grid.Column="0"
-                  RowDefinitions="Auto,*,Auto"
-                  Width="220"
-                  Margin="5">
-                <!--Buttons-->
-                <Grid Grid.Row="0"
-                      MaxHeight="32"
-                      ColumnDefinitions="*,*,*,*,*,*">
-                    <!--Add Asset Files Button-->
-                    <Button Command="{Binding AddAssetFilesCommand}"
-                            ToolTip.Tip="Add Asset Files..."
-                            Grid.Column="0">
-                        <ic:FluentIcon Icon="DocumentAdd"/>
-                    </Button>
-                    <!--Add Asset Folder Button-->
-                    <Button Command="{Binding AddAssetFolderCommand}"
-                            ToolTip.Tip="Add Asset Folder..."
-                            Grid.Column="1">
-                        <ic:FluentIcon Icon="FolderAdd"/>
-                    </Button>
-                    <!--Extract Files Button-->
-                    <Button Command="{Binding ExtractCheckedFilesCommand}"
-                            ToolTip.Tip="Extract Checked Files..."
-                            Grid.Column="2">
-                        <ic:FluentIcon Icon="ArrowDownload"/>
-                    </Button>
-                    <!--Check All Button-->
-                    <Button Command="{Binding CheckAllFilesCommand}"
-                            ToolTip.Tip="Check All Files"
-                            Grid.Column="3">
-                        <ic:FluentIcon Icon="Checkmark"/>
-                    </Button>
-                    <!--Uncheck All Button-->
-                    <Button Command="{Binding UncheckAllFilesCommand}"
-                            ToolTip.Tip="Uncheck All Files"
-                            Grid.Column="4">
-                        <ic:FluentIcon Icon="Prohibited"/>
-                    </Button>
-                    <!--Remove Checked Button-->
-                    <Button Command="{Binding RemoveCheckedFilesCommand}"
-                            ToolTip.Tip="Remove Checked Files"
-                            Grid.Column="5">
-                        <ic:FluentIcon Icon="Dismiss"/>
-                    </Button>
-                </Grid>
-                <!--Asset File List-->
-                <ListBox Grid.Row="1"
-                         ItemsSource="{Binding AssetFiles}"
-                         Margin="0 5 0 0"
-                         SelectionMode="Toggle"
-                         SelectedItem="{Binding SelectedAssetFile}"
-                         DragDrop.AllowDrop="True">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate DataType="vm:AssetFileViewModel">
-                            <StackPanel Orientation="Vertical">
-                                <!--Asset File-->
-                                <StackPanel Orientation="Horizontal"
-                                            VerticalAlignment="Center"
-                                            Height="14">
-                                    <Button IsVisible="{Binding FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
-                                            Command="{Binding ShowDataFilesCommand}">
-                                        <Button.Template>
-                                            <ControlTemplate>
-                                                <StackPanel>
-                                                    <ic:FluentIcon Icon="CaretRight"
-                                                                   Margin="-2.5 -3 5 0"
-                                                                   IsVisible="{Binding !ShowDataFiles}"/>
-                                                    <ic:FluentIcon Icon="CaretDown"
-                                                                   Margin="-2.5 -3 5 0"
-                                                                   IsVisible="{Binding ShowDataFiles}"/>
-                                                </StackPanel>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>
-                                    <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
-                                              VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding Name}"
-                                               ToolTip.Tip="{Binding FullName}"
-                                               VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <!--Data Files-->
-                                <ListBox ItemsSource="{Binding DataFiles}"
-                                         Margin="11 9 0 -9"
-                                         SelectionMode="Multiple"
-                                         SelectedItem="{Binding SelectedDataFile}"
-                                         SelectedItems="{Binding SelectedDataFiles}"
-                                         IsVisible="{Binding ShowDataFiles}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate DataType="vm:DataFileViewModel">
-                                            <TextBlock Text="{Binding Name}"
-                                                       ToolTip.Tip="{Binding FullName}"
-                                                       VerticalAlignment="Center"
-                                                       Height="14"/>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                    <ListBox.Styles>
-                                        <!--Data File Context Menu-->
-                                        <Style Selector="ListBoxItem">
-                                            <Setter Property="ContextMenu">
-                                                <ContextMenu>
-                                                    <MenuItem Header="Close"
-                                                              Command="{Binding $parent[ListBox].DataContext.RemoveDataFilesCommand}"/>
-                                                    <MenuItem Header="Delete"
-                                                              Command="{Binding $parent[ListBox].DataContext.DeleteDataFilesCommand}"/>
-                                                    <MenuItem Header="Rename..."
-                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                                              Command="{Binding $parent[ListBox].DataContext.RenameDataFileCommand}"/>
-                                                    <Separator IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"/>
-                                                    <MenuItem Header="Copy Full File Path"
-                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                                              Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
-                                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.FullName}"/>
-                                                    <MenuItem Header="Open Containing Folder"
-                                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                                              Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
-                                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.DirectoryName}"/>
-                                                </ContextMenu>
-                                            </Setter>
-                                        </Style>
-                                    </ListBox.Styles>
-                                </ListBox>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                    <ListBox.Styles>
-                        <!--Asset File Context Menu-->
-                        <Style Selector="ListBoxItem">
-                            <Setter Property="ContextMenu">
-                                <ContextMenu>
-                                    <MenuItem Header="Close"
-                                              Command="{Binding $parent[ListBox].DataContext.RemoveSelectedFileCommand}"/>
-                                    <Separator/>
-                                    <MenuItem Header="Delete"
-                                              Command="{Binding $parent[ListBox].DataContext.DeleteSelectedFileCommand}"/>
-                                    <MenuItem Header="Copy..."
-                                              Command="{Binding $parent[ListBox].DataContext.CopySelectedFileCommand}"/>
-                                    <MenuItem Header="Rename..."
-                                              Command="{Binding $parent[ListBox].DataContext.RenameSelectedFileCommand}"/>
-                                    <Separator/>
-                                    <MenuItem Header="Reload File"
-                                              Command="{Binding $parent[ListBox].DataContext.ReloadSelectedFileCommand}"/>
-                                    <MenuItem Header="Clear Assets"
-                                              IsVisible="{Binding !!$parent[ListBox].DataContext.SelectedAssetFile?.Count}"
-                                              Command="{Binding $parent[ListBox].DataContext.ClearSelectedFileCommand}"/>
-                                    <Separator/>
-                                    <MenuItem Header="Copy Full File Path"
-                                              Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
-                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FullName}"/>
-                                    <MenuItem Header="Open Containing Folder"
-                                              Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
-                                              CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.DirectoryName}"/>
-                                    <Separator/>
-                                    <MenuItem Header="Extract To..."
-                                              Command="{Binding $parent[ListBox].DataContext.ExtractSelectedFileCommand}"/>
-                                    <MenuItem Header="Add Assets..."
-                                              Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFilesCommand}"/>
-                                    <MenuItem Header="Add Assets from Folder..."
-                                              Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFolderCommand}"/>
-                                    <MenuItem Header="Add Asset .dat Files..."
-                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
-                                              Command="{Binding $parent[ListBox].DataContext.AddDataFilesCommand}"/>
-                                    <MenuItem Header="Convert To .pack File"
-                                              IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay}"
-                                              Command="{Binding $parent[ListBox].DataContext.ConvertSelectedFileCommand}"/>
-                                    <Separator/>
-                                    <MenuItem Header="Properties"
-                                              Command="{Binding $parent[ListBox].DataContext.ShowPropertiesCommand}"/>
-                                </ContextMenu>
-                            </Setter>
-                        </Style>
-                    </ListBox.Styles>
-                </ListBox>
-                <!--Property Grid-->
-                <Grid Grid.Row="2"
-                      Margin="0 5 0 0"
-                      RowDefinitions="*,*,*"
-                      ColumnDefinitions="Auto,*"
-                      IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Grid.Styles>
-                        <Style Selector="TextBox">
-                            <Setter Property="MinWidth"
-                                    Value="0"/>
-                            <Setter Property="MinHeight"
-                                    Value="0"/>
-                            <Setter Property="CornerRadius"
-                                    Value="0"/>
-                            <Setter Property="IsReadOnly"
-                                    Value="True"/>
-                        </Style>
-                    </Grid.Styles>
-                    <!--Path-->
-                    <TextBox Grid.Row="0"
-                             Grid.Column="0"
-                             Text="Path"
-                             ToolTip.Tip="The full path of this file."/>
-                    <TextBox Grid.Row="0"
-                             Grid.Column="1"
-                             Text="{Binding SelectedAssetFile?.FullName}"
-                             ToolTip.Tip="{Binding $self.Text}"/>
-                    <!--Count-->
-                    <TextBox Grid.Row="1"
-                             Grid.Column="0"
-                             Text="Count"
-                             ToolTip.Tip="The number of assets contained in this file."/>
-                    <TextBox Grid.Row="1"
-                             Grid.Column="1"
-                             Text="{Binding SelectedAssetFile?.Count}"
-                             ToolTip.Tip="{Binding $self.Text}"/>
-                    <!--Size-->
-                    <TextBox Grid.Row="2"
-                             Grid.Column="0"
-                             Text="Size"
-                             ToolTip.Tip="The total size of all assets in this file."/>
-                    <TextBox Grid.Row="2"
-                             Grid.Column="1"
-                             Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue=-1 B}"
-                             ToolTip.Tip="{Binding $self.Text}"/>
-                </Grid>
+    <!--Asset Browser-->
+    <Grid ColumnDefinitions="Auto,*"
+          Margin="5,-5,5,5">
+        <!--Buttons, Asset Files, Property Grid-->
+        <Grid Grid.Column="0"
+              RowDefinitions="Auto,*,Auto"
+              Width="220"
+              Margin="5">
+            <!--Buttons-->
+            <Grid Grid.Row="0"
+                  MaxHeight="32"
+                  ColumnDefinitions="*,*,*,*,*,*">
+                <!--Add Asset Files Button-->
+                <Button Command="{Binding AddAssetFilesCommand}"
+                        ToolTip.Tip="Add Asset Files..."
+                        Grid.Column="0">
+                    <ic:FluentIcon Icon="DocumentAdd"/>
+                </Button>
+                <!--Add Asset Folder Button-->
+                <Button Command="{Binding AddAssetFolderCommand}"
+                        ToolTip.Tip="Add Asset Folder..."
+                        Grid.Column="1">
+                    <ic:FluentIcon Icon="FolderAdd"/>
+                </Button>
+                <!--Extract Files Button-->
+                <Button Command="{Binding ExtractCheckedFilesCommand}"
+                        ToolTip.Tip="Extract Checked Files..."
+                        Grid.Column="2">
+                    <ic:FluentIcon Icon="ArrowDownload"/>
+                </Button>
+                <!--Check All Button-->
+                <Button Command="{Binding CheckAllFilesCommand}"
+                        ToolTip.Tip="Check All Files"
+                        Grid.Column="3">
+                    <ic:FluentIcon Icon="Checkmark"/>
+                </Button>
+                <!--Uncheck All Button-->
+                <Button Command="{Binding UncheckAllFilesCommand}"
+                        ToolTip.Tip="Uncheck All Files"
+                        Grid.Column="4">
+                    <ic:FluentIcon Icon="Prohibited"/>
+                </Button>
+                <!--Remove Checked Button-->
+                <Button Command="{Binding RemoveCheckedFilesCommand}"
+                        ToolTip.Tip="Remove Checked Files"
+                        Grid.Column="5">
+                    <ic:FluentIcon Icon="Dismiss"/>
+                </Button>
             </Grid>
-            <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
-            <Grid Grid.Column="1"
-                  RowDefinitions="Auto,*,Auto"
-                  Margin="5 0 5 5">
-                <!--Search Bar & Options-->
-                <Grid Margin="0 5 0 0"
-                      ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
-                      MaxHeight="32">
-                    <!--Icon-->
-                    <ic:FluentIcon Grid.Column="0"
-                                   Icon="Search"
-                                   IconSize="Size12"
-                                   FontSize="28"
-                                   ToolTip.Tip="Search (CTRL+F)"/>
-                    <!--Search Bar-->
-                    <TextBox Grid.Column="1"
-                             Name="searchBarTextBox"
-                             Margin="5 0 0 0"
-                             MinWidth="0"
-                             Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"/>
-                    <!--Match Case Option-->
-                    <ToggleButton Grid.Column="2"
-                                  Name="matchCaseButton"
-                                  Margin="5 0 0 0"
-                                  ToolTip.Tip="Match Case (ALT+C)"
-                                  IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
-                                  Content="Aa"
-                                  Width="35"
-                                  Height="32"
-                                  HorizontalContentAlignment="Center"
-                                  VerticalContentAlignment="Center"
-                                  FontSize="14"/>
-                    <!--Use Regular Expressions Option-->
-                    <ToggleButton Grid.Column="3"
-                                  Name="useRegexButton"
-                                  Margin="5 0 0 0"
-                                  ToolTip.Tip="Use Regular Expressions (ALT+E)"
-                                  IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
-                                  Content=".*"
-                                  Width="35"
-                                  Height="32"
-                                  HorizontalContentAlignment="Center"
-                                  VerticalContentAlignment="Center"
-                                  FontSize="14"/>
-                    <!--Validate Assets Option-->
-                    <ToggleButton Grid.Column="4"
-                                  Name="validateAssetsButton"
-                                  Margin="5 0 0 0"
-                                  ToolTip.Tip="Validate Assets (ALT+V)"
-                                  IsChecked="{Binding Settings.ValidateAssets, Mode=TwoWay}">
-                        <ic:FluentIcon Icon="Shield"/>
-                    </ToggleButton>
-                    <!--Copy Assets Button-->
-                    <Button Grid.Column="5"
-                            Margin="5 0 0 0"
-                            ToolTip.Tip="Copy Assets"
-                            Click="AssetGrid_Copy">
-                        <ic:FluentIcon Icon="Clipboard"/>
-                    </Button>
-                    <!--Display Options Dropdown Menu-->
-                    <DropDownButton Grid.Column="6"
-                                    Margin="5 0 0 0"
-                                    ToolTip.Tip="Display Options">
-                        <ic:FluentIcon Icon="Settings"/>
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                <CheckBox Content="Name"
-                                          IsChecked="{Binding Settings.ShowName}"/>
-                                <CheckBox Content="Offset"
-                                          IsChecked="{Binding Settings.ShowOffset}"/>
-                                <CheckBox Content="Size"
-                                          IsThreeState="True"
-                                          IsChecked="{Binding Settings.ShowSize}"/>
-                                <CheckBox Content="CRC-32"
-                                          IsChecked="{Binding Settings.ShowCrc32}"/>
-                                <CheckBox Content="Type"
-                                          IsChecked="{Binding Settings.ShowType}"/>
-                                <CheckBox Content="Valid"
-                                          IsThreeState="True"
-                                          IsChecked="{Binding ValidationOptions.ShowValid}"
-                                          IsEnabled="{Binding Settings.ValidateAssets}"/>
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                    </DropDownButton>
-                </Grid>
-                <!--Asset DataGrid-->
-                <DataGrid Grid.Row="1"
-                          Margin="0 5 0 5"
-                          x:Name="assetGrid"
-                          ItemsSource="{Binding Assets}"
-                          SelectedItem="{Binding SelectedAsset}"
-                          IsReadOnly="True"
-                          SelectionMode="Extended"
-                          CanUserReorderColumns="True"
-                          CanUserResizeColumns="True"
-                          GridLinesVisibility="All"
-                          HorizontalScrollBarVisibility="Disabled"
-                          BorderThickness="1"
-                          BorderBrush="Gray"
-                          ClipboardCopyMode="None"
-                          DoubleTapped="AssetGrid_DoubleTapped"
-                          Sorting="AssetGrid_Sorting">
-                    <!--Asset DataGrid Columns-->
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Width="2*"
-                                            MinWidth="90"
-                                            IsVisible="{Binding Settings.ShowName}"
-                                            Header="Name"
-                                            Binding="{Binding Name}"/>
-                        <DataGridTextColumn Width="*"
-                                            MinWidth="90"
-                                            MaxWidth="150"
-                                            IsVisible="{Binding Settings.ShowOffset}"
-                                            Header="Offset"
-                                            Binding="{Binding Offset}"/>
-                        <DataGridTextColumn Width="*"
-                                            MinWidth="90"
-                                            MaxWidth="150"
-                                            IsVisible="{Binding Settings.ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
-                                            Header="Size"
-                                            Binding="{Binding Size, Converter={StaticResource FileSizeConverter}, Mode=OneWay}"/>
-                        <DataGridTextColumn Width="*"
-                                            MinWidth="90"
-                                            MaxWidth="150"
-                                            IsVisible="{Binding !!Settings.ShowSize}"
-                                            Header="Size"
-                                            Binding="{Binding Size}"/>
-                        <DataGridTextColumn Width="*"
-                                            MinWidth="90"
-                                            MaxWidth="150"
-                                            IsVisible="{Binding Settings.ShowCrc32}"
-                                            Header="CRC-32"
-                                            Binding="{Binding Crc32}"/>
-                        <DataGridTextColumn Width=".8*"
-                                            MinWidth="70"
-                                            MaxWidth="150"
-                                            IsVisible="{Binding Settings.ShowType}"
-                                            Header="Type"
-                                            Binding="{Binding Type}"/>
-                    </DataGrid.Columns>
-                    <DataGrid.Styles>
-                        <!--Asset Row Context Menu-->
-                        <Style Selector="DataGridRow">
-                            <Setter Property="ContextMenu">
-                                <ContextMenu>
-                                    <MenuItem Header="Open"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                              Command="{Binding $parent[DataGrid].DataContext.OpenSelectedAssetCommand}"/>
-                                    <MenuItem Header="Delete"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                              Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
-                                    <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"/>
-                                    <MenuItem Header="Copy"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                              Click="AssetGridRow_ContextMenu_Copy"/>
-                                    <MenuItem Header="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource PluralConverter}, ConverterParameter=Copy Row}"
-                                              Click="AssetGridRow_ContextMenu_CopyRows"/>
-                                    <MenuItem Header="Select Asset File"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                              Command="{Binding $parent[DataGrid].DataContext.SelectFileCommand}"/>
-                                    <Separator/>
-                                    <MenuItem Header="Save As..."
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
-                                              Command="{Binding $parent[DataGrid].DataContext.SaveSelectedAssetCommand}"/>
-                                    <MenuItem Header="Extract Selected Assets..."
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
-                                              Command="{Binding $parent[DataGrid].DataContext.ExtractSelectedAssetsCommand}"/>
-                                    <MenuItem Header="Delete Selected Assets"
-                                              IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
-                                              Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
-                                </ContextMenu>
-                            </Setter>
-                        </Style>
-                        <!--DataGrid Column Header Context Menu-->
-                        <Style Selector="DataGridColumnHeader">
-                            <Setter Property="ContextMenu">
-                                <ContextMenu>
-                                    <MenuItem Header="Hide"
-                                              Click="AssetGridColumnHeader_ContextMenu_Hide"/>
-                                    <MenuItem Header="Copy"
-                                              IsVisible="{Binding !!$parent[DataGrid].DataContext.Assets.Count}"
-                                              Click="AssetGridColumnHeader_ContextMenu_Copy"/>
-                                </ContextMenu>
-                            </Setter>
-                        </Style>
-                    </DataGrid.Styles>
-                </DataGrid>
-                <!--#/# Info Bar-->
-                <StackPanel Grid.Row="2"
-                            Orientation="Horizontal"
-                            MaxHeight="20">
-                    <!--#/# Files Selected-->
-                    <StackPanel Orientation="Horizontal"
-                                Margin="0 0 10 0"
-                                ToolTip.Tip="Files Selected">
-                        <ic:FluentIcon Icon="DocumentCheckmark"
-                                       Margin="0 0 5 0"/>
-                        <TextBlock VerticalAlignment="Center">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}/{1}">
-                                    <Binding Path="CheckedAssetFiles.Count"
-                                             FallbackValue="0"/>
-                                    <Binding Path="AssetFiles.Count"
-                                             FallbackValue="0"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </StackPanel>
-                    <!--#/# Assets Shown-->
-                    <StackPanel Orientation="Horizontal"
-                                Margin="0 0 10 0"
-                                ToolTip.Tip="Assets Shown">
-                        <ic:FluentIcon Icon="DocumentMultiple"
-                                       Margin="0 0 5 0"/>
-                        <TextBlock VerticalAlignment="Center">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}/{1}">
-                                    <Binding Path="CheckedAssets.Count"
-                                             FallbackValue="0"/>
-                                    <Binding Path="NumAssets"
-                                             FallbackValue="0"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </StackPanel>
-                    <!--#/# In/valid Assets-->
-                    <StackPanel Orientation="Horizontal"
-                                Margin="0 0 10 0"
-                                IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource BooleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
-                        <ic:FluentIcon Icon="Warning"
-                                       Margin="0 0 5 0"
-                                       IsVisible="{Binding !ValidationOptions.ShowValid}"/>
-                        <ic:FluentIcon Icon="CheckboxChecked"
-                                       Margin="0 0 5 0"
-                                       IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
-                        <TextBlock VerticalAlignment="Center">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}/{1}">
-                                    <Binding Path="Assets.UnfilteredCount"
-                                             FallbackValue="0"/>
-                                    <Binding Path="CheckedAssets.Count"
-                                             FallbackValue="0"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </StackPanel>
-                    <!--#/# Search Hits-->
-                    <StackPanel Orientation="Horizontal"
-                                Margin="0 0 10 0"
-                                IsVisible="{Binding SearchOptions.Pattern, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                                ToolTip.Tip="Search Hits">
-                        <ic:FluentIcon Icon="DocumentSearch"
-                                       Margin="0 0 5 0"/>
-                        <TextBlock VerticalAlignment="Center">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}/{1}">
-                                    <Binding Path="Assets.Count"
-                                             FallbackValue="0"/>
-                                    <Binding Path="Assets.UnfilteredCount"
-                                             FallbackValue="0"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </StackPanel>
-                    <!--#/# Assets Selected-->
-                    <StackPanel Orientation="Horizontal"
-                                Margin="0 0 10 0"
-                                IsVisible="{Binding !!SelectedAssets.Count}"
-                                ToolTip.Tip="Assets Selected">
-                        <ic:FluentIcon Icon="HandPoint"
-                                       Margin="0 0 5 0"/>
-                        <TextBlock VerticalAlignment="Center">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}/{1}">
-                                    <Binding Path="SelectedAssets.Count"
-                                             FallbackValue="0"/>
-                                    <Binding Path="Assets.Count"
-                                             FallbackValue="0"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
-                    </StackPanel>
-                </StackPanel>
+            <!--Asset File List-->
+            <ListBox Grid.Row="1"
+                     ItemsSource="{Binding AssetFiles}"
+                     Margin="0 5 0 0"
+                     SelectionMode="Toggle"
+                     SelectedItem="{Binding SelectedAssetFile}"
+                     DragDrop.AllowDrop="True">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="vm:AssetFileViewModel">
+                        <StackPanel Orientation="Vertical">
+                            <!--Asset File-->
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Height="14">
+                                <Button IsVisible="{Binding FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
+                                        Command="{Binding ShowDataFilesCommand}">
+                                    <Button.Template>
+                                        <ControlTemplate>
+                                            <StackPanel>
+                                                <ic:FluentIcon Icon="CaretRight"
+                                                               Margin="-2.5 -3 5 0"
+                                                               IsVisible="{Binding !ShowDataFiles}"/>
+                                                <ic:FluentIcon Icon="CaretDown"
+                                                               Margin="-2.5 -3 5 0"
+                                                               IsVisible="{Binding ShowDataFiles}"/>
+                                            </StackPanel>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <CheckBox IsChecked="{Binding Path=IsChecked, Mode=TwoWay}"
+                                          VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Name}"
+                                           ToolTip.Tip="{Binding FullName}"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <!--Data Files-->
+                            <ListBox ItemsSource="{Binding DataFiles}"
+                                     Margin="11 9 0 -9"
+                                     SelectionMode="Multiple"
+                                     SelectedItem="{Binding SelectedDataFile}"
+                                     SelectedItems="{Binding SelectedDataFiles}"
+                                     IsVisible="{Binding ShowDataFiles}">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate DataType="vm:DataFileViewModel">
+                                        <TextBlock Text="{Binding Name}"
+                                                   ToolTip.Tip="{Binding FullName}"
+                                                   VerticalAlignment="Center"
+                                                   Height="14"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                                <ListBox.Styles>
+                                    <!--Data File Context Menu-->
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="ContextMenu">
+                                            <ContextMenu>
+                                                <MenuItem Header="Close"
+                                                          Command="{Binding $parent[ListBox].DataContext.RemoveDataFilesCommand}"/>
+                                                <MenuItem Header="Delete"
+                                                          Command="{Binding $parent[ListBox].DataContext.DeleteDataFilesCommand}"/>
+                                                <MenuItem Header="Rename..."
+                                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                                          Command="{Binding $parent[ListBox].DataContext.RenameDataFileCommand}"/>
+                                                <Separator IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"/>
+                                                <MenuItem Header="Copy Full File Path"
+                                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                                          Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
+                                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.FullName}"/>
+                                                <MenuItem Header="Open Containing Folder"
+                                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                                          Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
+                                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.DirectoryName}"/>
+                                            </ContextMenu>
+                                        </Setter>
+                                    </Style>
+                                </ListBox.Styles>
+                            </ListBox>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.Styles>
+                    <!--Asset File Context Menu-->
+                    <Style Selector="ListBoxItem">
+                        <Setter Property="ContextMenu">
+                            <ContextMenu>
+                                <MenuItem Header="Close"
+                                          Command="{Binding $parent[ListBox].DataContext.RemoveSelectedFileCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Delete"
+                                          Command="{Binding $parent[ListBox].DataContext.DeleteSelectedFileCommand}"/>
+                                <MenuItem Header="Copy..."
+                                          Command="{Binding $parent[ListBox].DataContext.CopySelectedFileCommand}"/>
+                                <MenuItem Header="Rename..."
+                                          Command="{Binding $parent[ListBox].DataContext.RenameSelectedFileCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Reload File"
+                                          Command="{Binding $parent[ListBox].DataContext.ReloadSelectedFileCommand}"/>
+                                <MenuItem Header="Clear Assets"
+                                          IsVisible="{Binding !!$parent[ListBox].DataContext.SelectedAssetFile?.Count}"
+                                          Command="{Binding $parent[ListBox].DataContext.ClearSelectedFileCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Copy Full File Path"
+                                          Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
+                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FullName}"/>
+                                <MenuItem Header="Open Containing Folder"
+                                          Command="{Binding Source={StaticResource Commands} Path=OpenFileCommand}"
+                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.DirectoryName}"/>
+                                <Separator/>
+                                <MenuItem Header="Extract To..."
+                                          Command="{Binding $parent[ListBox].DataContext.ExtractSelectedFileCommand}"/>
+                                <MenuItem Header="Add Assets..."
+                                          Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFilesCommand}"/>
+                                <MenuItem Header="Add Assets from Folder..."
+                                          Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFolderCommand}"/>
+                                <MenuItem Header="Add Asset .dat Files..."
+                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
+                                          Command="{Binding $parent[ListBox].DataContext.AddDataFilesCommand}"/>
+                                <MenuItem Header="Convert To .pack File"
+                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay}"
+                                          Command="{Binding $parent[ListBox].DataContext.ConvertSelectedFileCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Properties"
+                                          Command="{Binding $parent[ListBox].DataContext.ShowPropertiesCommand}"/>
+                            </ContextMenu>
+                        </Setter>
+                    </Style>
+                </ListBox.Styles>
+            </ListBox>
+            <!--Property Grid-->
+            <Grid Grid.Row="2"
+                  Margin="0 5 0 0"
+                  RowDefinitions="*,*,*"
+                  ColumnDefinitions="Auto,*"
+                  IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <Grid.Styles>
+                    <Style Selector="TextBox">
+                        <Setter Property="MinWidth"
+                                Value="0"/>
+                        <Setter Property="MinHeight"
+                                Value="0"/>
+                        <Setter Property="CornerRadius"
+                                Value="0"/>
+                        <Setter Property="IsReadOnly"
+                                Value="True"/>
+                    </Style>
+                </Grid.Styles>
+                <!--Path-->
+                <TextBox Grid.Row="0"
+                         Grid.Column="0"
+                         Text="Path"
+                         ToolTip.Tip="The full path of this file."/>
+                <TextBox Grid.Row="0"
+                         Grid.Column="1"
+                         Text="{Binding SelectedAssetFile?.FullName}"
+                         ToolTip.Tip="{Binding $self.Text}"/>
+                <!--Count-->
+                <TextBox Grid.Row="1"
+                         Grid.Column="0"
+                         Text="Count"
+                         ToolTip.Tip="The number of assets contained in this file."/>
+                <TextBox Grid.Row="1"
+                         Grid.Column="1"
+                         Text="{Binding SelectedAssetFile?.Count}"
+                         ToolTip.Tip="{Binding $self.Text}"/>
+                <!--Size-->
+                <TextBox Grid.Row="2"
+                         Grid.Column="0"
+                         Text="Size"
+                         ToolTip.Tip="The total size of all assets in this file."/>
+                <TextBox Grid.Row="2"
+                         Grid.Column="1"
+                         Text="{Binding SelectedAssetFile?.Size, Converter={StaticResource FileSizeConverter}, FallbackValue=-1 B}"
+                         ToolTip.Tip="{Binding $self.Text}"/>
             </Grid>
         </Grid>
-    </DockPanel>
+        <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
+        <Grid Grid.Column="1"
+              RowDefinitions="Auto,*,Auto"
+              Margin="5 0 5 5">
+            <!--Search Bar & Options-->
+            <Grid Margin="0 5 0 0"
+                  ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
+                  MaxHeight="32">
+                <!--Icon-->
+                <ic:FluentIcon Grid.Column="0"
+                               Icon="Search"
+                               IconSize="Size12"
+                               FontSize="28"
+                               ToolTip.Tip="Search (CTRL+F)"/>
+                <!--Search Bar-->
+                <TextBox Grid.Column="1"
+                         Name="searchBarTextBox"
+                         Margin="5 0 0 0"
+                         MinWidth="0"
+                         Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"/>
+                <!--Match Case Option-->
+                <ToggleButton Grid.Column="2"
+                              Name="matchCaseButton"
+                              Margin="5 0 0 0"
+                              ToolTip.Tip="Match Case (ALT+C)"
+                              IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
+                              Content="Aa"
+                              Width="35"
+                              Height="32"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center"
+                              FontSize="14"/>
+                <!--Use Regular Expressions Option-->
+                <ToggleButton Grid.Column="3"
+                              Name="useRegexButton"
+                              Margin="5 0 0 0"
+                              ToolTip.Tip="Use Regular Expressions (ALT+E)"
+                              IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
+                              Content=".*"
+                              Width="35"
+                              Height="32"
+                              HorizontalContentAlignment="Center"
+                              VerticalContentAlignment="Center"
+                              FontSize="14"/>
+                <!--Validate Assets Option-->
+                <ToggleButton Grid.Column="4"
+                              Name="validateAssetsButton"
+                              Margin="5 0 0 0"
+                              ToolTip.Tip="Validate Assets (ALT+V)"
+                              IsChecked="{Binding Settings.ValidateAssets, Mode=TwoWay}">
+                    <ic:FluentIcon Icon="Shield"/>
+                </ToggleButton>
+                <!--Copy Assets Button-->
+                <Button Grid.Column="5"
+                        Margin="5 0 0 0"
+                        ToolTip.Tip="Copy Assets"
+                        Click="AssetGrid_Copy">
+                    <ic:FluentIcon Icon="Clipboard"/>
+                </Button>
+                <!--Display Options Dropdown Menu-->
+                <DropDownButton Grid.Column="6"
+                                Margin="5 0 0 0"
+                                ToolTip.Tip="Display Options">
+                    <ic:FluentIcon Icon="Settings"/>
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                            <CheckBox Content="Name"
+                                      IsChecked="{Binding Settings.ShowName}"/>
+                            <CheckBox Content="Offset"
+                                      IsChecked="{Binding Settings.ShowOffset}"/>
+                            <CheckBox Content="Size"
+                                      IsThreeState="True"
+                                      IsChecked="{Binding Settings.ShowSize}"/>
+                            <CheckBox Content="CRC-32"
+                                      IsChecked="{Binding Settings.ShowCrc32}"/>
+                            <CheckBox Content="Type"
+                                      IsChecked="{Binding Settings.ShowType}"/>
+                            <CheckBox Content="Valid"
+                                      IsThreeState="True"
+                                      IsChecked="{Binding ValidationOptions.ShowValid}"
+                                      IsEnabled="{Binding Settings.ValidateAssets}"/>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+            </Grid>
+            <!--Asset DataGrid-->
+            <DataGrid Grid.Row="1"
+                      Margin="0 5 0 5"
+                      x:Name="assetGrid"
+                      ItemsSource="{Binding Assets}"
+                      SelectedItem="{Binding SelectedAsset}"
+                      IsReadOnly="True"
+                      SelectionMode="Extended"
+                      CanUserReorderColumns="True"
+                      CanUserResizeColumns="True"
+                      GridLinesVisibility="All"
+                      HorizontalScrollBarVisibility="Disabled"
+                      BorderThickness="1"
+                      BorderBrush="Gray"
+                      ClipboardCopyMode="None"
+                      DoubleTapped="AssetGrid_DoubleTapped"
+                      Sorting="AssetGrid_Sorting">
+                <!--Asset DataGrid Columns-->
+                <DataGrid.Columns>
+                    <DataGridTextColumn Width="2*"
+                                        MinWidth="90"
+                                        IsVisible="{Binding Settings.ShowName}"
+                                        Header="Name"
+                                        Binding="{Binding Name}"/>
+                    <DataGridTextColumn Width="*"
+                                        MinWidth="90"
+                                        MaxWidth="150"
+                                        IsVisible="{Binding Settings.ShowOffset}"
+                                        Header="Offset"
+                                        Binding="{Binding Offset}"/>
+                    <DataGridTextColumn Width="*"
+                                        MinWidth="90"
+                                        MaxWidth="150"
+                                        IsVisible="{Binding Settings.ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
+                                        Header="Size"
+                                        Binding="{Binding Size, Converter={StaticResource FileSizeConverter}, Mode=OneWay}"/>
+                    <DataGridTextColumn Width="*"
+                                        MinWidth="90"
+                                        MaxWidth="150"
+                                        IsVisible="{Binding !!Settings.ShowSize}"
+                                        Header="Size"
+                                        Binding="{Binding Size}"/>
+                    <DataGridTextColumn Width="*"
+                                        MinWidth="90"
+                                        MaxWidth="150"
+                                        IsVisible="{Binding Settings.ShowCrc32}"
+                                        Header="CRC-32"
+                                        Binding="{Binding Crc32}"/>
+                    <DataGridTextColumn Width=".8*"
+                                        MinWidth="70"
+                                        MaxWidth="150"
+                                        IsVisible="{Binding Settings.ShowType}"
+                                        Header="Type"
+                                        Binding="{Binding Type}"/>
+                </DataGrid.Columns>
+                <DataGrid.Styles>
+                    <!--Asset Row Context Menu-->
+                    <Style Selector="DataGridRow">
+                        <Setter Property="ContextMenu">
+                            <ContextMenu>
+                                <MenuItem Header="Open"
+                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                          Command="{Binding $parent[DataGrid].DataContext.OpenSelectedAssetCommand}"/>
+                                <MenuItem Header="Delete"
+                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                          Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
+                                <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"/>
+                                <MenuItem Header="Copy"
+                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                          Click="AssetGridRow_ContextMenu_Copy"/>
+                                <MenuItem Header="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource PluralConverter}, ConverterParameter=Copy Row}"
+                                          Click="AssetGridRow_ContextMenu_CopyRows"/>
+                                <MenuItem Header="Select Asset File"
+                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                          Command="{Binding $parent[DataGrid].DataContext.SelectFileCommand}"/>
+                                <Separator/>
+                                <MenuItem Header="Save As..."
+                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}}"
+                                          Command="{Binding $parent[DataGrid].DataContext.SaveSelectedAssetCommand}"/>
+                                <MenuItem Header="Extract Selected Assets..."
+                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                          Command="{Binding $parent[DataGrid].DataContext.ExtractSelectedAssetsCommand}"/>
+                                <MenuItem Header="Delete Selected Assets"
+                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                          Command="{Binding $parent[DataGrid].DataContext.DeleteSelectedAssetsCommand}"/>
+                            </ContextMenu>
+                        </Setter>
+                    </Style>
+                    <!--DataGrid Column Header Context Menu-->
+                    <Style Selector="DataGridColumnHeader">
+                        <Setter Property="ContextMenu">
+                            <ContextMenu>
+                                <MenuItem Header="Hide"
+                                          Click="AssetGridColumnHeader_ContextMenu_Hide"/>
+                                <MenuItem Header="Copy"
+                                          IsVisible="{Binding !!$parent[DataGrid].DataContext.Assets.Count}"
+                                          Click="AssetGridColumnHeader_ContextMenu_Copy"/>
+                            </ContextMenu>
+                        </Setter>
+                    </Style>
+                </DataGrid.Styles>
+            </DataGrid>
+            <!--#/# Info Bar-->
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        MaxHeight="20">
+                <!--#/# Files Selected-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            ToolTip.Tip="Files Selected">
+                    <ic:FluentIcon Icon="DocumentCheckmark"
+                                   Margin="0 0 5 0"/>
+                    <TextBlock VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="CheckedAssetFiles.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="AssetFiles.Count"
+                                         FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# Assets Shown-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            ToolTip.Tip="Assets Shown">
+                    <ic:FluentIcon Icon="DocumentMultiple"
+                                   Margin="0 0 5 0"/>
+                    <TextBlock VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="CheckedAssets.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="NumAssets"
+                                         FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# In/valid Assets-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource BooleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
+                    <ic:FluentIcon Icon="Warning"
+                                   Margin="0 0 5 0"
+                                   IsVisible="{Binding !ValidationOptions.ShowValid}"/>
+                    <ic:FluentIcon Icon="CheckboxChecked"
+                                   Margin="0 0 5 0"
+                                   IsVisible="{Binding !!ValidationOptions.ShowValid}"/>
+                    <TextBlock VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="Assets.UnfilteredCount"
+                                         FallbackValue="0"/>
+                                <Binding Path="CheckedAssets.Count"
+                                         FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# Search Hits-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            IsVisible="{Binding SearchOptions.Pattern, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            ToolTip.Tip="Search Hits">
+                    <ic:FluentIcon Icon="DocumentSearch"
+                                   Margin="0 0 5 0"/>
+                    <TextBlock VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="Assets.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="Assets.UnfilteredCount"
+                                         FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+                <!--#/# Assets Selected-->
+                <StackPanel Orientation="Horizontal"
+                            Margin="0 0 10 0"
+                            IsVisible="{Binding !!SelectedAssets.Count}"
+                            ToolTip.Tip="Assets Selected">
+                    <ic:FluentIcon Icon="HandPoint"
+                                   Margin="0 0 5 0"/>
+                    <TextBlock VerticalAlignment="Center">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="SelectedAssets.Count"
+                                         FallbackValue="0"/>
+                                <Binding Path="Assets.Count"
+                                         FallbackValue="0"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
 </UserControl>
