@@ -22,7 +22,6 @@
         <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
         <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
-        <conv:ColorOpacityConverter x:Key="ColorOpacityConverter"/>
         <conv:PathConverter x:Key="PathConverter"/>
         <conv:PluralConverter x:Key="PluralConverter"/>
         <commands:StaticCommands x:Key="Commands"/>
@@ -80,27 +79,22 @@
                             <ControlTheme TargetType="MenuItem">
                                 <Setter Property="Template">
                                     <ControlTemplate>
-                                        <MenuItem Background="{TemplateBinding Background}"
-                                                  CommandParameter="{Binding}">
+                                        <MenuItem CommandParameter="{Binding}">
                                             <MenuItem.Header>
                                                 <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
                                                            TextTrimming="CharacterEllipsis"/>
                                             </MenuItem.Header>
                                             <MenuItem.Styles>
                                                 <Style Selector="MenuItem:pointerover">
-                                                    <Setter Property="Background">
-                                                        <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
-                                                            <Binding Source="{DynamicResource HoverBrush}"/>
-                                                            <Binding Source="0.1"/>
-                                                        </MultiBinding>
-                                                    </Setter>
+                                                    <Setter Property="Background"
+                                                            Value="{DynamicResource HoverBrush}"/>
                                                 </Style>
                                             </MenuItem.Styles>
                                         </MenuItem>
                                     </ControlTemplate>
                                 </Setter>
                                 <Setter Property="Command"
-                                        Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFileCommand}"/>
+                                        Value="{Binding $parent[UserControl].DataContext.AddRecentFileCommand}"/>
                             </ControlTheme>
                         </MenuItem.ItemContainerTheme>
                     </MenuItem>
@@ -129,27 +123,22 @@
                             <ControlTheme TargetType="MenuItem">
                                 <Setter Property="Template">
                                     <ControlTemplate>
-                                        <MenuItem Background="{TemplateBinding Background}"
-                                                  CommandParameter="{Binding}">
+                                        <MenuItem CommandParameter="{Binding}">
                                             <MenuItem.Header>
                                                 <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
                                                            TextTrimming="CharacterEllipsis"/>
                                             </MenuItem.Header>
                                             <MenuItem.Styles>
                                                 <Style Selector="MenuItem:pointerover">
-                                                    <Setter Property="Background">
-                                                        <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
-                                                            <Binding Source="{DynamicResource HoverBrush}"/>
-                                                            <Binding Source="0.1"/>
-                                                        </MultiBinding>
-                                                    </Setter>
+                                                    <Setter Property="Background"
+                                                            Value="{DynamicResource HoverBrush}"/>
                                                 </Style>
                                             </MenuItem.Styles>
                                         </MenuItem>
                                     </ControlTemplate>
                                 </Setter>
                                 <Setter Property="Command"
-                                        Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFolderCommand}"/>
+                                        Value="{Binding $parent[UserControl].DataContext.AddRecentFolderCommand}"/>
                             </ControlTheme>
                         </MenuItem.ItemContainerTheme>
                     </MenuItem>
@@ -178,11 +167,8 @@
             <!--Browser Selector-->
             <TabStrip Margin="5 0 5 5"
                       CornerRadius="100"
-                      SelectedIndex="{Binding BrowserIndex}">
-                <TabStrip.Background>
-                    <SolidColorBrush Color="Gray"
-                                     Opacity="0.34"/>
-                </TabStrip.Background>
+                      SelectedIndex="{Binding BrowserIndex}"
+                      Background="{DynamicResource BackgroundBrush}">
                 <TabStripItem Content="Asset Browser"
                               FontSize="12"
                               MinHeight="25"/>

@@ -22,10 +22,12 @@
             <sys:Double x:Key="ControlContentThemeFontSize">12</sys:Double>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key='Light'>
-                    <SolidColorBrush x:Key='HoverBrush'>Black</SolidColorBrush>
+                    <SolidColorBrush x:Key='HoverBrush'>#dadada</SolidColorBrush>
+                    <SolidColorBrush x:Key='BackgroundBrush'>#f2f2f2</SolidColorBrush>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key='Dark'>
-                    <SolidColorBrush x:Key='HoverBrush'>White</SolidColorBrush>
+                    <SolidColorBrush x:Key='HoverBrush'>#404040</SolidColorBrush>
+                    <SolidColorBrush x:Key='BackgroundBrush'>#2b2b2b</SolidColorBrush>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
