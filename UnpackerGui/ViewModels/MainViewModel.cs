@@ -108,6 +108,7 @@ public class MainViewModel : ViewModelBase
     private readonly PreferencesViewModel _preferences;
     private readonly AboutViewModel _about;
 
+    private int _browserIndex;
     private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
@@ -208,6 +209,15 @@ public class MainViewModel : ViewModelBase
     /// Gets the checked asset files.
     /// </summary>
     public ReadOnlyObservableCollection<AssetFileViewModel> CheckedAssetFiles => _checkedAssetFiles;
+
+    /// <summary>
+    /// Gets or sets the index of the current browser.
+    /// </summary>
+    public int BrowserIndex
+    {
+        get => _browserIndex;
+        set => this.RaiseAndSetIfChanged(ref _browserIndex, value);
+    }
 
     /// <summary>
     /// Gets or sets the total number of assets.

@@ -8,8 +8,11 @@
         x:Class="UnpackerGui.Views.MainWindow"
         Icon="/Assets/unpacker.ico"
         Width="800"
-        Height="470"
+        Height="500"
         WindowStartupLocation="CenterScreen"
         Title="Free Realms Unpacker">
+    <Design.DataContext>
+        <vm:DesignMainViewModel/>
+    </Design.DataContext>
     <views:MainView/>
 </Window>

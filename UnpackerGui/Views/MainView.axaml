@@ -9,7 +9,7 @@
              xmlns:ic="using:FluentIcons.Avalonia"
              mc:Ignorable="d"
              d:DesignWidth="800"
-             d:DesignHeight="470"
+             d:DesignHeight="500"
              x:Class="UnpackerGui.Views.MainView"
              x:DataType="vm:MainViewModel"
              Loaded="MainView_Loaded"
@@ -46,136 +46,154 @@
     </UserControl.Styles>
     <!--Base Panel-->
     <DockPanel>
-        <!--Toolbar-->
-        <Menu DockPanel.Dock="Top"
-              Height="30">
-            <!--File Menu-->
-            <MenuItem Header="File">
-                <!--Open Submenu-->
-                <MenuItem Header="Open">
-                    <!--Open Pack File-->
-                    <MenuItem Header="Asset .pack File..."
-                              Command="{Binding AddPackFilesCommand}"/>
-                    <!--Open Manifest File-->
-                    <MenuItem Header="Asset manifest.dat File..."
-                              Command="{Binding AddManifestFilesCommand}"/>
+        <!--Menu Bar & Browser Selector-->
+        <StackPanel DockPanel.Dock="Top">
+            <!--Menu Bar-->
+            <Menu Height="30">
+                <!--File Menu-->
+                <MenuItem Header="File">
+                    <!--Open Submenu-->
+                    <MenuItem Header="Open">
+                        <!--Open Pack File-->
+                        <MenuItem Header="Asset .pack File..."
+                                  Command="{Binding AddPackFilesCommand}"/>
+                        <!--Open Manifest File-->
+                        <MenuItem Header="Asset manifest.dat File..."
+                                  Command="{Binding AddManifestFilesCommand}"/>
+                    </MenuItem>
+                    <!--Create Submenu-->
+                    <MenuItem Header="Create">
+                        <!--Create Pack File-->
+                        <MenuItem Header="Asset .pack File..."
+                                  Command="{Binding CreatePackFileCommand}"/>
+                        <!--Create Manifest File-->
+                        <MenuItem Header="Asset manifest.dat File..."
+                                  Command="{Binding CreateManifestFileCommand}"/>
+                    </MenuItem>
+                    <!--Recent Files Section-->
+                    <Separator IsVisible="{Binding !!Settings.RecentFiles.Count}"/>
+                    <!--Recent Files List-->
+                    <MenuItem Header="Recent Files"
+                              ItemsSource="{Binding Settings.RecentFiles}"
+                              IsVisible="{Binding !!Settings.RecentFiles.Count}">
+                        <MenuItem.ItemContainerTheme>
+                            <ControlTheme TargetType="MenuItem">
+                                <Setter Property="Template">
+                                    <ControlTemplate>
+                                        <MenuItem Background="{TemplateBinding Background}"
+                                                  CommandParameter="{Binding}">
+                                            <MenuItem.Header>
+                                                <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </MenuItem.Header>
+                                            <MenuItem.Styles>
+                                                <Style Selector="MenuItem:pointerover">
+                                                    <Setter Property="Background">
+                                                        <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
+                                                            <Binding Source="{DynamicResource HoverBrush}"/>
+                                                            <Binding Source="0.1"/>
+                                                        </MultiBinding>
+                                                    </Setter>
+                                                </Style>
+                                            </MenuItem.Styles>
+                                        </MenuItem>
+                                    </ControlTemplate>
+                                </Setter>
+                                <Setter Property="Command"
+                                        Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFileCommand}"/>
+                            </ControlTheme>
+                        </MenuItem.ItemContainerTheme>
+                    </MenuItem>
+                    <!--Open All Recent Files-->
+                    <MenuItem Header="Open All Recent Files"
+                              IsVisible="{Binding !!Settings.RecentFiles.Count}"
+                              Command="{Binding AddRecentFilesCommand}"/>
+                    <!--Empty Recent Files-->
+                    <MenuItem Header="Empty Recent Files"
+                              IsVisible="{Binding !!Settings.RecentFiles.Count}"
+                              Command="{Binding EmptyRecentFilesCommand}"/>
+                    <!--Recent Folders Section-->
+                    <Separator>
+                        <Separator.IsVisible>
+                            <MultiBinding Converter="{x:Static BoolConverters.Or}">
+                                <Binding Source="{Binding !!Settings.RecentFiles.Count}"/>
+                                <Binding Source="{Binding !!Settings.RecentFolders.Count}"/>
+                            </MultiBinding>
+                        </Separator.IsVisible>
+                    </Separator>
+                    <!--Recent Folders List-->
+                    <MenuItem Header="Recent Folders"
+                              ItemsSource="{Binding Settings.RecentFolders}"
+                              IsVisible="{Binding !!Settings.RecentFolders.Count}">
+                        <MenuItem.ItemContainerTheme>
+                            <ControlTheme TargetType="MenuItem">
+                                <Setter Property="Template">
+                                    <ControlTemplate>
+                                        <MenuItem Background="{TemplateBinding Background}"
+                                                  CommandParameter="{Binding}">
+                                            <MenuItem.Header>
+                                                <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                            </MenuItem.Header>
+                                            <MenuItem.Styles>
+                                                <Style Selector="MenuItem:pointerover">
+                                                    <Setter Property="Background">
+                                                        <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
+                                                            <Binding Source="{DynamicResource HoverBrush}"/>
+                                                            <Binding Source="0.1"/>
+                                                        </MultiBinding>
+                                                    </Setter>
+                                                </Style>
+                                            </MenuItem.Styles>
+                                        </MenuItem>
+                                    </ControlTemplate>
+                                </Setter>
+                                <Setter Property="Command"
+                                        Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFolderCommand}"/>
+                            </ControlTheme>
+                        </MenuItem.ItemContainerTheme>
+                    </MenuItem>
+                    <!--Empty Recent Folders-->
+                    <MenuItem Header="Empty Recent Folders"
+                              IsVisible="{Binding !!Settings.RecentFolders.Count}"
+                              Command="{Binding EmptyRecentFoldersCommand}"/>
+                    <Separator IsVisible="{Binding !!Settings.RecentFolders.Count}"/>
+                    <!--Exit-->
+                    <MenuItem Header="Exit"
+                              Command="{Binding ExitCommand}"/>
                 </MenuItem>
-                <!--Create Submenu-->
-                <MenuItem Header="Create">
-                    <!--Create Pack File-->
-                    <MenuItem Header="Asset .pack File..."
-                              Command="{Binding CreatePackFileCommand}"/>
-                    <!--Create Manifest File-->
-                    <MenuItem Header="Asset manifest.dat File..."
-                              Command="{Binding CreateManifestFileCommand}"/>
+                <!--Settings Menu-->
+                <MenuItem Header="Settings">
+                    <!--Preferences-->
+                    <MenuItem Header="Preferences..."
+                              Command="{Binding ShowPreferencesCommand}"/>
                 </MenuItem>
-                <!--Recent Files Section-->
-                <Separator IsVisible="{Binding !!Settings.RecentFiles.Count}"/>
-                <!--Recent Files List-->
-                <MenuItem Header="Recent Files"
-                          ItemsSource="{Binding Settings.RecentFiles}"
-                          IsVisible="{Binding !!Settings.RecentFiles.Count}">
-                    <MenuItem.ItemContainerTheme>
-                        <ControlTheme TargetType="MenuItem">
-                            <Setter Property="Template">
-                                <ControlTemplate>
-                                    <MenuItem Background="{TemplateBinding Background}"
-                                              CommandParameter="{Binding}">
-                                        <MenuItem.Header>
-                                            <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
-                                                       TextTrimming="CharacterEllipsis"/>
-                                        </MenuItem.Header>
-                                        <MenuItem.Styles>
-                                            <Style Selector="MenuItem:pointerover">
-                                                <Setter Property="Background">
-                                                    <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
-                                                        <Binding Source="{DynamicResource HoverBrush}"/>
-                                                        <Binding Source="0.1"/>
-                                                    </MultiBinding>
-                                                </Setter>
-                                            </Style>
-                                        </MenuItem.Styles>
-                                    </MenuItem>
-                                </ControlTemplate>
-                            </Setter>
-                            <Setter Property="Command"
-                                    Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFileCommand}"/>
-                        </ControlTheme>
-                    </MenuItem.ItemContainerTheme>
+                <!--Help Menu-->
+                <MenuItem Header="Help">
+                    <!--About Free Realms Unpacker-->
+                    <MenuItem Header="About Free Realms Unpacker..."
+                              Command="{Binding ShowAboutCommand}"/>
                 </MenuItem>
-                <!--Open All Recent Files-->
-                <MenuItem Header="Open All Recent Files"
-                          IsVisible="{Binding !!Settings.RecentFiles.Count}"
-                          Command="{Binding AddRecentFilesCommand}"/>
-                <!--Empty Recent Files-->
-                <MenuItem Header="Empty Recent Files"
-                          IsVisible="{Binding !!Settings.RecentFiles.Count}"
-                          Command="{Binding EmptyRecentFilesCommand}"/>
-                <!--Recent Folders Section-->
-                <Separator>
-                    <Separator.IsVisible>
-                        <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                            <Binding Source="{Binding !!Settings.RecentFiles.Count}"/>
-                            <Binding Source="{Binding !!Settings.RecentFolders.Count}"/>
-                        </MultiBinding>
-                    </Separator.IsVisible>
-                </Separator>
-                <!--Recent Folders List-->
-                <MenuItem Header="Recent Folders"
-                          ItemsSource="{Binding Settings.RecentFolders}"
-                          IsVisible="{Binding !!Settings.RecentFolders.Count}">
-                    <MenuItem.ItemContainerTheme>
-                        <ControlTheme TargetType="MenuItem">
-                            <Setter Property="Template">
-                                <ControlTemplate>
-                                    <MenuItem Background="{TemplateBinding Background}"
-                                              CommandParameter="{Binding}">
-                                        <MenuItem.Header>
-                                            <TextBlock Text="{Binding ., Converter={StaticResource PathConverter}}"
-                                                       TextTrimming="CharacterEllipsis"/>
-                                        </MenuItem.Header>
-                                        <MenuItem.Styles>
-                                            <Style Selector="MenuItem:pointerover">
-                                                <Setter Property="Background">
-                                                    <MultiBinding Converter="{StaticResource ColorOpacityConverter}">
-                                                        <Binding Source="{DynamicResource HoverBrush}"/>
-                                                        <Binding Source="0.1"/>
-                                                    </MultiBinding>
-                                                </Setter>
-                                            </Style>
-                                        </MenuItem.Styles>
-                                    </MenuItem>
-                                </ControlTemplate>
-                            </Setter>
-                            <Setter Property="Command"
-                                    Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).AddRecentFolderCommand}"/>
-                        </ControlTheme>
-                    </MenuItem.ItemContainerTheme>
-                </MenuItem>
-                <!--Empty Recent Folders-->
-                <MenuItem Header="Empty Recent Folders"
-                          IsVisible="{Binding !!Settings.RecentFolders.Count}"
-                          Command="{Binding EmptyRecentFoldersCommand}"/>
-                <Separator IsVisible="{Binding !!Settings.RecentFolders.Count}"/>
-                <!--Exit-->
-                <MenuItem Header="Exit"
-                          Command="{Binding ExitCommand}"/>
-            </MenuItem>
-            <!--Settings Menu-->
-            <MenuItem Header="Settings">
-                <!--Preferences-->
-                <MenuItem Header="Preferences..."
-                          Command="{Binding ShowPreferencesCommand}"/>
-            </MenuItem>
-            <!--Help Menu-->
-            <MenuItem Header="Help">
-                <!--About Free Realms Unpacker-->
-                <MenuItem Header="About Free Realms Unpacker..."
-                          Command="{Binding ShowAboutCommand}"/>
-            </MenuItem>
-        </Menu>
-        <!--Base Grid-->
+            </Menu>
+            <!--Browser Selector-->
+            <TabStrip Margin="5 0 5 5"
+                      CornerRadius="100"
+                      SelectedIndex="{Binding BrowserIndex}">
+                <TabStrip.Background>
+                    <SolidColorBrush Color="Gray"
+                                     Opacity="0.34"/>
+                </TabStrip.Background>
+                <TabStripItem Content="Asset Browser"
+                              FontSize="12"
+                              MinHeight="25"/>
+                <TabStripItem Content="Image Browser"
+                              FontSize="12"
+                              MinHeight="25"/>
+            </TabStrip>
+        </StackPanel>
+        <!--Asset Browser-->
         <Grid DockPanel.Dock="Bottom"
+              IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=0}"
               Grid.Row="0"
               ColumnDefinitions="Auto,*"
               Margin="5,-5,5,5">
