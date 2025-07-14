@@ -26,7 +26,7 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     /// <summary>
     /// Gets the file type of the asset.
     /// </summary>
-    public string Type { get; } = Path.GetExtension(Name);
+    public string Type { get; } = Path.GetExtension(Name).ToLowerInvariant();
 
     /// <summary>
     /// Gets or sets the CRC-32 value of the asset in the corresponding asset file.

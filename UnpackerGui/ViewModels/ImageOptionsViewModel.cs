@@ -15,7 +15,7 @@ public class ImageOptionsViewModel<T> : FilterViewModel<T>
     public ImageOptionsViewModel(Func<T, string> converter)
     {
         _converter = converter ?? throw new ArgumentNullException(nameof(converter));
-        IsMatch = x => _converter(x).ToLowerInvariant() is ".png" or ".jpg" or ".gif" or ".bmp";
+        IsMatch = x => _converter(x) is ".png" or ".jpg" or ".gif" or ".bmp";
     }
 
     /// <summary>
