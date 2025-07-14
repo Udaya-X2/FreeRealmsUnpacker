@@ -6,9 +6,10 @@ using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
 using FluentIcons.Common;
+using Pfim;
 using ReactiveUI;
+using SkiaSharp;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -17,9 +18,11 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
 using UnpackerGui.Extensions;
+using UnpackerGui.Images;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
 using UnpackerGui.Storage;
@@ -120,6 +123,7 @@ public class MainViewModel : ViewModelBase
     private readonly PreferencesViewModel _preferences;
     private readonly AboutViewModel _about;
     private readonly MemoryStream _imageStream;
+    private readonly PfimConfig _imageConfig;
 
     private int _browserIndex;
     private int _numAssets;
@@ -214,28 +218,9 @@ public class MainViewModel : ViewModelBase
 
         // Display the selected image asset.
         _imageStream = new MemoryStream();
+        _imageConfig = new PfimConfig(allocator: new ImageAllocator());
         this.WhenAnyValue(x => x.SelectedImageAsset)
-            .Subscribe(x =>
-            {
-                if (x == null)
-                {
-                    DisplayedImage = null;
-                    return;
-                }
-
-                try
-                {
-                    using AssetReader reader = x.AssetFile.OpenRead();
-                    _imageStream.Position = 0;
-                    reader.CopyTo(x, _imageStream);
-                    _imageStream.Position = 0;
-                    DisplayedImage = new Bitmap(_imageStream);
-                }
-                catch
-                {
-                    DisplayedImage = null;
-                }
-            });
+            .Subscribe(x => DisplayedImage = CreateBitmap(x));
 
         // Initialize other view models.
         _about = new AboutViewModel();
@@ -935,6 +920,97 @@ public class MainViewModel : ViewModelBase
     {
         SelectedAsset = null;
         SelectedAssets.Clear();
+    }
+
+    /// <summary>
+    /// Creates a bitmap image from the specified asset.
+    /// </summary>
+    private Bitmap? CreateBitmap(AssetInfo? asset)
+    {
+        DisplayedImage?.Dispose();
+
+        if (asset == null) return null;
+
+        try
+        {
+            using AssetReader reader = asset.AssetFile.OpenRead();
+            _imageStream.SetLength(0);
+            reader.CopyTo(asset, _imageStream);
+            _imageStream.Position = 0;
+
+            if (asset.Type is ".dds" or ".tga")
+            {
+                using IImage image = Pfimage.FromStream(_imageStream, _imageConfig);
+                byte[] newData = image.Data;
+                int newDataLen = image.DataLen;
+                int stride = image.Stride;
+                SKColorType colorType;
+
+                switch (image.Format)
+                {
+                    case ImageFormat.Rgb8:
+                        colorType = SKColorType.Gray8;
+                        break;
+                    // color channels still need to be swapped
+                    case ImageFormat.R5g6b5:
+                        colorType = SKColorType.Rgb565;
+                        break;
+                    // color channels still need to be swapped
+                    case ImageFormat.Rgba16:
+                        colorType = SKColorType.Argb4444;
+                        break;
+                    // Skia has no 24bit pixels, so we upscale to 32bit
+                    case ImageFormat.Rgb24:
+                        int pixels = image.DataLen / 3;
+                        newDataLen = pixels * 4;
+                        newData = new byte[newDataLen];
+
+                        for (int i = 0; i < pixels; i++)
+                        {
+                            newData[i * 4] = image.Data[i * 3];
+                            newData[i * 4 + 1] = image.Data[i * 3 + 1];
+                            newData[i * 4 + 2] = image.Data[i * 3 + 2];
+                            newData[i * 4 + 3] = 255;
+                        }
+
+                        stride = image.Width * 4;
+                        colorType = SKColorType.Bgra8888;
+                        break;
+                    case ImageFormat.Rgba32:
+                        colorType = SKColorType.Bgra8888;
+                        break;
+                    default:
+                        return null;
+                }
+
+                SKImageInfo imageInfo = new(image.Width, image.Height, colorType);
+                GCHandle handle = GCHandle.Alloc(newData, GCHandleType.Pinned);
+                nint ptr = Marshal.UnsafeAddrOfPinnedArrayElement(newData, 0);
+                using SKData data = SKData.Create(ptr, newDataLen, (address, context) => handle.Free());
+                using SKImage skImage = SKImage.FromPixels(imageInfo, data, stride);
+                using SKBitmap bitmap = SKBitmap.FromImage(skImage);
+                using FileStream fs = File.Create(Path.GetTempFileName(), 4096, FileOptions.DeleteOnClose);
+                using SKManagedWStream wstream = new(fs);
+
+                if (bitmap.Encode(wstream, SKEncodedImageFormat.Png, 100))
+                {
+                    fs.Position = 0;
+                    return new Bitmap(fs);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return new Bitmap(_imageStream);
+            }
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     /// <summary>

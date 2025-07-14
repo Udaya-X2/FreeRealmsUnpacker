@@ -21,6 +21,7 @@
         <DataGrid ItemsSource="{Binding ImageAssets}"
                   SelectedItem="{Binding SelectedImageAsset}"
                   SelectionMode="Single"
+                  CanUserResizeColumns="True"
                   BorderThickness="1"
                   BorderBrush="Gray"
                   Margin="5">
@@ -32,6 +33,7 @@
         </DataGrid>
         <!--Displayed Image-->
         <Border BorderBrush="Gray"
+                Background="{DynamicResource BackgroundBrush}"
                 BorderThickness="1"
                 Margin="0 5 5 5">
             <Image Source="{Binding DisplayedImage}"
