@@ -164,8 +164,8 @@
         <!--Asset Browser-->
         <Panel DockPanel.Dock="Bottom"
                Margin="5,-5,5,5">
-            <views:MainView IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=0}"/>
-            <views:ImageBrowserView IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=\=1}"/>
+            <views:MainView IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=0}"/>
+            <views:ImageBrowserView IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"/>
         </Panel>
     </DockPanel>
 </Window>

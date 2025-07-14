@@ -13,8 +13,7 @@ public class ExpressionConverter : IValueConverter
         {
             '>' => lhs > int.Parse(rhs.AsSpan(1)),
             '<' => lhs < int.Parse(rhs.AsSpan(1)),
-            '=' => lhs == int.Parse(rhs.AsSpan(1)),
-            _ => new BindingNotification(new InvalidCastException(), BindingErrorType.Error)
+            _ => lhs == int.Parse(rhs)
         },
         _ => new BindingNotification(new InvalidCastException(), BindingErrorType.Error)
     };
