@@ -8,7 +8,7 @@ namespace UnpackerGui.ViewModels;
 /// Represents a filter on a specified type.
 /// </summary>
 /// <typeparam name="T">The type of the item to filter.</typeparam>
-public abstract class FilterViewModel<T> : ViewModelBase
+public class FilterViewModel<T> : ViewModelBase
 {
     private static readonly Func<T, bool> s_truePredicate = _ => true;
 
@@ -39,7 +39,7 @@ public abstract class FilterViewModel<T> : ViewModelBase
     /// <summary>
     /// Updates the match predicate.
     /// </summary>
-    protected abstract void UpdateMatchPredicate();
+    protected virtual void UpdateMatchPredicate() { }
 
     /// <inheritdoc cref="IReactiveObjectExtensions.RaiseAndSetIfChanged{TObj, TRet}(TObj, ref TRet, TRet, string?)"/>
     protected TRet SetValue<TRet>(ref TRet backingField, TRet newValue, [CallerMemberName] string? propertyName = null)

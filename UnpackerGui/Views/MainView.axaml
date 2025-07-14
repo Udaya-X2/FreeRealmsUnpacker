@@ -43,9 +43,7 @@
             </Setter>
         </Style>
     </UserControl.Styles>
-    <!--Asset Browser-->
-    <Grid ColumnDefinitions="Auto,*"
-          Margin="5,-5,5,5">
+    <Grid ColumnDefinitions="Auto,*">
         <!--Buttons, Asset Files, Property Grid-->
         <Grid Grid.Column="0"
               RowDefinitions="Auto,*,Auto"

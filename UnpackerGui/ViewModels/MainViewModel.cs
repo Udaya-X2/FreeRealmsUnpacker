@@ -1,5 +1,6 @@
 ﻿using AssetIO;
 using Avalonia;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Aggregation;
@@ -7,6 +8,7 @@ using DynamicData.Binding;
 using FluentIcons.Common;
 using ReactiveUI;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -38,6 +40,11 @@ public class MainViewModel : ViewModelBase
     public FilteredReactiveCollection<AssetInfo> Assets { get; }
 
     /// <summary>
+    /// Gets the image assets shown to the user.
+    /// </summary>
+    public FilteredReactiveCollection<AssetInfo> ImageAssets { get; }
+
+    /// <summary>
     /// Gets the assets in the checked asset files.
     /// </summary>
     public ReadOnlyReactiveCollection<AssetInfo> CheckedAssets { get; }
@@ -56,6 +63,11 @@ public class MainViewModel : ViewModelBase
     /// Gets the validation options to filter the assets shown.
     /// </summary>
     public ValidationOptionsViewModel<AssetInfo> ValidationOptions { get; }
+
+    /// <summary>
+    /// Gets the options to filter the image assets shown.
+    /// </summary>
+    public ImageOptionsViewModel<AssetInfo> ImageOptions { get; }
 
     /// <summary>
     /// Gets the application's settings.
@@ -107,11 +119,14 @@ public class MainViewModel : ViewModelBase
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _checkedAssetFiles;
     private readonly PreferencesViewModel _preferences;
     private readonly AboutViewModel _about;
+    private readonly MemoryStream _imageStream;
 
     private int _browserIndex;
     private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
+    private AssetInfo? _selectedImageAsset;
+    private Bitmap? _displayedImage;
     private IDisposable? _validationHandler;
 
     /// <summary>
@@ -180,10 +195,12 @@ public class MainViewModel : ViewModelBase
         // Initialize each observable collection.
         ValidationOptions = new ValidationOptionsViewModel<AssetInfo>(x => x.IsValid);
         SearchOptions = new SearchOptionsViewModel<AssetInfo>(x => x.Name);
+        ImageOptions = new ImageOptionsViewModel<AssetInfo>(x => x.Type);
         SelectedAssets = [];
         CheckedAssets = CheckedAssetFiles.Flatten<ReadOnlyObservableCollection<AssetFileViewModel>, AssetInfo>();
         ValidatedAssets = CheckedAssets.Filter(ValidationOptions);
         Assets = ValidatedAssets.Filter(SearchOptions);
+        ImageAssets = Assets.Filter(ImageOptions);
 
         // Toggle asset validation when requested.
         Settings = App.GetSettings();
@@ -194,6 +211,31 @@ public class MainViewModel : ViewModelBase
         // number of assets are selected while more assets are added/removed.
         Assets.ObserveCollectionChanges()
               .Subscribe(_ => ClearSelectedAssets());
+
+        // Display the selected image asset.
+        _imageStream = new MemoryStream();
+        this.WhenAnyValue(x => x.SelectedImageAsset)
+            .Subscribe(x =>
+            {
+                if (x == null)
+                {
+                    DisplayedImage = null;
+                    return;
+                }
+
+                try
+                {
+                    using AssetReader reader = x.AssetFile.OpenRead();
+                    _imageStream.Position = 0;
+                    reader.CopyTo(x, _imageStream);
+                    _imageStream.Position = 0;
+                    DisplayedImage = new Bitmap(_imageStream);
+                }
+                catch
+                {
+                    DisplayedImage = null;
+                }
+            });
 
         // Initialize other view models.
         _about = new AboutViewModel();
@@ -244,6 +286,24 @@ public class MainViewModel : ViewModelBase
     {
         get => _selectedAsset;
         set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the selected image asset.
+    /// </summary>
+    public AssetInfo? SelectedImageAsset
+    {
+        get => _selectedImageAsset;
+        set => this.RaiseAndSetIfChanged(ref _selectedImageAsset, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the displayed bitmap image.
+    /// </summary>
+    public Bitmap? DisplayedImage
+    {
+        get => _displayedImage;
+        set => this.RaiseAndSetIfChanged(ref _displayedImage, value);
     }
 
     /// <summary>

@@ -16,5 +16,26 @@
     <Design.DataContext>
         <vm:DesignMainViewModel/>
     </Design.DataContext>
-    <Image Source="{x:Null}"/>
+    <DockPanel>
+        <!--Image Assets-->
+        <DataGrid ItemsSource="{Binding ImageAssets}"
+                  SelectedItem="{Binding SelectedImageAsset}"
+                  SelectionMode="Single"
+                  BorderThickness="1"
+                  BorderBrush="Gray"
+                  Margin="5">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Name}"
+                                    Width="220"
+                                    Header="Images"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <!--Displayed Image-->
+        <Border BorderBrush="Gray"
+                BorderThickness="1"
+                Margin="0 5 5 5">
+            <Image Source="{Binding DisplayedImage}"
+                   MaxHeight="{Binding DisplayedImage?.Size?.Height, TargetNullValue=0}"/>
+        </Border>
+    </DockPanel>
 </UserControl>

@@ -9,16 +9,26 @@ public class DesignMainViewModel : MainViewModel
 {
     public DesignMainViewModel()
     {
-        AssetFile[] assetFiles =
-        [
-            new AssetFile("Assets_000.pack"),
+        // TODO: Update sample design files
+        if (Directory.Exists(@"C:\Users\udaya\Downloads\Temp\tmp"))
+        {
+            foreach (AssetFile assetFile in ClientDirectory.EnumerateAssetFiles(@"C:\Users\udaya\Downloads\Temp\tmp"))
+            {
+                AddCheckedFile(assetFile.FullName);
+            }
+        }
+        else
+        {
+            AssetFile[] assetFiles =
+            [
+                new AssetFile("Assets_000.pack"),
             new AssetFile("Assets_001.pack"),
             new AssetFile("Assets_002.pack"),
             new AssetFile("Assets_manifest.dat")
-        ];
-        Asset[] assets =
-        [
-            new Asset("loadingscreen_pirAB_black_bbe.lst", 8192, 232, 917176159),
+            ];
+            Asset[] assets =
+            [
+                new Asset("loadingscreen_pirAB_black_bbe.lst", 8192, 232, 917176159),
             new Asset("loadingscreen_pirSC_purple_bbe.lst", 8424, 234, 283437766),
             new Asset("img9325829751207516497.dds", 8658, 21972, 4028054915),
             new Asset("game_checkers.lst", 30630, 413, 2723755226),
@@ -46,32 +56,33 @@ public class DesignMainViewModel : MainViewModel
             new Asset("img4115401578639383289.dds", 86536, 1512, 338448729),
             new Asset("img16290774806609951400.dds", 88048, 824, 1897712786),
             new Asset("img16449769463892741406.dds", 88872, 824, 1238894570)
-        ];
-        byte[] data = new byte[assets.Max(x => x.Size)];
-        int n = assets.Length / assetFiles.Length;
-        int j = 0;
+            ];
+            byte[] data = new byte[assets.Max(x => x.Size)];
+            int n = assets.Length / assetFiles.Length;
+            int j = 0;
 
-        foreach (AssetFile assetFile in assetFiles)
-        {
-            try
+            foreach (AssetFile assetFile in assetFiles)
             {
-                using (AssetWriter writer = assetFile.OpenWrite())
+                try
                 {
-                    for (int i = 0; i < n; i++, j++)
+                    using (AssetWriter writer = assetFile.OpenWrite())
                     {
-                        Asset asset = assets[j];
-                        writer.Write(asset.Name, data, 0, (int)asset.Size);
+                        for (int i = 0; i < n; i++, j++)
+                        {
+                            Asset asset = assets[j];
+                            writer.Write(asset.Name, data, 0, (int)asset.Size);
+                        }
                     }
-                }
 
-                AddCheckedFile(assetFile.FullName);
-                Settings.RecentFiles.Add(assetFile.FullName);
-                Settings.RecentFolders.Add(assetFile.DirectoryName!);
-            }
-            finally
-            {
-                assetFile.Info.Delete();
-                assetFile.DataFiles.ForEach(File.Delete);
+                    AddCheckedFile(assetFile.FullName);
+                    Settings.RecentFiles.Add(assetFile.FullName);
+                    Settings.RecentFolders.Add(assetFile.DirectoryName!);
+                }
+                finally
+                {
+                    assetFile.Info.Delete();
+                    assetFile.DataFiles.ForEach(File.Delete);
+                }
             }
         }
 
