@@ -925,6 +925,9 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Creates a bitmap image from the specified asset.
     /// </summary>
+    /// <remarks>
+    /// Source: <see href="https://github.com/nickbabcock/Pfim/blob/master/src/Pfim.Skia/Program.cs"/>
+    /// </remarks>
     private Bitmap? CreateBitmap(AssetInfo? asset)
     {
         DisplayedImage?.Dispose();
@@ -936,11 +939,15 @@ public class MainViewModel : ViewModelBase
             using AssetReader reader = asset.AssetFile.OpenRead();
             _imageStream.SetLength(0);
             reader.CopyTo(asset, _imageStream);
-            _imageStream.Position = 0;
 
             if (asset.Type is ".dds" or ".tga")
             {
-                using IImage image = Pfimage.FromStream(_imageStream, _imageConfig);
+                _imageStream.Position = 0;
+                using IImage image = asset.Type switch
+                {
+                    ".dds" => Dds.Create(_imageStream, _imageConfig),
+                    _ => Targa.Create(_imageStream, _imageConfig)
+                };
                 byte[] newData = image.Data;
                 int newDataLen = image.DataLen;
                 int stride = image.Stride;
@@ -951,15 +958,15 @@ public class MainViewModel : ViewModelBase
                     case ImageFormat.Rgb8:
                         colorType = SKColorType.Gray8;
                         break;
-                    // color channels still need to be swapped
+                    // Color channels still need to be swapped.
                     case ImageFormat.R5g6b5:
                         colorType = SKColorType.Rgb565;
                         break;
-                    // color channels still need to be swapped
+                    // Color channels still need to be swapped.
                     case ImageFormat.Rgba16:
                         colorType = SKColorType.Argb4444;
                         break;
-                    // Skia has no 24bit pixels, so we upscale to 32bit
+                    // Skia has no 24-bit pixels, so we upscale to 32-bit.
                     case ImageFormat.Rgb24:
                         int pixels = image.DataLen / 3;
                         newDataLen = pixels * 4;
@@ -989,23 +996,14 @@ public class MainViewModel : ViewModelBase
                 using SKData data = SKData.Create(ptr, newDataLen, (address, context) => handle.Free());
                 using SKImage skImage = SKImage.FromPixels(imageInfo, data, stride);
                 using SKBitmap bitmap = SKBitmap.FromImage(skImage);
-                using FileStream fs = File.Create(Path.GetTempFileName(), 4096, FileOptions.DeleteOnClose);
-                using SKManagedWStream wstream = new(fs);
+                _imageStream.SetLength(0);
+                using SKManagedWStream wstream = new(_imageStream);
 
-                if (bitmap.Encode(wstream, SKEncodedImageFormat.Png, 100))
-                {
-                    fs.Position = 0;
-                    return new Bitmap(fs);
-                }
-                else
-                {
-                    return null;
-                }
+                if (!bitmap.Encode(wstream, SKEncodedImageFormat.Png, 100)) return null;
             }
-            else
-            {
-                return new Bitmap(_imageStream);
-            }
+
+            _imageStream.Position = 0;
+            return new Bitmap(_imageStream);
         }
         catch
         {
