@@ -940,12 +940,12 @@ public class MainViewModel : ViewModelBase
             _imageStream.SetLength(0);
             reader.CopyTo(asset, _imageStream);
 
-            if (asset.Type is ".dds" or ".tga")
+            if (asset.Type is "DDS" or "TGA")
             {
                 _imageStream.Position = 0;
                 using IImage image = asset.Type switch
                 {
-                    ".dds" => Dds.Create(_imageStream, _imageConfig),
+                    "DDS" => Dds.Create(_imageStream, _imageConfig),
                     _ => Targa.Create(_imageStream, _imageConfig)
                 };
                 byte[] newData = image.Data;

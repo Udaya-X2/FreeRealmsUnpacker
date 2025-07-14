@@ -7,15 +7,19 @@ namespace UnpackerGui.ViewModels;
 /// Represents a filter based on the image extension of the specified type.
 /// </summary>
 /// <typeparam name="T">The type of the item to filter.</typeparam>
-/// <param name="converter">The converter from <typeparamref name="T"/> to an image extension.</param>
 public class ImageOptionsViewModel<T> : FilterViewModel<T>
 {
     private readonly Func<T, string> _converter;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImageOptionsViewModel{T}"/> class.
+    /// </summary>
+    /// <param name="converter">The converter from <typeparamref name="T"/> to an image extension.</param>
+    /// <exception cref="ArgumentNullException"/>
     public ImageOptionsViewModel(Func<T, string> converter)
     {
         _converter = converter ?? throw new ArgumentNullException(nameof(converter));
-        IsMatch = x => _converter(x) is ".dds" or ".png" or ".jpg" or ".gif" or ".bmp" or ".tga";
+        IsMatch = x => _converter(x) is "DDS" or "PNG" or "JPG" or "GIF" or "BMP" or "TGA";
     }
 
     /// <summary>

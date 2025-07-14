@@ -26,7 +26,7 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     /// <summary>
     /// Gets the file type of the asset.
     /// </summary>
-    public string Type { get; } = Path.GetExtension(Name).ToLowerInvariant();
+    public string Type { get; } = GetUpperExtension(Name);
 
     /// <summary>
     /// Gets or sets the CRC-32 value of the asset in the corresponding asset file.
@@ -75,4 +75,18 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     /// Returns a hash code based on the asset's properties.
     /// </summary>
     private static int GetHashCode(Asset x) => HashCode.Combine(x.Name, x.Offset, x.Size, x.Crc32);
+
+    /// <summary>
+    /// Returns the uppercase extension of the specified file path (excluding the period, ".").
+    /// </summary>
+    private static string GetUpperExtension(ReadOnlySpan<char> path)
+    {
+        ReadOnlySpan<char> extension = Path.GetExtension(path);
+
+        if (extension.Length == 0) return "";
+
+        Span<char> upperExtension = stackalloc char[extension.Length - 1];
+        extension[1..].ToUpperInvariant(upperExtension);
+        return upperExtension.ToString();
+    }
 }
