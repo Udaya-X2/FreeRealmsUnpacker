@@ -47,7 +47,7 @@ public class SearchOptionsViewModel<T>(Func<T, string> converter) : FilterViewMo
     /// <summary>
     /// Returns <see langword="true"/> if the search options always produce a match; otherwise, <see langword="false"/>.
     /// </summary>
-    public override bool IsAlwaysMatch => Pattern is "" || (UseRegex && Pattern is "^" or "$" or "^$");
+    public override bool IsAlwaysMatch => Pattern is "" || (UseRegex && Pattern is "^" or "$");
 
     /// <summary>
     /// Updates the match predicate according to the current search options.
