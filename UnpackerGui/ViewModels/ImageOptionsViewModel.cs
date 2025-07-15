@@ -1,5 +1,8 @@
-﻿using System;
+﻿using SkiaSharp;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace UnpackerGui.ViewModels;
 
@@ -9,6 +12,11 @@ namespace UnpackerGui.ViewModels;
 /// <typeparam name="T">The type of the item to filter.</typeparam>
 public class ImageOptionsViewModel<T> : FilterViewModel<T>
 {
+    private static readonly HashSet<string> s_imageFormats = [.. Enum.GetValues<SKEncodedImageFormat>()
+                                                                     .Except([SKEncodedImageFormat.Avif])
+                                                                     .Select(x => x.ToString().ToUpperInvariant())
+                                                                     .Concat(["DDS", "TGA"])];
+
     private readonly Func<T, string> _converter;
 
     /// <summary>
@@ -19,7 +27,7 @@ public class ImageOptionsViewModel<T> : FilterViewModel<T>
     public ImageOptionsViewModel(Func<T, string> converter)
     {
         _converter = converter ?? throw new ArgumentNullException(nameof(converter));
-        IsMatch = x => _converter(x) is "DDS" or "PNG" or "JPG" or "GIF" or "BMP" or "TGA";
+        IsMatch = x => s_imageFormats.Contains(_converter(x));
     }
 
     /// <summary>

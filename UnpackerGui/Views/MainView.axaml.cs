@@ -9,9 +9,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
@@ -65,6 +67,18 @@ public partial class MainView : UserControl
             case (KeyModifiers.Alt, Key.D):
                 static void Print(object? x) => Debug.WriteLine($"{DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} {x}");
                 assetGrid.KeyBindings.ForEach(Print);
+                Task.Run(async () =>
+                {
+                    while (true)
+                    {
+                        Stopwatch sw = Stopwatch.StartNew();
+                        (DataContext as MainViewModel)?.CheckAllFilesCommand.Invoke();
+                        await Task.Delay(500);
+                        (DataContext as MainViewModel)?.UncheckAllFilesCommand.Invoke();
+                        Debug.WriteLine(sw.Elapsed);
+                        await Task.Delay(1000);
+                    }
+                });
                 break;
 #endif
             case (KeyModifiers.Alt, Key.C):
@@ -161,7 +175,7 @@ public partial class MainView : UserControl
         Func<AssetInfo, string>[] selectors = [.. colNames.Select(x => GetAssetInfoSelector(settings, x))];
         string[] values = new string[selectors.Length];
         StringBuilder sb = new();
-        
+
         if (settings.CopyColumnHeaders)
         {
             sb.AppendJoin(settings.ClipboardSeparator, colNames);
