@@ -20,6 +20,7 @@
     </Design.DataContext>
     <UserControl.Resources>
         <conv:FileSizeConverter x:Key="FileSizeConverter"/>
+        <conv:OptionalFileSizeConverter x:Key="OptionalFileSizeConverter"/>
         <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
         <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
@@ -382,15 +383,16 @@
                     <DataGridTextColumn Width="*"
                                         MinWidth="90"
                                         MaxWidth="150"
-                                        IsVisible="{Binding Settings.ShowSize, Converter={x:Static ObjectConverters.IsNull}}"
+                                        IsVisible="{Binding Settings.ShowSize, TargetNullValue=True}"
                                         Header="Size"
-                                        Binding="{Binding Size, Converter={StaticResource FileSizeConverter}, Mode=OneWay}"/>
-                    <DataGridTextColumn Width="*"
-                                        MinWidth="90"
-                                        MaxWidth="150"
-                                        IsVisible="{Binding !!Settings.ShowSize}"
-                                        Header="Size"
-                                        Binding="{Binding Size}"/>
+                                        SortMemberPath="Size">
+                        <DataGridTextColumn.Binding>
+                            <MultiBinding Converter="{StaticResource OptionalFileSizeConverter}">
+                                <Binding Path="Size"/>
+                                <Binding Path="$parent[UserControl].DataContext.Settings.ShowSize"/>
+                            </MultiBinding>
+                        </DataGridTextColumn.Binding>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Width="*"
                                         MinWidth="90"
                                         MaxWidth="150"
