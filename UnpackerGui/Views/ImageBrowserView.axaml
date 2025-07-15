@@ -30,6 +30,18 @@
                                     Width="220"
                                     Header="Images"/>
             </DataGrid.Columns>
+            <DataGrid.Styles>
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="Margin"
+                            Value="-3 0 0 0"/>
+                </Style>
+                <Style Selector="DataGridCell">
+                    <Setter Property="MinHeight"
+                            Value="0"/>
+                    <Setter Property="Padding"
+                            Value="-3 3 -3 3"/>
+                </Style>
+            </DataGrid.Styles>
         </DataGrid>
         <!--Displayed Image-->
         <Border BorderBrush="Gray"
