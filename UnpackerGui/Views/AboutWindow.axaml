@@ -11,7 +11,7 @@
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="About Free Realms Unpacker"
         Width="500"
-        Height="225"
+        Height="200"
         x:DataType="vm:AboutViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
@@ -28,15 +28,17 @@
         <Image Source="avares://UnpackerGui/Assets/unpacker.ico"
                Width="128"
                Margin="15"/>
-        <StackPanel VerticalAlignment="Center">
-            <TextBlock Text="Free Realms Unpacker"/>
-            <TextBlock Text="{Binding Version}"/>
-            <TextBlock Text="{Binding Copyright}"
-                       Margin="0,0,0,15"/>
-            <TextBlock TextWrapping="Wrap"
-                       Margin="0,0,20,15">
+        <StackPanel VerticalAlignment="Center" Spacing="15">
+            <StackPanel>
+                <TextBlock Text="Free Realms Unpacker"/>
+                <TextBlock Text="{Binding Version}"/>
+                <TextBlock Text="{Binding Copyright}"/>
+            </StackPanel>
+            <TextBlock TextWrapping="Wrap">
                 Free Realms Unpacker is an application that allows you to browse and extract assets from Free Realms asset files.
-                <LineBreak/><LineBreak/>
+            </TextBlock>
+            <TextBlock TextWrapping="Wrap"
+                       Margin="0 0 40 0">
                 It also includes other utilities, such as creating asset files, adding/deleting/validating assets, and fixing corrupted asset files (i.e., .pack.temp files).
             </TextBlock>
             <HyperlinkButton Content="Source Code"
