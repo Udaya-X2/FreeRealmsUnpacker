@@ -44,12 +44,12 @@
             </Setter>
         </Style>
     </UserControl.Styles>
-    <Grid ColumnDefinitions="Auto,*">
+    <Grid ColumnDefinitions="220,Auto,*">
         <!--Buttons, Asset Files, Property Grid-->
         <Grid Grid.Column="0"
+              HorizontalAlignment="Left"
               RowDefinitions="Auto,*,Auto"
-              Width="220"
-              Margin="5">
+              Margin="5 5 0 5">
             <!--Buttons-->
             <Grid Grid.Row="0"
                   MaxHeight="32"
@@ -265,8 +265,13 @@
                          ToolTip.Tip="{Binding $self.Text}"/>
             </Grid>
         </Grid>
+        <!--Allow User Resize Columns-->
+        <GridSplitter Grid.Column="1"
+                      Width="5"
+                      ShowsPreview="True"/>
         <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
-        <Grid Grid.Column="1"
+        <Grid Grid.Column="2"
+              HorizontalAlignment="Right"
               RowDefinitions="Auto,*,Auto"
               Margin="5 0 5 5">
             <!--Search Bar & Options-->
