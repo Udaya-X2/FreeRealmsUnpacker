@@ -119,21 +119,19 @@
                                     ToolTip.Tip="Reset Zoom"
                                     Padding="0"
                                     Click="Button_Click_ResetZoom">
-                                <ic:FluentIcon Icon="PageFit"
-                                               IconSize="Size24"
-                                               FontSize="24"/>
+                                <ic:FluentIcon Icon="PageFit"/>
                             </Button>
                             <!--Zoom In Button-->
                             <Button Background="Transparent"
                                     ToolTip.Tip="Zoom Out"
                                     Padding="0"
                                     Click="Button_Click_ZoomOut">
-                                <ic:FluentIcon Icon="ZoomOut"
-                                               FontSize="24"/>
+                                <ic:FluentIcon Icon="ZoomOut"/>
                             </Button>
                             <!--Zoom Slider-->
                             <Slider Value="{Binding ElementName=zoomBorder, Path=ZoomX}"
                                     ValueChanged="Slider_ValueChanged"
+                                    Margin="0 -10 0 -10"
                                     Minimum="1"
                                     Maximum="8"
                                     Width="100"/>
@@ -142,8 +140,7 @@
                                     ToolTip.Tip="Zoom In"
                                     Padding="0"
                                     Click="Button_Click_ZoomIn">
-                                <ic:FluentIcon Icon="ZoomIn"
-                                               FontSize="24"/>
+                                <ic:FluentIcon Icon="ZoomIn"/>
                             </Button>
                         </StackPanel>
                     </DockPanel>
