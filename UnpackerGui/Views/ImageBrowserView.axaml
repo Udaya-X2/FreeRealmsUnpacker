@@ -133,7 +133,7 @@
                             </Button>
                             <!--Zoom Slider-->
                             <Slider Value="{Binding ElementName=zoomBorder, Path=ZoomX}"
-                                    IsHitTestVisible="False"
+                                    ValueChanged="Slider_ValueChanged"
                                     Minimum="1"
                                     Maximum="8"
                                     Width="100"/>
