@@ -50,7 +50,7 @@
                 <!--Image Row Context Menu-->
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
-                        <ContextMenu>
+                        <ContextMenu IsVisible="{Binding $parent[DataGrid].DataContext.SelectedImageAsset, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <MenuItem Header="Open"
                                       Command="{x:Static c:StaticCommands.OpenAssetCommand}"
                                       CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedImageAsset}"/>

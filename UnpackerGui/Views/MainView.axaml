@@ -144,7 +144,7 @@
                                     <!--Data File Context Menu-->
                                     <Style Selector="ListBoxItem">
                                         <Setter Property="ContextMenu">
-                                            <ContextMenu>
+                                            <ContextMenu IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                 <MenuItem Header="Close"
                                                           Command="{Binding $parent[ListBox].DataContext.RemoveDataFilesCommand}"/>
                                                 <MenuItem Header="Delete"
@@ -173,7 +173,7 @@
                     <!--Asset File Context Menu-->
                     <Style Selector="ListBoxItem">
                         <Setter Property="ContextMenu">
-                            <ContextMenu>
+                            <ContextMenu IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
                                 <MenuItem Header="Close"
                                           Command="{Binding $parent[ListBox].DataContext.RemoveSelectedFileCommand}"/>
                                 <Separator/>
@@ -414,7 +414,7 @@
                     <!--Asset Row Context Menu-->
                     <Style Selector="DataGridRow">
                         <Setter Property="ContextMenu">
-                            <ContextMenu>
+                            <ContextMenu IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}">
                                 <MenuItem Header="Open"
                                           IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                           Command="{x:Static c:StaticCommands.OpenAssetCommand}"
