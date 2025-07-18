@@ -8,6 +8,7 @@
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              xmlns:commands="clr-namespace:UnpackerGui.Commands"
              xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:paz="using:Avalonia.Controls.PanAndZoom"
              mc:Ignorable="d"
              x:Class="UnpackerGui.Views.ImageBrowserView"
              x:DataType="vm:MainViewModel"
@@ -49,14 +50,105 @@
         <GridSplitter Grid.Column="1"
                       Width="5"
                       ShowsPreview="True"/>
-        <!--Displayed Image-->
+        <!--Image Viewer-->
         <Border Grid.Column="2"
                 BorderBrush="Gray"
-                Background="{DynamicResource BackgroundBrush}"
                 BorderThickness="1"
                 Margin="0 5 5 5">
-            <Image Source="{Binding DisplayedImage}"
-                   MaxHeight="{Binding DisplayedImage?.Size?.Height, TargetNullValue=0}"/>
+            <Grid RowDefinitions="*,Auto">
+                <!--Displayed Image-->
+                <ZoomBorder Name="zoomBorder"
+                            Grid.Row="0"
+                            MinZoomX="1"
+                            MinZoomY="1"
+                            MaxZoomX="8"
+                            MaxZoomY="8"
+                            Stretch="None"
+                            Background="{DynamicResource BackgroundBrush}"
+                            PanButton="Left"
+                            ClipToBounds="True">
+                    <Image Source="{Binding DisplayedImage}"
+                           MaxHeight="{Binding DisplayedImage?.Size?.Height, TargetNullValue=0}"/>
+                </ZoomBorder>
+                <!--Image Info & Controls-->
+                <Border Grid.Row="1"
+                        BorderBrush="Gray"
+                        BorderThickness="0 1 0 0">
+                    <DockPanel Background="{DynamicResource DockBrush}">
+                        <!--Image Info-->
+                        <StackPanel DockPanel.Dock="Left"
+                                    Orientation="Horizontal"
+                                    Spacing="15"
+                                    Margin="15 0 0 0"
+                                    ClipToBounds="True">
+                            <!--Dimensions Info-->
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5"
+                                        Opacity="100"
+                                        ToolTip.Tip="Dimensions">
+                                <ic:FluentIcon Icon="Image"/>
+                                <TextBlock VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0} X {1}">
+                                            <Binding Path="DisplayedImage?.Size?.Width"
+                                                     TargetNullValue="0"/>
+                                            <Binding Path="DisplayedImage?.Size?.Height"
+                                                     TargetNullValue="0"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                            <!--Size Info-->
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5"
+                                        Opacity="100"
+                                        ToolTip.Tip="Size">
+                                <ic:FluentIcon Icon="Save"/>
+                                <TextBlock VerticalAlignment="Center"
+                                           Text="{Binding SelectedImageAsset?.FileSize, TargetNullValue=0 B}"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <!--Image Controls-->
+                        <StackPanel DockPanel.Dock="Right"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    Spacing="15"
+                                    Margin="0 0 15 0">
+                            <!--Reset Zoom Button-->
+                            <Button Background="Transparent"
+                                    ToolTip.Tip="Reset Zoom"
+                                    Padding="0"
+                                    Click="Button_Click_ResetZoom">
+                                <ic:FluentIcon Icon="PageFit"
+                                               IconSize="Size24"
+                                               FontSize="24"/>
+                            </Button>
+                            <!--Zoom In Button-->
+                            <Button Background="Transparent"
+                                    ToolTip.Tip="Zoom Out"
+                                    Padding="0"
+                                    Click="Button_Click_ZoomOut">
+                                <ic:FluentIcon Icon="ZoomOut"
+                                               FontSize="24"/>
+                            </Button>
+                            <!--Zoom Slider-->
+                            <Slider Value="{Binding ElementName=zoomBorder, Path=ZoomX}"
+                                    IsHitTestVisible="False"
+                                    Minimum="1"
+                                    Maximum="8"
+                                    Width="100"/>
+                            <!--Zoom In Button-->
+                            <Button Background="Transparent"
+                                    ToolTip.Tip="Zoom In"
+                                    Padding="0"
+                                    Click="Button_Click_ZoomIn">
+                                <ic:FluentIcon Icon="ZoomIn"
+                                               FontSize="24"/>
+                            </Button>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>
