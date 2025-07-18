@@ -13,7 +13,8 @@
              x:Class="UnpackerGui.Views.ImageBrowserView"
              x:DataType="vm:ImageBrowserViewModel"
              d:DesignWidth="800"
-             d:DesignHeight="440">
+             d:DesignHeight="440"
+             Loaded="ImageBrowserView_Loaded">
     <Design.DataContext>
         <vm:DesignImageBrowserViewModel/>
     </Design.DataContext>
@@ -29,6 +30,7 @@
                   HorizontalScrollBarVisibility="Disabled"
                   BorderThickness="1"
                   BorderBrush="Gray"
+                  ClipboardCopyMode="None"
                   Margin="5 5 0 5"
                   DoubleTapped="DataGrid_DoubleTapped">
             <!--Images Column-->

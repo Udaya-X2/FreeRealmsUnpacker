@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using ReactiveUI;
+using System.Threading.Tasks;
 using UnpackerGui.Commands;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
@@ -15,6 +17,18 @@ public partial class ImageBrowserView : UserControl
     {
         InitializeComponent();
     }
+
+    private void ImageBrowserView_Loaded(object? sender, RoutedEventArgs e)
+    {
+        // Override default DataGrid copy behavior.
+        imageGrid.KeyBindings.Add(new KeyBinding
+        {
+            Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
+            Command = ReactiveCommand.CreateFromTask(CopySelectedImageAsset)
+        });
+    }
+
+    private Task CopySelectedImageAsset() => App.SetClipboardText((imageGrid.SelectedItem as AssetInfo)?.Name);
 
     private void Button_Click_ResetZoom(object? sender, RoutedEventArgs e) => zoomBorder.ResetMatrix();
 
