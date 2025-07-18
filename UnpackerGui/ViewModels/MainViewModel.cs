@@ -1,14 +1,11 @@
 ﻿using AssetIO;
 using Avalonia;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Aggregation;
 using DynamicData.Binding;
 using FluentIcons.Common;
-using Pfim;
 using ReactiveUI;
-using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,11 +15,9 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
 using UnpackerGui.Extensions;
-using UnpackerGui.Images;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
 using UnpackerGui.Storage;
@@ -41,11 +36,6 @@ public class MainViewModel : ViewModelBase
     /// Gets the assets shown to the user.
     /// </summary>
     public FilteredReactiveCollection<AssetInfo> Assets { get; }
-
-    /// <summary>
-    /// Gets the image assets shown to the user.
-    /// </summary>
-    public FilteredReactiveCollection<AssetInfo> ImageAssets { get; }
 
     /// <summary>
     /// Gets the assets in the checked asset files.
@@ -68,9 +58,9 @@ public class MainViewModel : ViewModelBase
     public ValidationOptionsViewModel<AssetInfo> ValidationOptions { get; }
 
     /// <summary>
-    /// Gets the options to filter the image assets shown.
+    /// Gets the data context for the image browser.
     /// </summary>
-    public ImageOptionsViewModel<AssetInfo> ImageOptions { get; }
+    public ImageBrowserViewModel ImageBrowser { get; }
 
     /// <summary>
     /// Gets the application's settings.
@@ -122,15 +112,10 @@ public class MainViewModel : ViewModelBase
     private readonly ReadOnlyObservableCollection<AssetFileViewModel> _checkedAssetFiles;
     private readonly PreferencesViewModel _preferences;
     private readonly AboutViewModel _about;
-    private readonly MemoryStream _imageStream;
-    private readonly PfimConfig _imageConfig;
 
-    private int _browserIndex;
     private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
     private AssetInfo? _selectedAsset;
-    private AssetInfo? _selectedImageAsset;
-    private Bitmap? _displayedImage;
     private IDisposable? _validationHandler;
 
     /// <summary>
@@ -199,12 +184,10 @@ public class MainViewModel : ViewModelBase
         // Initialize each observable collection.
         ValidationOptions = new ValidationOptionsViewModel<AssetInfo>(x => x.IsValid);
         SearchOptions = new SearchOptionsViewModel<AssetInfo>(x => x.Name);
-        ImageOptions = new ImageOptionsViewModel<AssetInfo>(x => x.Type);
         SelectedAssets = [];
         CheckedAssets = CheckedAssetFiles.Flatten<ReadOnlyObservableCollection<AssetFileViewModel>, AssetInfo>();
         ValidatedAssets = CheckedAssets.Filter(ValidationOptions);
         Assets = ValidatedAssets.Filter(SearchOptions);
-        ImageAssets = Assets.Filter(ImageOptions);
 
         // Toggle asset validation when requested.
         Settings = App.GetSettings();
@@ -216,15 +199,10 @@ public class MainViewModel : ViewModelBase
         Assets.ObserveCollectionChanges()
               .Subscribe(_ => ClearSelectedAssets());
 
-        // Display the selected image asset.
-        _imageStream = new MemoryStream();
-        _imageConfig = new PfimConfig(allocator: new ImageAllocator());
-        this.WhenAnyValue(x => x.SelectedImageAsset)
-            .Subscribe(x => DisplayedImage = CreateBitmap(x));
-
         // Initialize other view models.
         _about = new AboutViewModel();
         _preferences = new PreferencesViewModel();
+        ImageBrowser = new ImageBrowserViewModel(this);
     }
 
     /// <summary>
@@ -236,15 +214,6 @@ public class MainViewModel : ViewModelBase
     /// Gets the checked asset files.
     /// </summary>
     public ReadOnlyObservableCollection<AssetFileViewModel> CheckedAssetFiles => _checkedAssetFiles;
-
-    /// <summary>
-    /// Gets or sets the index of the current browser.
-    /// </summary>
-    public int BrowserIndex
-    {
-        get => _browserIndex;
-        set => this.RaiseAndSetIfChanged(ref _browserIndex, value);
-    }
 
     /// <summary>
     /// Gets or sets the total number of assets.
@@ -271,24 +240,6 @@ public class MainViewModel : ViewModelBase
     {
         get => _selectedAsset;
         set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the selected image asset.
-    /// </summary>
-    public AssetInfo? SelectedImageAsset
-    {
-        get => _selectedImageAsset;
-        set => this.RaiseAndSetIfChanged(ref _selectedImageAsset, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the displayed bitmap image.
-    /// </summary>
-    public Bitmap? DisplayedImage
-    {
-        get => _displayedImage;
-        set => this.RaiseAndSetIfChanged(ref _displayedImage, value);
     }
 
     /// <summary>
@@ -920,95 +871,6 @@ public class MainViewModel : ViewModelBase
     {
         SelectedAsset = null;
         SelectedAssets.Clear();
-    }
-
-    /// <summary>
-    /// Creates a bitmap image from the specified asset.
-    /// </summary>
-    /// <remarks>
-    /// Source: <see href="https://github.com/nickbabcock/Pfim/blob/master/src/Pfim.Skia/Program.cs"/>
-    /// </remarks>
-    private Bitmap? CreateBitmap(AssetInfo? asset)
-    {
-        DisplayedImage?.Dispose();
-
-        if (asset == null) return null;
-
-        try
-        {
-            using AssetReader reader = asset.AssetFile.OpenRead();
-            _imageStream.SetLength(0);
-            reader.CopyTo(asset, _imageStream);
-
-            if (asset.Type is "DDS" or "TGA")
-            {
-                _imageStream.Position = 0;
-                using IImage image = asset.Type switch
-                {
-                    "DDS" => Dds.Create(_imageStream, _imageConfig),
-                    _ => Targa.Create(_imageStream, _imageConfig)
-                };
-                byte[] newData = image.Data;
-                int newDataLen = image.DataLen;
-                int stride = image.Stride;
-                SKColorType colorType;
-
-                switch (image.Format)
-                {
-                    case ImageFormat.Rgb8:
-                        colorType = SKColorType.Gray8;
-                        break;
-                    // Color channels still need to be swapped.
-                    case ImageFormat.R5g6b5:
-                        colorType = SKColorType.Rgb565;
-                        break;
-                    // Color channels still need to be swapped.
-                    case ImageFormat.Rgba16:
-                        colorType = SKColorType.Argb4444;
-                        break;
-                    // Skia has no 24-bit pixels, so we upscale to 32-bit.
-                    case ImageFormat.Rgb24:
-                        int pixels = image.DataLen / 3;
-                        newDataLen = pixels * 4;
-                        newData = new byte[newDataLen];
-
-                        for (int i = 0; i < pixels; i++)
-                        {
-                            newData[i * 4] = image.Data[i * 3];
-                            newData[i * 4 + 1] = image.Data[i * 3 + 1];
-                            newData[i * 4 + 2] = image.Data[i * 3 + 2];
-                            newData[i * 4 + 3] = 255;
-                        }
-
-                        stride = image.Width * 4;
-                        colorType = SKColorType.Bgra8888;
-                        break;
-                    case ImageFormat.Rgba32:
-                        colorType = SKColorType.Bgra8888;
-                        break;
-                    default:
-                        return null;
-                }
-
-                SKImageInfo imageInfo = new(image.Width, image.Height, colorType);
-                GCHandle handle = GCHandle.Alloc(newData, GCHandleType.Pinned);
-                nint ptr = Marshal.UnsafeAddrOfPinnedArrayElement(newData, 0);
-                using SKData data = SKData.Create(ptr, newDataLen, (address, context) => handle.Free());
-                using SKImage skImage = SKImage.FromPixels(imageInfo, data, stride);
-                using SKBitmap bitmap = SKBitmap.FromImage(skImage);
-                _imageStream.SetLength(0);
-                using SKManagedWStream wstream = new(_imageStream);
-
-                if (!bitmap.Encode(wstream, SKEncodedImageFormat.Png, 100)) return null;
-            }
-
-            _imageStream.Position = 0;
-            return new Bitmap(_imageStream);
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     /// <summary>

@@ -20,7 +20,6 @@
         <vm:DesignMainViewModel/>
     </Design.DataContext>
     <Window.Resources>
-        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
         <conv:PathConverter x:Key="PathConverter"/>
     </Window.Resources>
     <!--Base Panel-->
@@ -147,7 +146,6 @@
             <!--Browser Selector-->
             <TabStrip Margin="5 0 5 5"
                       CornerRadius="100"
-                      SelectedIndex="{Binding BrowserIndex}"
                       Background="{DynamicResource BackgroundBrush}">
                 <TabStrip.Styles>
                     <Style Selector="TabStripItem">
@@ -157,15 +155,18 @@
                                 Value="25"/>
                     </Style>
                 </TabStrip.Styles>
-                <TabStripItem Content="Asset Browser"/>
-                <TabStripItem Content="Image Browser"/>
+                <TabStripItem Name="assetBrowserTab"
+                              Content="Asset Browser"/>
+                <TabStripItem Name="imageBrowserTab"
+                              Content="Image Browser"/>
             </TabStrip>
         </StackPanel>
         <!--Asset Browser-->
         <Panel DockPanel.Dock="Bottom"
                Margin="5,-5,5,5">
-            <views:MainView IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=0}"/>
-            <views:ImageBrowserView IsVisible="{Binding BrowserIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"/>
+            <views:MainView IsVisible="{Binding ElementName=assetBrowserTab, Path=IsSelected}"/>
+            <views:ImageBrowserView IsVisible="{Binding ElementName=imageBrowserTab, Path=IsSelected}"
+                                    DataContext="{Binding ImageBrowser}"/>
         </Panel>
     </DockPanel>
 </Window>
