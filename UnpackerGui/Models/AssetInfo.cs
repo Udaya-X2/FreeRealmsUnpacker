@@ -1,8 +1,10 @@
 ﻿using AssetIO;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using UnpackerGui.Converters;
+using UnpackerGui.Services;
 
 namespace UnpackerGui.Models;
 
@@ -51,6 +53,22 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     public AssetInfo(Asset asset, AssetFile assetFile)
         : this(asset.Name, asset.Offset, asset.Size, asset.Crc32, assetFile)
     {
+    }
+
+    /// <summary>
+    /// Extracts the asset to a temporary location and opens it.
+    /// </summary>
+    public void Open()
+    {
+        DirectoryInfo tempDir = Directory.CreateTempSubdirectory("fru-");
+        using AssetReader reader = AssetFile.OpenRead();
+        FileInfo file = reader.ExtractTo(this, tempDir.FullName);
+        App.GetService<IFilesService>().DeleteOnExit(file.FullName);
+        Process.Start(new ProcessStartInfo
+        {
+            UseShellExecute = true,
+            FileName = file.FullName
+        });
     }
 
     /// <summary>

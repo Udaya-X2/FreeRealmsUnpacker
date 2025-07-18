@@ -13,6 +13,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnpackerGui.Commands;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
@@ -84,10 +85,10 @@ public partial class MainView : UserControl
 
     private void AssetGrid_DoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (DataContext is not MainViewModel mainViewModel) return;
         if ((e.Source as Control)?.Parent is not DataGridCell) return;
+        if (assetGrid.SelectedItem is not AssetInfo asset) return;
 
-        mainViewModel.OpenSelectedAssetCommand.Invoke();
+        StaticCommands.OpenAssetCommand.Invoke(asset);
     }
 
     private void AssetGrid_Sorting(object? sender, DataGridColumnEventArgs e)

@@ -5,7 +5,7 @@
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
         xmlns:ic="using:FluentIcons.Avalonia"
-        xmlns:commands="clr-namespace:UnpackerGui.Commands"
+        xmlns:c="clr-namespace:UnpackerGui.Commands"
         x:Class="UnpackerGui.Views.AboutWindow"
         mc:Ignorable="d"
         Icon="avares://UnpackerGui/Assets/info.ico"
@@ -21,9 +21,6 @@
     <Design.DataContext>
         <vm:DesignAboutViewModel/>
     </Design.DataContext>
-    <Window.Resources>
-        <commands:StaticCommands x:Key="Commands"/>
-    </Window.Resources>
     <DockPanel>
         <Image Source="avares://UnpackerGui/Assets/unpacker.ico"
                Width="128"
@@ -51,7 +48,7 @@
                 </ToolTip.Tip>
                 <HyperlinkButton.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Command="{Binding Source={StaticResource Commands} Path=CopyCommand}"
+                        <MenuItem Command="{x:Static c:StaticCommands.CopyCommand}"
                                   CommandParameter="{Binding SourceCodeUrl}">
                             <MenuItem.Header>
                                 <TextBlock Text="Copy Link"

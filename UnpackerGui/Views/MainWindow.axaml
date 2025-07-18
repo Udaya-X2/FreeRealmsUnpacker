@@ -6,7 +6,7 @@
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
         xmlns:conv="clr-namespace:UnpackerGui.Converters"
         xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
-        xmlns:commands="clr-namespace:UnpackerGui.Commands"
+        xmlns:c="clr-namespace:UnpackerGui.Commands"
         xmlns:ic="using:FluentIcons.Avalonia"
         mc:Ignorable="d"
         x:Class="UnpackerGui.Views.MainWindow"
@@ -168,8 +168,10 @@
         <!--Asset Browser-->
         <Panel DockPanel.Dock="Bottom"
                Margin="5,-5,5,5">
-            <views:MainView IsVisible="{Binding ElementName=assetBrowserTab, Path=IsSelected}"/>
-            <views:ImageBrowserView IsVisible="{Binding ElementName=imageBrowserTab, Path=IsSelected}"
+            <views:MainView Name="assetBrowserView"
+                            IsVisible="{Binding ElementName=assetBrowserTab, Path=IsSelected}"/>
+            <views:ImageBrowserView Name="imageBrowserView"
+                                    IsVisible="{Binding ElementName=imageBrowserTab, Path=IsSelected}"
                                     DataContext="{Binding ImageBrowser}"/>
         </Panel>
     </DockPanel>

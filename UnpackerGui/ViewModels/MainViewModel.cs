@@ -7,10 +7,10 @@ using DynamicData.Binding;
 using FluentIcons.Common;
 using ReactiveUI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -90,7 +90,7 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ExtractCheckedFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ExtractSelectedAssetsCommand { get; }
-    public ReactiveCommand<Unit, Unit> SaveSelectedAssetCommand { get; }
+    public ReactiveCommand<AssetInfo, Unit> SaveAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleValidationCommand { get; }
     public ReactiveCommand<Unit, Unit> CheckAllFilesCommand { get; }
     public ReactiveCommand<Unit, Unit> UncheckAllFilesCommand { get; }
@@ -102,9 +102,8 @@ public class MainViewModel : ViewModelBase
     public ReactiveCommand<Unit, Unit> ClearSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ReloadSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ConvertSelectedFileCommand { get; }
-    public ReactiveCommand<Unit, Unit> OpenSelectedAssetCommand { get; }
     public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
-    public ReactiveCommand<Unit, Unit> DeleteSelectedAssetsCommand { get; }
+    public ReactiveCommand<IList, Unit> DeleteAssetsCommand { get; }
     public ReactiveCommand<Unit, Unit> SelectFileCommand { get; }
 
     private readonly SourceList<AssetFileViewModel> _sourceAssetFiles;
@@ -147,7 +146,7 @@ public class MainViewModel : ViewModelBase
         ExtractCheckedFilesCommand = ReactiveCommand.CreateFromTask(ExtractCheckedFiles);
         ExtractSelectedFileCommand = ReactiveCommand.CreateFromTask(ExtractSelectedFile);
         ExtractSelectedAssetsCommand = ReactiveCommand.CreateFromTask(ExtractSelectedAssets);
-        SaveSelectedAssetCommand = ReactiveCommand.CreateFromTask(SaveSelectedAsset);
+        SaveAssetCommand = ReactiveCommand.CreateFromTask<AssetInfo>(SaveAsset);
         ToggleValidationCommand = ReactiveCommand.CreateFromTask(ToggleValidation);
         CheckAllFilesCommand = ReactiveCommand.Create(CheckAllFiles);
         UncheckAllFilesCommand = ReactiveCommand.Create(UncheckAllFiles);
@@ -159,9 +158,8 @@ public class MainViewModel : ViewModelBase
         ClearSelectedFileCommand = ReactiveCommand.CreateFromTask(ClearSelectedFile);
         ReloadSelectedFileCommand = ReactiveCommand.Create(ReloadSelectedFile);
         ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
-        OpenSelectedAssetCommand = ReactiveCommand.Create(OpenSelectedAsset);
         ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
-        DeleteSelectedAssetsCommand = ReactiveCommand.CreateFromTask(DeleteSelectedAssets);
+        DeleteAssetsCommand = ReactiveCommand.CreateFromTask<IList>(DeleteAssets);
         SelectFileCommand = ReactiveCommand.Create(SelectFile);
 
         // Observe any changes in the asset files.
@@ -611,19 +609,19 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Opens a save file dialog that allows the user to save the selected asset to a file.
     /// </summary>
-    private async Task SaveSelectedAsset()
+    private async Task SaveAsset(AssetInfo asset)
     {
         if (await App.GetService<IFilesService>().SaveFileAsync(new FilePickerSaveOptions
         {
             SuggestedStartLocation = await OutputFolder,
-            SuggestedFileName = Path.GetFileName(SelectedAsset!.Name),
+            SuggestedFileName = Path.GetFileName(asset.Name),
             ShowOverwritePrompt = true
         }) is not IStorageFile file) return;
 
         // Extracting without conflict options here since the explorer will display an overwrite prompt.
         Settings.OutputDirectory = Path.GetDirectoryName(file.Path.LocalPath) ?? "";
-        using AssetReader reader = SelectedAsset.AssetFile.OpenRead();
-        reader.ExtractTo(SelectedAsset with { Name = file.Name }, Settings.OutputDirectory);
+        using AssetReader reader = asset.AssetFile.OpenRead();
+        reader.ExtractTo(asset with { Name = file.Name }, Settings.OutputDirectory);
     }
 
     /// <summary>
@@ -849,22 +847,6 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Extracts the selected asset to a temporary location and opens it.
-    /// </summary>
-    private void OpenSelectedAsset()
-    {
-        DirectoryInfo tempDir = Directory.CreateTempSubdirectory("fru-");
-        using AssetReader reader = SelectedAsset!.AssetFile.OpenRead();
-        FileInfo file = reader.ExtractTo(SelectedAsset, tempDir.FullName);
-        App.GetService<IFilesService>().DeleteOnExit(file.FullName);
-        Process.Start(new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            FileName = file.FullName
-        });
-    }
-
-    /// <summary>
     /// Deselects all selected assets.
     /// </summary>
     private void ClearSelectedAssets()
@@ -874,22 +856,22 @@ public class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Deletes all selected assets from their corresponding asset files.
+    /// Deletes the specified assets from their corresponding asset files.
     /// </summary>
-    private async Task DeleteSelectedAssets()
+    private async Task DeleteAssets(IList assets)
     {
         if (!Settings.ConfirmDelete || await App.GetService<IDialogService>().ShowConfirmDialog(new ConfirmViewModel
         {
-            Title = SelectedAssets.Count == 1 ? "Delete Asset" : "Delete Multiple Assets",
-            Message = SelectedAssets.Count == 1
-            ? $"Are you sure you want to permanently delete this asset?\n\n{SelectedAsset}"
-            : $"Are you sure you want to permanently delete these {SelectedAssets.Count} assets?",
+            Title = assets.Count == 1 ? "Delete Asset" : "Delete Multiple Assets",
+            Message = assets.Count == 1
+            ? $"Are you sure you want to permanently delete this asset?\n\n{assets[0]}"
+            : $"Are you sure you want to permanently delete these {assets.Count} assets?",
             Icon = Icon.Delete
         }))
         {
             using (Assets.SuspendNotifications())
             {
-                DeleteViewModel deleteViewModel = new(SelectedAssets.Cast<AssetInfo>());
+                DeleteViewModel deleteViewModel = new(assets.Cast<AssetInfo>());
                 await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
                 {
                     DataContext = deleteViewModel,

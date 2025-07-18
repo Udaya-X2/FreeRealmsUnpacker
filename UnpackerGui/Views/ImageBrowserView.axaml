@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
              xmlns:conv="clr-namespace:UnpackerGui.Converters"
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
-             xmlns:commands="clr-namespace:UnpackerGui.Commands"
+             xmlns:c="clr-namespace:UnpackerGui.Commands"
              xmlns:ic="using:FluentIcons.Avalonia"
              xmlns:paz="using:Avalonia.Controls.PanAndZoom"
              mc:Ignorable="d"
@@ -20,6 +20,7 @@
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Image Assets-->
         <DataGrid Grid.Column="0"
+                  Name="imageGrid"
                   ItemsSource="{Binding ImageAssets}"
                   SelectedItem="{Binding SelectedImageAsset}"
                   SelectionMode="Single"
@@ -28,7 +29,9 @@
                   HorizontalScrollBarVisibility="Disabled"
                   BorderThickness="1"
                   BorderBrush="Gray"
-                  Margin="5 5 0 5">
+                  Margin="5 5 0 5"
+                  DoubleTapped="DataGrid_DoubleTapped">
+            <!--Images Column-->
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Name}"
                                     Header="Images"/>
@@ -43,6 +46,29 @@
                             Value="0"/>
                     <Setter Property="Padding"
                             Value="-3 3 -3 3"/>
+                </Style>
+                <!--Image Row Context Menu-->
+                <Style Selector="DataGridRow">
+                    <Setter Property="ContextMenu">
+                        <ContextMenu>
+                            <MenuItem Header="Open"
+                                      Command="{x:Static c:StaticCommands.OpenAssetCommand}"
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedImageAsset}"/>
+                            <MenuItem Header="Delete"
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
+                                      CommandParameter="{Binding ElementName=imageGrid, Path=SelectedItems}"/>
+                            <Separator/>
+                            <MenuItem Header="Copy"
+                                      Command="{x:Static c:StaticCommands.CopyCommand}"
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedImageAsset?.Name}"/>
+                            <MenuItem Header="Show in Asset Browser"
+                                      Click="MenuItem_Click_ShowAssetBrowser"/>
+                            <Separator/>
+                            <MenuItem Header="Save As..."
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveAssetCommand}"
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedImageAsset}"/>
+                        </ContextMenu>
+                    </Setter>
                 </Style>
             </DataGrid.Styles>
         </DataGrid>
