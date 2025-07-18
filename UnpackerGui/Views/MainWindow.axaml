@@ -154,6 +154,10 @@
                         <Setter Property="MinHeight"
                                 Value="25"/>
                     </Style>
+                    <Style Selector="TabStripItem:selected">
+                        <Setter Property="FontWeight"
+                                Value="Bold"/>
+                    </Style>
                 </TabStrip.Styles>
                 <TabStripItem Name="assetBrowserTab"
                               Content="Asset Browser"/>
