@@ -134,31 +134,23 @@ public partial class MainView : UserControl
     private async void AssetGridColumnHeader_ContextMenu_Copy(object? sender, RoutedEventArgs e)
     {
         if (sender is not MenuItem { Parent.Parent.Parent: DataGridColumnHeader { Content: string colName } }) return;
-        if (App.Current?.Settings is not SettingsViewModel settings) return;
 
-        Func<AssetInfo, string> selector = GetAssetInfoSelector(settings, colName);
-        StringBuilder sb = new();
-        assetGrid.SelectAll();
-
-        foreach (AssetInfo asset in assetGrid.SelectedItems)
-        {
-            sb.Append(selector(asset));
-            sb.Append(settings.ClipboardLineSeparator);
-        }
-
-        assetGrid.SelectedItems.Clear();
-        await App.SetClipboardText(sb.ToString());
+        await CopyAssetsToClipboard(assetGrid.CollectionView, [colName]);
     }
 
     private async void AssetGrid_Copy(object? sender, RoutedEventArgs e)
         => await CopyAssetsToClipboard(assetGrid.CollectionView);
 
-    private async Task CopyAssetsToClipboard(IEnumerable assets)
-    {
-        if (App.Current?.Settings is not SettingsViewModel settings) return;
-        if (assetGrid.Columns.Where(x => x.IsVisible).ToArray() is not DataGridColumn[] { Length: > 0 } cols) return;
+    private Task CopyAssetsToClipboard(IEnumerable assets)
+        => CopyAssetsToClipboard(assets, [.. assetGrid.Columns.Where(x => x.IsVisible)
+                                                              .OrderBy(x => x.DisplayIndex)
+                                                              .Select(x => (string)x.Header)]);
 
-        string[] colNames = [.. cols.OrderBy(x => x.DisplayIndex).Select(x => (string)x.Header)];
+    private static async Task CopyAssetsToClipboard(IEnumerable assets, IList<string> colNames)
+    {
+        if (colNames.Count == 0) return;
+        if (App.Current?.Settings is not SettingsViewModel settings) return;
+
         Func<AssetInfo, string>[] selectors = [.. colNames.Select(x => GetAssetInfoSelector(settings, x))];
         string[] values = new string[selectors.Length];
         StringBuilder sb = new();

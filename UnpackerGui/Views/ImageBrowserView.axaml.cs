@@ -3,9 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using System.Text;
 using UnpackerGui.Commands;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
+using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
 
@@ -47,5 +49,26 @@ public partial class ImageBrowserView : UserControl
         DataGrid assetGrid = mainWindow.assetBrowserView.assetGrid;
         assetGrid.SelectedItem = imageGrid.SelectedItem;
         assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+    }
+
+    private async void MenuItem_Click_CopyDataGridColumn(object? sender, RoutedEventArgs e)
+    {
+        if (App.Current?.Settings is not SettingsViewModel settings) return;
+
+        StringBuilder sb = new();
+
+        if (settings.CopyColumnHeaders)
+        {
+            sb.Append((string)imageGrid.Columns[0].Header);
+            sb.Append(settings.ClipboardLineSeparator);
+        }
+
+        foreach (AssetInfo asset in imageGrid.CollectionView)
+        {
+            sb.Append(asset.Name);
+            sb.Append(settings.ClipboardLineSeparator);
+        }
+
+        await App.SetClipboardText(sb.ToString());
     }
 }

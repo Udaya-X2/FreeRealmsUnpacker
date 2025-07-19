@@ -76,6 +76,16 @@
                         </ContextMenu>
                     </Setter>
                 </Style>
+                <!--DataGrid Column Header Context Menu-->
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="ContextMenu">
+                        <ContextMenu>
+                            <MenuItem Header="Copy"
+                                      IsVisible="{Binding !!$parent[DataGrid].DataContext.ImageAssets.Count}"
+                                      Click="MenuItem_Click_CopyDataGridColumn"/>
+                        </ContextMenu>
+                    </Setter>
+                </Style>
             </DataGrid.Styles>
         </DataGrid>
         <!--Allow User Resize Columns-->
