@@ -73,5 +73,5 @@ public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
     /// Returns the number of items that match the filter.
     /// </summary>
     /// <returns>The number of items that match the filter.</returns>
-    private int GetFilteredCount() => _filter.IsAlwaysMatch ? _items.Count() : _items.Count(_filter.IsMatch);
+    private int GetFilteredCount() => _filter.IsAlwaysMatch ? _unfilteredCount.Value : _items.Count(_filter.IsMatch);
 }
