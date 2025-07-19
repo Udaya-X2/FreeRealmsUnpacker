@@ -127,6 +127,15 @@
                                     Spacing="10"
                                     Margin="10 0 0 0"
                                     ClipToBounds="True">
+                            <!--# of Images-->
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5"
+                                        Opacity="100"
+                                        ToolTip.Tip="Images">
+                                <ic:FluentIcon Icon="ImageMultiple"/>
+                                <TextBlock VerticalAlignment="Center"
+                                           Text="{Binding ImageAssets.Count}"/>
+                            </StackPanel>
                             <!--Dimensions Info-->
                             <StackPanel Orientation="Horizontal"
                                         Spacing="5"
