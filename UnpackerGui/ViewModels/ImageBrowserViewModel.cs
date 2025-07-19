@@ -1,11 +1,15 @@
 ﻿using AssetIO;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
+using Clowd.Clipboard;
 using Pfim;
 using ReactiveUI;
 using SkiaSharp;
 using System;
 using System.IO;
+using System.Reactive;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using UnpackerGui.Collections;
 using UnpackerGui.Extensions;
 using UnpackerGui.Images;
@@ -30,6 +34,8 @@ public class ImageBrowserViewModel : ViewModelBase
     /// </summary>
     public SettingsViewModel Settings { get; }
 
+    public ReactiveCommand<Unit, Unit> CopyImageCommand { get; }
+
     private readonly MemoryStream _imageStream;
     private readonly PfimConfig _imageConfig;
 
@@ -41,9 +47,15 @@ public class ImageBrowserViewModel : ViewModelBase
     /// </summary>
     public ImageBrowserViewModel(MainViewModel mainViewModel)
     {
+        // Initialize each command.
+        CopyImageCommand = ReactiveCommand.CreateFromTask(CopyImageAsync);
+
+        // Filter the image assets from the asset browser.
         Settings = mainViewModel.Settings;
         ImageOptions = new ImageOptionsViewModel<AssetInfo>(x => x.Type);
         ImageAssets = mainViewModel.Assets.Filter(ImageOptions);
+
+        // Initialize 
         _imageStream = new MemoryStream();
         _imageConfig = new PfimConfig(allocator: new ImageAllocator());
 
@@ -156,6 +168,34 @@ public class ImageBrowserViewModel : ViewModelBase
         catch
         {
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Copies the displayed image to the clipboard.
+    /// </summary>
+    /// <remarks>
+    /// Sources:
+    /// <list type="bullet">
+    /// <item><see href="https://github.com/AvaloniaUI/Avalonia/issues/3588#issuecomment-1272505415"/></item>
+    /// <item><see href="https://github.com/AvaloniaUI/Avalonia/issues/3588#issuecomment-2571770220"/></item>
+    /// </list>
+    /// </remarks>
+    private async Task CopyImageAsync()
+    {
+        if (_displayedImage == null) return;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            ClipboardAvalonia.SetImage(_displayedImage);
+        }
+        else
+        {
+            _imageStream.SetLength(0);
+            _displayedImage.Save(_imageStream);
+            DataObject dataObject = new();
+            dataObject.Set("image/png", _imageStream.ToArray());
+            await App.SetClipboardData(dataObject);
         }
     }
 }

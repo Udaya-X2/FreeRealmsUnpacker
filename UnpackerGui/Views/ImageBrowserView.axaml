@@ -13,8 +13,7 @@
              x:Class="UnpackerGui.Views.ImageBrowserView"
              x:DataType="vm:ImageBrowserViewModel"
              d:DesignWidth="800"
-             d:DesignHeight="440"
-             Loaded="ImageBrowserView_Loaded">
+             d:DesignHeight="440">
     <Design.DataContext>
         <vm:DesignImageBrowserViewModel/>
     </Design.DataContext>
@@ -33,6 +32,11 @@
                   ClipboardCopyMode="None"
                   Margin="5 5 0 5"
                   DoubleTapped="DataGrid_DoubleTapped">
+            <DataGrid.KeyBindings>
+                <KeyBinding Gesture="CTRL+C"
+                            Command="{x:Static c:StaticCommands.CopyCommand}"
+                            CommandParameter="{Binding SelectedImageAsset?.Name}"/>
+            </DataGrid.KeyBindings>
             <!--Images Column-->
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Name}"
@@ -95,6 +99,10 @@
                             Background="{DynamicResource BackgroundBrush}"
                             PanButton="Left"
                             ClipToBounds="True">
+                    <ZoomBorder.KeyBindings>
+                        <KeyBinding Gesture="CTRL+C"
+                                    Command="{Binding CopyImageCommand}"/>
+                    </ZoomBorder.KeyBindings>
                     <Image Source="{Binding DisplayedImage}"
                            MaxHeight="{Binding DisplayedImage?.Size?.Height, TargetNullValue=0}"/>
                 </ZoomBorder>
@@ -142,6 +150,13 @@
                                     HorizontalAlignment="Right"
                                     Spacing="10"
                                     Margin="0 0 10 0">
+                            <!--Copy Image Button-->
+                            <Button Background="Transparent"
+                                    ToolTip.Tip="Copy Image"
+                                    Padding="0"
+                                    Command="{Binding CopyImageCommand}">
+                                <ic:FluentIcon Icon="ClipboardImage"/>
+                            </Button>
                             <!--Reset Zoom Button-->
                             <Button Background="Transparent"
                                     ToolTip.Tip="Reset Zoom"

@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
@@ -102,6 +103,17 @@ public partial class App : Application
     public static async Task SetClipboardText(string? text)
     {
         if (Current?.Clipboard?.SetTextAsync(text) is Task task)
+        {
+            await task;
+        }
+    }
+
+    /// <summary>
+    /// Sets the current application's clipboard data to the specified value.
+    /// </summary>
+    public static async Task SetClipboardData(IDataObject data)
+    {
+        if (Current?.Clipboard?.SetDataObjectAsync(data) is Task task)
         {
             await task;
         }

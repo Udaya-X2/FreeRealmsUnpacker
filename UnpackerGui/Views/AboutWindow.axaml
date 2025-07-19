@@ -11,7 +11,7 @@
         Icon="avares://UnpackerGui/Assets/info.ico"
         Title="About Free Realms Unpacker"
         Width="500"
-        Height="200"
+        Height="220"
         x:DataType="vm:AboutViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
