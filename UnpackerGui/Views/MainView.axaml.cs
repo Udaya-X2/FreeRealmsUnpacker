@@ -40,12 +40,14 @@ public partial class MainView : UserControl
         assetGrid.SelectionChanged += mainViewModel.SelectedAssets.Refresh;
         _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= mainViewModel.SelectedAssets.Refresh));
 
-        // Add hotkey/drag-and-drop event handlers (workaround for Linux).
+        // Override the default DataGrid copy behavior.
         assetGrid.KeyBindings.Add(new KeyBinding
         {
             Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
             Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
         });
+
+        // Add hotkey/drag-and-drop event handlers (workaround for Linux).
         _cleanUp.Add(KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown));
         _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop));
 

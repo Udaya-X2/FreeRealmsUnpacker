@@ -13,17 +13,20 @@
              x:Class="UnpackerGui.Views.ImageBrowserView"
              x:DataType="vm:ImageBrowserViewModel"
              d:DesignWidth="800"
-             d:DesignHeight="440">
+             d:DesignHeight="440"
+             Loaded="ImageBrowserView_Loaded">
     <Design.DataContext>
         <vm:DesignImageBrowserViewModel/>
     </Design.DataContext>
+    <UserControl.Resources>
+        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
+    </UserControl.Resources>
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Image Assets-->
         <DataGrid Grid.Column="0"
-                  Name="imageGrid"
-                  ItemsSource="{Binding ImageAssets}"
-                  SelectedItem="{Binding SelectedImageAsset}"
-                  SelectionMode="Single"
+                  Name="assetGrid"
+                  ItemsSource="{Binding Assets}"
+                  SelectedItem="{Binding SelectedAsset}"
                   IsReadOnly="True"
                   GridLinesVisibility="Horizontal"
                   HorizontalScrollBarVisibility="Disabled"
@@ -32,11 +35,6 @@
                   ClipboardCopyMode="None"
                   Margin="5 5 0 5"
                   DoubleTapped="DataGrid_DoubleTapped">
-            <DataGrid.KeyBindings>
-                <KeyBinding Gesture="CTRL+C"
-                            Command="{x:Static c:StaticCommands.CopyCommand}"
-                            CommandParameter="{Binding SelectedImageAsset?.Name}"/>
-            </DataGrid.KeyBindings>
             <!--Images Column-->
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Name}"
@@ -56,23 +54,35 @@
                 <!--Image Row Context Menu-->
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
-                        <ContextMenu IsVisible="{Binding $parent[DataGrid].DataContext.SelectedImageAsset, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <ContextMenu IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <MenuItem Header="Open"
+                                      IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                       Command="{x:Static c:StaticCommands.OpenAssetCommand}"
-                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedImageAsset}"/>
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAsset}"/>
                             <MenuItem Header="Delete"
+                                      IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
-                                      CommandParameter="{Binding ElementName=imageGrid, Path=SelectedItems}"/>
-                            <Separator/>
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAssets}"/>
+                            <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
                             <MenuItem Header="Copy"
                                       Command="{x:Static c:StaticCommands.CopyCommand}"
-                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedImageAsset?.Name}"/>
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAsset?.Name}"/>
                             <MenuItem Header="Show in Asset Browser"
+                                      IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                       Click="MenuItem_Click_ShowAssetBrowser"/>
                             <Separator/>
                             <MenuItem Header="Save As..."
+                                      IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveAssetCommand}"
-                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedImageAsset}"/>
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAsset}"/>
+                            <MenuItem Header="Extract Selected Assets..."
+                                      IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ExtractAssetsCommand}"
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAssets}"/>
+                            <MenuItem Header="Delete Selected Assets"
+                                      IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
+                                      CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAssets}"/>
                         </ContextMenu>
                     </Setter>
                 </Style>
@@ -81,7 +91,7 @@
                     <Setter Property="ContextMenu">
                         <ContextMenu>
                             <MenuItem Header="Copy"
-                                      IsVisible="{Binding !!$parent[DataGrid].DataContext.ImageAssets.Count}"
+                                      IsVisible="{Binding !!$parent[DataGrid].DataContext.Assets.Count}"
                                       Click="MenuItem_Click_CopyDataGridColumn"/>
                         </ContextMenu>
                     </Setter>
@@ -131,10 +141,18 @@
                             <StackPanel Orientation="Horizontal"
                                         Spacing="5"
                                         Opacity="100"
-                                        ToolTip.Tip="Images">
+                                        ToolTip.Tip="Images Selected">
                                 <ic:FluentIcon Icon="ImageMultiple"/>
-                                <TextBlock VerticalAlignment="Center"
-                                           Text="{Binding ImageAssets.Count}"/>
+                                <TextBlock VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0}/{1}">
+                                            <Binding Path="SelectedAssets.Count"
+                                                     TargetNullValue="0"/>
+                                            <Binding Path="Assets.Count"
+                                                     TargetNullValue="0"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
                             </StackPanel>
                             <!--Dimensions Info-->
                             <StackPanel Orientation="Horizontal"
@@ -160,7 +178,7 @@
                                         ToolTip.Tip="Size">
                                 <ic:FluentIcon Icon="Save"/>
                                 <TextBlock VerticalAlignment="Center"
-                                           Text="{Binding SelectedImageAsset?.FileSize, TargetNullValue=0 B}"/>
+                                           Text="{Binding SelectedAsset?.FileSize, TargetNullValue=0 B}"/>
                             </StackPanel>
                         </StackPanel>
                         <!--Image Controls-->

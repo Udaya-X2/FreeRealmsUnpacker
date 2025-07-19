@@ -439,7 +439,8 @@
                                           CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAsset}"/>
                                 <MenuItem Header="Extract Selected Assets..."
                                           IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
-                                          Command="{Binding $parent[DataGrid].DataContext.ExtractSelectedAssetsCommand}"/>
+                                          Command="{Binding $parent[DataGrid].DataContext.ExtractAssetsCommand}"
+                                          CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAssets}"/>
                                 <MenuItem Header="Delete Selected Assets"
                                           IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
                                           Command="{Binding $parent[DataGrid].DataContext.DeleteAssetsCommand}"

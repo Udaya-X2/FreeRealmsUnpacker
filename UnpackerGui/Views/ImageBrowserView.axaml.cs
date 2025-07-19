@@ -3,7 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using ReactiveUI;
+using System.Collections;
+using System.Reactive.Disposables;
 using System.Text;
+using System.Threading.Tasks;
 using UnpackerGui.Commands;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
@@ -13,9 +17,30 @@ namespace UnpackerGui.Views;
 
 public partial class ImageBrowserView : UserControl
 {
+    private readonly CompositeDisposable _cleanUp;
+
     public ImageBrowserView()
     {
         InitializeComponent();
+        _cleanUp = [];
+    }
+
+    private void ImageBrowserView_Loaded(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not ImageBrowserViewModel imageBrowser) return;
+
+        // SelectedItems is a not a bindable property in DataGrid, so we need to pass
+        // it as a reference to the view model to keep track of the selected assets.
+        imageBrowser.SelectedAssets.Items = assetGrid.SelectedItems;
+        assetGrid.SelectionChanged += imageBrowser.SelectedAssets.Refresh;
+        _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= imageBrowser.SelectedAssets.Refresh));
+
+        // Override the default DataGrid copy behavior.
+        assetGrid.KeyBindings.Add(new KeyBinding
+        {
+            Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
+            Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
+        });
     }
 
     private void Button_Click_ResetZoom(object? sender, RoutedEventArgs e) => zoomBorder.ResetMatrix();
@@ -36,7 +61,7 @@ public partial class ImageBrowserView : UserControl
     private void DataGrid_DoubleTapped(object? sender, TappedEventArgs e)
     {
         if ((e.Source as Control)?.Parent is not DataGridCell) return;
-        if (imageGrid.SelectedItem is not AssetInfo asset) return;
+        if (assetGrid.SelectedItem is not AssetInfo asset) return;
 
         StaticCommands.OpenAssetCommand.Invoke(asset);
     }
@@ -46,12 +71,14 @@ public partial class ImageBrowserView : UserControl
         if (VisualRoot is not MainWindow mainWindow) return;
 
         mainWindow.assetBrowserTab.IsSelected = true;
-        DataGrid assetGrid = mainWindow.assetBrowserView.assetGrid;
-        assetGrid.SelectedItem = imageGrid.SelectedItem;
-        assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+        mainWindow.assetBrowserView.assetGrid.SelectedItem = assetGrid.SelectedItem;
+        mainWindow.assetBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
     }
 
     private async void MenuItem_Click_CopyDataGridColumn(object? sender, RoutedEventArgs e)
+        => await CopyAssetsToClipboard(assetGrid.CollectionView);
+
+    private async Task CopyAssetsToClipboard(IEnumerable assets)
     {
         if (App.Current?.Settings is not SettingsViewModel settings) return;
 
@@ -59,11 +86,11 @@ public partial class ImageBrowserView : UserControl
 
         if (settings.CopyColumnHeaders)
         {
-            sb.Append((string)imageGrid.Columns[0].Header);
+            sb.Append((string)assetGrid.Columns[0].Header);
             sb.Append(settings.ClipboardLineSeparator);
         }
 
-        foreach (AssetInfo asset in imageGrid.CollectionView)
+        foreach (AssetInfo asset in assets)
         {
             sb.Append(asset.Name);
             sb.Append(settings.ClipboardLineSeparator);
