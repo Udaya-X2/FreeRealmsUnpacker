@@ -20,37 +20,26 @@ namespace UnpackerGui.ViewModels;
 public class ImageBrowserViewModel : AssetBrowserViewModel
 {
     /// <inheritdoc/>
-    public override ControlledObservableList SelectedAssets { get; }
-
-    /// <inheritdoc/>
     public override FilteredReactiveCollection<AssetInfo> Assets { get; }
-
-    /// <summary>
-    /// Gets the options to filter the image assets shown.
-    /// </summary>
-    public ImageOptionsViewModel<AssetInfo> ImageOptions { get; }
 
     public ReactiveCommand<Unit, Unit> CopyImageCommand { get; }
 
     private readonly MemoryStream _imageStream;
     private readonly PfimConfig _imageConfig;
 
-    private AssetInfo? _selectedImageAsset;
     private Bitmap? _displayedImage;
     private IDisposable? _browserDisplayHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageBrowserViewModel"/> class.
     /// </summary>
-    public ImageBrowserViewModel(MainViewModel mainViewModel)
+    public ImageBrowserViewModel(ReadOnlyReactiveCollection<AssetInfo> assets)
     {
         // Initialize each command.
         CopyImageCommand = ReactiveCommand.CreateFromTask(CopyImage);
 
         // Filter the image assets from the asset browser.
-        ImageOptions = new ImageOptionsViewModel<AssetInfo>(x => x.Type);
-        Assets = mainViewModel.Assets.Filter(ImageOptions);
-        SelectedAssets = [];
+        Assets = assets.Filter(x => x.IsImage);
 
         // Initialize bitmap creation resources.
         _imageStream = new MemoryStream();
@@ -74,15 +63,6 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
                         _browserDisplayHandler ??= Assets.Disable();
                     }
                 });
-    }
-
-    /// <summary>
-    /// Gets or sets the selected image asset.
-    /// </summary>
-    public AssetInfo? SelectedAsset
-    {
-        get => _selectedImageAsset;
-        set => this.RaiseAndSetIfChanged(ref _selectedImageAsset, value);
     }
 
     /// <summary>

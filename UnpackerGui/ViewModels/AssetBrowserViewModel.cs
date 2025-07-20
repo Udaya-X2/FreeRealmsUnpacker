@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ReactiveUI;
+using System;
 using UnpackerGui.Collections;
 using UnpackerGui.Models;
 
@@ -6,11 +7,15 @@ namespace UnpackerGui.ViewModels;
 
 public abstract class AssetBrowserViewModel : ViewModelBase
 {
+    private static readonly Lazy<SettingsViewModel> s_settings = new(App.GetSettings);
+
+    private AssetInfo? _selectedAsset;
+
     /// <summary>
     /// Gets the selected assets.
     /// </summary>
-    public abstract ControlledObservableList SelectedAssets { get; }
-    
+    public ControlledObservableList SelectedAssets { get; } = [];
+
     /// <summary>
     /// Gets the assets shown to the user.
     /// </summary>
@@ -19,7 +24,14 @@ public abstract class AssetBrowserViewModel : ViewModelBase
     /// <summary>
     /// Gets the application's settings.
     /// </summary>
-    public static SettingsViewModel Settings => _settings.Value;
+    public static SettingsViewModel Settings => s_settings.Value;
 
-    private static readonly Lazy<SettingsViewModel> _settings = new(App.GetSettings);
+    /// <summary>
+    /// Gets or sets the selected asset.
+    /// </summary>
+    public AssetInfo? SelectedAsset
+    {
+        get => _selectedAsset;
+        set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
+    }
 }

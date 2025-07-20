@@ -33,6 +33,25 @@ public static class CollectionExtensions
         => new(items, filter);
 
     /// <summary>
+    /// Creates a <see cref="FilteredReactiveCollection{T}"/> from a collection with change notifications.
+    /// </summary>
+    /// <returns>A new instance of <see cref="FilteredReactiveCollection{T}"/>.</returns>
+    public static FilteredReactiveCollection<T> Filter<T>(
+        this ReadOnlyReactiveCollection<T> items,
+        Func<T, bool> predicate)
+        => new(items, new FilterViewModel<T>(predicate));
+
+    /// <summary>
+    /// Creates a <see cref="FilteredReactiveCollection{T}"/> from a collection with change notifications.
+    /// </summary>
+    /// <returns>A new instance of <see cref="FilteredReactiveCollection{T}"/>.</returns>
+    public static FilteredReactiveCollection<TResult> Filter<TParam, TResult>(
+        this TParam items,
+        Func<TResult, bool> predicate)
+        where TParam : IEnumerable<TResult>, INotifyCollectionChanged, INotifyPropertyChanged
+        => new(items, new FilterViewModel<TResult>(predicate));
+
+    /// <summary>
     /// Removes the first element of the list that matches the specified predicate.
     /// </summary>
     public static void Remove<T>(this ISourceList<T> items, Predicate<T> match) where T : notnull

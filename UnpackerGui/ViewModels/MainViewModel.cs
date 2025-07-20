@@ -28,9 +28,6 @@ namespace UnpackerGui.ViewModels;
 public class MainViewModel : AssetBrowserViewModel
 {
     /// <inheritdoc/>
-    public override ControlledObservableList SelectedAssets { get; }
-
-    /// <inheritdoc/>
     public override FilteredReactiveCollection<AssetInfo> Assets { get; }
 
     /// <summary>
@@ -104,7 +101,6 @@ public class MainViewModel : AssetBrowserViewModel
 
     private int _numAssets;
     private AssetFileViewModel? _selectedAssetFile;
-    private AssetInfo? _selectedAsset;
     private IDisposable? _validationHandler;
 
     /// <summary>
@@ -171,7 +167,6 @@ public class MainViewModel : AssetBrowserViewModel
         // Initialize each observable collection.
         ValidationOptions = new ValidationOptionsViewModel<AssetInfo>(x => x.IsValid);
         SearchOptions = new SearchOptionsViewModel<AssetInfo>(x => x.Name);
-        SelectedAssets = [];
         CheckedAssets = CheckedAssetFiles.Flatten<ReadOnlyObservableCollection<AssetFileViewModel>, AssetInfo>();
         ValidatedAssets = CheckedAssets.Filter(ValidationOptions);
         Assets = ValidatedAssets.Filter(SearchOptions);
@@ -188,7 +183,7 @@ public class MainViewModel : AssetBrowserViewModel
         // Initialize other view models.
         _about = new AboutViewModel();
         _preferences = new PreferencesViewModel();
-        ImageBrowser = new ImageBrowserViewModel(this);
+        ImageBrowser = new ImageBrowserViewModel(Assets);
     }
 
     /// <summary>
@@ -217,15 +212,6 @@ public class MainViewModel : AssetBrowserViewModel
     {
         get => _selectedAssetFile;
         set => this.RaiseAndSetIfChanged(ref _selectedAssetFile, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the selected asset.
-    /// </summary>
-    public AssetInfo? SelectedAsset
-    {
-        get => _selectedAsset;
-        set => this.RaiseAndSetIfChanged(ref _selectedAsset, value);
     }
 
     /// <summary>

@@ -104,6 +104,15 @@ public partial class MainView : UserControl
     private async void AssetGridRow_ContextMenu_CopyRows(object? sender, RoutedEventArgs e)
         => await CopyAssetsToClipboard(assetGrid.SelectedItems);
 
+    private void AssetGridRow_ContextMenu_ShowImageBrowser(object? sender, RoutedEventArgs e)
+    {
+        if (VisualRoot is not MainWindow mainWindow) return;
+
+        mainWindow.imageBrowserTab.IsSelected = true;
+        mainWindow.imageBrowserView.assetGrid.SelectedItem = assetGrid.SelectedItem;
+        mainWindow.imageBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+    }
+
     private void ListBox_Drop(ListBox sender, DragEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;

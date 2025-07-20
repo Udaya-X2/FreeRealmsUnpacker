@@ -7,19 +7,20 @@ namespace UnpackerGui.ViewModels;
 /// <summary>
 /// Represents a filter on a specified type.
 /// </summary>
+/// <param name="predicate">The predicate to filter <typeparamref name="T"/>.</param>
 /// <typeparam name="T">The type of the item to filter.</typeparam>
-public class FilterViewModel<T> : ViewModelBase
+public class FilterViewModel<T>(Func<T, bool> predicate) : ViewModelBase
 {
-    private static readonly Func<T, bool> s_truePredicate = _ => true;
+    private static readonly Func<T, bool> s_truePredicate = static _ => true;
 
-    private Func<T, bool> _isMatch;
+    private Func<T, bool> _isMatch = predicate;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterViewModel{T}"/> class.
     /// </summary>
-    public FilterViewModel()
+    protected FilterViewModel()
+        : this(s_truePredicate)
     {
-        _isMatch = s_truePredicate;
     }
 
     /// <summary>
