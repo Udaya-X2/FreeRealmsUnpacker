@@ -28,7 +28,6 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
     private readonly PfimConfig _imageConfig;
 
     private Bitmap? _displayedImage;
-    private IDisposable? _browserDisplayHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageBrowserViewModel"/> class.
@@ -40,7 +39,7 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
 
         // Filter the image assets from the asset browser.
         Assets = assets.Filter(x => x.IsImage);
-        OnAssetsInitialized();
+        OnAssetsInitialized(x => x.ShowImageBrowser);
 
         // Initialize bitmap creation resources.
         _imageStream = new MemoryStream();
@@ -49,21 +48,6 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
         // Display the selected image asset.
         this.WhenAnyValue(x => x.SelectedAsset)
             .Subscribe(x => DisplayedImage = CreateBitmap(x));
-
-        // Enable/disable collection updates depending on the visibility of the image browser.
-        Settings.WhenAnyValue(x => x.ShowImageBrowser)
-                .Subscribe(x =>
-                {
-                    if (x)
-                    {
-                        _browserDisplayHandler?.Dispose();
-                        _browserDisplayHandler = null;
-                    }
-                    else
-                    {
-                        _browserDisplayHandler ??= Assets.Disable();
-                    }
-                });
     }
 
     /// <summary>
