@@ -9,11 +9,6 @@ namespace UnpackerGui.ViewModels;
 public abstract class AssetBrowserViewModel : ViewModelBase
 {
     /// <summary>
-    /// Gets the application's settings.
-    /// </summary>
-    public static SettingsViewModel Settings => s_settings.Value;
-
-    /// <summary>
     /// Gets the selected assets.
     /// </summary>
     public ControlledObservableList SelectedAssets { get; } = [];
@@ -22,8 +17,6 @@ public abstract class AssetBrowserViewModel : ViewModelBase
     /// Gets the assets shown to the user.
     /// </summary>
     public abstract FilteredReactiveCollection<AssetInfo> Assets { get; }
-
-    private static readonly Lazy<SettingsViewModel> s_settings = new(App.GetSettings);
 
     private AssetInfo? _selectedAsset;
 

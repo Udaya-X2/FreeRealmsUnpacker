@@ -11,7 +11,6 @@ namespace UnpackerGui.ViewModels;
 public class ExtractionViewModel : ProgressViewModel
 {
     private readonly IEnumerable<AssetFileSelection> _assetFiles;
-    private readonly SettingsViewModel _settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtractionViewModel"/> class from the specified asset files.
@@ -20,7 +19,6 @@ public class ExtractionViewModel : ProgressViewModel
     {
         Maximum = assetFiles.Sum(x => x.Count);
         _assetFiles = assetFiles.Select(x => new AssetFileSelection(x, x));
-        _settings = App.GetSettings();
     }
 
     /// <summary>
@@ -31,7 +29,6 @@ public class ExtractionViewModel : ProgressViewModel
         Maximum = count ?? assets.Count();
         _assetFiles = assets.GroupBy(x => x.AssetFile)
                             .Select(x => new AssetFileSelection(x.Key, x));
-        _settings = App.GetSettings();
     }
 
     /// <inheritdoc/>
@@ -58,7 +55,7 @@ public class ExtractionViewModel : ProgressViewModel
             foreach (AssetInfo asset in assetFile.SelectedAssets)
             {
                 token.ThrowIfCancellationRequested();
-                reader.ExtractTo(asset, _settings.OutputDirectory, _settings.ConflictOptions);
+                reader.ExtractTo(asset, Settings.OutputDirectory, Settings.ConflictOptions);
                 Tick();
             }
         }

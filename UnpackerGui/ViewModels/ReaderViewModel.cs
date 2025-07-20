@@ -17,8 +17,7 @@ public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
         ?? throw new ArgumentNullException(nameof(sourceAssetFiles));
     private readonly IList<AssetFile> _inputAssetFiles = inputAssetFiles
         ?? throw new ArgumentNullException(nameof(inputAssetFiles));
-    private readonly RecentItemCollection<string>? _recentFiles = updateRecentFiles
-        ? App.GetSettings().RecentFiles : null;
+    private readonly RecentItemCollection<string>? _recentFiles = updateRecentFiles ? Settings.RecentFiles : null;
 
     /// <inheritdoc/>
     public override int Maximum => _inputAssetFiles.Count;
@@ -54,7 +53,7 @@ public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
         }
         catch when (!token.IsCancellationRequested && _recentFiles != null && assetFile != null)
         {
-            _recentFiles.Remove(x => TryGetFullPath(x) == assetFile.FullName);
+            _recentFiles.Remove(x => GetFullPath(x) == assetFile.FullName);
             throw;
         }
 
@@ -66,7 +65,7 @@ public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
     /// </summary>
     /// <param name="path"><inheritdoc cref="Path.GetFullPath(string)"/></param>
     /// <returns><inheritdoc cref="Path.GetFullPath(string)"/></returns>
-    private static string TryGetFullPath(string path)
+    private static string GetFullPath(string path)
     {
         try
         {

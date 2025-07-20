@@ -38,11 +38,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     /// </summary>
     public long Size { get; }
 
-    /// <summary>
-    /// Gets the application's settings.
-    /// </summary>
-    public SettingsViewModel Settings { get; }
-
     public ReactiveCommand<Unit, bool>? ShowDataFilesCommand { get; }
     public ReactiveCommand<Unit, Unit>? RemoveDataFilesCommand { get; }
     public ReactiveCommand<Unit, Unit>? DeleteDataFilesCommand { get; }
@@ -63,7 +58,6 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
     {
         _assets = [];
         _assetFile = assetFile;
-        Settings = App.GetSettings();
 
         foreach (Asset asset in _assetFile)
         {

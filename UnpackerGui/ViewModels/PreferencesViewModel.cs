@@ -13,7 +13,6 @@ public class PreferencesViewModel : ViewModelBase
 {
     public IReadOnlyList<Preference> Preferences { get; }
     public IReadOnlyList<string> LineSeparators { get; }
-    public SettingsViewModel Settings { get; }
 
     public ReactiveCommand<string, Unit> UpdateAssetFilterCommand { get; }
     public ReactiveCommand<Unit, Unit> UpdateSearchOptionCommand { get; }
@@ -32,7 +31,6 @@ public class PreferencesViewModel : ViewModelBase
             new Preference("Miscellaneous", "Other options that don't fit the previous categories.")
         ];
         LineSeparators = ["\r\n", "\n", "\r"];
-        Settings = App.GetSettings();
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
         UpdateSearchOptionCommand = ReactiveCommand.Create(UpdateSearchOption);
         ResetSettingsCommand = ReactiveCommand.Create(ResetSettings);
