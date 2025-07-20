@@ -57,16 +57,9 @@ public class SearchOptionsViewModel<T>(Func<T, string> converter) : FilterViewMo
     {
         if (UseRegex)
         {
-            try
-            {
-                RegexOptions caseOption = MatchCase ? 0 : RegexOptions.IgnoreCase;
-                Regex regex = new(Pattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture | caseOption);
-                IsMatch = x => regex.IsMatch(_converter(x));
-            }
-            catch (ArgumentException ex)
-            {
-                throw new ValidationException(ex.Message);
-            }
+            RegexOptions caseOption = MatchCase ? 0 : RegexOptions.IgnoreCase;
+            Regex regex = new(Pattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture | caseOption);
+            IsMatch = x => regex.IsMatch(_converter(x));
         }
         else
         {
