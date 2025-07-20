@@ -13,8 +13,7 @@
              x:DataType="vm:MainViewModel"
              d:DesignWidth="800"
              d:DesignHeight="440"
-             Loaded="MainView_Loaded"
-             Unloaded="MainView_Unloaded">
+             Loaded="MainView_Loaded">
     <Design.DataContext>
         <vm:DesignMainViewModel/>
     </Design.DataContext>

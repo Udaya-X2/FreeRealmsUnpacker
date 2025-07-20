@@ -8,7 +8,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,12 +20,9 @@ namespace UnpackerGui.Views;
 
 public partial class MainView : UserControl
 {
-    private readonly CompositeDisposable _cleanUp;
-
     public MainView()
     {
         InitializeComponent();
-        _cleanUp = [];
     }
 
     private void MainView_Loaded(object? sender, RoutedEventArgs e)
@@ -37,7 +33,6 @@ public partial class MainView : UserControl
         // it as a reference to the view model to keep track of the selected assets.
         mainViewModel.SelectedAssets.Items = assetGrid.SelectedItems;
         assetGrid.SelectionChanged += mainViewModel.SelectedAssets.Refresh;
-        _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= mainViewModel.SelectedAssets.Refresh));
 
         // Override the default DataGrid copy behavior.
         assetGrid.KeyBindings.Add(new KeyBinding
@@ -47,8 +42,8 @@ public partial class MainView : UserControl
         });
 
         // Add hotkey/drag-and-drop event handlers (workaround for Linux).
-        _cleanUp.Add(KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown));
-        _cleanUp.Add(DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop));
+        KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown);
+        DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop);
 
         // If arguments were passed to the application, load them in as asset files.
         if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { Args: string[] args })
@@ -56,8 +51,6 @@ public partial class MainView : UserControl
             mainViewModel.AddArgumentFilesCommand.Execute(args);
         }
     }
-
-    private void MainView_Unloaded(object? sender, RoutedEventArgs e) => _cleanUp.Dispose();
 
     private void MainWindow_OnKeyDown(MainWindow sender, KeyEventArgs e)
     {

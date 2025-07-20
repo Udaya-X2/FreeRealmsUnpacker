@@ -19,9 +19,9 @@ public partial class MainWindow : Window
 
         // Change the view to the asset browser if the current view is hidden.
         settings.WhenAnyValue(x => x.ShowImageBrowser)
-                .Subscribe(x =>
+                .Subscribe(isVisible =>
                 {
-                    if (!x && imageBrowserTab.IsSelected)
+                    if (!isVisible && imageBrowserTab.IsSelected)
                     {
                         assetBrowserTab.IsSelected = true;
                     }

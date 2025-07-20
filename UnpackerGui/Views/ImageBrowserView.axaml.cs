@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using ReactiveUI;
 using System.Collections;
-using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 using UnpackerGui.Commands;
@@ -17,12 +16,9 @@ namespace UnpackerGui.Views;
 
 public partial class ImageBrowserView : UserControl
 {
-    private readonly CompositeDisposable _cleanUp;
-
     public ImageBrowserView()
     {
         InitializeComponent();
-        _cleanUp = [];
     }
 
     private void ImageBrowserView_Loaded(object? sender, RoutedEventArgs e)
@@ -33,7 +29,6 @@ public partial class ImageBrowserView : UserControl
         // it as a reference to the view model to keep track of the selected assets.
         imageBrowser.SelectedAssets.Items = assetGrid.SelectedItems;
         assetGrid.SelectionChanged += imageBrowser.SelectedAssets.Refresh;
-        _cleanUp.Add(Disposable.Create(() => assetGrid.SelectionChanged -= imageBrowser.SelectedAssets.Refresh));
 
         // Override the default DataGrid copy behavior.
         assetGrid.KeyBindings.Add(new KeyBinding

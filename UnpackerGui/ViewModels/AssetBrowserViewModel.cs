@@ -20,7 +20,7 @@ public abstract class AssetBrowserViewModel : ViewModelBase
     public abstract FilteredReactiveCollection<AssetInfo> Assets { get; }
 
     private AssetInfo? _selectedAsset;
-    private IDisposable? _assetSuppressor;
+    private IDisposable? _visibilityHandler;
 
     /// <summary>
     /// Gets or sets the selected asset.
@@ -50,12 +50,12 @@ public abstract class AssetBrowserViewModel : ViewModelBase
                 {
                     if (isVisible)
                     {
-                        _assetSuppressor?.Dispose();
-                        _assetSuppressor = null;
+                        _visibilityHandler?.Dispose();
+                        _visibilityHandler = null;
                     }
                     else
                     {
-                        _assetSuppressor ??= Assets.Disable();
+                        _visibilityHandler ??= Assets.Disable();
                     }
                 });
     }
