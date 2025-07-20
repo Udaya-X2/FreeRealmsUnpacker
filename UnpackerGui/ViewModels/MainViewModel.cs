@@ -229,18 +229,6 @@ public class MainViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Gets the default location to input files/folders asynchronously.
-    /// </summary>
-    private static Task<IStorageFolder?> InputFolder
-        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(Settings.InputDirectory);
-
-    /// <summary>
-    /// Gets the default location to output files/folders asynchronously.
-    /// </summary>
-    private static Task<IStorageFolder?> OutputFolder
-        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(Settings.OutputDirectory);
-
-    /// <summary>
     /// Opens the Preferences window.
     /// </summary>
     private async Task ShowPreferences() => await App.GetService<IDialogService>().ShowDialog(new PreferencesWindow
@@ -271,7 +259,7 @@ public class MainViewModel : AssetBrowserViewModel
     {
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = await InputFolder
+            SuggestedStartLocation = await Settings.GetInputFolder()
         }) is not IStorageFolder folder) return;
 
         Settings.InputDirectory = folder.Path.LocalPath;
@@ -333,7 +321,7 @@ public class MainViewModel : AssetBrowserViewModel
         {
             AllowMultiple = true,
             FileTypeFilter = fileTypeFilter,
-            SuggestedStartLocation = await InputFolder
+            SuggestedStartLocation = await Settings.GetInputFolder()
         });
 
         if (files.Count == 0) return;
@@ -352,7 +340,7 @@ public class MainViewModel : AssetBrowserViewModel
         {
             AllowMultiple = true,
             FileTypeFilter = FileTypeFilters.AssetDatFiles,
-            SuggestedStartLocation = await InputFolder
+            SuggestedStartLocation = await Settings.GetInputFolder()
         });
 
         if (files.Count == 0) return;
@@ -479,7 +467,7 @@ public class MainViewModel : AssetBrowserViewModel
         IReadOnlyList<IStorageFile> files = await filesService.OpenFilesAsync(new FilePickerOpenOptions
         {
             AllowMultiple = true,
-            SuggestedStartLocation = await InputFolder
+            SuggestedStartLocation = await Settings.GetInputFolder()
         });
 
         if (files.Count == 0) return;
@@ -497,7 +485,7 @@ public class MainViewModel : AssetBrowserViewModel
         if (await filesService.OpenFolderAsync(new FolderPickerOpenOptions
         {
             AllowMultiple = true,
-            SuggestedStartLocation = await InputFolder
+            SuggestedStartLocation = await Settings.GetInputFolder()
         }) is not IStorageFolder folder) return;
 
         Settings.InputDirectory = folder.Path.LocalPath;
@@ -523,7 +511,7 @@ public class MainViewModel : AssetBrowserViewModel
         bool isPackFile = (assetType & AssetType.Pack) != 0;
         if (await App.GetService<IFilesService>().SaveFileAsync(new FilePickerSaveOptions
         {
-            SuggestedStartLocation = await OutputFolder,
+            SuggestedStartLocation = await Settings.GetOutputFolder(),
             SuggestedFileName = isPackFile ? "Assets_000.pack" : "Assets_manifest.dat",
             FileTypeChoices = isPackFile ? FileTypeFilters.PackFiles : FileTypeFilters.ManifestFiles,
             ShowOverwritePrompt = true,
@@ -554,7 +542,7 @@ public class MainViewModel : AssetBrowserViewModel
         if (!assetFiles.Any()) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = await OutputFolder
+            SuggestedStartLocation = await Settings.GetOutputFolder()
         }) is not IStorageFolder folder) return;
 
         Settings.OutputDirectory = folder.Path.LocalPath;
@@ -573,7 +561,7 @@ public class MainViewModel : AssetBrowserViewModel
         if (assets.Count == 0) return;
         if (await App.GetService<IFilesService>().OpenFolderAsync(new FolderPickerOpenOptions
         {
-            SuggestedStartLocation = await OutputFolder
+            SuggestedStartLocation = await Settings.GetOutputFolder()
         }) is not IStorageFolder folder) return;
 
         Settings.OutputDirectory = folder.Path.LocalPath;
@@ -591,7 +579,7 @@ public class MainViewModel : AssetBrowserViewModel
     {
         if (await App.GetService<IFilesService>().SaveFileAsync(new FilePickerSaveOptions
         {
-            SuggestedStartLocation = await OutputFolder,
+            SuggestedStartLocation = await Settings.GetOutputFolder(),
             SuggestedFileName = Path.GetFileName(asset.Name),
             ShowOverwritePrompt = true
         }) is not IStorageFile file) return;

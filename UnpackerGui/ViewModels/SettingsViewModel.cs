@@ -1,11 +1,14 @@
 ﻿using AssetIO;
+using Avalonia.Platform.Storage;
 using FluentIcons.Common;
 using ReactiveUI;
 using System;
 using System.IO;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using UnpackerGui.Collections;
 using UnpackerGui.Enums;
+using UnpackerGui.Services;
 
 namespace UnpackerGui.ViewModels;
 
@@ -247,4 +250,16 @@ public class SettingsViewModel : ViewModelBase
         get => _recentFolders;
         set => this.RaiseAndSetIfChanged(ref _recentFolders, value);
     }
+
+    /// <summary>
+    /// Gets the default location to input files/folders asynchronously.
+    /// </summary>
+    public Task<IStorageFolder?> GetInputFolder()
+        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(InputDirectory);
+
+    /// <summary>
+    /// Gets the default location to output files/folders asynchronously.
+    /// </summary>
+    public Task<IStorageFolder?> GetOutputFolder()
+        => App.GetService<IFilesService>().TryGetFolderFromPathAsync(OutputDirectory);
 }
