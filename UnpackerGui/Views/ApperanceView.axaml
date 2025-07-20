@@ -17,8 +17,9 @@
     <UserControl.Resources>
         <conv:TitleCaseConverter x:Key="TitleCaseConverter"/>
     </UserControl.Resources>
-    <StackPanel Spacing="10">
-        <DockPanel>
+    <StackPanel Spacing="5">
+        <!--Color Theme-->
+        <DockPanel Margin="0 5 0 0">
             <TextBlock Text="Color Theme:"
                        ToolTip.Tip="The application's theme color."
                        VerticalAlignment="Center"/>
@@ -33,7 +34,8 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
         </DockPanel>
-        <DockPanel>
+        <!--Icon Type-->
+        <DockPanel  Margin="0 5 0 0">
             <TextBlock Text="Icon Type:"
                        ToolTip.Tip="The Fluent UI icon type."
                        VerticalAlignment="Center"/>
@@ -42,5 +44,8 @@
                       Margin="5 0 0 0"
                       SelectedItem="{Binding Settings.IconVariant}"/>
         </DockPanel>
+        <!--Show Image Browser-->
+        <CheckBox Content="Show Image Browser"
+                  IsChecked="{Binding Settings.ShowImageBrowser}"/>
     </StackPanel>
 </UserControl>

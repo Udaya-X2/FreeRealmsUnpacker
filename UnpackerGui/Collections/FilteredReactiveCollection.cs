@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using UnpackerGui.ViewModels;
 
@@ -16,9 +17,9 @@ namespace UnpackerGui.Collections;
 /// <typeparam name="T">The type of the item.</typeparam>
 public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
 {
-    private readonly IEnumerable<T> _items;
     private readonly FilterViewModel<T> _filter;
 
+    private IEnumerable<T> _items;
     private Lazy<int> _count;
     private Lazy<int> _unfilteredCount;
 
@@ -50,6 +51,25 @@ public class FilteredReactiveCollection<T> : ReadOnlyReactiveCollection<T>
     /// </summary>
     /// <returns>The number of elements in the underlying collection.</returns>
     public int UnfilteredCount => _unfilteredCount.Value;
+
+    /// <summary>
+    /// Clears the collection and suspends notifications. When disposed,
+    /// the collection is restored and a reset notification is fired.
+    /// </summary>
+    /// <returns>A disposable that, when disposed, restores the collection and re-activates notifications.</returns>
+    public IDisposable Disable()
+    {
+        IEnumerable<T> items = _items;
+        _items = [];
+        Refresh();
+        NotificationsEnabled = false;
+        return Disposable.Create(() =>
+        {
+            _items = items;
+            Refresh();
+            NotificationsEnabled = true;
+        });
+    }
 
     /// <inheritdoc/>
     public override IEnumerator<T> GetEnumerator() => _filter.IsAlwaysMatch

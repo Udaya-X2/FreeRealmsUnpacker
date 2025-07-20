@@ -19,14 +19,9 @@
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
         <conv:ControlStringConverter x:Key="ControlStringConverter"/>
     </UserControl.Resources>
-    <StackPanel>
-        <CheckBox Content="Show File Delete Dialog"
-                  ToolTip.Tip="Display a warning message before deleting a file."
-                  IsChecked="{Binding Settings.ConfirmDelete}"/>
-        <CheckBox Content="Copy Column Headers"
-                  ToolTip.Tip="Include the column headers when copying assets to the clipboard."
-                  IsChecked="{Binding Settings.CopyColumnHeaders}"/>
-        <DockPanel>
+    <StackPanel Spacing="5">
+        <!--Clipboard Separator-->
+        <DockPanel Margin="0 5 0 0">
             <TextBlock Text="Clipboard Separator:"
                        ToolTip.Tip="The separator to use when copying assets to the clipboard."
                        VerticalAlignment="Center"
@@ -40,6 +35,7 @@
                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
         </DockPanel>
+        <!--Clipboard Line Separator-->
         <DockPanel Margin="0 5 0 0">
             <TextBlock Text="Clipboard Line Separator:"
                        ToolTip.Tip="The line separator to use when copying assets to the clipboard."
@@ -56,8 +52,16 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
         </DockPanel>
+        <!--Show File Delete Dialog-->
+        <CheckBox Content="Show File Delete Dialog"
+                  ToolTip.Tip="Display a warning message before deleting a file."
+                  IsChecked="{Binding Settings.ConfirmDelete}"/>
+        <!--Copy Column Headers-->
+        <CheckBox Content="Copy Column Headers"
+                  ToolTip.Tip="Include the column headers when copying assets to the clipboard."
+                  IsChecked="{Binding Settings.CopyColumnHeaders}"/>
+        <!--Reset Settings Button-->
         <Button Content="Reset Settings"
-                Margin="0 5 0 0"
                 Command="{Binding ResetSettingsCommand}"
                 ToolTip.Tip="Reset all settings to the default values."/>
     </StackPanel>

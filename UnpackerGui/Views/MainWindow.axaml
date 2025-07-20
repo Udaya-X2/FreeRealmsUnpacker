@@ -15,7 +15,8 @@
         Width="800"
         Height="500"
         WindowStartupLocation="CenterScreen"
-        Title="Free Realms Unpacker">
+        Title="Free Realms Unpacker"
+        Loaded="MainWindow_Loaded">
     <Design.DataContext>
         <vm:DesignMainViewModel/>
     </Design.DataContext>
@@ -162,6 +163,7 @@
                 <TabStripItem Name="assetBrowserTab"
                               Content="Asset Browser"/>
                 <TabStripItem Name="imageBrowserTab"
+                              IsVisible="{Binding Settings.ShowImageBrowser}"
                               Content="Image Browser"/>
             </TabStrip>
         </StackPanel>

@@ -37,6 +37,7 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
 
     private AssetInfo? _selectedImageAsset;
     private Bitmap? _displayedImage;
+    private IDisposable? _browserDisplayHandler;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ImageBrowserViewModel"/> class.
@@ -58,6 +59,21 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
         // Display the selected image asset.
         this.WhenAnyValue(x => x.SelectedAsset)
             .Subscribe(x => DisplayedImage = CreateBitmap(x));
+
+        // Enable/disable collection updates depending on the visibility of the image browser.
+        Settings.WhenAnyValue(x => x.ShowImageBrowser)
+                .Subscribe(x =>
+                {
+                    if (x)
+                    {
+                        _browserDisplayHandler?.Dispose();
+                        _browserDisplayHandler = null;
+                    }
+                    else
+                    {
+                        _browserDisplayHandler ??= Assets.Disable();
+                    }
+                });
     }
 
     /// <summary>
