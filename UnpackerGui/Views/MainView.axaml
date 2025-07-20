@@ -142,23 +142,24 @@
                                     <!--Data File Context Menu-->
                                     <Style Selector="ListBoxItem">
                                         <Setter Property="ContextMenu">
-                                            <ContextMenu IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <ContextMenu IsVisible="{Binding SelectedDataFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                         DataContext="{Binding $parent.DataContext}">
                                                 <MenuItem Header="Close"
-                                                          Command="{Binding $parent[ListBox].DataContext.RemoveDataFilesCommand}"/>
+                                                          Command="{Binding RemoveDataFilesCommand}"/>
                                                 <MenuItem Header="Delete"
-                                                          Command="{Binding $parent[ListBox].DataContext.DeleteDataFilesCommand}"/>
+                                                          Command="{Binding DeleteDataFilesCommand}"/>
                                                 <MenuItem Header="Rename..."
-                                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
-                                                          Command="{Binding $parent[ListBox].DataContext.RenameDataFileCommand}"/>
-                                                <Separator IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
+                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                                          Command="{Binding RenameDataFileCommand}"/>
+                                                <Separator IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
                                                 <MenuItem Header="Copy Full File Path"
-                                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                                           Command="{x:Static c:StaticCommands.CopyCommand}"
-                                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.FullName}"/>
+                                                          CommandParameter="{Binding SelectedDataFile?.FullName}"/>
                                                 <MenuItem Header="Open Containing Folder"
-                                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                                           Command="{x:Static c:StaticCommands.OpenFileCommand}"
-                                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedDataFile?.DirectoryName}"/>
+                                                          CommandParameter="{Binding SelectedDataFile?.DirectoryName}"/>
                                             </ContextMenu>
                                         </Setter>
                                     </Style>
@@ -171,45 +172,46 @@
                     <!--Asset File Context Menu-->
                     <Style Selector="ListBoxItem">
                         <Setter Property="ContextMenu">
-                            <ContextMenu IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <ContextMenu IsVisible="{Binding SelectedAssetFile, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                         DataContext="{Binding $parent.DataContext}">
                                 <MenuItem Header="Close"
-                                          Command="{Binding $parent[ListBox].DataContext.RemoveSelectedFileCommand}"/>
+                                          Command="{Binding RemoveSelectedFileCommand}"/>
                                 <Separator/>
                                 <MenuItem Header="Delete"
-                                          Command="{Binding $parent[ListBox].DataContext.DeleteSelectedFileCommand}"/>
+                                          Command="{Binding DeleteSelectedFileCommand}"/>
                                 <MenuItem Header="Copy..."
-                                          Command="{Binding $parent[ListBox].DataContext.CopySelectedFileCommand}"/>
+                                          Command="{Binding CopySelectedFileCommand}"/>
                                 <MenuItem Header="Rename..."
-                                          Command="{Binding $parent[ListBox].DataContext.RenameSelectedFileCommand}"/>
+                                          Command="{Binding RenameSelectedFileCommand}"/>
                                 <Separator/>
                                 <MenuItem Header="Reload File"
-                                          Command="{Binding $parent[ListBox].DataContext.ReloadSelectedFileCommand}"/>
+                                          Command="{Binding ReloadSelectedFileCommand}"/>
                                 <MenuItem Header="Clear Assets"
-                                          IsVisible="{Binding !!$parent[ListBox].DataContext.SelectedAssetFile?.Count}"
-                                          Command="{Binding $parent[ListBox].DataContext.ClearSelectedFileCommand}"/>
+                                          IsVisible="{Binding !!SelectedAssetFile?.Count}"
+                                          Command="{Binding ClearSelectedFileCommand}"/>
                                 <Separator/>
                                 <MenuItem Header="Copy Full File Path"
                                           Command="{x:Static c:StaticCommands.CopyCommand}"
-                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FullName}"/>
+                                          CommandParameter="{Binding SelectedAssetFile?.FullName}"/>
                                 <MenuItem Header="Open Containing Folder"
                                           Command="{x:Static c:StaticCommands.OpenFileCommand}"
-                                          CommandParameter="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.DirectoryName}"/>
+                                          CommandParameter="{Binding SelectedAssetFile?.DirectoryName}"/>
                                 <Separator/>
                                 <MenuItem Header="Extract To..."
-                                          Command="{Binding $parent[ListBox].DataContext.ExtractSelectedFileCommand}"/>
+                                          Command="{Binding ExtractSelectedFileCommand}"/>
                                 <MenuItem Header="Add Assets..."
-                                          Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFilesCommand}"/>
+                                          Command="{Binding AddAssetsFromFilesCommand}"/>
                                 <MenuItem Header="Add Assets from Folder..."
-                                          Command="{Binding $parent[ListBox].DataContext.AddAssetsFromFolderCommand}"/>
+                                          Command="{Binding AddAssetsFromFolderCommand}"/>
                                 <MenuItem Header="Add Asset .dat Files..."
-                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
-                                          Command="{Binding $parent[ListBox].DataContext.AddDataFilesCommand}"/>
+                                          IsVisible="{Binding SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dat, Mode=OneWay}"
+                                          Command="{Binding AddDataFilesCommand}"/>
                                 <MenuItem Header="Convert To .pack File"
-                                          IsVisible="{Binding $parent[ListBox].DataContext.SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay}"
-                                          Command="{Binding $parent[ListBox].DataContext.ConvertSelectedFileCommand}"/>
+                                          IsVisible="{Binding SelectedAssetFile?.FileType, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter='Pack, Temp', Mode=OneWay}"
+                                          Command="{Binding ConvertSelectedFileCommand}"/>
                                 <Separator/>
                                 <MenuItem Header="Properties"
-                                          Command="{Binding $parent[ListBox].DataContext.ShowPropertiesCommand}"/>
+                                          Command="{Binding ShowPropertiesCommand}"/>
                             </ContextMenu>
                         </Setter>
                     </Style>
@@ -411,61 +413,62 @@
                     <!--Asset Row Context Menu-->
                     <Style Selector="DataGridRow">
                         <Setter Property="ContextMenu">
-                            <ContextMenu IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <ContextMenu IsVisible="{Binding SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                         DataContext="{Binding $parent.DataContext}}">
                                 <MenuItem Header="Open"
-                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                           Command="{x:Static c:StaticCommands.OpenAssetCommand}"
-                                          CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAsset}"/>
+                                          CommandParameter="{Binding SelectedAsset}"/>
                                 <MenuItem Header="Delete"
-                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
-                                          Command="{Binding $parent[DataGrid].DataContext.DeleteAssetsCommand}"
-                                          CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAssets}"/>
-                                <Separator IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          Command="{Binding DeleteAssetsCommand}"
+                                          CommandParameter="{Binding SelectedAssets}"/>
+                                <Separator IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
                                 <MenuItem Header="Copy"
-                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
                                           Click="AssetGridRow_ContextMenu_Copy"/>
-                                <MenuItem Header="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource PluralConverter}, ConverterParameter=Copy Row}"
+                                <MenuItem Header="{Binding SelectedAssets.Count, Converter={StaticResource PluralConverter}, ConverterParameter=Copy Row}"
                                           Click="AssetGridRow_ContextMenu_CopyRows"/>
                                 <MenuItem Header="Select Asset File"
-                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
-                                          Command="{Binding $parent[DataGrid].DataContext.SelectFileCommand}"/>
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          Command="{Binding SelectFileCommand}"/>
                                 <MenuItem Header="Show in Image Browser"
                                           Click="AssetGridRow_ContextMenu_ShowImageBrowser">
                                     <MenuItem.IsVisible>
                                         <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                            <Binding Path="$parent[DataGrid].DataContext.Settings.ShowImageBrowser"/>
-                                            <Binding Path="$parent[DataGrid].DataContext.SelectedAssets.Count"
+                                            <Binding Path="Settings.ShowImageBrowser"/>
+                                            <Binding Path="SelectedAssets.Count"
                                                      Converter="{StaticResource ExpressionConverter}"
                                                      ConverterParameter="1"/>
-                                            <Binding Path="$parent[DataGrid].DataContext.SelectedAsset?.IsImage"
+                                            <Binding Path="SelectedAsset?.IsImage"
                                                      TargetNullValue="False"/>
                                         </MultiBinding>
                                     </MenuItem.IsVisible>
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Header="Save As..."
-                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
-                                          Command="{Binding $parent[DataGrid].DataContext.SaveAssetCommand}"
-                                          CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAsset}"/>
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          Command="{Binding SaveAssetCommand}"
+                                          CommandParameter="{Binding SelectedAsset}"/>
                                 <MenuItem Header="Extract Selected Assets..."
-                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
-                                          Command="{Binding $parent[DataGrid].DataContext.ExtractAssetsCommand}"
-                                          CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAssets}"/>
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                          Command="{Binding ExtractAssetsCommand}"
+                                          CommandParameter="{Binding SelectedAssets}"/>
                                 <MenuItem Header="Delete Selected Assets"
-                                          IsVisible="{Binding $parent[DataGrid].DataContext.SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
-                                          Command="{Binding $parent[DataGrid].DataContext.DeleteAssetsCommand}"
-                                          CommandParameter="{Binding $parent[DataGrid].DataContext.SelectedAssets}"/>
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                          Command="{Binding DeleteAssetsCommand}"
+                                          CommandParameter="{Binding SelectedAssets}"/>
                             </ContextMenu>
                         </Setter>
                     </Style>
                     <!--DataGrid Column Header Context Menu-->
                     <Style Selector="DataGridColumnHeader">
                         <Setter Property="ContextMenu">
-                            <ContextMenu>
+                            <ContextMenu DataContext="{Binding $parent.DataContext}">
                                 <MenuItem Header="Hide"
                                           Click="AssetGridColumnHeader_ContextMenu_Hide"/>
                                 <MenuItem Header="Copy"
-                                          IsVisible="{Binding !!$parent[DataGrid].DataContext.Assets.Count}"
+                                          IsVisible="{Binding !!Assets.Count}"
                                           Click="AssetGridColumnHeader_ContextMenu_Copy"/>
                             </ContextMenu>
                         </Setter>

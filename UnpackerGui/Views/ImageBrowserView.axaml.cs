@@ -21,14 +21,14 @@ public partial class ImageBrowserView : UserControl
         InitializeComponent();
     }
 
-    private void ImageBrowserView_Loaded(object? sender, RoutedEventArgs e)
+    private void View_Loaded(object? sender, RoutedEventArgs e)
     {
-        if (DataContext is not ImageBrowserViewModel imageBrowser) return;
+        if (DataContext is not AssetBrowserViewModel browser) return;
 
         // SelectedItems is a not a bindable property in DataGrid, so we need to pass
         // it as a reference to the view model to keep track of the selected assets.
-        imageBrowser.SelectedAssets.Items = assetGrid.SelectedItems;
-        assetGrid.SelectionChanged += imageBrowser.SelectedAssets.Refresh;
+        browser.SelectedAssets.Items = assetGrid.SelectedItems;
+        assetGrid.SelectionChanged += browser.SelectedAssets.Refresh;
 
         // Override the default DataGrid copy behavior.
         assetGrid.KeyBindings.Add(new KeyBinding
@@ -36,21 +36,6 @@ public partial class ImageBrowserView : UserControl
             Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
             Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
         });
-    }
-
-    private void Button_Click_ResetZoom(object? sender, RoutedEventArgs e) => zoomBorder.ResetMatrix();
-
-    private void Button_Click_ZoomOut(object? sender, RoutedEventArgs e) => zoomBorder.ZoomOut();
-
-    private void Button_Click_ZoomIn(object? sender, RoutedEventArgs e) => zoomBorder.ZoomIn();
-
-    private void Slider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
-    {
-        if (e.NewValue != zoomBorder.ZoomX)
-        {
-            Rect bounds = zoomBorder.Child!.Bounds;
-            zoomBorder.Zoom(e.NewValue, bounds.Width / 2, bounds.Height / 2);
-        }
     }
 
     private void DataGrid_DoubleTapped(object? sender, TappedEventArgs e)
@@ -98,5 +83,20 @@ public partial class ImageBrowserView : UserControl
         }
 
         await App.SetClipboardText(sb.ToString());
+    }
+
+    private void Button_Click_ResetZoom(object? sender, RoutedEventArgs e) => zoomBorder.ResetMatrix();
+
+    private void Button_Click_ZoomOut(object? sender, RoutedEventArgs e) => zoomBorder.ZoomOut();
+
+    private void Button_Click_ZoomIn(object? sender, RoutedEventArgs e) => zoomBorder.ZoomIn();
+
+    private void Slider_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        if (e.NewValue != zoomBorder.ZoomX)
+        {
+            Rect bounds = zoomBorder.Child!.Bounds;
+            zoomBorder.Zoom(e.NewValue, bounds.Width / 2, bounds.Height / 2);
+        }
     }
 }
