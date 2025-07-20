@@ -46,7 +46,6 @@
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Buttons, Asset Files, Property Grid-->
         <Grid Grid.Column="0"
-              HorizontalAlignment="Left"
               RowDefinitions="Auto,*,Auto"
               Margin="5 5 0 5">
             <!--Buttons-->
@@ -270,7 +269,6 @@
                       ShowsPreview="True"/>
         <!--Search Bar & Options, Asset DataGrid, #/# Info Bar-->
         <Grid Grid.Column="2"
-              HorizontalAlignment="Right"
               RowDefinitions="Auto,*,Auto"
               Margin="5 0 5 5">
             <!--Search Bar & Options-->
