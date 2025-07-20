@@ -17,9 +17,7 @@ public static class CommandExtensions
     /// <param name="command">The command to execute.</param>
     /// <returns>An object that, when disposed, disconnects the observable from the command.</returns>
     public static IDisposable Invoke<TResult>(this ReactiveCommandBase<Unit, TResult> command)
-        => command == null
-        ? throw new ArgumentNullException(nameof(command))
-        : Observable.Return(Unit.Default).InvokeCommand(command);
+        => Observable.Return(Unit.Default).InvokeCommand(command);
 
     /// <summary>
     /// Executes the specified command with the given parameter, if possible.
@@ -31,7 +29,5 @@ public static class CommandExtensions
     /// <returns>An object that, when disposed, disconnects the observable from the command.</returns>
     public static IDisposable Invoke<TParam, TResult>(this ReactiveCommandBase<TParam, TResult> command,
                                                       TParam parameter)
-        => command == null
-        ? throw new ArgumentNullException(nameof(command))
-        : Observable.Return(parameter).InvokeCommand(command);
+        => Observable.Return(parameter).InvokeCommand(command);
 }
