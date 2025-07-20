@@ -7,7 +7,6 @@ using ReactiveUI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
@@ -64,12 +63,6 @@ public partial class MainView : UserControl
     {
         switch (e.KeyModifiers, e.Key)
         {
-#if DEBUG
-            case (KeyModifiers.Alt, Key.D):
-                static void Print(object? x) => Debug.WriteLine($"{DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} {x}");
-                assetGrid.KeyBindings.ForEach(Print);
-                break;
-#endif
             case (KeyModifiers.Alt, Key.C):
                 matchCaseButton.IsChecked ^= true;
                 break;
@@ -85,6 +78,14 @@ public partial class MainView : UserControl
         }
     }
 
+#if DEBUG
+    private static void Print(object? x)
+        => System.Diagnostics.Debug.WriteLine($"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} {x}");
+
+    private static void Print()
+        => System.Diagnostics.Debug.WriteLine("");
+#endif
+
     private void AssetGrid_DoubleTapped(object? sender, TappedEventArgs e)
     {
         if ((e.Source as Control)?.Parent is not DataGridCell) return;
@@ -93,7 +94,11 @@ public partial class MainView : UserControl
         StaticCommands.OpenAssetCommand.Invoke(asset);
     }
 
-    private void AssetGrid_Sorting(object? sender, DataGridColumnEventArgs e) => assetGrid.SelectedItems.Clear();
+    private void AssetGrid_Sorting(object? sender, DataGridColumnEventArgs e)
+    {
+        assetGrid.SelectedItem = null;
+        assetGrid.SelectedItems.Clear();
+    }
 
     private async void AssetGridRow_ContextMenu_Copy(object? sender, RoutedEventArgs e)
     {

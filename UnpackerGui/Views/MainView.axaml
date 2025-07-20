@@ -434,7 +434,7 @@
                                           Click="AssetGridRow_ContextMenu_ShowImageBrowser">
                                     <MenuItem.IsVisible>
                                         <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                            <Binding Path="Settings.ShowImageBrowser"/>
+                                            <Binding Path="$parent[DataGrid].DataContext.Settings.ShowImageBrowser"/>
                                             <Binding Path="$parent[DataGrid].DataContext.SelectedAssets.Count"
                                                      Converter="{StaticResource ExpressionConverter}"
                                                      ConverterParameter="1"/>

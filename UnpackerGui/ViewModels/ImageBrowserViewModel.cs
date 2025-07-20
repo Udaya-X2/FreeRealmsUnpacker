@@ -40,6 +40,7 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
 
         // Filter the image assets from the asset browser.
         Assets = assets.Filter(x => x.IsImage);
+        OnAssetsInitialized();
 
         // Initialize bitmap creation resources.
         _imageStream = new MemoryStream();

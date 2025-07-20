@@ -34,7 +34,8 @@
                   BorderBrush="Gray"
                   ClipboardCopyMode="None"
                   Margin="5 5 0 5"
-                  DoubleTapped="DataGrid_DoubleTapped">
+                  DoubleTapped="DataGrid_DoubleTapped"
+                  Sorting="DataGrid_Sorting">
             <!--Images Column-->
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Name}"

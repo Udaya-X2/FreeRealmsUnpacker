@@ -170,15 +170,11 @@ public class MainViewModel : AssetBrowserViewModel
         CheckedAssets = CheckedAssetFiles.Flatten<ReadOnlyObservableCollection<AssetFileViewModel>, AssetInfo>();
         ValidatedAssets = CheckedAssets.Filter(ValidationOptions);
         Assets = ValidatedAssets.Filter(SearchOptions);
+        OnAssetsInitialized();
 
         // Toggle asset validation when requested.
         Settings.WhenAnyValue(x => x.ValidateAssets)
                 .Subscribe(_ => ToggleValidationCommand.Invoke());
-
-        // Need to clear selected assets to avoid the UI freezing when a large
-        // number of assets are selected while more assets are added/removed.
-        Assets.ObserveCollectionChanges()
-              .Subscribe(_ => SelectedAssets.Clear());
 
         // Initialize other view models.
         _about = new AboutViewModel();

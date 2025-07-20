@@ -66,6 +66,12 @@ public partial class ImageBrowserView : UserControl
         StaticCommands.OpenAssetCommand.Invoke(asset);
     }
 
+    private void DataGrid_Sorting(object? sender, DataGridColumnEventArgs e)
+    {
+        assetGrid.SelectedItem = null;
+        assetGrid.SelectedItems.Clear();
+    }
+
     private void MenuItem_Click_ShowAssetBrowser(object? sender, RoutedEventArgs e)
     {
         if (VisualRoot is not MainWindow mainWindow) return;
