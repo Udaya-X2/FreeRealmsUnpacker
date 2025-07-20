@@ -93,12 +93,7 @@ public partial class MainView : UserControl
         StaticCommands.OpenAssetCommand.Invoke(asset);
     }
 
-    private void AssetGrid_Sorting(object? sender, DataGridColumnEventArgs e)
-    {
-        if (DataContext is not MainViewModel mainViewModel) return;
-
-        mainViewModel.ClearSelectedAssetsCommand.Invoke();
-    }
+    private void AssetGrid_Sorting(object? sender, DataGridColumnEventArgs e) => assetGrid.SelectedItems.Clear();
 
     private async void AssetGridRow_ContextMenu_Copy(object? sender, RoutedEventArgs e)
     {

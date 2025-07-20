@@ -93,7 +93,6 @@ public class MainViewModel : AssetBrowserViewModel
     public ReactiveCommand<Unit, Unit> ClearSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ReloadSelectedFileCommand { get; }
     public ReactiveCommand<Unit, Unit> ConvertSelectedFileCommand { get; }
-    public ReactiveCommand<Unit, Unit> ClearSelectedAssetsCommand { get; }
     public ReactiveCommand<IList, Unit> DeleteAssetsCommand { get; }
     public ReactiveCommand<Unit, Unit> SelectFileCommand { get; }
 
@@ -149,7 +148,6 @@ public class MainViewModel : AssetBrowserViewModel
         ClearSelectedFileCommand = ReactiveCommand.CreateFromTask(ClearSelectedFile);
         ReloadSelectedFileCommand = ReactiveCommand.Create(ReloadSelectedFile);
         ConvertSelectedFileCommand = ReactiveCommand.Create(ConvertSelectedFile);
-        ClearSelectedAssetsCommand = ReactiveCommand.Create(ClearSelectedAssets);
         DeleteAssetsCommand = ReactiveCommand.CreateFromTask<IList>(DeleteAssets);
         SelectFileCommand = ReactiveCommand.Create(SelectFile);
 
@@ -185,7 +183,7 @@ public class MainViewModel : AssetBrowserViewModel
         // Need to clear selected assets to avoid the UI freezing when a large
         // number of assets are selected while more assets are added/removed.
         Assets.ObserveCollectionChanges()
-              .Subscribe(_ => ClearSelectedAssets());
+              .Subscribe(_ => SelectedAssets.Clear());
 
         // Initialize other view models.
         _about = new AboutViewModel();
@@ -824,15 +822,6 @@ public class MainViewModel : AssetBrowserViewModel
 
         SelectedAssetFile = convertedFile;
         Settings.RecentFiles.ReplaceOrAdd(oldPath, convertedFile.FullName);
-    }
-
-    /// <summary>
-    /// Deselects all selected assets.
-    /// </summary>
-    private void ClearSelectedAssets()
-    {
-        SelectedAsset = null;
-        SelectedAssets.Clear();
     }
 
     /// <summary>
