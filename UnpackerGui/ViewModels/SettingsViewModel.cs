@@ -27,6 +27,7 @@ public class SettingsViewModel : ViewModelBase
     private ColorTheme _colorTheme = ColorTheme.SystemDefault;
     private IconVariant _iconVariant = IconVariant.Regular;
     private bool _showImageBrowser = true;
+    private bool _showAudioBrowser = true;
     private bool _confirmDelete = true;
     private bool _deleteDataFiles = true;
     private bool _copyColumnHeaders = false;
@@ -166,6 +167,15 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _showImageBrowser;
         set => this.RaiseAndSetIfChanged(ref _showImageBrowser, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to show the audio browser.
+    /// </summary>
+    public bool ShowAudioBrowser
+    {
+        get => _showAudioBrowser;
+        set => this.RaiseAndSetIfChanged(ref _showAudioBrowser, value);
     }
 
     /// <summary>

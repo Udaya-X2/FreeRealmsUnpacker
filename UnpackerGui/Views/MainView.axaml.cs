@@ -111,6 +111,15 @@ public partial class MainView : UserControl
         mainWindow.imageBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
     }
 
+    private void AssetGridRow_ContextMenu_ShowAudioBrowser(object? sender, RoutedEventArgs e)
+    {
+        if (VisualRoot is not MainWindow mainWindow) return;
+
+        mainWindow.audioBrowserTab.IsSelected = true;
+        mainWindow.audioBrowserView.assetGrid.SelectedItem = assetGrid.SelectedItem;
+        mainWindow.audioBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+    }
+
     private void ListBox_Drop(ListBox sender, DragEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;

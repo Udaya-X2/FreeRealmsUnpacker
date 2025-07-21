@@ -165,6 +165,9 @@
                 <TabStripItem Name="imageBrowserTab"
                               IsVisible="{Binding Settings.ShowImageBrowser}"
                               Content="Image Browser"/>
+                <TabStripItem Name="audioBrowserTab"
+                              IsVisible="{Binding Settings.ShowAudioBrowser}"
+                              Content="Audio Browser"/>
             </TabStrip>
         </StackPanel>
         <!--Asset Browser-->
@@ -175,6 +178,9 @@
             <views:ImageBrowserView Name="imageBrowserView"
                                     IsVisible="{Binding ElementName=imageBrowserTab, Path=IsSelected}"
                                     DataContext="{Binding ImageBrowser}"/>
+            <views:AudioBrowserView Name="audioBrowserView"
+                                    IsVisible="{Binding ElementName=audioBrowserTab, Path=IsSelected}"
+                                    DataContext="{Binding AudioBrowser}"/>
         </Panel>
     </DockPanel>
 </Window>

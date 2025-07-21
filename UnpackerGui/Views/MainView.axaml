@@ -445,6 +445,19 @@
                                         </MultiBinding>
                                     </MenuItem.IsVisible>
                                 </MenuItem>
+                                <MenuItem Header="Show in Audio Browser"
+                                          Click="AssetGridRow_ContextMenu_ShowAudioBrowser">
+                                    <MenuItem.IsVisible>
+                                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                            <Binding Path="Settings.ShowAudioBrowser"/>
+                                            <Binding Path="SelectedAssets.Count"
+                                                     Converter="{StaticResource ExpressionConverter}"
+                                                     ConverterParameter="1"/>
+                                            <Binding Path="SelectedAsset?.IsAudio"
+                                                     TargetNullValue="False"/>
+                                        </MultiBinding>
+                                    </MenuItem.IsVisible>
+                                </MenuItem>
                                 <Separator/>
                                 <MenuItem Header="Save As..."
                                           IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"

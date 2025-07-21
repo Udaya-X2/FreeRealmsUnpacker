@@ -124,6 +124,13 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
         "X3F",
         "XCF"
     ]).ToFrozenSet();
+    private static readonly FrozenSet<string> s_audioFormats = ((HashSet<string>)
+    [
+        "MP3",
+        "WAV",
+        "OGG",
+        "BINKA"
+    ]).ToFrozenSet();
 
     /// <summary>
     /// Gets an <see cref="EqualityComparer{T}"/> that compares
@@ -150,6 +157,11 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     /// Gets whether the asset is an image.
     /// </summary>
     public bool IsImage => s_imageFormats.Contains(Type);
+
+    /// <summary>
+    /// Gets whether the asset is an audio file.
+    /// </summary>
+    public bool IsAudio => s_audioFormats.Contains(Type);
 
     /// <summary>
     /// Gets the file size of the asset.

@@ -55,6 +55,11 @@ public class MainViewModel : AssetBrowserViewModel
     /// </summary>
     public ImageBrowserViewModel ImageBrowser { get; }
 
+    /// <summary>
+    /// Gets the data context for the audio browser.
+    /// </summary>
+    public AudioBrowserViewModel AudioBrowser { get; }
+
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutCommand { get; }
@@ -180,6 +185,7 @@ public class MainViewModel : AssetBrowserViewModel
         _about = new AboutViewModel();
         _preferences = new PreferencesViewModel();
         ImageBrowser = new ImageBrowserViewModel(Assets);
+        AudioBrowser = new AudioBrowserViewModel(Assets);
     }
 
     /// <summary>

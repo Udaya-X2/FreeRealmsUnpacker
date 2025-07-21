@@ -18,10 +18,11 @@ public partial class MainWindow : Window
         if (App.Current?.Settings is not SettingsViewModel settings) return;
 
         // Change the view to the asset browser if the current view is hidden.
-        settings.WhenAnyValue(x => x.ShowImageBrowser)
+        settings.WhenAnyValue(x => x.ShowImageBrowser, x => x.ShowAudioBrowser)
                 .Subscribe(isVisible =>
                 {
-                    if (!isVisible && imageBrowserTab.IsSelected)
+                    if ((!isVisible.Item1 && imageBrowserTab.IsSelected)
+                        || (!isVisible.Item2 && audioBrowserTab.IsSelected))
                     {
                         assetBrowserTab.IsSelected = true;
                     }

@@ -1,0 +1,113 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="clr-namespace:UnpackerGui.Views"
+             xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+             xmlns:conv="clr-namespace:UnpackerGui.Converters"
+             xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
+             xmlns:c="clr-namespace:UnpackerGui.Commands"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             mc:Ignorable="d"
+             x:Class="UnpackerGui.Views.AudioBrowserView"
+             x:DataType="vm:AudioBrowserViewModel"
+             d:DesignWidth="800"
+             d:DesignHeight="440"
+             Loaded="View_Loaded">
+    <Design.DataContext>
+        <vm:DesignAudioBrowserViewModel/>
+    </Design.DataContext>
+    <UserControl.Resources>
+        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
+    </UserControl.Resources>
+    <Grid ColumnDefinitions="220,Auto,*">
+        <!--Audio Assets-->
+        <DataGrid Grid.Column="0"
+                  Name="assetGrid"
+                  ItemsSource="{Binding Assets}"
+                  SelectedItem="{Binding SelectedAsset}"
+                  IsReadOnly="True"
+                  GridLinesVisibility="Horizontal"
+                  HorizontalScrollBarVisibility="Disabled"
+                  BorderThickness="1"
+                  BorderBrush="Gray"
+                  ClipboardCopyMode="None"
+                  Margin="5 5 0 5"
+                  DoubleTapped="DataGrid_DoubleTapped"
+                  Sorting="DataGrid_Sorting">
+            <!--Audios Column-->
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Name}"
+                                    Header="Audio"/>
+            </DataGrid.Columns>
+            <DataGrid.Styles>
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="Margin"
+                            Value="-3 0 0 0"/>
+                </Style>
+                <Style Selector="DataGridCell">
+                    <Setter Property="MinHeight"
+                            Value="0"/>
+                    <Setter Property="Padding"
+                            Value="-3 3 -3 3"/>
+                </Style>
+                <!--Audio Row Context Menu-->
+                <Style Selector="DataGridRow">
+                    <Setter Property="ContextMenu">
+                        <ContextMenu IsVisible="{Binding SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                     DataContext="{Binding $parent.DataContext}">
+                            <MenuItem Header="Open"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      Command="{x:Static c:StaticCommands.OpenAssetCommand}"
+                                      CommandParameter="{Binding SelectedAsset}"/>
+                            <MenuItem Header="Delete"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
+                                      CommandParameter="{Binding SelectedAssets}"/>
+                            <Separator IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
+                            <MenuItem Header="Copy"
+                                      Command="{x:Static c:StaticCommands.CopyCommand}"
+                                      CommandParameter="{Binding SelectedAsset?.Name}"/>
+                            <MenuItem Header="Show in Asset Browser"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      Click="MenuItem_Click_ShowAssetBrowser"/>
+                            <Separator/>
+                            <MenuItem Header="Save As..."
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveAssetCommand}"
+                                      CommandParameter="{Binding SelectedAsset}"/>
+                            <MenuItem Header="Extract Selected Assets..."
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ExtractAssetsCommand}"
+                                      CommandParameter="{Binding SelectedAssets}"/>
+                            <MenuItem Header="Delete Selected Assets"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                      Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
+                                      CommandParameter="{Binding SelectedAssets}"/>
+                        </ContextMenu>
+                    </Setter>
+                </Style>
+                <!--DataGrid Column Header Context Menu-->
+                <Style Selector="DataGridColumnHeader">
+                    <Setter Property="ContextMenu">
+                        <ContextMenu DataContext="{Binding $parent.DataContext}">
+                            <MenuItem Header="Copy"
+                                      IsVisible="{Binding !!Assets.Count}"
+                                      Click="MenuItem_Click_CopyDataGridColumn"/>
+                        </ContextMenu>
+                    </Setter>
+                </Style>
+            </DataGrid.Styles>
+        </DataGrid>
+        <!--Allow User Resize Columns-->
+        <GridSplitter Grid.Column="1"
+                      Width="5"
+                      ShowsPreview="True"/>
+        <!--Audio Viewer-->
+        <Border Grid.Column="2"
+                BorderBrush="Gray"
+                BorderThickness="1"
+                Margin="0 5 5 5">
+        </Border>
+    </Grid>
+</UserControl>

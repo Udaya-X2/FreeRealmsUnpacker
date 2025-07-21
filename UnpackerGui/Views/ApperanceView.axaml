@@ -47,5 +47,8 @@
         <!--Show Image Browser-->
         <CheckBox Content="Show Image Browser"
                   IsChecked="{Binding Settings.ShowImageBrowser}"/>
+        <!--Show Audio Browser-->
+        <CheckBox Content="Show Audio Browser"
+                  IsChecked="{Binding Settings.ShowAudioBrowser}"/>
     </StackPanel>
 </UserControl>

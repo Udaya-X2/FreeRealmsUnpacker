@@ -61,6 +61,9 @@
       <Compile Update="Views\ApperanceView.axaml.cs">
         <DependentUpon>ApperanceView.axaml</DependentUpon>
       </Compile>
+      <Compile Update="Views\AudioBrowserView.axaml.cs">
+        <DependentUpon>AudioBrowserView.axaml</DependentUpon>
+      </Compile>
       <Compile Update="Views\MiscellaneousView.axaml.cs">
         <DependentUpon>MiscellaneousView.axaml</DependentUpon>
       </Compile>
