@@ -35,7 +35,7 @@
                   Margin="5 5 0 5"
                   DoubleTapped="DataGrid_DoubleTapped"
                   Sorting="DataGrid_Sorting">
-            <!--Audios Column-->
+            <!--Audio Column-->
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Name}"
                                     Header="Audio"/>
@@ -54,34 +54,34 @@
                 <!--Audio Row Context Menu-->
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
-                        <ContextMenu IsVisible="{Binding SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}"
+                        <ContextMenu IsVisible="{Binding SelectedAsset,Converter={x:Static ObjectConverters.IsNotNull}}"
                                      DataContext="{Binding $parent.DataContext}">
                             <MenuItem Header="Open"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
                                       Command="{x:Static c:StaticCommands.OpenAssetCommand}"
                                       CommandParameter="{Binding SelectedAsset}"/>
                             <MenuItem Header="Delete"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
                                       CommandParameter="{Binding SelectedAssets}"/>
-                            <Separator IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
+                            <Separator IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"/>
                             <MenuItem Header="Copy"
                                       Command="{x:Static c:StaticCommands.CopyCommand}"
                                       CommandParameter="{Binding SelectedAsset?.Name}"/>
                             <MenuItem Header="Show in Asset Browser"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
                                       Click="MenuItem_Click_ShowAssetBrowser"/>
                             <Separator/>
                             <MenuItem Header="Save As..."
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveAssetCommand}"
                                       CommandParameter="{Binding SelectedAsset}"/>
                             <MenuItem Header="Extract Selected Assets..."
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=>1}}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ExtractAssetsCommand}"
                                       CommandParameter="{Binding SelectedAssets}"/>
                             <MenuItem Header="Delete Selected Assets"
-                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=>1}}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
                                       CommandParameter="{Binding SelectedAssets}"/>
                         </ContextMenu>
@@ -103,11 +103,131 @@
         <GridSplitter Grid.Column="1"
                       Width="5"
                       ShowsPreview="True"/>
-        <!--Audio Viewer-->
+        <!--Media Player-->
         <Border Grid.Column="2"
                 BorderBrush="Gray"
                 BorderThickness="1"
                 Margin="0 5 5 5">
+            <Grid RowDefinitions="*,31">
+                <!--Media Player Controls-->
+                <Grid Grid.Column="0"
+                      ColumnDefinitions="Auto,Auto,*,Auto"
+                      RowDefinitions="Auto"
+                      VerticalAlignment="Center"
+                      Margin="10"
+                      IsEnabled="{Binding SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <Grid.Styles>
+                        <Style Selector="Button">
+                            <Setter Property="Margin"
+                                    Value="4"/>
+                        </Style>
+                    </Grid.Styles>
+                    <!--Play/Pause Button-->
+                    <Button Grid.Column="0"
+                            Command="{Binding TogglePlayPauseCommand}">
+                        <Grid>
+                            <ic:FluentIcon Icon="Play"
+                                           IsVisible="{Binding !IsPlaying}"/>
+                            <ic:FluentIcon Icon="Pause"
+                                           IsVisible="{Binding IsPlaying}"/>
+                        </Grid>
+                    </Button>
+                    <!--Mute/Unmute Button-->
+                    <Button Grid.Column="1"
+                            Command="{Binding ToggleMuteCommand}">
+                        <Grid>
+                            <ic:FluentIcon Icon="Speaker2"
+                                           IsVisible="{Binding !IsMuted}"/>
+                            <ic:FluentIcon Icon="SpeakerMute"
+                                           IsVisible="{Binding IsMuted}"/>
+                        </Grid>
+                    </Button>
+                    <!--Media Seeker-->
+                    <Slider Grid.Column="2"
+                            VerticalAlignment="Center"
+                            Minimum="0"
+                            Maximum="{Binding Length}"
+                            Value="{Binding Time}"/>
+                    <!--More Options-->
+                    <Button Grid.Column="3">
+                        <ic:FluentIcon Icon="MoreHorizontal"/>
+                        <Button.Flyout>
+                            <!--Speed Menu-->
+                            <MenuFlyout>
+                                <MenuItem Header="Speed">
+                                    <MenuItem.Icon>
+                                        <ic:FluentIcon Icon="TopSpeed"/>
+                                    </MenuItem.Icon>
+                                    <MenuItem Header="2.0x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="2.0"/>
+                                    <MenuItem Header="1.75x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="1.75"/>
+                                    <MenuItem Header="1.5x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="1.5"/>
+                                    <MenuItem Header="1.25x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="1.25"/>
+                                    <MenuItem Header="1.0x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="1.0"/>
+                                    <MenuItem Header="0.75x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="0.75"/>
+                                    <MenuItem Header="0.5x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="0.5"/>
+                                    <MenuItem Header="0.25x"
+                                              Command="{Binding SetRateCommand}"
+                                              CommandParameter="0.25"/>
+                                </MenuItem>
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+                </Grid>
+                <!--Media Info-->
+                <Border Grid.Row="1"
+                        BorderBrush="Gray"
+                        BorderThickness="0 1 0 0">
+                    <DockPanel Background="{DynamicResource DockBrush}">
+                        <!--Image Info-->
+                        <StackPanel DockPanel.Dock="Left"
+                                    Orientation="Horizontal"
+                                    Spacing="10"
+                                    Margin="10 0 0 0"
+                                    ClipToBounds="True">
+                            <!--# of Media Files-->
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5"
+                                        Opacity="100"
+                                        ToolTip.Tip="Audio Selected">
+                                <ic:FluentIcon Icon="MusicNote2"/>
+                                <TextBlock VerticalAlignment="Center">
+                                    <TextBlock.Text>
+                                        <MultiBinding StringFormat="{}{0}/{1}">
+                                            <Binding Path="SelectedAssets.Count"
+                                                     TargetNullValue="0"/>
+                                            <Binding Path="Assets.Count"
+                                                     TargetNullValue="0"/>
+                                        </MultiBinding>
+                                    </TextBlock.Text>
+                                </TextBlock>
+                            </StackPanel>
+                            <!--Size Info-->
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="5"
+                                        Opacity="100"
+                                        ToolTip.Tip="Size">
+                                <ic:FluentIcon Icon="Save"/>
+                                <TextBlock VerticalAlignment="Center"
+                                           Text="{Binding SelectedAsset?.FileSize, TargetNullValue=0 B}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

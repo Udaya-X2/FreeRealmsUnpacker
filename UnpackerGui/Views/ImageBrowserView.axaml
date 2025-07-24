@@ -109,7 +109,7 @@
                 BorderBrush="Gray"
                 BorderThickness="1"
                 Margin="0 5 5 5">
-            <Grid RowDefinitions="*,Auto">
+            <Grid RowDefinitions="*,31">
                 <!--Displayed Image-->
                 <ZoomBorder Name="zoomBorder"
                             Grid.Row="0"
