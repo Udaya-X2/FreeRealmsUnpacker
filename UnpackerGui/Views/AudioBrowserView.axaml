@@ -18,7 +18,12 @@
         <vm:DesignAudioBrowserViewModel/>
     </Design.DataContext>
     <UserControl.Resources>
+        <conv:EqualityConverter x:Key="EqualityConverter"/>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
+        <conv:VolumeToIconConverter x:Key="VolumeToIconConverter"/>
+        <conv:BooleanToIconConverter x:Key="BooleanToIconConverter"/>
+        <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
+        <conv:LongToTimestampConverter x:Key="LongToTimestampConverter"/>
     </UserControl.Resources>
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Audio Assets-->
@@ -108,96 +113,61 @@
                 BorderBrush="Gray"
                 BorderThickness="1"
                 Margin="0 5 5 5">
-            <Grid RowDefinitions="*,31">
-                <!--Media Player Controls-->
+            <Grid RowDefinitions="*,Auto"
+                  ClipToBounds="True">
+                <!--Media Controls-->
                 <Grid Grid.Column="0"
-                      ColumnDefinitions="Auto,Auto,*,Auto"
+                      Margin="10"
+                      ColumnSpacing="8"
+                      ColumnDefinitions="Auto,*"
                       RowDefinitions="Auto"
                       VerticalAlignment="Center"
-                      Margin="10"
                       IsEnabled="{Binding SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Grid.Styles>
-                        <Style Selector="Button">
-                            <Setter Property="Margin"
-                                    Value="4"/>
-                        </Style>
-                    </Grid.Styles>
                     <!--Play/Pause Button-->
                     <Button Grid.Column="0"
-                            Command="{Binding TogglePlayPauseCommand}">
-                        <Grid>
-                            <ic:FluentIcon Icon="Play"
-                                           IsVisible="{Binding !IsPlaying}"/>
-                            <ic:FluentIcon Icon="Pause"
-                                           IsVisible="{Binding IsPlaying}"/>
-                        </Grid>
+                            Padding="0"
+                            Background="Transparent"
+                            Command="{Binding TogglePlayPauseCommand}"
+                            ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}">
+                        <Button.Styles>
+                            <Style Selector=":disabled/template/ContentPresenter">
+                                <Setter Property="Background"
+                                        Value="Transparent"/>
+                            </Style>
+                        </Button.Styles>
+                        <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToIconConverter}, ConverterParameter=Pause/Play}"
+                                       FontSize="24"/>
                     </Button>
-                    <!--Mute/Unmute Button-->
-                    <Button Grid.Column="1"
-                            Command="{Binding ToggleMuteCommand}">
-                        <Grid>
-                            <ic:FluentIcon Icon="Speaker2"
-                                           IsVisible="{Binding !IsMuted}"/>
-                            <ic:FluentIcon Icon="SpeakerMute"
-                                           IsVisible="{Binding IsMuted}"/>
-                        </Grid>
-                    </Button>
-                    <!--Media Seeker-->
-                    <Slider Grid.Column="2"
-                            VerticalAlignment="Center"
-                            Minimum="0"
-                            Maximum="{Binding Length}"
-                            Value="{Binding Time}"/>
-                    <!--More Options-->
-                    <Button Grid.Column="3">
-                        <ic:FluentIcon Icon="MoreHorizontal"/>
-                        <Button.Flyout>
-                            <!--Speed Menu-->
-                            <MenuFlyout>
-                                <MenuItem Header="Speed">
-                                    <MenuItem.Icon>
-                                        <ic:FluentIcon Icon="TopSpeed"/>
-                                    </MenuItem.Icon>
-                                    <MenuItem Header="2.0x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="2.0"/>
-                                    <MenuItem Header="1.75x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="1.75"/>
-                                    <MenuItem Header="1.5x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="1.5"/>
-                                    <MenuItem Header="1.25x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="1.25"/>
-                                    <MenuItem Header="1.0x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="1.0"/>
-                                    <MenuItem Header="0.75x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="0.75"/>
-                                    <MenuItem Header="0.5x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="0.5"/>
-                                    <MenuItem Header="0.25x"
-                                              Command="{Binding SetRateCommand}"
-                                              CommandParameter="0.25"/>
-                                </MenuItem>
-                            </MenuFlyout>
-                        </Button.Flyout>
-                    </Button>
+                    <!--Seek Slider-->
+                    <Grid Grid.Column="1"
+                          ColumnSpacing="10"
+                          ColumnDefinitions="Auto,*,Auto"
+                          RowDefinitions="Auto"
+                          VerticalAlignment="Center"
+                          ClipToBounds="True">
+                        <TextBlock Grid.Column="0"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding Time, Converter={StaticResource LongToTimestampConverter}}"/>
+                        <Slider Grid.Column="1"
+                                Minimum="0"
+                                Maximum="{Binding Length}"
+                                Value="{Binding Time}"
+                                ToolTip.Tip="Seek"/>
+                        <TextBlock Grid.Column="2"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding Length, Converter={StaticResource LongToTimestampConverter}}"/>
+                    </Grid>
                 </Grid>
-                <!--Media Info-->
+                <!--Media Info & Other Controls-->
                 <Border Grid.Row="1"
                         BorderBrush="Gray"
                         BorderThickness="0 1 0 0">
-                    <DockPanel Background="{DynamicResource DockBrush}">
-                        <!--Image Info-->
-                        <StackPanel DockPanel.Dock="Left"
-                                    Orientation="Horizontal"
+                    <DockPanel Background="{DynamicResource DockBrush}"
+                               ClipToBounds="True">
+                        <!--Media Info-->
+                        <StackPanel Orientation="Horizontal"
                                     Spacing="10"
-                                    Margin="10 0 0 0"
-                                    ClipToBounds="True">
+                                    Margin="10 0 0 0">
                             <!--# of Media Files-->
                             <StackPanel Orientation="Horizontal"
                                         Spacing="5"
@@ -224,6 +194,59 @@
                                 <TextBlock VerticalAlignment="Center"
                                            Text="{Binding SelectedAsset?.FileSize, TargetNullValue=0 B}"/>
                             </StackPanel>
+                        </StackPanel>
+                        <!--Other Controls-->
+                        <StackPanel HorizontalAlignment="Right"
+                                    Orientation="Horizontal"
+                                    Spacing="10"
+                                    Margin="0 0 10 0">
+                            <!--Speed Button-->
+                            <Button Background="Transparent"
+                                    Padding="0"
+                                    ToolTip.Tip="Speed">
+                                <ic:FluentIcon Icon="TopSpeed"/>
+                                <Button.Styles>
+                                    <Style Selector="MenuItem">
+                                        <Setter Property="Command"
+                                                Value="{Binding $parent.DataContext.SetRateCommand}"/>
+                                        <Setter Property="CommandParameter"
+                                                Value="{Binding}"/>
+                                        <Setter Property="Icon">
+                                            <Template>
+                                                <ic:FluentIcon Icon="Checkmark">
+                                                    <ic:FluentIcon.IsVisible>
+                                                        <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                            <Binding Path="."/>
+                                                            <Binding Path="$parent.DataContext.Rate"/>
+                                                        </MultiBinding>
+                                                    </ic:FluentIcon.IsVisible>
+                                                </ic:FluentIcon>
+                                            </Template>
+                                        </Setter>
+                                    </Style>
+                                </Button.Styles>
+                                <Button.Flyout>
+                                    <MenuFlyout ItemsSource="{Binding Speeds}"/>
+                                </Button.Flyout>
+                            </Button>
+                            <!--Mute/Unmute Button-->
+                            <Button Background="Transparent"
+                                    Command="{Binding ToggleMuteCommand}"
+                                    Padding="0"
+                                    ToolTip.Tip="{Binding !!Volume, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Mute/Unmute}">
+                                <ic:FluentIcon Icon="{Binding Volume, Converter={StaticResource VolumeToIconConverter}}"/>
+                            </Button>
+                            <!--Volume Slider-->
+                            <Slider Margin="0 -10 0 -10"
+                                    Minimum="0"
+                                    Maximum="100"
+                                    Width="100"
+                                    Value="{Binding Volume}"
+                                    ToolTip.Tip="Volume"/>
+                            <!--Current Volume-->
+                            <TextBlock Text="{Binding Volume}"
+                                       VerticalAlignment="Center"
+                                       MinWidth="20"/>
                         </StackPanel>
                     </DockPanel>
                 </Border>

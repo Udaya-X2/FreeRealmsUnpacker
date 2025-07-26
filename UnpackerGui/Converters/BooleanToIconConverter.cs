@@ -2,14 +2,17 @@
 using System.Globalization;
 using System;
 using Avalonia.Data.Converters;
+using FluentIcons.Common;
 
 namespace UnpackerGui.Converters;
 
-public class BooleanToStringConverter : IValueConverter
+public class BooleanToIconConverter : IValueConverter
 {
+    private const char Separator = '/';
+
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value switch
     {
-        bool condition when Split(parameter) is (string val1, string val2) => condition ? val1 : val2,
+        bool condition when Split(parameter) is (string val1, string val2) => Enum.Parse<Icon>(condition ? val1 : val2),
         _ => new BindingNotification(new InvalidCastException(), BindingErrorType.Error)
     };
 
@@ -19,7 +22,7 @@ public class BooleanToStringConverter : IValueConverter
     {
         if (parameter is not string values) return null;
         
-        string[] splitValues = values.Split('/');
+        string[] splitValues = values.Split(Separator);
 
         if (splitValues.Length != 2) return null;
 

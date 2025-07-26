@@ -530,7 +530,7 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
                             IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource BooleanToStringConverter} ConverterParameter='Invalid Assets␟Valid Assets'}">
+                            ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource BooleanToStringConverter} ConverterParameter='Invalid Assets/Valid Assets'}">
                     <ic:FluentIcon Icon="Warning"
                                    Margin="0 0 5 0"
                                    IsVisible="{Binding !ValidationOptions.ShowValid}"/>

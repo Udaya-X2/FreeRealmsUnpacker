@@ -11,8 +11,21 @@ namespace UnpackerGui.ViewModels;
 
 public class PreferencesViewModel : ViewModelBase
 {
-    public IReadOnlyList<Preference> Preferences { get; }
-    public IReadOnlyList<string> LineSeparators { get; }
+    /// <summary>
+    /// Gets the preference categories.
+    /// </summary>
+    public static IReadOnlyList<Preference> Preferences { get; } =
+    [
+        new Preference("File Conflict Options", "Select how to extract assets with conflicting names."),
+        new Preference("Folder Options", "Check the types of assets to add when opening a folder."),
+        new Preference("Appearance", "Customize the display settings."),
+        new Preference("Miscellaneous", "Other options that don't fit the previous categories.")
+    ];
+    
+    /// <summary>
+    /// Gets the available clipboard line separators.
+    /// </summary>
+    public static IReadOnlyList<string> LineSeparators { get; } = ["\r\n", "\n", "\r"];
 
     public ReactiveCommand<string, Unit> UpdateAssetFilterCommand { get; }
     public ReactiveCommand<Unit, Unit> UpdateSearchOptionCommand { get; }
@@ -21,38 +34,48 @@ public class PreferencesViewModel : ViewModelBase
     private Preference _selectedPreference;
     private int _selectedIndex;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PreferencesViewModel"/> class.
+    /// </summary>
     public PreferencesViewModel()
     {
-        Preferences =
-        [
-            new Preference("File Conflict Options", "Select how to extract assets with conflicting names."),
-            new Preference("Folder Options", "Check the types of assets to add when opening a folder."),
-            new Preference("Appearance", "Customize the display settings."),
-            new Preference("Miscellaneous", "Other options that don't fit the previous categories.")
-        ];
-        LineSeparators = ["\r\n", "\n", "\r"];
         UpdateAssetFilterCommand = ReactiveCommand.Create<string>(UpdateAssetFilter);
         UpdateSearchOptionCommand = ReactiveCommand.Create(UpdateSearchOption);
         ResetSettingsCommand = ReactiveCommand.Create(ResetSettings);
         _selectedPreference = Preferences[0];
     }
 
+    /// <summary>
+    /// Gets or sets the selected preference.
+    /// </summary>
     public Preference SelectedPreference
     {
         get => _selectedPreference;
         set => this.RaiseAndSetIfChanged(ref _selectedPreference, value);
     }
 
+    /// <summary>
+    /// Gets or sets the selected preference index.
+    /// </summary>
     public int SelectedIndex
     {
         get => _selectedIndex;
         set => this.RaiseAndSetIfChanged(ref _selectedIndex, value);
     }
 
+    /// <summary>
+    /// Toggles the specified asset type flag in the asset filter.
+    /// </summary>
     private void UpdateAssetFilter(string value) => Settings.AssetFilter ^= Enum.Parse<AssetType>(value);
 
+    /// <summary>
+    /// Toggles between searching all directories recursively or only the top directory.
+    /// </summary>
     private void UpdateSearchOption() => Settings.SearchOption ^= SearchOption.AllDirectories;
 
+    /// <summary>
+    /// Resets all settings to their default values.
+    /// </summary>
     private void ResetSettings()
     {
         SettingsViewModel settings = new();
