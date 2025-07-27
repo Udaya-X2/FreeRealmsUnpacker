@@ -3,6 +3,7 @@ using LibVLCSharp.Shared;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -28,8 +29,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
     private readonly MemoryStream _audioStream;
     private readonly LibVLC _libVlc;
-    private readonly MediaPlayer _mediaPlayer;
 
+    private MediaPlayer _mediaPlayer;
     private bool _isPlaying;
     private int _volume;
     private int _mutedVolume;
@@ -54,25 +55,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         // Initialize media player resources.
         _audioStream = new MemoryStream();
         _libVlc = new LibVLC();
-        _mediaPlayer = new MediaPlayer(_libVlc) { Media = new Media(_libVlc, new StreamMediaInput(_audioStream)) };
         _volume = 100;
         _mutedVolume = 100;
         _rate = 1f;
-        _length = long.MaxValue;
+        ResetMediaPlayer();
 
         // Play the selected asset in the media player.
         this.WhenAnyValue(x => x.SelectedAsset)
             .Subscribe(PlayMedia);
-
-        // Update display properties based on the media player status.
-        _mediaPlayer.TimeChanged += (s, e) => DisplayTime = e.Time;
-        _mediaPlayer.EndReached += (s, e) => Task.Run(() =>
-        {
-            DisplayTime = 0;
-            IsPlaying = false;
-            _mediaPlayer.Stop();
-        });
-        _mediaPlayer.LengthChanged += (s, e) => Length = e.Length;
 
         // Update media player properties when requested.
         this.WhenAnyValue(x => x.Volume)
@@ -142,20 +132,51 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
+    /// Resets the state of the media player.
+    /// </summary>
+    [MemberNotNull(nameof(_mediaPlayer))]
+    private void ResetMediaPlayer(long length = long.MaxValue)
+    {
+        // Dispose of the current media player.
+        Task.Run(() => _mediaPlayer?.Dispose());
+
+        // Initialize the new media player.
+        _mediaPlayer = new MediaPlayer(_libVlc) { Media = new Media(_libVlc, new StreamMediaInput(_audioStream)) };
+
+        if (_volume != 100) _mediaPlayer.Volume = _volume;
+        if (_rate != 1f) _mediaPlayer.SetRate(_rate);
+
+        // Update display properties based on the media player status.
+        _mediaPlayer.TimeChanged += (s, e) => DisplayTime = e.Time;
+        _mediaPlayer.EndReached += (s, e) => ResetMediaPlayer(_length);
+        _mediaPlayer.LengthChanged += (s, e) => Length = e.Length;
+
+        // Reset display properties.
+        IsPlaying = false;
+        DisplayTime = 0;
+        Length = length;
+    }
+
+    /// <summary>
     /// Plays the specified asset in the media player.
     /// </summary>
     private void PlayMedia(AssetInfo? asset)
     {
-        _mediaPlayer.Stop();
-        IsPlaying = false;
-        DisplayTime = 0;
-        Length = long.MaxValue;
+        ResetMediaPlayer();
 
         if (asset == null) return;
 
-        using AssetReader reader = asset.AssetFile.OpenRead();
-        _audioStream.SetLength(0);
-        reader.CopyTo(asset, _audioStream);
+        try
+        {
+            using AssetReader reader = asset.AssetFile.OpenRead();
+            _audioStream.SetLength(0);
+            reader.CopyTo(asset, _audioStream);
+        }
+        catch
+        {
+            return;
+        }
+
         IsPlaying = _mediaPlayer.Play();
     }
 
