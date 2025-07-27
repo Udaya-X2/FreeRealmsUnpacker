@@ -54,15 +54,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         // Initialize media player resources.
         _audioStream = new MemoryStream();
         _libVlc = new LibVLC();
-        _mediaPlayer = new MediaPlayer(_libVlc);
+        _mediaPlayer = new MediaPlayer(_libVlc) { Media = new Media(_libVlc, new StreamMediaInput(_audioStream)) };
         _volume = 100;
         _mutedVolume = 100;
         _rate = 1f;
-        _length = 1;
+        _length = long.MaxValue;
 
-        // Update the media to the selected asset.
+        // Play the selected asset in the media player.
         this.WhenAnyValue(x => x.SelectedAsset)
-            .Subscribe(CreateMedia);
+            .Subscribe(PlayMedia);
 
         // Update display properties based on the media player status.
         _mediaPlayer.TimeChanged += (s, e) => DisplayTime = e.Time;
@@ -79,7 +79,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             .Subscribe(x => _mediaPlayer.Volume = x);
         this.WhenAnyValue(x => x.Rate)
             .Subscribe(x => _mediaPlayer.SetRate(x));
+        this.WhenAnyValue(x => x.Length)
+            .ToProperty(this, nameof(CanPlay));
     }
+
+    /// <summary>
+    /// Gets or sets whether audio can be played.
+    /// </summary>
+    public bool CanPlay => Length != long.MaxValue;
 
     /// <summary>
     /// Gets or sets whether the audio is playing.
@@ -135,23 +142,21 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Creates playable media from the specified asset.
+    /// Plays the specified asset in the media player.
     /// </summary>
-    private void CreateMedia(AssetInfo? asset)
+    private void PlayMedia(AssetInfo? asset)
     {
-        _mediaPlayer.Media = null;
+        _mediaPlayer.Stop();
         IsPlaying = false;
-        Time = 0;
-        Length = 1;
+        DisplayTime = 0;
+        Length = long.MaxValue;
 
         if (asset == null) return;
 
         using AssetReader reader = asset.AssetFile.OpenRead();
         _audioStream.SetLength(0);
         reader.CopyTo(asset, _audioStream);
-        _audioStream.Position = 0;
-        using Media media = new(_libVlc, new StreamMediaInput(_audioStream));
-        _mediaPlayer.Media = media;
+        IsPlaying = _mediaPlayer.Play();
     }
 
     /// <summary>
