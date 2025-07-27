@@ -31,6 +31,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     private readonly LibVLC _libVlc;
 
     private MediaPlayer _mediaPlayer;
+    private bool _canPlay;
     private bool _isPlaying;
     private int _volume;
     private int _mutedVolume;
@@ -69,14 +70,16 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             .Subscribe(x => _mediaPlayer.Volume = x);
         this.WhenAnyValue(x => x.Rate)
             .Subscribe(x => _mediaPlayer.SetRate(x));
-        this.WhenAnyValue(x => x.Length)
-            .ToProperty(this, nameof(CanPlay));
     }
 
     /// <summary>
     /// Gets or sets whether audio can be played.
     /// </summary>
-    public bool CanPlay => Length != long.MaxValue;
+    public bool CanPlay
+    {
+        get => _canPlay;
+        set => this.RaiseAndSetIfChanged(ref _canPlay, value);
+    }
 
     /// <summary>
     /// Gets or sets whether the audio is playing.
@@ -135,7 +138,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// Resets the state of the media player.
     /// </summary>
     [MemberNotNull(nameof(_mediaPlayer))]
-    private void ResetMediaPlayer(long length = long.MaxValue)
+    private void ResetMediaPlayer(long? length = null)
     {
         // Dispose of the current media player.
         Task.Run(() => _mediaPlayer?.Dispose());
@@ -150,11 +153,13 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         _mediaPlayer.TimeChanged += (s, e) => DisplayTime = e.Time;
         _mediaPlayer.EndReached += (s, e) => ResetMediaPlayer(_length);
         _mediaPlayer.LengthChanged += (s, e) => Length = e.Length;
+        _mediaPlayer.EncounteredError += (s, e) => CanPlay = IsPlaying = false;
 
         // Reset display properties.
+        CanPlay = length != null;
         IsPlaying = false;
         DisplayTime = 0;
-        Length = length;
+        Length = length ?? 1;
     }
 
     /// <summary>
@@ -177,7 +182,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             return;
         }
 
-        IsPlaying = _mediaPlayer.Play();
+        CanPlay = IsPlaying = _mediaPlayer.Play();
     }
 
     /// <summary>

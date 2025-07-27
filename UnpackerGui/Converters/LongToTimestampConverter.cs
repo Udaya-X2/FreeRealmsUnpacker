@@ -17,14 +17,21 @@ public class LongToTimestampConverter : IValueConverter
 
     private static string CreateTimestamp(long ms)
     {
-        TimeSpan time = new(ms * TimeSpan.TicksPerMillisecond);
-        return time.Ticks switch
+        try
         {
-            < TimeSpan.TicksPerSecond => "0:00",
-            < TimeSpan.TicksPerMinute => $"0:{time.Seconds:D2}",
-            < TimeSpan.TicksPerHour => $"{time.Minutes:D2}:{time.Seconds:D2}",
-            < TimeSpan.TicksPerDay => $"{time.Hours:D2}:{time.Minutes:D2}:{time.Seconds:D2}",
-            _ => $"{time.Days:D2}:{time.Hours:D2}:{time.Minutes:D2}:{time.Seconds:D2}",
-        };
+            TimeSpan time = new(checked(ms * TimeSpan.TicksPerMillisecond));
+            return time.Ticks switch
+            {
+                < TimeSpan.TicksPerSecond => "0:00",
+                < TimeSpan.TicksPerMinute => $"0:{time.Seconds:D2}",
+                < TimeSpan.TicksPerHour => $"{time.Minutes:D2}:{time.Seconds:D2}",
+                < TimeSpan.TicksPerDay => $"{time.Hours:D2}:{time.Minutes:D2}:{time.Seconds:D2}",
+                _ => $"{time.Days:D2}:{time.Hours:D2}:{time.Minutes:D2}:{time.Seconds:D2}",
+            };
+        }
+        catch (OverflowException)
+        {
+            return "?:??";
+        }
     }
 }
