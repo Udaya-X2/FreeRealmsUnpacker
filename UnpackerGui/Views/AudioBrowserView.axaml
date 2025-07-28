@@ -200,6 +200,19 @@
                                     Orientation="Horizontal"
                                     Spacing="10"
                                     Margin="0 0 10 0">
+                            <!--Loop Button-->
+                            <ToggleButton Background="Transparent"
+                                          Padding="0"
+                                          IsChecked="{Binding Loop}"
+                                          ToolTip.Tip="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop Off/Loop}">
+                                <ToggleButton.Styles>
+                                    <Style Selector=":checked/template/ContentPresenter">
+                                        <Setter Property="Button.Background"
+                                                Value="Transparent"/>
+                                    </Style>
+                                </ToggleButton.Styles>
+                                <ic:FluentIcon Icon="{Binding Loop, Converter={StaticResource BooleanToIconConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
+                            </ToggleButton>
                             <!--Speed Button-->
                             <Button Background="Transparent"
                                     Padding="0"

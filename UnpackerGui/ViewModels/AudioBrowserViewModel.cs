@@ -38,6 +38,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     private int _mutedVolume;
     private long _time;
     private long _length;
+    public bool _loop;
     private float _rate;
 
     /// <summary>
@@ -120,6 +121,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
+    /// Gets or sets whether to loop audio playback.
+    /// </summary>
+    public bool Loop
+    {
+        get => _loop;
+        set => this.RaiseAndSetIfChanged(ref _loop, value);
+    }
+
+    /// <summary>
     /// Gets or sets the playback speed.
     /// </summary>
     public float Rate
@@ -150,7 +160,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// Initializes the media player.
     /// </summary>
     [MemberNotNull(nameof(_mediaPlayer))]
-    private void InitializeMediaPlayer()
+    private void InitializeMediaPlayer(bool play)
     {
         // Initialize the new media player.
         _mediaPlayer = new MediaPlayer(LibVLC) { Media = Media };
@@ -163,11 +173,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         _mediaPlayer.EndReached += (s, e) =>
         {
             DisposeMediaPlayer(true);
-            InitializeMediaPlayer();
+            InitializeMediaPlayer(Loop);
         };
         _mediaPlayer.LengthChanged += (s, e) => Length = e.Length;
         _mediaPlayer.EncounteredError += (s, e) => DisposeMediaPlayer();
         CanPlay = true;
+
+        // Play the media, if requested.
+        if (play) IsPlaying = _mediaPlayer.Play();
     }
 
     /// <summary>
@@ -213,8 +226,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             return;
         }
 
-        InitializeMediaPlayer();
-        IsPlaying = _mediaPlayer.Play();
+        InitializeMediaPlayer(true);
     }
 
     /// <summary>
