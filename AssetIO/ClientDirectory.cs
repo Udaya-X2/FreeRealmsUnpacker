@@ -137,33 +137,6 @@ public static class ClientDirectory
     /// Escapes literal braces ({, }) by doubling them in the result string.
     /// </summary>
     /// <returns>A string of characters with brace characters converted to their escaped form.</returns>
-    private static string EscapeFormatString(string str)
-    {
-        int i = str.IndexOfAny(['{', '}']);
-
-        if (i < 0) return str;
-
-        Span<char> result = str.Length <= 128 ? stackalloc char[2 * str.Length] : new char[2 * str.Length];
-
-        // Copy the characters already proven not to match.
-        if (i > 0)
-        {
-            str.AsSpan(0, i).CopyTo(result);
-        }
-
-        // Copy the remaining characters, doing the replacement as we go.
-        for (int j = i; i < str.Length; i++)
-        {
-            char c = str[i];
-
-            if (str[i] is '{' or '}')
-            {
-                result[j++] = c;
-            }
-
-            result[j++] = c;
-        }
-
-        return new string(result);
-    }
+    private static string EscapeFormatString(string str) => str.Replace("{", "{{")
+                                                               .Replace("}", "}}");
 }
