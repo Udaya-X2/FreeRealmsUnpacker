@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reactive;
+using System.Threading;
 using System.Threading.Tasks;
 using UnpackerGui.Collections;
 using UnpackerGui.Extensions;
@@ -30,6 +31,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     private readonly MemoryStream _audioStream;
     private readonly Lazy<LibVLC> _libVLC;
     private readonly Lazy<Media> _media;
+    private readonly Lock _lock;
 
     private MediaPlayer? _mediaPlayer;
     private bool _canPlay;
@@ -59,6 +61,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         _audioStream = new MemoryStream();
         _libVLC = new Lazy<LibVLC>(() => new LibVLC());
         _media = new Lazy<Media>(() => new Media(LibVLC, new StreamMediaInput(_audioStream)));
+        _lock = new Lock();
         _volume = 100;
         _mutedVolume = 100;
         _rate = 1f;
@@ -164,19 +167,16 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         // Initialize the new media player.
         _mediaPlayer = new MediaPlayer(LibVLC) { Media = Media };
+        MediaPlayer mediaPlayer = _mediaPlayer;
 
         if (_volume != 100) _mediaPlayer.Volume = _volume;
         if (_rate != 1f) _mediaPlayer.SetRate(_rate);
 
         // Update display properties based on the media player status.
-        _mediaPlayer.TimeChanged += (s, e) => DisplayTime = e.Time;
-        _mediaPlayer.EndReached += (s, e) =>
-        {
-            DisposeMediaPlayer(true);
-            InitializeMediaPlayer(Loop);
-        };
-        _mediaPlayer.LengthChanged += (s, e) => Length = e.Length;
-        _mediaPlayer.EncounteredError += (s, e) => DisposeMediaPlayer();
+        _mediaPlayer.EndReached += OnEndReached;
+        _mediaPlayer.TimeChanged += OnTimeChanged;
+        _mediaPlayer.LengthChanged += OnLengthChanged;
+        _mediaPlayer.EncounteredError += OnEncounteredError;
         CanPlay = true;
 
         // Play the media, if requested.
@@ -186,23 +186,40 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// <summary>
     /// Disposes of the current media player.
     /// </summary>
-    private void DisposeMediaPlayer(bool canPlay = false)
+    private void DisposeMediaPlayer(bool reset = false)
     {
-        if (_mediaPlayer != null)
+        // Prevent concurrent dispose from VLC callback/UI thread.
+        lock (_lock)
         {
+            if (_mediaPlayer == null) return;
+
             // Reset display properties.
-            IsPlaying = false;
+            IsPlaying = reset && Loop;
             DisplayTime = 0;
 
-            if (!canPlay)
+            if (!reset)
             {
                 CanPlay = false;
                 Length = 1;
             }
 
             // Dispose on a different thread to avoid hanging on the UI thread.
-            Task.Run(_mediaPlayer.Dispose);
-            _mediaPlayer = null;
+            MediaPlayer mediaPlayer = _mediaPlayer;
+            mediaPlayer.EndReached -= OnEndReached;
+            mediaPlayer.TimeChanged -= OnTimeChanged;
+            mediaPlayer.LengthChanged -= OnLengthChanged;
+            mediaPlayer.EncounteredError -= OnEncounteredError;
+            Task.Run(mediaPlayer.Dispose);
+
+            // Reset the media player with the same media, if requested.
+            if (reset)
+            {
+                InitializeMediaPlayer(play: Loop);
+            }
+            else
+            {
+                _mediaPlayer = null;
+            }
         }
     }
 
@@ -226,7 +243,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             return;
         }
 
-        InitializeMediaPlayer(true);
+        InitializeMediaPlayer(play: true);
     }
 
     /// <summary>
@@ -270,4 +287,24 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             _mediaPlayer.Volume = value;
         }
     }
+
+    /// <summary>
+    /// Event handler for <see cref="MediaPlayer.EndReached"/>.
+    /// </summary>
+    private void OnEndReached(object? s, EventArgs e) => DisposeMediaPlayer(reset: true);
+
+    /// <summary>
+    /// Event handler for <see cref="MediaPlayer.TimeChanged"/>.
+    /// </summary>
+    private void OnTimeChanged(object? s, MediaPlayerTimeChangedEventArgs e) => DisplayTime = e.Time;
+
+    /// <summary>
+    /// Event handler for <see cref="MediaPlayer.LengthChanged"/>.
+    /// </summary>
+    private void OnLengthChanged(object? s, MediaPlayerLengthChangedEventArgs e) => Length = e.Length;
+
+    /// <summary>
+    /// Event handler for <see cref="MediaPlayer.EncounteredError"/>.
+    /// </summary>
+    private void OnEncounteredError(object? s, EventArgs e) => DisposeMediaPlayer();
 }
