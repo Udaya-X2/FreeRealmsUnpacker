@@ -167,7 +167,6 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         // Initialize the new media player.
         _mediaPlayer = new MediaPlayer(LibVLC) { Media = Media };
-        MediaPlayer mediaPlayer = _mediaPlayer;
 
         if (_volume != 100) _mediaPlayer.Volume = _volume;
         if (_rate != 1f) _mediaPlayer.SetRate(_rate);
@@ -203,12 +202,18 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
                 Length = 1;
             }
 
-            // Dispose on a different thread to avoid hanging on the UI thread.
             MediaPlayer mediaPlayer = _mediaPlayer;
-            mediaPlayer.EndReached -= OnEndReached;
-            mediaPlayer.TimeChanged -= OnTimeChanged;
-            mediaPlayer.LengthChanged -= OnLengthChanged;
-            mediaPlayer.EncounteredError -= OnEncounteredError;
+
+            // Unsubscribe from media player events, if possible.
+            if (mediaPlayer.State != VLCState.Opening)
+            {
+                mediaPlayer.EndReached -= OnEndReached;
+                mediaPlayer.TimeChanged -= OnTimeChanged;
+                mediaPlayer.LengthChanged -= OnLengthChanged;
+                mediaPlayer.EncounteredError -= OnEncounteredError;
+            }
+
+            // Dispose on a different thread to avoid hanging on the UI thread.
             Task.Run(mediaPlayer.Dispose);
 
             // Reset the media player with the same media, if requested.
