@@ -34,39 +34,39 @@
         <Content Include="runtimes\**" Condition="'$(RuntimeIdentifier)'==''">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\linux-arm64\native\libbass.so" Condition="'$(RuntimeIdentifier)'=='linux-arm64'">
+        <Content Include="runtimes\linux-arm64\native\*" Condition="'$(RuntimeIdentifier)'=='linux-arm64'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\linux-arm\native\libbass.so" Condition="'$(RuntimeIdentifier)'=='linux-arm'">
+        <Content Include="runtimes\linux-arm\native\*" Condition="'$(RuntimeIdentifier)'=='linux-arm'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\linux-x64\native\libbass.so" Condition="'$(RuntimeIdentifier)'=='linux-x64'">
+        <Content Include="runtimes\linux-x64\native\*" Condition="'$(RuntimeIdentifier)'=='linux-x64'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\linux-x86\native\libbass.so" Condition="'$(RuntimeIdentifier)'=='linux-x86'">
+        <Content Include="runtimes\linux-x86\native\*" Condition="'$(RuntimeIdentifier)'=='linux-x86'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\osx\native\libbass.dylib" Condition="'$(RuntimeIdentifier)' == 'osx-arm64' or '$(RuntimeIdentifier)' == 'osx-x64'">
+        <Content Include="runtimes\osx\native\*" Condition="'$(RuntimeIdentifier)' == 'osx-arm64' or '$(RuntimeIdentifier)' == 'osx-x64'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\win-arm64\native\bass.dll" Condition="'$(RuntimeIdentifier)'=='win-arm64'">
+        <Content Include="runtimes\win-arm64\native\*" Condition="'$(RuntimeIdentifier)'=='win-arm64'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\win-arm\native\bass.dll" Condition="'$(RuntimeIdentifier)'=='win-arm'">
+        <Content Include="runtimes\win-arm\native\*" Condition="'$(RuntimeIdentifier)'=='win-arm'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\win-x64\native\bass.dll" Condition="'$(RuntimeIdentifier)'=='win-x64'">
+        <Content Include="runtimes\win-x64\native\*" Condition="'$(RuntimeIdentifier)'=='win-x64'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
-        <Content Include="runtimes\win-x86\native\bass.dll" Condition="'$(RuntimeIdentifier)'=='win-x86'">
+        <Content Include="runtimes\win-x86\native\*" Condition="'$(RuntimeIdentifier)'=='win-x86'">
             <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>

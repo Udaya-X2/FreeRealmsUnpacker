@@ -221,7 +221,7 @@
                                 <Button.Styles>
                                     <Style Selector="MenuItem">
                                         <Setter Property="Command"
-                                                Value="{Binding $parent.DataContext.SetRateCommand}"/>
+                                                Value="{Binding $parent.DataContext.SetSpeedCommand}"/>
                                         <Setter Property="CommandParameter"
                                                 Value="{Binding}"/>
                                         <Setter Property="Icon">
@@ -230,7 +230,7 @@
                                                     <ic:FluentIcon.IsVisible>
                                                         <MultiBinding Converter="{StaticResource EqualityConverter}">
                                                             <Binding Path="."/>
-                                                            <Binding Path="$parent.DataContext.Rate"/>
+                                                            <Binding Path="$parent.DataContext.Speed"/>
                                                         </MultiBinding>
                                                     </ic:FluentIcon.IsVisible>
                                                 </ic:FluentIcon>

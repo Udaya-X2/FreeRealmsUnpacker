@@ -1,6 +1,7 @@
 ﻿using AssetIO;
 using Avalonia.Threading;
 using ManagedBass;
+using ManagedBass.Fx;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
     public ReactiveCommand<Unit, Unit> TogglePlayPauseCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleMuteCommand { get; }
-    public ReactiveCommand<float, Unit> SetRateCommand { get; }
+    public ReactiveCommand<float, Unit> SetSpeedCommand { get; }
 
     private readonly DispatcherTimer _dispatcherTimer;
 
@@ -36,7 +37,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     private double _position;
     private double _length;
     public bool _loop;
-    private float _rate;
+    private float _speed;
     private BassFlags _bassFlags;
 
     /// <summary>
@@ -47,7 +48,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         // Initialize each command.
         TogglePlayPauseCommand = ReactiveCommand.Create(TogglePlayPause);
         ToggleMuteCommand = ReactiveCommand.Create(ToggleMute);
-        SetRateCommand = ReactiveCommand.Create<float>(x => Rate = x);
+        SetSpeedCommand = ReactiveCommand.Create<float>(x => Speed = x);
 
         // Filter the audio assets from the asset browser.
         Assets = assets.Filter(x => x.IsAudio);
@@ -57,15 +58,18 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         _buffer = [];
         _volume = 100;
         _mutedVolume = 100;
-        _rate = 1f;
+        _speed = 1f;
         _length = double.Epsilon;
+        _bassFlags = BassFlags.FxFreeSource;
 
         // Create a timer to update the media player.
         _dispatcherTimer = new DispatcherTimer(DispatcherPriority.Normal);
         _dispatcherTimer.Tick += UpdateMediaPlayer;
         _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(100);
 
+        // Initialize the output device and load BASS libraries.
         if (!Bass.Init()) return;
+        _ = BassFx.Version;
 
         // Enable/disable the media player based on the validity of the stream handle.
         this.WhenAnyValue(x => x.Handle)
@@ -81,9 +85,11 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
         // Update media player properties when requested.
         this.WhenAnyValue(x => x.Volume)
-            .Subscribe(x => Bass.GlobalStreamVolume = x * 100);
+            .Subscribe(x => Bass.GlobalStreamVolume = 100 * x);
         this.WhenAnyValue(x => x.Loop)
             .Subscribe(x => SetBassFlag(BassFlags.Loop, x));
+        this.WhenAnyValue(x => x.Speed)
+            .Subscribe(x => Bass.ChannelSetAttribute(Handle, ChannelAttribute.Tempo, Tempo));
     }
 
     /// <summary>
@@ -139,11 +145,16 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// <summary>
     /// Gets or sets the playback speed.
     /// </summary>
-    public float Rate
+    public float Speed
     {
-        get => _rate;
-        set => this.RaiseAndSetIfChanged(ref _rate, value);
+        get => _speed;
+        set => this.RaiseAndSetIfChanged(ref _speed, value);
     }
+
+    /// <summary>
+    /// Gets the playback tempo.
+    /// </summary>
+    public float Tempo => 100f * (Speed - 1f);
 
     /// <summary>
     /// Sets the displayed playback position.
@@ -173,15 +184,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// </summary>
     private void PlayMedia(AssetInfo? asset)
     {
-        // Dispose of the previous audio stream, if necessary.
-        if (CanPlay)
-        {
-            Bass.StreamFree(Handle);
-            Handle = 0;
-            DisplayPosition = 0.0;
-            Length = double.Epsilon;
-            IsPlaying = false;
-        }
+        // Dispose of the previous audio stream handle, if necessary.
+        DisposeHandle();
 
         if (asset == null) return;
 
@@ -198,15 +202,42 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         }
 
         // Initialize the audio stream handle from the buffer data.
-        Handle = Bass.CreateStream(_buffer, 0, asset.Size, _bassFlags);
-
-        if (!CanPlay) return;
+        if (!CreateHandle(asset.Size)) return;
 
         // Play the audio in the media player.
         DisplayPosition = 0.0;
         Length = Bass.ChannelBytes2Seconds(Handle, Bass.ChannelGetLength(Handle));
         IsPlaying = true;
         Bass.ChannelPlay(Handle);
+    }
+
+    /// <summary>
+    /// Frees the audio stream handle and resets the media player.
+    /// </summary>
+    private void DisposeHandle()
+    {
+        if (!CanPlay) return;
+
+        Bass.StreamFree(Handle);
+        Handle = 0;
+        DisplayPosition = 0.0;
+        Length = double.Epsilon;
+        IsPlaying = false;
+    }
+
+    /// <summary>
+    /// Creates a new audio stream handle from the buffer data.
+    /// </summary>
+    private bool CreateHandle(long length)
+    {
+        int handle;
+
+        if ((handle = Bass.CreateStream(_buffer, 0, length, BassFlags.Decode)) == 0) return false;
+        if ((handle = BassFx.TempoCreate(handle, _bassFlags)) == 0) return false;
+
+        Bass.ChannelSetAttribute(handle, ChannelAttribute.Tempo, Tempo);
+        Handle = handle;
+        return true;
     }
 
     /// <summary>
@@ -268,7 +299,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Toggles whether to mute/unmute the media.
+    /// Toggles whether to mute/unmute the volume.
     /// </summary>
     private void ToggleMute()
     {
