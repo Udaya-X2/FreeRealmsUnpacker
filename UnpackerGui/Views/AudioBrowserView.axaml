@@ -116,31 +116,13 @@
             <Grid RowDefinitions="*,Auto"
                   ClipToBounds="True">
                 <!--Media Controls-->
-                <Grid Grid.Column="0"
-                      Margin="10"
-                      ColumnSpacing="8"
-                      ColumnDefinitions="Auto,*"
-                      RowDefinitions="Auto"
-                      VerticalAlignment="Center"
-                      IsEnabled="{Binding CanPlay}">
-                    <!--Play/Pause Button-->
-                    <Button Grid.Column="0"
-                            Padding="0"
-                            Background="Transparent"
-                            Command="{Binding TogglePlayPauseCommand}"
-                            ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}">
-                        <Button.Styles>
-                            <Style Selector=":disabled/template/ContentPresenter">
-                                <Setter Property="Background"
-                                        Value="Transparent"/>
-                            </Style>
-                        </Button.Styles>
-                        <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToIconConverter}, ConverterParameter=Pause/Play}"
-                                       FontSize="24"/>
-                    </Button>
+                <StackPanel Grid.Column="0"
+                            Orientation="Vertical"
+                            Margin="10"
+                            VerticalAlignment="Center"
+                            IsEnabled="{Binding CanPlay}">
                     <!--Seek Slider-->
-                    <Grid Grid.Column="1"
-                          ColumnSpacing="10"
+                    <Grid ColumnSpacing="10"
                           ColumnDefinitions="Auto,*,Auto"
                           RowDefinitions="Auto"
                           VerticalAlignment="Center"
@@ -157,7 +139,45 @@
                                    VerticalAlignment="Center"
                                    Text="{Binding Length, Converter={StaticResource DoubleToTimestampConverter}}"/>
                     </Grid>
-                </Grid>
+                    <!--Button Controls-->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Spacing="10">
+                        <StackPanel.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Padding"
+                                        Value="0"/>
+                                <Setter Property="Background"
+                                        Value="Transparent"/>
+                            </Style>
+                            <Style Selector="Button:disabled/template/ContentPresenter">
+                                <Setter Property="Background"
+                                        Value="Transparent"/>
+                            </Style>
+                            <Style Selector="ic|FluentIcon">
+                                <Setter Property="FontSize"
+                                        Value="24"/>
+                            </Style>
+                        </StackPanel.Styles>
+                        <!--Seek Backward Button-->
+                        <Button Command="{Binding SeekCommand}"
+                                CommandParameter="{c:Double -10}"
+                                ToolTip.Tip="Seek Backward">
+                            <ic:FluentIcon Icon="SkipBack10"/>
+                        </Button>
+                        <!--Play/Pause Button-->
+                        <Button Command="{Binding TogglePlayPauseCommand}"
+                                ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}">
+                            <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToIconConverter}, ConverterParameter=Pause/Play}"/>
+                        </Button>
+                        <!--Seek Forward Button-->
+                        <Button Command="{Binding SeekCommand}"
+                                CommandParameter="{c:Double 10}"
+                                ToolTip.Tip="Seek Forward">
+                            <ic:FluentIcon Icon="SkipForward10"/>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
                 <!--Media Info & Other Controls-->
                 <Border Grid.Row="1"
                         BorderBrush="Gray"

@@ -1,4 +1,5 @@
 ﻿using AssetIO;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using ManagedBass;
 using ManagedBass.Fx;
@@ -24,6 +25,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     public override FilteredReactiveCollection<AssetInfo> Assets { get; }
 
     public ReactiveCommand<Unit, Unit> TogglePlayPauseCommand { get; }
+    public ReactiveCommand<double, Unit> SeekCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleMuteCommand { get; }
     public ReactiveCommand<float, Unit> SetSpeedCommand { get; }
 
@@ -47,6 +49,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         // Initialize each command.
         TogglePlayPauseCommand = ReactiveCommand.Create(TogglePlayPause);
+        SeekCommand = ReactiveCommand.Create<double>(Seek);
         ToggleMuteCommand = ReactiveCommand.Create(ToggleMute);
         SetSpeedCommand = ReactiveCommand.Create<float>(x => Speed = x);
 
@@ -68,7 +71,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(100);
 
         // Initialize the output device and load BASS libraries.
-        if (!Bass.Init()) return;
+        if (!Bass.Init() && !Design.IsDesignMode) return;
         _ = BassFx.Version;
 
         // Enable/disable the media player based on the validity of the stream handle.
@@ -296,6 +299,38 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         }
 
         DisplayPosition = ChannelPosition;
+    }
+
+    /// <summary>
+    /// Seeks the media player the specified number of seconds.
+    /// </summary>
+    /// <remarks>
+    /// Source: <see href="https://www.un4seen.com/forum/?msg=96966"/>
+    /// </remarks>
+    private void Seek(double seconds)
+    {
+        double newPosition = ChannelPosition += seconds;
+
+        // If the user tried seeking out of bounds, clamp the seek.
+        if (Bass.LastError is Errors.Position)
+        {
+            // If the position is negative, seek to the start.
+            if (seconds < 0.0)
+            {
+                ChannelPosition = 0.0;
+                DisplayPosition = 0.0;
+            }
+            // If the position is positive, seek to the end.
+            else
+            {
+                Bass.ChannelSetPosition(Handle, Bass.ChannelGetLength(Handle), PositionFlags.DecodeTo);
+                DisplayPosition = Length;
+            }
+        }
+        else
+        {
+            DisplayPosition = newPosition;
+        }
     }
 
     /// <summary>
