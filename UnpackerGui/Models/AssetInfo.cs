@@ -126,10 +126,32 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     ]).ToFrozenSet();
     private static readonly FrozenSet<string> s_audioFormats = ((HashSet<string>)
     [
+        "AIF",
+        "AIFF",
+        "BWF",
+        "IT",
+        "ITZ",
+        "M1A",
+        "M2A",
+        "MDZ",
+        "MO3",
+        "MOD",
+        "MP1",
+        "MP2",
         "MP3",
-        "WAV",
+        "MP3PRO",
+        "MPA",
+        "MPEG",
+        "MPG",
+        "MTM",
+        "MUS",
         "OGG",
-        "BINKA"
+        "S3M",
+        "S3Z",
+        "UMX",
+        "WAV",
+        "XM",
+        "XMZ"
     ]).ToFrozenSet();
 
     /// <summary>

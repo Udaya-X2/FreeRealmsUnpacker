@@ -23,7 +23,7 @@
         <conv:VolumeToIconConverter x:Key="VolumeToIconConverter"/>
         <conv:BooleanToIconConverter x:Key="BooleanToIconConverter"/>
         <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
-        <conv:LongToTimestampConverter x:Key="LongToTimestampConverter"/>
+        <conv:DoubleToTimestampConverter x:Key="DoubleToTimestampConverter"/>
     </UserControl.Resources>
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Audio Assets-->
@@ -147,15 +147,15 @@
                           ClipToBounds="True">
                         <TextBlock Grid.Column="0"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Time, Converter={StaticResource LongToTimestampConverter}}"/>
+                                   Text="{Binding Position, Converter={StaticResource DoubleToTimestampConverter}}"/>
                         <Slider Grid.Column="1"
                                 Minimum="0"
                                 Maximum="{Binding Length}"
-                                Value="{Binding Time}"
+                                Value="{Binding Position}"
                                 ToolTip.Tip="Seek"/>
                         <TextBlock Grid.Column="2"
                                    VerticalAlignment="Center"
-                                   Text="{Binding Length, Converter={StaticResource LongToTimestampConverter}}"/>
+                                   Text="{Binding Length, Converter={StaticResource DoubleToTimestampConverter}}"/>
                     </Grid>
                 </Grid>
                 <!--Media Info & Other Controls-->

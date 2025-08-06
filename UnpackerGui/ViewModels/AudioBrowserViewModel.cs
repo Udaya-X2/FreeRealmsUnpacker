@@ -1,13 +1,11 @@
 ﻿using AssetIO;
-using LibVLCSharp.Shared;
+using Avalonia.Threading;
+using ManagedBass;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
+using System.Numerics;
 using System.Reactive;
-using System.Threading;
-using System.Threading.Tasks;
 using UnpackerGui.Collections;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
@@ -28,20 +26,18 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     public ReactiveCommand<Unit, Unit> ToggleMuteCommand { get; }
     public ReactiveCommand<float, Unit> SetRateCommand { get; }
 
-    private readonly MemoryStream _audioStream;
-    private readonly Lazy<LibVLC> _libVLC;
-    private readonly Lazy<Media> _media;
-    private readonly Lock _lock;
+    private readonly DispatcherTimer _dispatcherTimer;
 
-    private MediaPlayer? _mediaPlayer;
-    private bool _canPlay;
+    private byte[] _buffer;
+    private int _handle;
     private bool _isPlaying;
     private int _volume;
     private int _mutedVolume;
-    private long _time;
-    private long _length;
+    private double _position;
+    private double _length;
     public bool _loop;
     private float _rate;
+    private BassFlags _bassFlags;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioBrowserViewModel"/> class.
@@ -58,34 +54,42 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         OnAssetsInitialized(x => x.ShowAudioBrowser);
 
         // Initialize media player resources.
-        _audioStream = new MemoryStream();
-        _libVLC = new Lazy<LibVLC>(() => new LibVLC());
-        _media = new Lazy<Media>(() => new Media(LibVLC, new StreamMediaInput(_audioStream)));
-        _lock = new Lock();
+        _buffer = [];
         _volume = 100;
         _mutedVolume = 100;
         _rate = 1f;
-        _length = 1;
+        _length = double.Epsilon;
+
+        // Create a timer to update the media player.
+        _dispatcherTimer = new DispatcherTimer(DispatcherPriority.Normal);
+        _dispatcherTimer.Tick += UpdateMediaPlayer;
+        _dispatcherTimer.Interval = TimeSpan.FromMilliseconds(100);
+
+        if (!Bass.Init()) return;
+
+        // Enable/disable the media player based on the validity of the stream handle.
+        this.WhenAnyValue(x => x.Handle)
+            .ToProperty(this, nameof(CanPlay));
 
         // Play the selected asset in the media player.
         this.WhenAnyValue(x => x.SelectedAsset)
             .Subscribe(PlayMedia);
 
+        // Update the media player periodically while it is playing.
+        this.WhenAnyValue(x => x.IsPlaying)
+            .Subscribe(ToggleDispatcherTimer);
+
         // Update media player properties when requested.
         this.WhenAnyValue(x => x.Volume)
-            .Subscribe(SetMediaVolume);
-        this.WhenAnyValue(x => x.Rate)
-            .Subscribe(x => _mediaPlayer?.SetRate(x));
+            .Subscribe(x => Bass.GlobalStreamVolume = x * 100);
+        this.WhenAnyValue(x => x.Loop)
+            .Subscribe(x => SetBassFlag(BassFlags.Loop, x));
     }
 
     /// <summary>
-    /// Gets or sets whether audio can be played.
+    /// Gets whether audio can be played.
     /// </summary>
-    public bool CanPlay
-    {
-        get => _canPlay;
-        set => this.RaiseAndSetIfChanged(ref _canPlay, value);
-    }
+    public bool CanPlay => Handle != 0;
 
     /// <summary>
     /// Gets or sets whether the audio is playing.
@@ -106,18 +110,18 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Gets or sets the current playback time.
+    /// Gets or sets the playback position.
     /// </summary>
-    public long Time
+    public double Position
     {
-        get => _time;
-        set => _mediaPlayer!.Time = this.RaiseAndSetIfChanged(ref _time, value);
+        get => _position;
+        set => ChannelPosition = this.RaiseAndSetIfChanged(ref _position, value);
     }
 
     /// <summary>
-    /// Gets the playback duration (in ms).
+    /// Gets or sets the playback length.
     /// </summary>
-    public long Length
+    public double Length
     {
         get => _length;
         set => this.RaiseAndSetIfChanged(ref _length, value);
@@ -142,90 +146,26 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Sets the displayed current playback time.
+    /// Sets the displayed playback position.
     /// </summary>
-    private long DisplayTime
+    private double DisplayPosition { set => this.RaiseAndSetIfChanged(ref _position, value, nameof(Position)); }
+
+    /// <summary>
+    /// Gets or sets the actual playback position.
+    /// </summary>
+    private double ChannelPosition
     {
-        set => this.RaiseAndSetIfChanged(ref _time, value, nameof(Time));
+        get => Bass.ChannelBytes2Seconds(Handle, Bass.ChannelGetPosition(Handle));
+        set => Bass.ChannelSetPosition(Handle, Bass.ChannelSeconds2Bytes(Handle, value));
     }
 
     /// <summary>
-    /// Gets the LibVLC instance.
+    /// Gets or sets the audio stream handle.
     /// </summary>
-    private LibVLC LibVLC => _libVLC.Value;
-
-    /// <summary>
-    /// Gets the playable media.
-    /// </summary>
-    private Media Media => _media.Value;
-
-    /// <summary>
-    /// Initializes the media player.
-    /// </summary>
-    [MemberNotNull(nameof(_mediaPlayer))]
-    private void InitializeMediaPlayer(bool play)
+    private int Handle
     {
-        // Initialize the new media player.
-        _mediaPlayer = new MediaPlayer(LibVLC) { Media = Media };
-
-        if (_volume != 100) _mediaPlayer.Volume = _volume;
-        if (_rate != 1f) _mediaPlayer.SetRate(_rate);
-
-        // Update display properties based on the media player status.
-        _mediaPlayer.EndReached += OnEndReached;
-        _mediaPlayer.TimeChanged += OnTimeChanged;
-        _mediaPlayer.LengthChanged += OnLengthChanged;
-        _mediaPlayer.EncounteredError += OnEncounteredError;
-        CanPlay = true;
-
-        // Play the media, if requested.
-        if (play) IsPlaying = _mediaPlayer.Play();
-    }
-
-    /// <summary>
-    /// Disposes of the current media player.
-    /// </summary>
-    private void DisposeMediaPlayer(bool reset = false)
-    {
-        // Prevent concurrent dispose from VLC callback/UI thread.
-        lock (_lock)
-        {
-            if (_mediaPlayer == null) return;
-
-            // Reset display properties.
-            IsPlaying = reset && Loop;
-            DisplayTime = 0;
-
-            if (!reset)
-            {
-                CanPlay = false;
-                Length = 1;
-            }
-
-            MediaPlayer mediaPlayer = _mediaPlayer;
-
-            // Unsubscribe from media player events, if possible.
-            if (mediaPlayer.State != VLCState.Opening)
-            {
-                mediaPlayer.EndReached -= OnEndReached;
-                mediaPlayer.TimeChanged -= OnTimeChanged;
-                mediaPlayer.LengthChanged -= OnLengthChanged;
-                mediaPlayer.EncounteredError -= OnEncounteredError;
-            }
-
-            // Dispose on a different thread to avoid hanging on the UI thread.
-            Task.Run(mediaPlayer.Dispose);
-
-            // Reset the media player with the same media, if requested.
-            if (reset)
-            {
-                InitializeMediaPlayer(play: Loop);
-            }
-            else
-            {
-                _mediaPlayer = null;
-            }
-        }
+        get => _handle;
+        set => this.RaiseAndSetIfChanged(ref _handle, value);
     }
 
     /// <summary>
@@ -233,22 +173,81 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// </summary>
     private void PlayMedia(AssetInfo? asset)
     {
-        DisposeMediaPlayer();
+        // Dispose of the previous audio stream, if necessary.
+        if (CanPlay)
+        {
+            Bass.StreamFree(Handle);
+            Handle = 0;
+            DisplayPosition = 0.0;
+            Length = double.Epsilon;
+            IsPlaying = false;
+        }
 
         if (asset == null) return;
 
+        // Read the asset into the buffer.
         try
         {
+            EnsureCapacity(asset.Size);
             using AssetReader reader = asset.AssetFile.OpenRead();
-            _audioStream.SetLength(0);
-            reader.CopyTo(asset, _audioStream);
+            reader.Read(asset, _buffer);
         }
         catch
         {
             return;
         }
 
-        InitializeMediaPlayer(play: true);
+        // Initialize the audio stream handle from the buffer data.
+        Handle = Bass.CreateStream(_buffer, 0, asset.Size, _bassFlags);
+
+        if (!CanPlay) return;
+
+        // Play the audio in the media player.
+        DisplayPosition = 0.0;
+        Length = Bass.ChannelBytes2Seconds(Handle, Bass.ChannelGetLength(Handle));
+        IsPlaying = true;
+        Bass.ChannelPlay(Handle);
+    }
+
+    /// <summary>
+    /// Ensures the buffer is at least the specified length.
+    /// </summary>
+    private void EnsureCapacity(uint value)
+    {
+        if (value <= _buffer.Length) return;
+        if (value > Array.MaxLength) throw new OutOfMemoryException(SR.OutOfMemory_ArrayLength);
+
+        _buffer = new byte[Math.Min((int)BitOperations.RoundUpToPowerOf2(value), Array.MaxLength)];
+    }
+
+    /// <summary>
+    /// Callback function to update the media player at every interval.
+    /// </summary>
+    private void UpdateMediaPlayer(object? s, EventArgs e)
+    {
+        DisplayPosition = ChannelPosition;
+
+        // Stop playing once the channel is no longer active.
+        if (Bass.ChannelIsActive(Handle) == PlaybackState.Stopped)
+        {
+            DisplayPosition = Length;
+            IsPlaying = false;
+        }
+    }
+
+    /// <summary>
+    /// Toggles whether to start/stop the dispatcher timer.
+    /// </summary>
+    private void ToggleDispatcherTimer(bool start)
+    {
+        if (start)
+        {
+            _dispatcherTimer.Start();
+        }
+        else
+        {
+            _dispatcherTimer.Stop();
+        }
     }
 
     /// <summary>
@@ -258,12 +257,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         if (IsPlaying ^= true)
         {
-            _mediaPlayer!.Play();
+            Bass.ChannelPlay(Handle);
         }
         else
         {
-            _mediaPlayer!.Pause();
+            Bass.ChannelPause(Handle);
         }
+
+        DisplayPosition = ChannelPosition;
     }
 
     /// <summary>
@@ -283,33 +284,19 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Sets the media player volume to the specified value.
+    /// Adds/removes the specified BASS flag.
     /// </summary>
-    private void SetMediaVolume(int value)
+    private void SetBassFlag(BassFlags flag, bool addFlag)
     {
-        if (_mediaPlayer != null)
+        if (addFlag)
         {
-            _mediaPlayer.Volume = value;
+            _bassFlags |= flag;
+            Bass.ChannelAddFlag(Handle, flag);
+        }
+        else
+        {
+            _bassFlags &= ~flag;
+            Bass.ChannelRemoveFlag(Handle, flag);
         }
     }
-
-    /// <summary>
-    /// Event handler for <see cref="MediaPlayer.EndReached"/>.
-    /// </summary>
-    private void OnEndReached(object? s, EventArgs e) => DisposeMediaPlayer(reset: true);
-
-    /// <summary>
-    /// Event handler for <see cref="MediaPlayer.TimeChanged"/>.
-    /// </summary>
-    private void OnTimeChanged(object? s, MediaPlayerTimeChangedEventArgs e) => DisplayTime = e.Time;
-
-    /// <summary>
-    /// Event handler for <see cref="MediaPlayer.LengthChanged"/>.
-    /// </summary>
-    private void OnLengthChanged(object? s, MediaPlayerLengthChangedEventArgs e) => Length = e.Length;
-
-    /// <summary>
-    /// Event handler for <see cref="MediaPlayer.EncounteredError"/>.
-    /// </summary>
-    private void OnEncounteredError(object? s, EventArgs e) => DisposeMediaPlayer();
 }

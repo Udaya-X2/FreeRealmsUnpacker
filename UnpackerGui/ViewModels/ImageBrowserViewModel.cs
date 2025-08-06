@@ -64,19 +64,23 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
     /// </summary>
     private Bitmap? CreateBitmap(AssetInfo? asset)
     {
+        // Dispose of the previous image, if necessary.
         DisplayedImage?.Dispose();
 
         if (asset == null) return null;
 
         try
         {
+            // Read the asset into the image stream.
             using AssetReader reader = asset.AssetFile.OpenRead();
             _imageStream.SetLength(0);
             reader.CopyTo(asset, _imageStream);
 
+            // Convert the stream from DDS/TGA to PNG, if necessary.
             if (asset.Type is "DDS" && !ConvertDdsImage()) return null;
             if (asset.Type is "TGA" && !ConvertTargaImage()) return null;
 
+            // Create the bitmap image from the stream.
             _imageStream.Position = 0;
             return new Bitmap(_imageStream);
         }
@@ -186,7 +190,7 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
     {
         if (_displayedImage == null) return;
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (OperatingSystem.IsWindows())
         {
             ClipboardAvalonia.SetImage(_displayedImage);
         }

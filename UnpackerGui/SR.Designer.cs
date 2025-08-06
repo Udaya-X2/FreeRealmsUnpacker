@@ -95,5 +95,14 @@ namespace UnpackerGui {
                 return ResourceManager.GetString("NotSupported_ReadOnlyCollection", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Array dimensions exceeded supported range..
+        /// </summary>
+        internal static string OutOfMemory_ArrayLength {
+            get {
+                return ResourceManager.GetString("OutOfMemory_ArrayLength", resourceCulture);
+            }
+        }
     }
 }

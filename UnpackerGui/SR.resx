@@ -129,4 +129,7 @@
   <data name="NotSupported_ReadOnlyCollection" xml:space="preserve">
     <value>Collection is read-only.</value>
   </data>
+  <data name="OutOfMemory_ArrayLength" xml:space="preserve">
+    <value>Array dimensions exceeded supported range.</value>
+  </data>
 </root>
