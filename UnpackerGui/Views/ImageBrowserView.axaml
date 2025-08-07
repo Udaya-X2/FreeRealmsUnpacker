@@ -21,6 +21,18 @@
     <UserControl.Resources>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
     </UserControl.Resources>
+    <UserControl.Styles>
+        <Style Selector="Button,ToggleButton">
+            <Setter Property="Padding"
+                    Value="0"/>
+            <Setter Property="Background"
+                    Value="Transparent"/>
+        </Style>
+        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+        </Style>
+    </UserControl.Styles>
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Image Assets-->
         <DataGrid Grid.Column="0"
@@ -191,23 +203,17 @@
                                     Spacing="10"
                                     Margin="0 0 10 0">
                             <!--Copy Image Button-->
-                            <Button Background="Transparent"
-                                    ToolTip.Tip="Copy Image"
-                                    Padding="0"
+                            <Button ToolTip.Tip="Copy Image"
                                     Command="{Binding CopyImageCommand}">
                                 <ic:FluentIcon Icon="ClipboardImage"/>
                             </Button>
                             <!--Reset Zoom Button-->
-                            <Button Background="Transparent"
-                                    ToolTip.Tip="Reset Zoom"
-                                    Padding="0"
+                            <Button ToolTip.Tip="Reset Zoom"
                                     Click="Button_Click_ResetZoom">
                                 <ic:FluentIcon Icon="PageFit"/>
                             </Button>
                             <!--Zoom In Button-->
-                            <Button Background="Transparent"
-                                    ToolTip.Tip="Zoom Out"
-                                    Padding="0"
+                            <Button ToolTip.Tip="Zoom Out"
                                     Click="Button_Click_ZoomOut">
                                 <ic:FluentIcon Icon="ZoomOut"/>
                             </Button>
@@ -220,9 +226,7 @@
                                     Width="100"
                                     ToolTip.Tip="Zoom"/>
                             <!--Zoom In Button-->
-                            <Button Background="Transparent"
-                                    ToolTip.Tip="Zoom In"
-                                    Padding="0"
+                            <Button ToolTip.Tip="Zoom In"
                                     Click="Button_Click_ZoomIn">
                                 <ic:FluentIcon Icon="ZoomIn"/>
                             </Button>

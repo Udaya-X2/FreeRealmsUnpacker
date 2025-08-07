@@ -24,6 +24,18 @@
         <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
         <conv:DoubleToTimestampConverter x:Key="DoubleToTimestampConverter"/>
     </UserControl.Resources>
+    <UserControl.Styles>
+        <Style Selector="Button,ToggleButton">
+            <Setter Property="Padding"
+                    Value="0"/>
+            <Setter Property="Background"
+                    Value="Transparent"/>
+        </Style>
+        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter">
+            <Setter Property="Background"
+                    Value="Transparent"/>
+        </Style>
+    </UserControl.Styles>
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Audio Assets-->
         <DataGrid Grid.Column="0"
@@ -118,14 +130,14 @@
                 <StackPanel Grid.Column="0"
                             Orientation="Vertical"
                             Margin="10"
-                            VerticalAlignment="Center"
-                            IsEnabled="{Binding CanPlay}">
+                            VerticalAlignment="Center">
                     <!--Seek Slider-->
                     <Grid ColumnSpacing="10"
                           ColumnDefinitions="Auto,*,Auto"
                           RowDefinitions="Auto"
                           VerticalAlignment="Center"
-                          ClipToBounds="True">
+                          ClipToBounds="True"
+                          IsEnabled="{Binding CanPlay}">
                         <!--Current Time-->
                         <TextBlock Grid.Column="0"
                                    VerticalAlignment="Center"
@@ -146,38 +158,42 @@
                                 HorizontalAlignment="Center"
                                 Spacing="10">
                         <StackPanel.Styles>
-                            <Style Selector="Button">
-                                <Setter Property="Padding"
-                                        Value="0"/>
-                                <Setter Property="Background"
-                                        Value="Transparent"/>
-                            </Style>
-                            <Style Selector="Button:disabled/template/ContentPresenter">
-                                <Setter Property="Background"
-                                        Value="Transparent"/>
-                            </Style>
                             <Style Selector="ic|FluentIcon">
                                 <Setter Property="FontSize"
                                         Value="24"/>
                             </Style>
                         </StackPanel.Styles>
+                        <!--Autoplay Button-->
+                        <ToggleButton IsChecked="{Binding Autoplay}"
+                                      ToolTip.Tip="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay Off/Autoplay}">
+                            <ic:FluentIcon Icon="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=FilmstripPlay/FilmstripOff}"
+                                           IconSize="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=32/48}}"/>
+                        </ToggleButton>
                         <!--Seek Backward Button-->
                         <Button Command="{Binding SeekCommand}"
                                 CommandParameter="{c:Double -10}"
-                                ToolTip.Tip="Seek Backward">
+                                ToolTip.Tip="Seek Backward"
+                                IsEnabled="{Binding CanPlay}">
                             <ic:FluentIcon Icon="SkipBack10"/>
                         </Button>
                         <!--Play/Pause Button-->
                         <Button Command="{Binding TogglePlayPauseCommand}"
-                                ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}">
+                                ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}"
+                                IsEnabled="{Binding CanPlay}">
                             <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}"/>
                         </Button>
                         <!--Seek Forward Button-->
                         <Button Command="{Binding SeekCommand}"
                                 CommandParameter="{c:Double 10}"
-                                ToolTip.Tip="Seek Forward">
+                                ToolTip.Tip="Seek Forward"
+                                IsEnabled="{Binding CanPlay}">
                             <ic:FluentIcon Icon="SkipForward10"/>
                         </Button>
+                        <!--Loop Button-->
+                        <ToggleButton IsChecked="{Binding Loop}"
+                                      ToolTip.Tip="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop Off/Loop}">
+                            <ic:FluentIcon Icon="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
+                        </ToggleButton>
                     </StackPanel>
                 </StackPanel>
                 <!--Media Info & Other Controls-->
@@ -222,33 +238,6 @@
                                     Orientation="Horizontal"
                                     Spacing="10"
                                     Margin="0 0 10 0">
-                            <!--Loop Button-->
-                            <ToggleButton Background="Transparent"
-                                          Padding="0"
-                                          IsChecked="{Binding Loop}"
-                                          ToolTip.Tip="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop Off/Loop}">
-                                <ToggleButton.Styles>
-                                    <Style Selector=":checked/template/ContentPresenter">
-                                        <Setter Property="Button.Background"
-                                                Value="Transparent"/>
-                                    </Style>
-                                </ToggleButton.Styles>
-                                <ic:FluentIcon Icon="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
-                            </ToggleButton>
-                            <!--Autoplay Button-->
-                            <ToggleButton Background="Transparent"
-                                          Padding="0"
-                                          IsChecked="{Binding Autoplay}"
-                                          ToolTip.Tip="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay Off/Autoplay}">
-                                <ToggleButton.Styles>
-                                    <Style Selector=":checked/template/ContentPresenter">
-                                        <Setter Property="Button.Background"
-                                                Value="Transparent"/>
-                                    </Style>
-                                </ToggleButton.Styles>
-                                <ic:FluentIcon Icon="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=FilmstripPlay/FilmstripOff}"
-                                               IconSize="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=32/48}}"/>
-                            </ToggleButton>
                             <!--Speed Button-->
                             <Button Background="Transparent"
                                     Padding="0"
