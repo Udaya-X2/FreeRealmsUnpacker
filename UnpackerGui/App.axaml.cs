@@ -25,8 +25,7 @@ namespace UnpackerGui;
 
 public partial class App : Application
 {
-    private const string SettingsFile = "settings.json";
-
+    private static readonly string s_settingsFile = Path.Combine(AppContext.BaseDirectory, "settings.json");
     private static readonly JsonSerializerOptions s_jsonOptions = new() { WriteIndented = true };
 
     /// <summary>
@@ -210,7 +209,7 @@ public partial class App : Application
     {
         try
         {
-            using FileStream stream = File.OpenRead(SettingsFile);
+            using FileStream stream = File.OpenRead(s_settingsFile);
             Settings = JsonSerializer.Deserialize<SettingsViewModel>(stream, s_jsonOptions);
         }
         catch
@@ -227,7 +226,7 @@ public partial class App : Application
     {
         try
         {
-            using FileStream fs = File.Open(SettingsFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+            using FileStream fs = File.Open(s_settingsFile, FileMode.Create, FileAccess.Write, FileShare.Read);
             JsonSerializer.Serialize(fs, Settings, s_jsonOptions);
         }
         catch
