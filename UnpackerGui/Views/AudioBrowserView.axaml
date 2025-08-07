@@ -264,7 +264,8 @@
                                     </Style>
                                 </Button.Styles>
                                 <Button.Flyout>
-                                    <MenuFlyout ItemsSource="{Binding Speeds}"/>
+                                    <MenuFlyout ItemsSource="{Binding Speeds}"
+                                                Placement="Top"/>
                                 </Button.Flyout>
                             </Button>
                             <!--Mute/Unmute Button-->
