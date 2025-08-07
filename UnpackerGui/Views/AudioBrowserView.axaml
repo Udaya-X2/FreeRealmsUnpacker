@@ -21,7 +21,6 @@
         <conv:EqualityConverter x:Key="EqualityConverter"/>
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
         <conv:VolumeToIconConverter x:Key="VolumeToIconConverter"/>
-        <conv:BooleanToIconConverter x:Key="BooleanToIconConverter"/>
         <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
         <conv:DoubleToTimestampConverter x:Key="DoubleToTimestampConverter"/>
     </UserControl.Resources>
@@ -127,14 +126,17 @@
                           RowDefinitions="Auto"
                           VerticalAlignment="Center"
                           ClipToBounds="True">
+                        <!--Current Time-->
                         <TextBlock Grid.Column="0"
                                    VerticalAlignment="Center"
                                    Text="{Binding Position, Converter={StaticResource DoubleToTimestampConverter}}"/>
+                        <!--Slider-->
                         <Slider Grid.Column="1"
                                 Minimum="0"
                                 Maximum="{Binding Length}"
                                 Value="{Binding Position}"
                                 ToolTip.Tip="Seek"/>
+                        <!--End Time-->
                         <TextBlock Grid.Column="2"
                                    VerticalAlignment="Center"
                                    Text="{Binding Length, Converter={StaticResource DoubleToTimestampConverter}}"/>
@@ -168,7 +170,7 @@
                         <!--Play/Pause Button-->
                         <Button Command="{Binding TogglePlayPauseCommand}"
                                 ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}">
-                            <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToIconConverter}, ConverterParameter=Pause/Play}"/>
+                            <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}"/>
                         </Button>
                         <!--Seek Forward Button-->
                         <Button Command="{Binding SeekCommand}"
@@ -231,7 +233,21 @@
                                                 Value="Transparent"/>
                                     </Style>
                                 </ToggleButton.Styles>
-                                <ic:FluentIcon Icon="{Binding Loop, Converter={StaticResource BooleanToIconConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
+                                <ic:FluentIcon Icon="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
+                            </ToggleButton>
+                            <!--Autoplay Button-->
+                            <ToggleButton Background="Transparent"
+                                          Padding="0"
+                                          IsChecked="{Binding Autoplay}"
+                                          ToolTip.Tip="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay Off/Autoplay}">
+                                <ToggleButton.Styles>
+                                    <Style Selector=":checked/template/ContentPresenter">
+                                        <Setter Property="Button.Background"
+                                                Value="Transparent"/>
+                                    </Style>
+                                </ToggleButton.Styles>
+                                <ic:FluentIcon Icon="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=FilmstripPlay/FilmstripOff}"
+                                               IconSize="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=32/48}}"/>
                             </ToggleButton>
                             <!--Speed Button-->
                             <Button Background="Transparent"

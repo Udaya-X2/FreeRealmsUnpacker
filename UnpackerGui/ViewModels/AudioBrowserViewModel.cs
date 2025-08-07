@@ -38,7 +38,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     private int _mutedVolume;
     private double _position;
     private double _length;
-    public bool _loop;
+    private bool _loop;
+    private bool _autoplay;
     private float _speed;
     private BassFlags _bassFlags;
 
@@ -59,10 +60,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
         // Initialize media player resources.
         _buffer = [];
+        _handle = 0;
+        _isPlaying = false;
         _volume = 100;
         _mutedVolume = 100;
-        _speed = 1f;
+        _position = 0.0;
         _length = double.Epsilon;
+        _loop = false;
+        _autoplay = true;
+        _speed = 1f;
         _bassFlags = BassFlags.FxFreeSource;
 
         // Create a timer to update the media player.
@@ -132,7 +138,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             ChannelPosition = value;
 
             // If an error occurred due to seeking out of bounds, clamp the seek.
-            if (Bass.LastError is Errors.Position)
+            if (Bass.LastError == Errors.Position)
             {
                 // If the position is negative, seek to the start.
                 if (value < 0.0)
@@ -168,6 +174,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         get => _loop;
         set => this.RaiseAndSetIfChanged(ref _loop, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to automatically play the selected asset.
+    /// </summary>
+    public bool Autoplay
+    {
+        get => _autoplay;
+        set => this.RaiseAndSetIfChanged(ref _autoplay, value);
     }
 
     /// <summary>
@@ -232,11 +247,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         // Initialize the audio stream handle from the buffer data.
         if (!CreateHandle(asset.Size)) return;
 
-        // Play the audio in the media player.
-        DisplayPosition = 0.0;
+        // Update the playback length.
         Length = Bass.ChannelBytes2Seconds(Handle, Bass.ChannelGetLength(Handle));
-        IsPlaying = true;
-        Bass.ChannelPlay(Handle);
+
+        // Play the audio in the media player.
+        if (IsPlaying = Autoplay)
+        {
+            Bass.ChannelPlay(Handle);
+        }
     }
 
     /// <summary>
