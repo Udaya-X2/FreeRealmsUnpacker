@@ -31,17 +31,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
     private readonly DispatcherTimer _dispatcherTimer;
 
-    private byte[] _buffer;
-    private int _handle;
     private bool _isPlaying;
-    private int _volume;
-    private int _mutedVolume;
     private double _position;
     private double _length;
-    private bool _loop;
-    private bool _autoplay;
     private float _speed;
+    private int _handle;
+    private int _mutedVolume;
     private BassFlags _bassFlags;
+    private byte[] _buffer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AudioBrowserViewModel"/> class.
@@ -59,17 +56,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         OnAssetsInitialized(x => x.ShowAudioBrowser);
 
         // Initialize media player resources.
-        _buffer = [];
-        _handle = 0;
         _isPlaying = false;
-        _volume = 100;
-        _mutedVolume = 100;
         _position = 0.0;
         _length = double.Epsilon;
-        _loop = false;
-        _autoplay = true;
         _speed = 1f;
+        _handle = 0;
+        _mutedVolume = Settings.Volume;
         _bassFlags = BassFlags.FxFreeSource;
+        _buffer = [];
 
         // Create a timer to update the media player.
         _dispatcherTimer = new DispatcherTimer(DispatcherPriority.Normal);
@@ -93,10 +87,10 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             .Subscribe(ToggleDispatcherTimer);
 
         // Update media player properties when requested.
-        this.WhenAnyValue(x => x.Volume)
-            .Subscribe(x => Bass.GlobalStreamVolume = 100 * x);
-        this.WhenAnyValue(x => x.Loop)
-            .Subscribe(x => SetBassFlag(BassFlags.Loop, x));
+        Settings.WhenAnyValue(x => x.Volume)
+                .Subscribe(x => Bass.GlobalStreamVolume = 100 * x);
+        Settings.WhenAnyValue(x => x.Loop)
+                .Subscribe(x => SetBassFlag(BassFlags.Loop, x));
         this.WhenAnyValue(x => x.Speed)
             .Subscribe(x => Bass.ChannelSetAttribute(Handle, ChannelAttribute.Tempo, Tempo));
     }
@@ -113,15 +107,6 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         get => _isPlaying;
         set => this.RaiseAndSetIfChanged(ref _isPlaying, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the volume.
-    /// </summary>
-    public int Volume
-    {
-        get => _volume;
-        set => this.RaiseAndSetIfChanged(ref _volume, value);
     }
 
     /// <summary>
@@ -168,24 +153,6 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Gets or sets whether to loop audio playback.
-    /// </summary>
-    public bool Loop
-    {
-        get => _loop;
-        set => this.RaiseAndSetIfChanged(ref _loop, value);
-    }
-
-    /// <summary>
-    /// Gets or sets whether to automatically play the selected asset.
-    /// </summary>
-    public bool Autoplay
-    {
-        get => _autoplay;
-        set => this.RaiseAndSetIfChanged(ref _autoplay, value);
-    }
-
-    /// <summary>
     /// Gets or sets the playback speed.
     /// </summary>
     public float Speed
@@ -200,6 +167,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     public float Tempo => 100f * (Speed - 1f);
 
     /// <summary>
+    /// Gets or sets the audio stream handle.
+    /// </summary>
+    private int Handle
+    {
+        get => _handle;
+        set => this.RaiseAndSetIfChanged(ref _handle, value);
+    }
+
+    /// <summary>
     /// Sets the displayed playback position.
     /// </summary>
     private double DisplayPosition { set => this.RaiseAndSetIfChanged(ref _position, value, nameof(Position)); }
@@ -211,15 +187,6 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         get => Bass.ChannelBytes2Seconds(Handle, Bass.ChannelGetPosition(Handle));
         set => Bass.ChannelSetPosition(Handle, Bass.ChannelSeconds2Bytes(Handle, value));
-    }
-
-    /// <summary>
-    /// Gets or sets the audio stream handle.
-    /// </summary>
-    private int Handle
-    {
-        get => _handle;
-        set => this.RaiseAndSetIfChanged(ref _handle, value);
     }
 
     /// <summary>
@@ -251,7 +218,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         Length = Bass.ChannelBytes2Seconds(Handle, Bass.ChannelGetLength(Handle));
 
         // Play the audio in the media player.
-        if (IsPlaying = Autoplay)
+        if (IsPlaying = Settings.Autoplay)
         {
             Bass.ChannelPlay(Handle);
         }
@@ -349,14 +316,14 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// </summary>
     private void ToggleMute()
     {
-        if (Volume == 0)
+        if (Settings.Volume == 0)
         {
-            Volume = _mutedVolume;
+            Settings.Volume = _mutedVolume;
         }
         else
         {
-            _mutedVolume = Volume;
-            Volume = 0;
+            _mutedVolume = Settings.Volume;
+            Settings.Volume = 0;
         }
     }
 

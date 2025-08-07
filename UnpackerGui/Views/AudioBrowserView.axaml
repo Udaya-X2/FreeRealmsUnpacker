@@ -164,10 +164,10 @@
                             </Style>
                         </StackPanel.Styles>
                         <!--Autoplay Button-->
-                        <ToggleButton IsChecked="{Binding Autoplay}"
-                                      ToolTip.Tip="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay Off/Autoplay}">
-                            <ic:FluentIcon Icon="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=FilmstripPlay/FilmstripOff}"
-                                           IconSize="{Binding Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=32/48}}"/>
+                        <ToggleButton IsChecked="{Binding Settings.Autoplay}"
+                                      ToolTip.Tip="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay Off/Autoplay}">
+                            <ic:FluentIcon Icon="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=FilmstripPlay/FilmstripOff}"
+                                           IconSize="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=32/48}}"/>
                         </ToggleButton>
                         <!--Seek Backward Button-->
                         <Button Command="{Binding SeekCommand}"
@@ -190,9 +190,9 @@
                             <ic:FluentIcon Icon="SkipForward10"/>
                         </Button>
                         <!--Loop Button-->
-                        <ToggleButton IsChecked="{Binding Loop}"
-                                      ToolTip.Tip="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop Off/Loop}">
-                            <ic:FluentIcon Icon="{Binding Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
+                        <ToggleButton IsChecked="{Binding Settings.Loop}"
+                                      ToolTip.Tip="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop Off/Loop}">
+                            <ic:FluentIcon Icon="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
                         </ToggleButton>
                     </StackPanel>
                 </StackPanel>
@@ -272,18 +272,18 @@
                             <Button Background="Transparent"
                                     Command="{Binding ToggleMuteCommand}"
                                     Padding="0"
-                                    ToolTip.Tip="{Binding !!Volume, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Mute/Unmute}">
-                                <ic:FluentIcon Icon="{Binding Volume, Converter={StaticResource VolumeToIconConverter}}"/>
+                                    ToolTip.Tip="{Binding !!Settings.Volume, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Mute/Unmute}">
+                                <ic:FluentIcon Icon="{Binding Settings.Volume, Converter={StaticResource VolumeToIconConverter}}"/>
                             </Button>
                             <!--Volume Slider-->
                             <Slider Margin="0 -10 0 -10"
                                     Minimum="0"
                                     Maximum="100"
                                     Width="100"
-                                    Value="{Binding Volume}"
+                                    Value="{Binding Settings.Volume}"
                                     ToolTip.Tip="Volume"/>
                             <!--Current Volume-->
-                            <TextBlock Text="{Binding Volume}"
+                            <TextBlock Text="{Binding Settings.Volume}"
                                        VerticalAlignment="Center"
                                        MinWidth="20"/>
                         </StackPanel>

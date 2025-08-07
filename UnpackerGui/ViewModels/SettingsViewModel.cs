@@ -20,6 +20,9 @@ public class SettingsViewModel : ViewModelBase
     private bool _showCrc32 = true;
     private bool _showType = false;
     private bool _validateAssets = false;
+    private int _volume = 100;
+    private bool _autoplay = true;
+    private bool _loop = false;
     private FileConflictOptions _conflictOptions = FileConflictOptions.Overwrite;
     private AssetType _assetFilter = AssetType.All;
     private bool _addUnknownAssets = false;
@@ -37,15 +40,6 @@ public class SettingsViewModel : ViewModelBase
     private string _outputDirectory = "";
     private RecentItemCollection<string> _recentFiles = [];
     private RecentItemCollection<string> _recentFolders = [];
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SettingsViewModel"/> class.
-    /// </summary>
-    public SettingsViewModel()
-    {
-        this.WhenAnyValue(x => x.ColorTheme)
-            .Subscribe(App.SetTheme);
-    }
 
     /// <summary>
     /// Gets or sets whether to show the asset's name.
@@ -99,6 +93,33 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _validateAssets;
         set => this.RaiseAndSetIfChanged(ref _validateAssets, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the media player volume.
+    /// </summary>
+    public int Volume
+    {
+        get => _volume;
+        set => this.RaiseAndSetIfChanged(ref _volume, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to automatically play the selected asset in the media player.
+    /// </summary>
+    public bool Autoplay
+    {
+        get => _autoplay;
+        set => this.RaiseAndSetIfChanged(ref _autoplay, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether to loop audio playback.
+    /// </summary>
+    public bool Loop
+    {
+        get => _loop;
+        set => this.RaiseAndSetIfChanged(ref _loop, value);
     }
 
     /// <summary>

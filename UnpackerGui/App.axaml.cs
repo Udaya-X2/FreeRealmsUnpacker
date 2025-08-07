@@ -23,6 +23,7 @@ using UnpackerGui.Views;
 
 namespace UnpackerGui;
 
+/// <inheritdoc/>
 public partial class App : Application
 {
     private static readonly string s_settingsFile = Path.Combine(AppContext.BaseDirectory, "settings.json");
@@ -51,37 +52,52 @@ public partial class App : Application
     /// <inheritdoc/>
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
-    /// <summary>
-    /// Performs control-specific initialization tasks.
-    /// </summary>
+    /// <inheritdoc/>
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // Handle exceptions gracefully via error dialogs, if possible.
             AppDomain.CurrentDomain.UnhandledException += OnFatalException;
             RxApp.DefaultExceptionHandler = Observer.Create<Exception>(OnRecoverableException);
+
+            // Read the settings file.
             DataContext = ReadSettings();
+
+            // Create the main window.
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainViewModel()
             };
+
+            // Set up application services.
             FilesService filesService = new(desktop.MainWindow);
             DialogService dialogService = new(desktop.MainWindow);
             Services = new ServiceCollection().AddSingleton<IFilesService>(filesService)
                                               .AddSingleton<IDialogService>(dialogService)
                                               .BuildServiceProvider();
             Clipboard = desktop.MainWindow.Clipboard;
+
+            // Release temporary files and save settings on exit.
             desktop.Exit += (s, e) =>
             {
                 filesService.Dispose();
                 SaveSettings();
             };
         }
-        if (Design.IsDesignMode)
+        else if (Design.IsDesignMode)
         {
+            // Use the default settings in design mode.
             DataContext = Settings = new SettingsViewModel() { ColorTheme = ColorTheme.Dark };
         }
+        else
+        {
+            throw new PlatformNotSupportedException();
+        }
 
+        // Update the application's theme when requested.
+        Settings.WhenAnyValue(x => x.ColorTheme)
+                .Subscribe(SetTheme);
         base.OnFrameworkInitializationCompleted();
     }
 
