@@ -180,7 +180,7 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
     /// Copies the displayed image to the clipboard.
     /// </summary>
     /// <remarks>
-    /// Sources:
+    /// Source:
     /// <list type="bullet">
     /// <item><see href="https://github.com/AvaloniaUI/Avalonia/issues/3588#issuecomment-1272505415"/></item>
     /// <item><see href="https://github.com/AvaloniaUI/Avalonia/issues/3588#issuecomment-2571770220"/></item>

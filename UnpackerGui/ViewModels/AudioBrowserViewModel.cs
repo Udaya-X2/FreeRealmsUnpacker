@@ -49,7 +49,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         // Initialize each command.
         TogglePlayPauseCommand = ReactiveCommand.Create(TogglePlayPause);
-        SeekCommand = ReactiveCommand.Create<double>(Seek);
+        SeekCommand = ReactiveCommand.Create<double>(x => Position = ChannelPosition + x);
         ToggleMuteCommand = ReactiveCommand.Create(ToggleMute);
         SetSpeedCommand = ReactiveCommand.Create<float>(x => Speed = x);
 
@@ -121,10 +121,35 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// <summary>
     /// Gets or sets the playback position.
     /// </summary>
+    /// <remarks>
+    /// Source: <see href="https://www.un4seen.com/forum/?msg=96966"/>
+    /// </remarks>
     public double Position
     {
         get => _position;
-        set => ChannelPosition = this.RaiseAndSetIfChanged(ref _position, value);
+        set
+        {
+            ChannelPosition = value;
+
+            // If an error occurred due to seeking out of bounds, clamp the seek.
+            if (Bass.LastError is Errors.Position)
+            {
+                // If the position is negative, seek to the start.
+                if (value < 0.0)
+                {
+                    ChannelPosition = 0.0;
+                    value = 0.0;
+                }
+                // If the position is positive, seek to the end.
+                else
+                {
+                    Bass.ChannelSetPosition(Handle, Bass.ChannelGetLength(Handle), PositionFlags.DecodeTo);
+                    value = Length;
+                }
+            }
+
+            this.RaiseAndSetIfChanged(ref _position, value);
+        }
     }
 
     /// <summary>
@@ -299,38 +324,6 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         }
 
         DisplayPosition = ChannelPosition;
-    }
-
-    /// <summary>
-    /// Seeks the media player the specified number of seconds.
-    /// </summary>
-    /// <remarks>
-    /// Source: <see href="https://www.un4seen.com/forum/?msg=96966"/>
-    /// </remarks>
-    private void Seek(double seconds)
-    {
-        double newPosition = ChannelPosition += seconds;
-
-        // If the user tried seeking out of bounds, clamp the seek.
-        if (Bass.LastError is Errors.Position)
-        {
-            // If the position is negative, seek to the start.
-            if (seconds < 0.0)
-            {
-                ChannelPosition = 0.0;
-                DisplayPosition = 0.0;
-            }
-            // If the position is positive, seek to the end.
-            else
-            {
-                Bass.ChannelSetPosition(Handle, Bass.ChannelGetLength(Handle), PositionFlags.DecodeTo);
-                DisplayPosition = Length;
-            }
-        }
-        else
-        {
-            DisplayPosition = newPosition;
-        }
     }
 
     /// <summary>
