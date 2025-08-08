@@ -78,6 +78,12 @@ public abstract class ProgressViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Performs the specified action if an exception occurs during the task.
+    /// </summary>
+    /// <returns>An <see cref="IDisposable"/> object used to unsubscribe the exception handler.</returns>
+    public IDisposable OnException(Action<Exception> handler) => Command.ThrownExceptions.Subscribe(handler);
+
+    /// <summary>
     /// Increments the progress value.
     /// </summary>
     protected void Tick() => Value++;

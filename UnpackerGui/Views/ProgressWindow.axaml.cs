@@ -13,13 +13,11 @@ namespace UnpackerGui.Views;
 
 public partial class ProgressWindow : Window
 {
-    private readonly DialogService _dialogService;
     private readonly CompositeDisposable _cleanUp;
 
     public ProgressWindow()
     {
         InitializeComponent();
-        _dialogService = new DialogService(this);
         _cleanUp = [];
     }
 
@@ -33,7 +31,7 @@ public partial class ProgressWindow : Window
                              .Subscribe(_ => Dispatcher.UIThread.Invoke(Close)));
 
         // Show a terminal error dialog if an exception occurs during the task.
-        progress.Command.ThrownExceptions.Subscribe(async x => await _dialogService.ShowErrorDialog(x, terminal: true));
+        progress.OnException(async x => await DialogService.ShowErrorDialog(this, x, terminal: true));
 
         // Start the progress task.
         _cleanUp.Add(progress.Command.Invoke());
