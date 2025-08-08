@@ -13,11 +13,6 @@ namespace UnpackerGui.Views;
 
 public partial class ProgressWindow : Window
 {
-    /// <summary>
-    /// Gets whether to automatically close the window after the task is successfully completed.
-    /// </summary>
-    public bool AutoClose { get; init; }
-
     private readonly DialogService _dialogService;
     private readonly CompositeDisposable _cleanUp;
 
@@ -32,13 +27,10 @@ public partial class ProgressWindow : Window
     {
         if (DataContext is not ProgressViewModel progress) return;
 
-        // Automatically close the window upon successful task completion, if desired.
-        if (AutoClose)
-        {
-            _cleanUp.Add(progress.WhenAnyValue(x => x.Status)
-                                 .Where(x => x.IsCompletedSuccessfully())
-                                 .Subscribe(_ => Dispatcher.UIThread.Invoke(Close)));
-        }
+        // Automatically close the window upon successful task completion.
+        _cleanUp.Add(progress.WhenAnyValue(x => x.Status)
+                             .Where(x => x.IsCompletedSuccessfully())
+                             .Subscribe(_ => Dispatcher.UIThread.Invoke(Close)));
 
         // Show a terminal error dialog if an exception occurs during the task.
         progress.Command.ThrownExceptions.Subscribe(async x => await _dialogService.ShowErrorDialog(x, terminal: true));

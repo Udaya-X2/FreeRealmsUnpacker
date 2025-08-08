@@ -274,7 +274,6 @@ public class MainViewModel : AssetBrowserViewModel
             await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
             {
                 DataContext = new ReaderViewModel(_sourceAssetFiles, assetFiles),
-                AutoClose = true
             });
         }
         catch
@@ -390,8 +389,7 @@ public class MainViewModel : AssetBrowserViewModel
         {
             await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
             {
-                DataContext = new ReaderViewModel(_sourceAssetFiles, newAssetFiles, updateRecentFiles: true),
-                AutoClose = true
+                DataContext = new ReaderViewModel(_sourceAssetFiles, newAssetFiles, updateRecentFiles: true)
             });
         }
         else if (reloadFile)
@@ -440,8 +438,7 @@ public class MainViewModel : AssetBrowserViewModel
 
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new WriterViewModel(SelectedAssetFile!, files),
-            AutoClose = true
+            DataContext = new WriterViewModel(SelectedAssetFile!, files)
         });
         ReloadSelectedFile();
     }
@@ -536,8 +533,7 @@ public class MainViewModel : AssetBrowserViewModel
         Settings.OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(assetFiles),
-            AutoClose = true
+            DataContext = new ExtractionViewModel(assetFiles)
         });
     }
 
@@ -555,8 +551,7 @@ public class MainViewModel : AssetBrowserViewModel
         Settings.OutputDirectory = folder.Path.LocalPath;
         await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
         {
-            DataContext = new ExtractionViewModel(assets.Cast<AssetInfo>(), assets.Count),
-            AutoClose = true
+            DataContext = new ExtractionViewModel(assets.Cast<AssetInfo>(), assets.Count)
         });
     }
 
@@ -595,8 +590,7 @@ public class MainViewModel : AssetBrowserViewModel
                     ValidationViewModel validation = new(unvalidatedAssetFiles);
                     await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
                     {
-                        DataContext = validation,
-                        AutoClose = true
+                        DataContext = validation
                     });
 
                     // If the validation task ended abruptly, uncheck the remaining unvalidated asset files.
@@ -819,8 +813,7 @@ public class MainViewModel : AssetBrowserViewModel
                 DeleteViewModel deleteViewModel = new(assets.Cast<AssetInfo>());
                 await App.GetService<IDialogService>().ShowDialog(new ProgressWindow
                 {
-                    DataContext = deleteViewModel,
-                    AutoClose = true
+                    DataContext = deleteViewModel
                 });
                 AssetFiles.Where(x => deleteViewModel.ModifiedFiles.Contains(x))
                           .ToList()
