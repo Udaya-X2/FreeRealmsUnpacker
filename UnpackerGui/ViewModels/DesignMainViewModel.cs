@@ -15,6 +15,8 @@ public class DesignMainViewModel : MainViewModel
             foreach (AssetFile assetFile in ClientDirectory.EnumerateAssetFiles(@"C:\Users\udaya\Downloads\Temp\tmp"))
             {
                 AddCheckedFile(assetFile.FullName);
+                Settings.RecentFiles.Add(assetFile.FullName);
+                Settings.RecentFolders.Add(assetFile.DirectoryName!);
             }
         }
         else

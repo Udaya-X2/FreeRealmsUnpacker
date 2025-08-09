@@ -4,7 +4,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:UnpackerGui.Views"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-        xmlns:conv="clr-namespace:UnpackerGui.Converters"
         xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
         xmlns:c="clr-namespace:UnpackerGui.Commands"
         xmlns:ic="using:FluentIcons.Avalonia"
@@ -20,9 +19,6 @@
     <Design.DataContext>
         <vm:DesignMainViewModel/>
     </Design.DataContext>
-    <Window.Resources>
-        <conv:PathConverter x:Key="PathConverter"/>
-    </Window.Resources>
     <!--Base Panel-->
     <DockPanel>
         <!--Menu Bar & Browser Selector-->

@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:UnpackerGui.Views"
              xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-             xmlns:conv="clr-namespace:UnpackerGui.Converters"
              xmlns:ctrl="clr-namespace:UnpackerGui.Controls"
              xmlns:c="clr-namespace:UnpackerGui.Commands"
              xmlns:ic="using:FluentIcons.Avalonia"
@@ -17,14 +16,6 @@
     <Design.DataContext>
         <vm:DesignMainViewModel/>
     </Design.DataContext>
-    <UserControl.Resources>
-        <conv:FileSizeConverter x:Key="FileSizeConverter"/>
-        <conv:OptionalFileSizeConverter x:Key="OptionalFileSizeConverter"/>
-        <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
-        <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
-        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
-        <conv:PluralConverter x:Key="PluralConverter"/>
-    </UserControl.Resources>
     <UserControl.Styles>
         <!--Hide Validation Error Messages-->
         <Style Selector="DataValidationErrors">

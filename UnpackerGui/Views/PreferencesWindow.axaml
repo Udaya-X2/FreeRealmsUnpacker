@@ -3,7 +3,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-        xmlns:conv="clr-namespace:UnpackerGui.Converters"
         xmlns:ic="using:FluentIcons.Avalonia"
         xmlns:views="clr-namespace:UnpackerGui.Views"
         x:Class="UnpackerGui.Views.PreferencesWindow"
@@ -21,9 +20,6 @@
     <Design.DataContext>
         <vm:DesignPreferencesViewModel/>
     </Design.DataContext>
-    <Window.Resources>
-        <conv:ExpressionConverter x:Key="ExpressionConverter"/>
-    </Window.Resources>
     <!--Base Panel-->
     <DockPanel Margin="10">
         <!--Preferences List-->
