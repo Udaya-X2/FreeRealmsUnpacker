@@ -22,13 +22,13 @@
         <conv:ExpressionConverter x:Key="ExpressionConverter"/>
     </UserControl.Resources>
     <UserControl.Styles>
-        <Style Selector="Button,ToggleButton">
+        <Style Selector="Button">
             <Setter Property="Padding"
                     Value="0"/>
             <Setter Property="Background"
                     Value="Transparent"/>
         </Style>
-        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter">
+        <Style Selector="Button:disabled/template/ContentPresenter">
             <Setter Property="Background"
                     Value="Transparent"/>
         </Style>
@@ -131,7 +131,7 @@
                             MaxZoomX="8"
                             MaxZoomY="8"
                             Stretch="None"
-                            Background="{DynamicResource BackgroundBrush}"
+                            Background="{DynamicResource SystemChromeMediumLowColor}"
                             PanButton="Left"
                             ClipToBounds="True">
                     <ZoomBorder.KeyBindings>
@@ -145,7 +145,7 @@
                 <Border Grid.Row="1"
                         BorderBrush="Gray"
                         BorderThickness="0 1 0 0">
-                    <DockPanel Background="{DynamicResource DockBrush}"
+                    <DockPanel Background="{DynamicResource SystemChromeMediumColor}"
                                ClipToBounds="True">
                         <!--Image Info-->
                         <StackPanel DockPanel.Dock="Left"

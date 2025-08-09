@@ -67,7 +67,7 @@
                                             <MenuItem.Styles>
                                                 <Style Selector="MenuItem:pointerover">
                                                     <Setter Property="Background"
-                                                            Value="{DynamicResource HoverBrush}"/>
+                                                            Value="{DynamicResource MenuFlyoutItemBackgroundPointerOver}"/>
                                                 </Style>
                                             </MenuItem.Styles>
                                         </MenuItem>
@@ -111,7 +111,7 @@
                                             <MenuItem.Styles>
                                                 <Style Selector="MenuItem:pointerover">
                                                     <Setter Property="Background"
-                                                            Value="{DynamicResource HoverBrush}"/>
+                                                            Value="{DynamicResource MenuFlyoutItemBackgroundPointerOver}"/>
                                                 </Style>
                                             </MenuItem.Styles>
                                         </MenuItem>
@@ -147,7 +147,7 @@
             <!--Browser Selector-->
             <TabStrip Margin="5 0 5 5"
                       CornerRadius="100"
-                      Background="{DynamicResource BackgroundBrush}">
+                      Background="{DynamicResource SystemChromeMediumLowColor}">
                 <TabStrip.Styles>
                     <Style Selector="TabStripItem">
                         <Setter Property="FontSize"

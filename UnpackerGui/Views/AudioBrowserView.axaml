@@ -31,9 +31,90 @@
             <Setter Property="Background"
                     Value="Transparent"/>
         </Style>
-        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter">
+        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter,ToggleButton:pressed/template/ContentPresenter,ToggleButton:pointerover/template/ContentPresenter">
             <Setter Property="Background"
                     Value="Transparent"/>
+        </Style>
+        <Style Selector="ToggleButton:checked/template/ContentPresenter">
+            <Setter Property="Foreground"
+                    Value="{DynamicResource SystemBaseHighColor}"/>
+        </Style>
+        <Style Selector="ToggleSwitch">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid Background="{TemplateBinding Background}"
+                          RowDefinitions="Auto,*">
+
+                        <ContentPresenter x:Name="PART_ContentPresenter"
+                                          Grid.Row="0"
+                                          VerticalAlignment="Top"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Margin="{DynamicResource ToggleSwitchTopHeaderMargin}"
+                                          RecognizesAccessKey="True"/>
+
+                        <Grid Grid.Row="1"
+                              MinWidth="{DynamicResource ToggleSwitchThemeMinWidth}"
+                              HorizontalAlignment="Left"
+                              VerticalAlignment="Top">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="{DynamicResource ToggleSwitchPreContentMargin}"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="{DynamicResource ToggleSwitchPostContentMargin}"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid x:Name="SwitchAreaGrid"
+                                  Grid.RowSpan="3"
+                                  Background="{DynamicResource ToggleSwitchContainerBackground}"
+                                  Margin="0,5"
+                                  TemplatedControl.IsTemplateFocusTarget="True"/>
+
+                            <Border x:Name="OuterBorder"
+                                    Grid.Row="1"
+                                    Width="40"
+                                    Height="20"
+                                    Background="{DynamicResource ToggleSwitchFillOn}"
+                                    CornerRadius="10"/>
+
+                            <Border x:Name="SwitchKnobBounds"
+                                    Grid.Row="1"
+                                    Width="40"
+                                    Height="20"
+                                    Background="{DynamicResource ToggleSwitchFillOn}"
+                                    CornerRadius="10"/>
+
+                            <Canvas x:Name="PART_SwitchKnob"
+                                    Grid.Row="1"
+                                    Width="20"
+                                    Height="20"
+                                    HorizontalAlignment="Left">
+
+                                <Grid x:Name="PART_MovingKnobs"
+                                      Width="20"
+                                      Height="20">
+                                    <ic:FluentIcon x:Name="SwitchKnobOn"
+                                                   IsVisible="{Binding $parent[ToggleSwitch].IsChecked}"
+                                                   Icon="PlayCircle"
+                                                   FontSize="22"
+                                                   Foreground="{DynamicResource ToggleButtonForegroundChecked}"/>
+                                    <ic:FluentIcon x:Name="SwitchKnobOff"
+                                                   IsVisible="{Binding !$parent[ToggleSwitch].IsChecked}"
+                                                   Icon="PauseCircle"
+                                                   FontSize="22"
+                                                   Foreground="{DynamicResource ToggleButtonForegroundChecked}"/>
+                                </Grid>
+                            </Canvas>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="ToggleSwitch:pointerover/template/Border">
+            <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOnPointerOver}"/>
+        </Style>
+        <Style Selector="ToggleSwitch:disabled/template/Border">
+            <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedDisabled}"/>
         </Style>
     </UserControl.Styles>
     <Grid ColumnDefinitions="220,Auto,*">
@@ -164,11 +245,8 @@
                             </Style>
                         </StackPanel.Styles>
                         <!--Autoplay Button-->
-                        <ToggleButton IsChecked="{Binding Settings.Autoplay}"
-                                      ToolTip.Tip="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay Off/Autoplay}">
-                            <ic:FluentIcon Icon="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=FilmstripPlay/FilmstripOff}"
-                                           IconSize="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=32/48}}"/>
-                        </ToggleButton>
+                        <ToggleSwitch IsChecked="{Binding Settings.Autoplay}"
+                                      ToolTip.Tip="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay is On/Autoplay is Off}"/>
                         <!--Seek Backward Button-->
                         <Button Command="{Binding SeekCommand}"
                                 CommandParameter="{c:Double -10}"
@@ -191,7 +269,7 @@
                         </Button>
                         <!--Loop Button-->
                         <ToggleButton IsChecked="{Binding Settings.Loop}"
-                                      ToolTip.Tip="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop Off/Loop}">
+                                      ToolTip.Tip="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop is On/Loop is Off}">
                             <ic:FluentIcon Icon="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
                         </ToggleButton>
                     </StackPanel>
@@ -200,7 +278,7 @@
                 <Border Grid.Row="1"
                         BorderBrush="Gray"
                         BorderThickness="0 1 0 0">
-                    <DockPanel Background="{DynamicResource DockBrush}"
+                    <DockPanel Background="{DynamicResource SystemChromeMediumColor}"
                                ClipToBounds="True">
                         <!--Media Info-->
                         <StackPanel Orientation="Horizontal"
