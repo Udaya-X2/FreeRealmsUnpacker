@@ -10,7 +10,9 @@ namespace UnpackerGui.Services;
 public class FilesService(TopLevel target) : IFilesService
 {
     private readonly IStorageProvider _storageProvider = target.StorageProvider;
-    private readonly HashSet<string> _filesToDelete = [];
+    private readonly List<string> _tempFolders = [];
+
+    private bool _disposed;
 
     public async Task<IStorageFile?> OpenFileAsync(FilePickerOpenOptions options)
     {
@@ -36,22 +38,29 @@ public class FilesService(TopLevel target) : IFilesService
     public async Task<IStorageFolder?> TryGetFolderFromPathAsync(string folderPath)
         => await _storageProvider.TryGetFolderFromPathAsync(folderPath);
 
-    public void DeleteOnExit(string filePath) => _filesToDelete.Add(filePath);
+    public string CreateTempFolder()
+    {
+        string folderPath = Directory.CreateTempSubdirectory("fru-").FullName;
+        _tempFolders.Add(folderPath);
+        return folderPath;
+    }
 
     public void Dispose()
     {
-        foreach (string file in _filesToDelete)
+        if (_disposed) return;
+
+        foreach (string folder in _tempFolders)
         {
             try
             {
-                File.Delete(file);
+                Directory.Delete(folder, recursive: true);
             }
             catch
             {
             }
         }
 
-        _filesToDelete.Clear();
         GC.SuppressFinalize(this);
+        _disposed = true;
     }
 }

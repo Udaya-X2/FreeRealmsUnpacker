@@ -205,10 +205,8 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     /// </summary>
     public void Open()
     {
-        DirectoryInfo tempDir = Directory.CreateTempSubdirectory("fru-");
         using AssetReader reader = AssetFile.OpenRead();
-        FileInfo file = reader.ExtractTo(this, tempDir.FullName);
-        App.GetService<IFilesService>().DeleteOnExit(file.FullName);
+        FileInfo file = reader.ExtractTo(this, App.GetService<IFilesService>().CreateTempFolder());
         Process.Start(new ProcessStartInfo
         {
             UseShellExecute = true,

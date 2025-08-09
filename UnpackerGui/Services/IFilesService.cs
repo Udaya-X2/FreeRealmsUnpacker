@@ -18,5 +18,5 @@ public interface IFilesService : IDisposable
     Task<IStorageFile?> SaveFileAsync() => SaveFileAsync(new());
     Task<IStorageFile?> SaveFileAsync(FilePickerSaveOptions options);
     Task<IStorageFolder?> TryGetFolderFromPathAsync(string folderPath);
-    void DeleteOnExit(string filePath);
+    string CreateTempFolder();
 }
