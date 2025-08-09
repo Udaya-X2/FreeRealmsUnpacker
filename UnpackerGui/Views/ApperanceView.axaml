@@ -14,14 +14,20 @@
         <vm:DesignPreferencesViewModel/>
     </Design.DataContext>
     <StackPanel Spacing="5">
-        <!--Color Theme-->
-        <DockPanel Margin="0 5 0 0">
-            <TextBlock Text="Color Theme:"
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="Auto,Auto"
+              RowSpacing="10"
+              ColumnSpacing="5">
+            <!--Color Theme-->
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Text="Color Theme:"
                        ToolTip.Tip="The application's theme color."
                        VerticalAlignment="Center"/>
-            <ComboBox Name="colorThemeComboBox"
+            <ComboBox Grid.Row="0"
+                      Grid.Column="1"
+                      Name="colorThemeComboBox"
                       MinHeight="0"
-                      Margin="5 0 0 0"
                       SelectedItem="{Binding Settings.ColorTheme}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -29,17 +35,18 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-        </DockPanel>
-        <!--Icon Type-->
-        <DockPanel  Margin="0 5 0 0">
-            <TextBlock Text="Icon Type:"
+            <!--Icon Type-->
+            <TextBlock Grid.Row="1"
+                       Grid.Column="0"
+                       Text="Icon Type:"
                        ToolTip.Tip="The Fluent UI icon type."
                        VerticalAlignment="Center"/>
-            <ComboBox Name="iconTypeComboBox"
+            <ComboBox Grid.Row="1"
+                      Grid.Column="1"
+                      Name="iconTypeComboBox"
                       MinHeight="0"
-                      Margin="5 0 0 0"
                       SelectedItem="{Binding Settings.IconVariant}"/>
-        </DockPanel>
+        </Grid>
         <!--Show Image Browser-->
         <CheckBox Content="Show Image Browser"
                   IsChecked="{Binding Settings.ShowImageBrowser}"/>

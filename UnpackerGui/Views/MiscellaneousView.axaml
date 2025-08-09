@@ -14,29 +14,36 @@
         <vm:DesignPreferencesViewModel/>
     </Design.DataContext>
     <StackPanel Spacing="5">
-        <!--Clipboard Separator-->
-        <DockPanel Margin="0 5 0 0">
-            <TextBlock Text="Clipboard Separator:"
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="Auto,Auto"
+              RowSpacing="10"
+              ColumnSpacing="5">
+            <!--Clipboard Separator-->
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Text="Clipboard Separator:"
                        ToolTip.Tip="The separator to use when copying assets to the clipboard."
-                       VerticalAlignment="Center"
-                       Margin="0 0 5 0">
+                       VerticalAlignment="Center">
             </TextBlock>
-            <TextBox Text="{Binding Settings.ClipboardSeparator}}"
+            <TextBox Grid.Row="0"
+                     Grid.Column="1"
+                     Text="{Binding Settings.ClipboardSeparator}}"
                      HorizontalAlignment="Left"
                      AcceptsTab="True"
-                     MinWidth="25"
+                     Width="108"
                      MinHeight="0"
                      ScrollViewer.VerticalScrollBarVisibility="Disabled"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
-        </DockPanel>
-        <!--Clipboard Line Separator-->
-        <DockPanel Margin="0 5 0 0">
-            <TextBlock Text="Clipboard Line Separator:"
+            <!--Clipboard Line Separator-->
+            <TextBlock Grid.Row="1"
+                       Grid.Column="0"
+                       Text="Clipboard Line Separator:"
                        ToolTip.Tip="The line separator to use when copying assets to the clipboard."
-                       VerticalAlignment="Center"
-                       Margin="0 0 5 0">
+                       VerticalAlignment="Center">
             </TextBlock>
-            <ComboBox SelectedItem="{Binding Settings.ClipboardLineSeparator}}"
+            <ComboBox Grid.Row="1"
+                      Grid.Column="1"
+                      SelectedItem="{Binding Settings.ClipboardLineSeparator}}"
                       ItemsSource="{Binding LineSeparators}}"
                       MinHeight="0">
                 <ComboBox.ItemTemplate>
@@ -45,7 +52,7 @@
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
-        </DockPanel>
+        </Grid>
         <!--Show File Delete Dialog-->
         <CheckBox Content="Show File Delete Dialog"
                   ToolTip.Tip="Display a warning message before deleting a file."
