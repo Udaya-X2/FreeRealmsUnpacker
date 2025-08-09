@@ -1,0 +1,108 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ic="using:FluentIcons.Avalonia">
+    <!--Controls Preview-->
+    <Design.PreviewWith>
+        <Grid ColumnDefinitions="*,*">
+            <!--Light Theme Controls-->
+            <ThemeVariantScope RequestedThemeVariant="Light"
+                               Grid.Column="0">
+                <Border Background="{DynamicResource SystemAltHighColor}"
+                        Padding="10">
+                    <StackPanel>
+                        <ToggleSwitch Classes="Autoplay"/>
+                    </StackPanel>
+                </Border>
+            </ThemeVariantScope>
+            <!--Dark Theme Controls-->
+            <ThemeVariantScope RequestedThemeVariant="Dark"
+                               Grid.Column="1">
+                <Border Background="{DynamicResource SystemAltHighColor}"
+                        Padding="10">
+                    <StackPanel>
+                        <ToggleSwitch Classes="Autoplay"/>
+                    </StackPanel>
+                </Border>
+            </ThemeVariantScope>
+        </Grid>
+    </Design.PreviewWith>
+
+    <!--Autoplay Toggle Switch-->
+    <Style Selector="ToggleSwitch.Autoplay">
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Grid Background="{TemplateBinding Background}"
+                      RowDefinitions="Auto,*">
+
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                      Grid.Row="0"
+                                      VerticalAlignment="Top"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Margin="{DynamicResource ToggleSwitchTopHeaderMargin}"
+                                      RecognizesAccessKey="True"/>
+
+                    <Grid Grid.Row="1"
+                          MinWidth="{DynamicResource ToggleSwitchThemeMinWidth}"
+                          HorizontalAlignment="Left"
+                          VerticalAlignment="Top">
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="{DynamicResource ToggleSwitchPreContentMargin}"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="{DynamicResource ToggleSwitchPostContentMargin}"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid x:Name="SwitchAreaGrid"
+                              Grid.RowSpan="3"
+                              Background="{DynamicResource ToggleSwitchContainerBackground}"
+                              Margin="0,5"
+                              TemplatedControl.IsTemplateFocusTarget="True"/>
+
+                        <Border x:Name="OuterBorder"
+                                Grid.Row="1"
+                                Width="40"
+                                Height="20"
+                                Background="{DynamicResource ToggleSwitchFillOn}"
+                                CornerRadius="10"/>
+
+                        <Border x:Name="SwitchKnobBounds"
+                                Grid.Row="1"
+                                Width="40"
+                                Height="20"
+                                Background="{DynamicResource ToggleSwitchFillOn}"
+                                CornerRadius="10"/>
+
+                        <Canvas x:Name="PART_SwitchKnob"
+                                Grid.Row="1"
+                                Width="20"
+                                Height="20"
+                                HorizontalAlignment="Left">
+
+                            <Grid x:Name="PART_MovingKnobs"
+                                  Width="20"
+                                  Height="20">
+                                <ic:FluentIcon x:Name="SwitchKnobOn"
+                                               IsVisible="{Binding $parent[ToggleSwitch].IsChecked}"
+                                               Icon="PlayCircle"
+                                               FontSize="22"
+                                               Foreground="{DynamicResource ToggleButtonForegroundChecked}"/>
+                                <ic:FluentIcon x:Name="SwitchKnobOff"
+                                               IsVisible="{Binding !$parent[ToggleSwitch].IsChecked}"
+                                               Icon="PauseCircle"
+                                               FontSize="22"
+                                               Foreground="{DynamicResource ToggleButtonForegroundChecked}"/>
+                            </Grid>
+                        </Canvas>
+                    </Grid>
+                </Grid>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="ToggleSwitch.Autoplay:pointerover/template/Border">
+        <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOnPointerOver}"/>
+    </Style>
+    <Style Selector="ToggleSwitch.Autoplay:disabled/template/Border">
+        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedDisabled}"/>
+    </Style>
+</Styles>

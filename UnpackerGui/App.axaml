@@ -8,6 +8,7 @@
     <Application.Styles>
         <FluentTheme/>
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+        <StyleInclude Source="avares://UnpackerGui/Views/Styles/Styles.axaml"/>
         <Style Selector="DataGridCell">
             <Setter Property="FontSize" Value="12"/>
         </Style>
