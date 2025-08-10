@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Input;
 using System;
 using System.Threading.Tasks;
 using UnpackerGui.ViewModels;
@@ -15,6 +16,13 @@ public class DialogService(Window window) : IDialogService
 
     public static async Task ShowDialog(Window owner, Window window, bool terminal = false)
     {
+        window.KeyDown += (s, e) =>
+        {
+            if (e.Key == Key.Escape)
+            {
+                window.Close();
+            }
+        };
         await window.ShowDialog(owner);
 
         if (terminal)

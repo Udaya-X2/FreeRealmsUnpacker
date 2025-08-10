@@ -14,9 +14,7 @@
         x:DataType="vm:AboutViewModel"
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        CanResize="False"
-        Loaded="Window_Loaded"
-        Unloaded="Window_Unloaded">
+        CanResize="False">
     <Design.DataContext>
         <vm:DesignAboutViewModel/>
     </Design.DataContext>

@@ -41,47 +41,25 @@ public partial class MainView : UserControl
             Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
         });
 
-        // Add hotkey/drag-and-drop event handlers (workaround for Linux).
-        KeyDownEvent.AddClassHandler<MainWindow>(MainWindow_OnKeyDown);
-        DragDrop.DropEvent.AddClassHandler<ListBox>(ListBox_Drop);
+        // Add hotkey event handler.
+        KeyDownEvent.AddClassHandler<MainWindow>((s, e) =>
+        {
+            if (e is { KeyModifiers: KeyModifiers.Control, Key: Key.F })
+            {
+                searchBarTextBox.Focus();
+            }
+        });
 
         // If arguments were passed to the application, load them in as asset files.
-        if (App.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { Args: string[] args })
+        if (App.Current is { ApplicationLifetime: IClassicDesktopStyleApplicationLifetime { Args: string[] args } })
         {
             mainViewModel.AddArgumentFilesCommand.Execute(args);
         }
     }
 
-    private void MainWindow_OnKeyDown(MainWindow sender, KeyEventArgs e)
-    {
-        switch (e.KeyModifiers, e.Key)
-        {
-            case (KeyModifiers.Alt, Key.C):
-                matchCaseButton.IsChecked ^= true;
-                break;
-            case (KeyModifiers.Alt, Key.E):
-                useRegexButton.IsChecked ^= true;
-                break;
-            case (KeyModifiers.Alt, Key.V):
-                validateAssetsButton.IsChecked ^= true;
-                break;
-            case (KeyModifiers.Control, Key.F):
-                searchBarTextBox.Focus();
-                break;
-        }
-    }
-
-#if DEBUG
-    private static void Print(object? x)
-        => System.Diagnostics.Debug.WriteLine($"{System.DateTime.Now:[yyyy-MM-dd HH:mm:ss,fff]} {x}");
-
-    private static void Print()
-        => System.Diagnostics.Debug.WriteLine("");
-#endif
-
     private void AssetGrid_DoubleTapped(object? sender, TappedEventArgs e)
     {
-        if ((e.Source as Control)?.Parent is not DataGridCell) return;
+        if (e.Source is not Control { Parent: DataGridCell }) return;
         if (assetGrid.SelectedItem is not AssetInfo asset) return;
 
         StaticCommands.OpenAssetCommand.Invoke(asset);
@@ -120,7 +98,7 @@ public partial class MainView : UserControl
         mainWindow.audioBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
     }
 
-    private void ListBox_Drop(ListBox sender, DragEventArgs e)
+    private void ListBox_Drop(object? sender, DragEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;
         if (e.Data.Get(DataFormats.Files) is not IEnumerable<IStorageItem> files) return;

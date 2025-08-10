@@ -85,7 +85,8 @@
                      Margin="0 5 0 0"
                      SelectionMode="Toggle"
                      SelectedItem="{Binding SelectedAssetFile}"
-                     DragDrop.AllowDrop="True">
+                     DragDrop.AllowDrop="True"
+                     DragDrop.Drop="ListBox_Drop">
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="vm:AssetFileViewModel">
                         <StackPanel Orientation="Vertical">
@@ -281,8 +282,8 @@
                          Text="{Binding SearchOptions.Pattern, Mode=TwoWay}"/>
                 <!--Match Case Option-->
                 <ToggleButton Grid.Column="2"
-                              Name="matchCaseButton"
                               Margin="5 0 0 0"
+                              HotKey="Alt+C"
                               ToolTip.Tip="Match Case (ALT+C)"
                               IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
                               Content="Aa"
@@ -293,8 +294,8 @@
                               FontSize="14"/>
                 <!--Use Regular Expressions Option-->
                 <ToggleButton Grid.Column="3"
-                              Name="useRegexButton"
                               Margin="5 0 0 0"
+                              HotKey="Alt+E"
                               ToolTip.Tip="Use Regular Expressions (ALT+E)"
                               IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
                               Content=".*"
@@ -305,8 +306,8 @@
                               FontSize="14"/>
                 <!--Validate Assets Option-->
                 <ToggleButton Grid.Column="4"
-                              Name="validateAssetsButton"
                               Margin="5 0 0 0"
+                              HotKey="Alt+V"
                               ToolTip.Tip="Validate Assets (ALT+V)"
                               IsChecked="{Binding Settings.ValidateAssets, Mode=TwoWay}">
                     <ic:FluentIcon Icon="Shield"/>

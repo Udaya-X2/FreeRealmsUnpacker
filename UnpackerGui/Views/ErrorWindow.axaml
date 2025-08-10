@@ -13,9 +13,7 @@
         ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         SizeToContent="Height"
-        CanResize="False"
-        Loaded="Window_Loaded"
-        Unloaded="Window_Unloaded">
+        CanResize="False">
     <Design.DataContext>
         <vm:DesignErrorViewModel/>
     </Design.DataContext>
