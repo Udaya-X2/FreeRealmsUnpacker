@@ -23,7 +23,7 @@
             <Setter Property="Background"
                     Value="Transparent"/>
         </Style>
-        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter,ToggleButton:pressed/template/ContentPresenter,ToggleButton:pointerover/template/ContentPresenter">
+        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter,ToggleButton:pressed/template/ContentPresenter,ToggleButton:pointerover/template/ContentPresenter,ToggleButton:disabled/template/ContentPresenter">
             <Setter Property="Background"
                     Value="Transparent"/>
         </Style>

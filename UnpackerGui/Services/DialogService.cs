@@ -2,7 +2,9 @@
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using System;
+using System.Reactive.Disposables;
 using System.Threading.Tasks;
+using UnpackerGui.Extensions;
 using UnpackerGui.ViewModels;
 using UnpackerGui.Views;
 
@@ -17,13 +19,17 @@ public class DialogService(Window window) : IDialogService
 
     public static async Task ShowDialog(Window owner, Window window, bool terminal = false)
     {
-        using var _ = window.AddDisposableHandler(InputElement.KeyDownEvent, (s, e) =>
-        {
-            if (e.Key == Key.Escape)
+        using CompositeDisposable _ =
+        [
+            owner.Disable(),
+            window.AddDisposableHandler(InputElement.KeyDownEvent, (s, e) =>
             {
-                window.Close();
-            }
-        });
+                if (e.Key == Key.Escape)
+                {
+                    window.Close();
+                }
+            })
+        ];
         await window.ShowDialog(owner);
 
         if (terminal)

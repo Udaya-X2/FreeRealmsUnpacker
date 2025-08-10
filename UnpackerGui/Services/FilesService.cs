@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using UnpackerGui.Extensions;
 
 namespace UnpackerGui.Services;
 
@@ -21,7 +22,10 @@ public class FilesService(TopLevel target) : IFilesService
     }
 
     public async Task<IReadOnlyList<IStorageFile>> OpenFilesAsync(FilePickerOpenOptions options)
-        => await _storageProvider.OpenFilePickerAsync(options);
+    {
+        using var _ = target.Disable();
+        return await _storageProvider.OpenFilePickerAsync(options);
+    }
 
     public async Task<IStorageFolder?> OpenFolderAsync(FolderPickerOpenOptions options)
     {
@@ -30,13 +34,22 @@ public class FilesService(TopLevel target) : IFilesService
     }
 
     public async Task<IReadOnlyList<IStorageFolder>> OpenFoldersAsync(FolderPickerOpenOptions options)
-        => await _storageProvider.OpenFolderPickerAsync(options);
+    {
+        using var _ = target.Disable();
+        return await _storageProvider.OpenFolderPickerAsync(options);
+    }
 
     public async Task<IStorageFile?> SaveFileAsync(FilePickerSaveOptions options)
-        => await _storageProvider.SaveFilePickerAsync(options);
+    {
+        using var _ = target.Disable();
+        return await _storageProvider.SaveFilePickerAsync(options);
+    }
 
     public async Task<IStorageFolder?> TryGetFolderFromPathAsync(string folderPath)
-        => await _storageProvider.TryGetFolderFromPathAsync(folderPath);
+    {
+        using var _ = target.Disable();
+        return await _storageProvider.TryGetFolderFromPathAsync(folderPath);
+    }
 
     public string CreateTempFolder()
     {
