@@ -4,6 +4,12 @@
     <!--Controls Preview-->
     <Design.PreviewWith>
         <Grid ColumnDefinitions="*,*">
+            <Grid.Styles>
+                <Style Selector=":is(Button)">
+                    <Setter Property="HorizontalAlignment"
+                            Value="Center"/>
+                </Style>
+            </Grid.Styles>
             <!--Light Theme Controls-->
             <ThemeVariantScope RequestedThemeVariant="Light"
                                Grid.Column="0">
@@ -14,6 +20,24 @@
                         <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="True"/>
                         <ToggleSwitch Classes="Autoplay" IsChecked="False" IsEnabled="False"/>
                         <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="False"/>
+                        <Button Classes="Transparent" IsEnabled="True">
+                            <ic:FluentIcon Icon="Calculator" HorizontalAlignment="Left"/>
+                        </Button>
+                        <Button Classes="Transparent" IsEnabled="True">
+                            <ic:FluentIcon Icon="Calculator" HorizontalAlignment="Left"/>
+                        </Button>
+                        <ToggleButton Classes="Transparent" IsChecked="False" IsEnabled="True">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
+                        <ToggleButton Classes="Transparent" IsChecked="True" IsEnabled="True">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
+                        <ToggleButton Classes="Transparent" IsChecked="False" IsEnabled="False">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
+                        <ToggleButton Classes="Transparent" IsChecked="True" IsEnabled="False">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
                     </StackPanel>
                 </Border>
             </ThemeVariantScope>
@@ -27,11 +51,92 @@
                         <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="True"/>
                         <ToggleSwitch Classes="Autoplay" IsChecked="False" IsEnabled="False"/>
                         <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="False"/>
+                        <Button Classes="Transparent" IsEnabled="True">
+                            <ic:FluentIcon Icon="Calculator" HorizontalAlignment="Left"/>
+                        </Button>
+                        <Button Classes="Transparent" IsEnabled="False">
+                            <ic:FluentIcon Icon="Calculator" HorizontalAlignment="Left"/>
+                        </Button>
+                        <ToggleButton Classes="Transparent" IsChecked="False" IsEnabled="True">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
+                        <ToggleButton Classes="Transparent" IsChecked="True" IsEnabled="True">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
+                        <ToggleButton Classes="Transparent" IsChecked="False" IsEnabled="False">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
+                        <ToggleButton Classes="Transparent" IsChecked="True" IsEnabled="False">
+                            <ic:FluentIcon Icon="{Binding $parent.IsChecked, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=AppsAddIn/AppsAddInOff}" HorizontalAlignment="Left"/>
+                        </ToggleButton>
                     </StackPanel>
                 </Border>
             </ThemeVariantScope>
         </Grid>
     </Design.PreviewWith>
+
+    <!--Compact DataGrid-->
+    <Style Selector="DataGrid.Compact DataGridColumnHeader">
+        <Setter Property="Margin"
+                Value="-3 0 0 0"/>
+    </Style>
+    <Style Selector="DataGrid.Compact DataGridCell">
+        <Setter Property="MinHeight"
+                Value="0"/>
+        <Setter Property="Padding"
+                Value="-3 3 -3 3"/>
+    </Style>
+
+    <!--Property Grid-->
+    <Style Selector="Grid.PropertyGrid TextBox">
+        <Setter Property="IsReadOnly"
+                Value="True"/>
+        <Setter Property="CornerRadius"
+                Value="0"/>
+        <Setter Property="MinWidth"
+                Value="0"/>
+        <Setter Property="MinHeight"
+                Value="0"/>
+    </Style>
+
+    <!--Transparent Background Button-->
+    <Style Selector="Button.Transparent,
+                     ToggleButton.Transparent">
+        <Setter Property="Background"
+                Value="Transparent"/>
+        <Setter Property="Padding"
+                Value="0"/>
+    </Style>
+    <Style Selector="Button.Transparent:disabled /template/ ContentPresenter,
+                     ToggleButton.Transparent:disabled /template/ ContentPresenter">
+        <Setter Property="Background"
+                Value="Transparent"/>
+    </Style>
+    <Style Selector="ToggleButton.Transparent:checked">
+        <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
+        </Style>
+
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPointerOver}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPointerOver}" />
+            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPointerOver}" />
+        </Style>
+
+        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundPressed}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushPressed}" />
+            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundPressed}" />
+        </Style>
+
+        <Style Selector="^:disabled /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrushDisabled}" />
+            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForegroundDisabled}" />
+        </Style>
+    </Style>
 
     <!--Autoplay Toggle Switch-->
     <Style Selector="ToggleSwitch.Autoplay">
@@ -105,19 +210,17 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    <Style Selector="ToggleSwitch.Autoplay:pointerover/template/Border#OuterBorder">
+    <Style Selector="ToggleSwitch.Autoplay:pointerover /template/ Border#OuterBorder">
         <Setter Property="Background" Value="{DynamicResource ToggleSwitchStrokeOffPointerOver}"/>
     </Style>
-    <Style Selector="ToggleSwitch.Autoplay:pressed/template/Border#OuterBorder">
+    <Style Selector="ToggleSwitch.Autoplay:pressed /template/ Border#OuterBorder,
+                     ToggleSwitch.Autoplay:disabled /template/ Border#OuterBorder">
         <Setter Property="Background" Value="{DynamicResource ToggleSwitchStrokeOffDisabled}"/>
     </Style>
-    <Style Selector="ToggleSwitch.Autoplay:disabled/template/Border#OuterBorder">
-        <Setter Property="Background" Value="{DynamicResource ToggleSwitchStrokeOffDisabled}" />
-    </Style>
-    <Style Selector="ToggleSwitch.Autoplay:checked/template/Border#OuterBorder">
+    <Style Selector="ToggleSwitch.Autoplay:checked /template/ Border#OuterBorder">
         <Setter Property="Opacity" Value="0" />
     </Style>
-    <Style Selector="ToggleSwitch.Autoplay:unchecked/template/Border#OuterBorder">
+    <Style Selector="ToggleSwitch.Autoplay:unchecked /template/ Border#OuterBorder">
         <Setter Property="Opacity" Value="1" />
     </Style>
 </Styles>

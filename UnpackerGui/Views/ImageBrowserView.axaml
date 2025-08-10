@@ -17,21 +17,10 @@
     <Design.DataContext>
         <vm:DesignImageBrowserViewModel/>
     </Design.DataContext>
-    <UserControl.Styles>
-        <Style Selector="Button">
-            <Setter Property="Padding"
-                    Value="0"/>
-            <Setter Property="Background"
-                    Value="Transparent"/>
-        </Style>
-        <Style Selector="Button:disabled/template/ContentPresenter">
-            <Setter Property="Background"
-                    Value="Transparent"/>
-        </Style>
-    </UserControl.Styles>
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Image Assets-->
         <DataGrid Grid.Column="0"
+                  Classes="Compact"
                   Name="assetGrid"
                   ItemsSource="{Binding Assets}"
                   SelectedItem="{Binding SelectedAsset}"
@@ -49,16 +38,6 @@
                                     Header="Images"/>
             </DataGrid.Columns>
             <DataGrid.Styles>
-                <Style Selector="DataGridColumnHeader">
-                    <Setter Property="Margin"
-                            Value="-3 0 0 0"/>
-                </Style>
-                <Style Selector="DataGridCell">
-                    <Setter Property="MinHeight"
-                            Value="0"/>
-                    <Setter Property="Padding"
-                            Value="-3 3 -3 3"/>
-                </Style>
                 <!--Image Row Context Menu-->
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
@@ -198,18 +177,21 @@
                                     Spacing="10"
                                     Margin="0 0 10 0">
                             <!--Copy Image Button-->
-                            <Button Command="{Binding CopyImageCommand}"
+                            <Button Classes="Transparent"
+                                    Command="{Binding CopyImageCommand}"
                                     ToolTip.Tip="Copy Image (Ctrl+C)">
                                 <ic:FluentIcon Icon="ClipboardImage"/>
                             </Button>
                             <!--Reset Zoom Button-->
-                            <Button Click="Button_Click_ResetZoom"
+                            <Button Classes="Transparent"
+                                    Click="Button_Click_ResetZoom"
                                     HotKey="Ctrl+D0"
                                     ToolTip.Tip="Reset Zoom (Ctrl+0)">
                                 <ic:FluentIcon Icon="PageFit"/>
                             </Button>
                             <!--Zoom In Button-->
-                            <Button Click="Button_Click_ZoomOut"
+                            <Button Classes="Transparent"
+                                    Click="Button_Click_ZoomOut"
                                     HotKey="Ctrl+-"
                                     ToolTip.Tip="Zoom Out (Ctrl+Minus)">
                                 <ic:FluentIcon Icon="ZoomOut"/>
@@ -223,7 +205,8 @@
                                     Width="100"
                                     ToolTip.Tip="Zoom"/>
                             <!--Zoom In Button-->
-                            <Button Click="Button_Click_ZoomIn"
+                            <Button Classes="Transparent"
+                                    Click="Button_Click_ZoomIn"
                                     HotKey="Ctrl++"
                                     ToolTip.Tip="Zoom In (Ctrl+Plus)">
                                 <ic:FluentIcon Icon="ZoomIn"/>

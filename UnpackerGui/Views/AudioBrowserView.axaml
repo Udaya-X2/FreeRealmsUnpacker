@@ -16,25 +16,10 @@
     <Design.DataContext>
         <vm:DesignAudioBrowserViewModel/>
     </Design.DataContext>
-    <UserControl.Styles>
-        <Style Selector="Button,ToggleButton">
-            <Setter Property="Padding"
-                    Value="0"/>
-            <Setter Property="Background"
-                    Value="Transparent"/>
-        </Style>
-        <Style Selector="Button:disabled/template/ContentPresenter,ToggleButton:checked/template/ContentPresenter,ToggleButton:pressed/template/ContentPresenter,ToggleButton:pointerover/template/ContentPresenter,ToggleButton:disabled/template/ContentPresenter">
-            <Setter Property="Background"
-                    Value="Transparent"/>
-        </Style>
-        <Style Selector="ToggleButton:checked/template/ContentPresenter">
-            <Setter Property="Foreground"
-                    Value="{DynamicResource SystemBaseHighColor}"/>
-        </Style>
-    </UserControl.Styles>
     <Grid ColumnDefinitions="220,Auto,*">
         <!--Audio Assets-->
         <DataGrid Grid.Column="0"
+                  Classes="Compact"
                   Name="assetGrid"
                   ItemsSource="{Binding Assets}"
                   SelectedItem="{Binding SelectedAsset}"
@@ -52,16 +37,6 @@
                                     Header="Audio"/>
             </DataGrid.Columns>
             <DataGrid.Styles>
-                <Style Selector="DataGridColumnHeader">
-                    <Setter Property="Margin"
-                            Value="-3 0 0 0"/>
-                </Style>
-                <Style Selector="DataGridCell">
-                    <Setter Property="MinHeight"
-                            Value="0"/>
-                    <Setter Property="Padding"
-                            Value="-3 3 -3 3"/>
-                </Style>
                 <!--Audio Row Context Menu-->
                 <Style Selector="DataGridRow">
                     <Setter Property="ContextMenu">
@@ -164,7 +139,8 @@
                                       HotKey="Ctrl+P"
                                       ToolTip.Tip="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay is On (Ctrl+P)/Autoplay is Off (Ctrl+P)}"/>
                         <!--Seek Backward Button-->
-                        <Button Command="{Binding SeekCommand}"
+                        <Button Classes="Transparent"
+                                Command="{Binding SeekCommand}"
                                 CommandParameter="{c:Double -10}"
                                 HotKey="Left"
                                 ToolTip.Tip="Seek Backward (Left)"
@@ -172,14 +148,16 @@
                             <ic:FluentIcon Icon="SkipBack10"/>
                         </Button>
                         <!--Play/Pause Button-->
-                        <Button Command="{Binding TogglePlayPauseCommand}"
+                        <Button Classes="Transparent"
+                                Command="{Binding TogglePlayPauseCommand}"
                                 HotKey="Space"
                                 ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause (Space)/Play (Space)}"
                                 IsEnabled="{Binding CanPlay}">
                             <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}"/>
                         </Button>
                         <!--Seek Forward Button-->
-                        <Button Command="{Binding SeekCommand}"
+                        <Button Classes="Transparent"
+                                Command="{Binding SeekCommand}"
                                 CommandParameter="{c:Double 10}"
                                 HotKey="Right"
                                 ToolTip.Tip="Seek Forward (Right)"
@@ -187,7 +165,8 @@
                             <ic:FluentIcon Icon="SkipForward10"/>
                         </Button>
                         <!--Loop Button-->
-                        <ToggleButton IsChecked="{Binding Settings.Loop}"
+                        <ToggleButton Classes="Transparent"
+                                      IsChecked="{Binding Settings.Loop}"
                                       HotKey="Ctrl+L"
                                       ToolTip.Tip="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop is On (Ctrl+L)/Loop is Off (Ctrl+L)}">
                             <ic:FluentIcon Icon="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
@@ -237,8 +216,7 @@
                                     Spacing="10"
                                     Margin="0 0 10 0">
                             <!--Speed Button-->
-                            <Button Background="Transparent"
-                                    Padding="0"
+                            <Button Classes="Transparent"
                                     ToolTip.Tip="Speed">
                                 <ic:FluentIcon Icon="TopSpeed"/>
                                 <Button.Styles>
@@ -267,9 +245,8 @@
                                 </Button.Flyout>
                             </Button>
                             <!--Mute/Unmute Button-->
-                            <Button Background="Transparent"
+                            <Button Classes="Transparent"
                                     Command="{Binding ToggleMuteCommand}"
-                                    Padding="0"
                                     HotKey="Ctrl+M"
                                     ToolTip.Tip="{Binding !!Settings.Volume, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Mute (Ctrl+M)/Unmute (Ctrl+M)}">
                                 <ic:FluentIcon Icon="{Binding Settings.Volume, Converter={StaticResource VolumeToIconConverter}}"/>

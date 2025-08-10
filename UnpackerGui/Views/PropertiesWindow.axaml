@@ -19,19 +19,8 @@
     <Design.DataContext>
         <vm:DesignAssetFileViewModel/>
     </Design.DataContext>
-    <Window.Styles>
-        <Style Selector="TextBox">
-            <Setter Property="IsReadOnly"
-                    Value="True"/>
-            <Setter Property="CornerRadius"
-                    Value="0"/>
-            <Setter Property="MinWidth"
-                    Value="0"/>
-            <Setter Property="MinHeight"
-                    Value="0"/>
-        </Style>
-    </Window.Styles>
-    <Grid Margin="10"
+    <Grid Classes="PropertyGrid"
+          Margin="10"
           RowDefinitions="*,*,*,*,*,*,*,*,*,*,*"
           ColumnDefinitions="Auto,*">
         <TextBox Grid.Row="0" 
