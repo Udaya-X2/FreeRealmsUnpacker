@@ -28,6 +28,7 @@ public partial class MainView : UserControl
     private void MainView_Loaded(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;
+        if (VisualRoot is not MainWindow mainWindow) return;
 
         // SelectedItems is a not a bindable property in DataGrid, so we need to pass 
         // it as a reference to the view model to keep track of the selected assets.
@@ -42,9 +43,9 @@ public partial class MainView : UserControl
         });
 
         // Add hotkey event handler.
-        KeyDownEvent.AddClassHandler<MainWindow>((s, e) =>
+        mainWindow.AddHandler(KeyDownEvent, (s, e) =>
         {
-            if (e is { KeyModifiers: KeyModifiers.Control, Key: Key.F })
+            if (e is { Key: Key.F, KeyModifiers: KeyModifiers.Control })
             {
                 searchBarTextBox.Focus();
             }

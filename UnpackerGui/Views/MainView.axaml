@@ -273,7 +273,7 @@
                                Icon="Search"
                                IconSize="Size12"
                                FontSize="28"
-                               ToolTip.Tip="Search (CTRL+F)"/>
+                               ToolTip.Tip="Search (Ctrl+F)"/>
                 <!--Search Bar-->
                 <TextBox Grid.Column="1"
                          Name="searchBarTextBox"
@@ -284,7 +284,7 @@
                 <ToggleButton Grid.Column="2"
                               Margin="5 0 0 0"
                               HotKey="Alt+C"
-                              ToolTip.Tip="Match Case (ALT+C)"
+                              ToolTip.Tip="Match Case (Alt+C)"
                               IsChecked="{Binding SearchOptions.MatchCase, Mode=TwoWay}"
                               Content="Aa"
                               Width="35"
@@ -296,7 +296,7 @@
                 <ToggleButton Grid.Column="3"
                               Margin="5 0 0 0"
                               HotKey="Alt+E"
-                              ToolTip.Tip="Use Regular Expressions (ALT+E)"
+                              ToolTip.Tip="Use Regular Expressions (Alt+E)"
                               IsChecked="{Binding SearchOptions.UseRegex, Mode=TwoWay}"
                               Content=".*"
                               Width="35"
@@ -308,14 +308,15 @@
                 <ToggleButton Grid.Column="4"
                               Margin="5 0 0 0"
                               HotKey="Alt+V"
-                              ToolTip.Tip="Validate Assets (ALT+V)"
+                              ToolTip.Tip="Validate Assets (Alt+V)"
                               IsChecked="{Binding Settings.ValidateAssets, Mode=TwoWay}">
                     <ic:FluentIcon Icon="Shield"/>
                 </ToggleButton>
                 <!--Copy Assets Button-->
                 <Button Grid.Column="5"
                         Margin="5 0 0 0"
-                        ToolTip.Tip="Copy Assets"
+                        HotKey="Ctrl+Shift+C"
+                        ToolTip.Tip="Copy Assets (Ctrl+Shift+C)"
                         Click="AssetGrid_Copy">
                     <ic:FluentIcon Icon="Clipboard"/>
                 </Button>

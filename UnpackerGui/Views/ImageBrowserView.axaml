@@ -130,7 +130,7 @@
                             PanButton="Left"
                             ClipToBounds="True">
                     <ZoomBorder.KeyBindings>
-                        <KeyBinding Gesture="CTRL+C"
+                        <KeyBinding Gesture="Ctrl+C"
                                     Command="{Binding CopyImageCommand}"/>
                     </ZoomBorder.KeyBindings>
                     <Image Source="{Binding DisplayedImage}"
@@ -198,18 +198,20 @@
                                     Spacing="10"
                                     Margin="0 0 10 0">
                             <!--Copy Image Button-->
-                            <Button ToolTip.Tip="Copy Image"
-                                    Command="{Binding CopyImageCommand}">
+                            <Button Command="{Binding CopyImageCommand}"
+                                    ToolTip.Tip="Copy Image (Ctrl+C)">
                                 <ic:FluentIcon Icon="ClipboardImage"/>
                             </Button>
                             <!--Reset Zoom Button-->
-                            <Button ToolTip.Tip="Reset Zoom"
-                                    Click="Button_Click_ResetZoom">
+                            <Button Click="Button_Click_ResetZoom"
+                                    HotKey="Ctrl+D0"
+                                    ToolTip.Tip="Reset Zoom (Ctrl+0)">
                                 <ic:FluentIcon Icon="PageFit"/>
                             </Button>
                             <!--Zoom In Button-->
-                            <Button ToolTip.Tip="Zoom Out"
-                                    Click="Button_Click_ZoomOut">
+                            <Button Click="Button_Click_ZoomOut"
+                                    HotKey="Ctrl+-"
+                                    ToolTip.Tip="Zoom Out (Ctrl+Minus)">
                                 <ic:FluentIcon Icon="ZoomOut"/>
                             </Button>
                             <!--Zoom Slider-->
@@ -221,8 +223,9 @@
                                     Width="100"
                                     ToolTip.Tip="Zoom"/>
                             <!--Zoom In Button-->
-                            <Button ToolTip.Tip="Zoom In"
-                                    Click="Button_Click_ZoomIn">
+                            <Button Click="Button_Click_ZoomIn"
+                                    HotKey="Ctrl++"
+                                    ToolTip.Tip="Zoom In (Ctrl+Plus)">
                                 <ic:FluentIcon Icon="ZoomIn"/>
                             </Button>
                         </StackPanel>

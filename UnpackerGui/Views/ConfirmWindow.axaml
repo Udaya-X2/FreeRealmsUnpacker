@@ -48,8 +48,7 @@
                     <Underline>Y</Underline>es
                 </TextBlock>
             </Button>
-            <Button Content="No"
-                    Width="80"
+            <Button Width="80"
                     HorizontalContentAlignment="Center"
                     Click="No_Button_Click">
                 <TextBlock>

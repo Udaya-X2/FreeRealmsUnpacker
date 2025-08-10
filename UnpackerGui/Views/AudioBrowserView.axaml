@@ -161,30 +161,35 @@
                         <!--Autoplay Button-->
                         <ToggleSwitch Classes="Autoplay"
                                       IsChecked="{Binding Settings.Autoplay}"
-                                      ToolTip.Tip="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay is On/Autoplay is Off}"/>
+                                      HotKey="Ctrl+P"
+                                      ToolTip.Tip="{Binding Settings.Autoplay, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Autoplay is On (Ctrl+P)/Autoplay is Off (Ctrl+P)}"/>
                         <!--Seek Backward Button-->
                         <Button Command="{Binding SeekCommand}"
                                 CommandParameter="{c:Double -10}"
-                                ToolTip.Tip="Seek Backward"
+                                HotKey="Left"
+                                ToolTip.Tip="Seek Backward (Left)"
                                 IsEnabled="{Binding CanPlay}">
                             <ic:FluentIcon Icon="SkipBack10"/>
                         </Button>
                         <!--Play/Pause Button-->
                         <Button Command="{Binding TogglePlayPauseCommand}"
-                                ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}"
+                                HotKey="Space"
+                                ToolTip.Tip="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause (Space)/Play (Space)}"
                                 IsEnabled="{Binding CanPlay}">
                             <ic:FluentIcon Icon="{Binding IsPlaying, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Pause/Play}"/>
                         </Button>
                         <!--Seek Forward Button-->
                         <Button Command="{Binding SeekCommand}"
                                 CommandParameter="{c:Double 10}"
-                                ToolTip.Tip="Seek Forward"
+                                HotKey="Right"
+                                ToolTip.Tip="Seek Forward (Right)"
                                 IsEnabled="{Binding CanPlay}">
                             <ic:FluentIcon Icon="SkipForward10"/>
                         </Button>
                         <!--Loop Button-->
                         <ToggleButton IsChecked="{Binding Settings.Loop}"
-                                      ToolTip.Tip="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop is On/Loop is Off}">
+                                      HotKey="Ctrl+L"
+                                      ToolTip.Tip="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Loop is On (Ctrl+L)/Loop is Off (Ctrl+L)}">
                             <ic:FluentIcon Icon="{Binding Settings.Loop, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=ArrowRepeatAll/ArrowRepeatAllOff}"/>
                         </ToggleButton>
                     </StackPanel>
@@ -265,7 +270,8 @@
                             <Button Background="Transparent"
                                     Command="{Binding ToggleMuteCommand}"
                                     Padding="0"
-                                    ToolTip.Tip="{Binding !!Settings.Volume, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Mute/Unmute}">
+                                    HotKey="Ctrl+M"
+                                    ToolTip.Tip="{Binding !!Settings.Volume, Converter={StaticResource BooleanToStringConverter}, ConverterParameter=Mute (Ctrl+M)/Unmute (Ctrl+M)}">
                                 <ic:FluentIcon Icon="{Binding Settings.Volume, Converter={StaticResource VolumeToIconConverter}}"/>
                             </Button>
                             <!--Volume Slider-->
