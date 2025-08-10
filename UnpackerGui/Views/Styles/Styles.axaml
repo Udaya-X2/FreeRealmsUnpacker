@@ -10,7 +10,10 @@
                 <Border Background="{DynamicResource SystemAltHighColor}"
                         Padding="10">
                     <StackPanel>
-                        <ToggleSwitch Classes="Autoplay"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="False" IsEnabled="True"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="True"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="False" IsEnabled="False"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="False"/>
                     </StackPanel>
                 </Border>
             </ThemeVariantScope>
@@ -20,7 +23,10 @@
                 <Border Background="{DynamicResource SystemAltHighColor}"
                         Padding="10">
                     <StackPanel>
-                        <ToggleSwitch Classes="Autoplay"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="False" IsEnabled="True"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="True"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="False" IsEnabled="False"/>
+                        <ToggleSwitch Classes="Autoplay" IsChecked="True" IsEnabled="False"/>
                     </StackPanel>
                 </Border>
             </ThemeVariantScope>
@@ -63,7 +69,7 @@
                                 Grid.Row="1"
                                 Width="40"
                                 Height="20"
-                                Background="{DynamicResource ToggleSwitchFillOn}"
+                                Background="{DynamicResource ToggleSwitchStrokeOff}"
                                 CornerRadius="10"/>
 
                         <Border x:Name="SwitchKnobBounds"
@@ -99,10 +105,19 @@
             </ControlTemplate>
         </Setter>
     </Style>
-    <Style Selector="ToggleSwitch.Autoplay:pointerover/template/Border">
-        <Setter Property="Background" Value="{DynamicResource ToggleSwitchFillOnPointerOver}"/>
+    <Style Selector="ToggleSwitch.Autoplay:pointerover/template/Border#OuterBorder">
+        <Setter Property="Background" Value="{DynamicResource ToggleSwitchStrokeOffPointerOver}"/>
     </Style>
-    <Style Selector="ToggleSwitch.Autoplay:disabled/template/Border">
-        <Setter Property="Background" Value="{DynamicResource ToggleButtonBackgroundCheckedDisabled}"/>
+    <Style Selector="ToggleSwitch.Autoplay:pressed/template/Border#OuterBorder">
+        <Setter Property="Background" Value="{DynamicResource ToggleSwitchStrokeOffDisabled}"/>
+    </Style>
+    <Style Selector="ToggleSwitch.Autoplay:disabled/template/Border#OuterBorder">
+        <Setter Property="Background" Value="{DynamicResource ToggleSwitchStrokeOffDisabled}" />
+    </Style>
+    <Style Selector="ToggleSwitch.Autoplay:checked/template/Border#OuterBorder">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="ToggleSwitch.Autoplay:unchecked/template/Border#OuterBorder">
+        <Setter Property="Opacity" Value="1" />
     </Style>
 </Styles>
