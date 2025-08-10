@@ -7,8 +7,6 @@ using ReactiveUI;
 using System.Collections;
 using System.Text;
 using System.Threading.Tasks;
-using UnpackerGui.Commands;
-using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
 
@@ -36,14 +34,6 @@ public partial class ImageBrowserView : UserControl
             Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
             Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
         });
-    }
-
-    private void DataGrid_DoubleTapped(object? sender, TappedEventArgs e)
-    {
-        if (e.Source is not Control { Parent: DataGridCell }) return;
-        if (assetGrid.SelectedItem is not AssetInfo asset) return;
-
-        StaticCommands.OpenAssetCommand.Invoke(asset);
     }
 
     private void DataGrid_Sorting(object? sender, DataGridColumnEventArgs e)
