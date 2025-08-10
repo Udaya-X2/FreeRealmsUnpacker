@@ -170,12 +170,15 @@
         <Panel DockPanel.Dock="Bottom"
                Margin="5,-5,5,5">
             <views:MainView Name="assetBrowserView"
-                            IsVisible="{Binding ElementName=assetBrowserTab, Path=IsSelected}"/>
+                            IsVisible="{Binding ElementName=assetBrowserTab, Path=IsSelected}"
+                            IsEnabled="{Binding $self.IsVisible}"/>
             <views:ImageBrowserView Name="imageBrowserView"
                                     IsVisible="{Binding ElementName=imageBrowserTab, Path=IsSelected}"
+                                    IsEnabled="{Binding $self.IsVisible}"
                                     DataContext="{Binding ImageBrowser}"/>
             <views:AudioBrowserView Name="audioBrowserView"
                                     IsVisible="{Binding ElementName=audioBrowserTab, Path=IsSelected}"
+                                    IsEnabled="{Binding $self.IsVisible}"
                                     DataContext="{Binding AudioBrowser}"/>
         </Panel>
     </DockPanel>
