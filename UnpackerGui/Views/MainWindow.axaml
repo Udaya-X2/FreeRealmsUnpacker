@@ -135,7 +135,7 @@
                 </MenuItem>
                 <!--Help Menu-->
                 <MenuItem Header="Help">
-                    <!--About Free Realms Unpacker-->
+                    <!--About-->
                     <MenuItem Header="About Free Realms Unpacker..."
                               Command="{Binding ShowAboutCommand}"/>
                 </MenuItem>

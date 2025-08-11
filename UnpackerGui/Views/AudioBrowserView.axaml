@@ -113,11 +113,13 @@
                                    VerticalAlignment="Center"
                                    Text="{Binding Position, Converter={StaticResource DoubleToTimestampConverter}}"/>
                         <!--Slider-->
-                        <Slider Grid.Column="1"
-                                Minimum="0"
-                                Maximum="{Binding Length}"
-                                Value="{Binding Position}"
-                                ToolTip.Tip="Seek"/>
+                        <ctrl:SeekSlider Grid.Column="1"
+                                         Minimum="0"
+                                         Maximum="{Binding Length}"
+                                         Value="{Binding Position}"
+                                         ToolTip.Tip="Seek"
+                                         SeekStarted="SeekSlider_SeekStarted"
+                                         SeekCompleted="SeekSlider_SeekCompleted"/>
                         <!--End Time-->
                         <TextBlock Grid.Column="2"
                                    VerticalAlignment="Center"

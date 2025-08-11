@@ -25,13 +25,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     public override FilteredReactiveCollection<AssetInfo> Assets { get; }
 
     public ReactiveCommand<Unit, Unit> TogglePlayPauseCommand { get; }
-    public ReactiveCommand<double, Unit> SeekCommand { get; }
     public ReactiveCommand<Unit, Unit> ToggleMuteCommand { get; }
     public ReactiveCommand<float, Unit> SetSpeedCommand { get; }
+    public ReactiveCommand<double, Unit> SeekCommand { get; }
 
     private readonly DispatcherTimer _dispatcherTimer;
 
     private bool _isPlaying;
+    private bool _isSeeking;
+    private bool _wasPlaying;
     private double _position;
     private double _length;
     private float _speed;
@@ -47,9 +49,9 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         // Initialize each command.
         TogglePlayPauseCommand = ReactiveCommand.Create(TogglePlayPause);
-        SeekCommand = ReactiveCommand.Create<double>(x => Position = ChannelPosition + x);
         ToggleMuteCommand = ReactiveCommand.Create(ToggleMute);
         SetSpeedCommand = ReactiveCommand.Create<float>(x => Speed = x);
+        SeekCommand = ReactiveCommand.Create<double>(x => Position = ChannelPosition + x);
 
         // Filter the audio assets from the asset browser.
         Assets = assets.Filter(x => x.IsAudio);
@@ -57,6 +59,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
         // Initialize media player resources.
         _isPlaying = false;
+        _isSeeking = false;
+        _wasPlaying = false;
         _position = 0.0;
         _length = double.Epsilon;
         _speed = 1f;
@@ -91,6 +95,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
                 .Subscribe(x => Bass.GlobalStreamVolume = 100 * x);
         Settings.WhenAnyValue(x => x.Loop)
                 .Subscribe(x => SetBassFlag(BassFlags.Loop, x));
+        this.WhenAnyValue(x => x.IsSeeking)
+            .Subscribe(x => PauseWhenSeeking());
         this.WhenAnyValue(x => x.Speed)
             .Subscribe(x => Bass.ChannelSetAttribute(Handle, ChannelAttribute.Tempo, Tempo));
     }
@@ -107,6 +113,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         get => _isPlaying;
         set => this.RaiseAndSetIfChanged(ref _isPlaying, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the media player is seeking.
+    /// </summary>
+    public bool IsSeeking
+    {
+        get => _isSeeking;
+        set => this.RaiseAndSetIfChanged(ref _isSeeking, value);
     }
 
     /// <summary>
@@ -236,6 +251,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         DisplayPosition = 0.0;
         Length = double.Epsilon;
         IsPlaying = false;
+        IsSeeking = false;
+        _wasPlaying = false;
     }
 
     /// <summary>
@@ -299,6 +316,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// </summary>
     private void TogglePlayPause()
     {
+        if (!CanPlay || IsSeeking) return;
+
         if (IsPlaying ^= true)
         {
             Bass.ChannelPlay(Handle);
@@ -324,6 +343,27 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         {
             _mutedVolume = Settings.Volume;
             Settings.Volume = 0;
+        }
+    }
+
+    /// <summary>
+    /// Pauses the media while seeking and resumes when no longer seeking.
+    /// </summary>
+    private void PauseWhenSeeking()
+    {
+        if (!CanPlay) return;
+
+        if (IsPlaying && IsSeeking)
+        {
+            IsPlaying = false;
+            Bass.ChannelPause(Handle);
+            _wasPlaying = true;
+        }
+        else if (_wasPlaying && !IsPlaying && !IsSeeking)
+        {
+            IsPlaying = true;
+            Bass.ChannelPlay(Handle);
+            _wasPlaying = false;
         }
     }
 
