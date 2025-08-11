@@ -37,8 +37,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     private double _position;
     private double _length;
     private float _speed;
-    private int _handle;
     private int _mutedVolume;
+    private int _handle;
     private BassFlags _bassFlags;
     private byte[] _buffer;
 
@@ -64,8 +64,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         _position = 0.0;
         _length = double.Epsilon;
         _speed = 1f;
-        _handle = 0;
         _mutedVolume = Settings.Volume;
+        _handle = 0;
         _bassFlags = BassFlags.FxFreeSource;
         _buffer = [];
 
@@ -180,6 +180,15 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// Gets the playback tempo.
     /// </summary>
     public float Tempo => 100f * (Speed - 1f);
+
+    /// <summary>
+    /// Gets or sets the last volume before a mute.
+    /// </summary>
+    public int MutedVolume
+    {
+        get => _mutedVolume;
+        set => this.RaiseAndSetIfChanged(ref _mutedVolume, value);
+    }
 
     /// <summary>
     /// Gets or sets the audio stream handle.
@@ -337,11 +346,11 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     {
         if (Settings.Volume == 0)
         {
-            Settings.Volume = _mutedVolume;
+            Settings.Volume = MutedVolume;
         }
         else
         {
-            _mutedVolume = Settings.Volume;
+            MutedVolume = Settings.Volume;
             Settings.Volume = 0;
         }
     }

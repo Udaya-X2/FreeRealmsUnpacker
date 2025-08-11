@@ -101,7 +101,7 @@
                             Orientation="Vertical"
                             Margin="10"
                             VerticalAlignment="Center">
-                    <!--Seek Slider-->
+                    <!--Media Slider-->
                     <Grid ColumnSpacing="10"
                           ColumnDefinitions="Auto,*,Auto"
                           RowDefinitions="Auto"
@@ -112,14 +112,14 @@
                         <TextBlock Grid.Column="0"
                                    VerticalAlignment="Center"
                                    Text="{Binding Position, Converter={StaticResource DoubleToTimestampConverter}}"/>
-                        <!--Slider-->
+                        <!--Time Slider-->
                         <ctrl:SeekSlider Grid.Column="1"
                                          Minimum="0"
                                          Maximum="{Binding Length}"
                                          Value="{Binding Position}"
                                          ToolTip.Tip="Seek"
-                                         SeekStarted="SeekSlider_SeekStarted"
-                                         SeekCompleted="SeekSlider_SeekCompleted"/>
+                                         SeekStarted="SeekSlider_SeekStarted_Media"
+                                         SeekCompleted="SeekSlider_SeekCompleted_Media"/>
                         <!--End Time-->
                         <TextBlock Grid.Column="2"
                                    VerticalAlignment="Center"
@@ -254,12 +254,13 @@
                                 <ic:FluentIcon Icon="{Binding Settings.Volume, Converter={StaticResource VolumeToIconConverter}}"/>
                             </Button>
                             <!--Volume Slider-->
-                            <Slider Margin="0 -10 0 -10"
-                                    Minimum="0"
-                                    Maximum="100"
-                                    Width="100"
-                                    Value="{Binding Settings.Volume}"
-                                    ToolTip.Tip="Volume"/>
+                            <ctrl:SeekSlider Margin="0 -10 0 -10"
+                                             Minimum="0"
+                                             Maximum="100"
+                                             Width="100"
+                                             Value="{Binding Settings.Volume}"
+                                             ToolTip.Tip="Volume"
+                                             SeekStarted="SeekSlider_SeekStarted_Volume"/>
                             <!--Current Volume-->
                             <TextBlock Text="{Binding Settings.Volume}"
                                        VerticalAlignment="Center"

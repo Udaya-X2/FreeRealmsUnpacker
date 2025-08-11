@@ -3,10 +3,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using ReactiveUI;
 using System.Collections;
-using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
-using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.ViewModels;
 
@@ -75,17 +73,25 @@ public partial class AudioBrowserView : UserControl
         await App.SetClipboardText(sb.ToString());
     }
 
-    private void SeekSlider_SeekStarted(object? sender, RoutedEventArgs e)
+    private void SeekSlider_SeekStarted_Media(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not AudioBrowserViewModel audioBrowser) return;
-        
+
         audioBrowser.IsSeeking = true;
     }
 
-    private void SeekSlider_SeekCompleted(object? sender, RoutedEventArgs e)
+    private void SeekSlider_SeekCompleted_Media(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not AudioBrowserViewModel audioBrowser) return;
 
         audioBrowser.IsSeeking = false;
+    }
+
+    private void SeekSlider_SeekStarted_Volume(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not AudioBrowserViewModel audioBrowser) return;
+        if (App.Current is not { Settings.Volume: int volume and > 0 }) return;
+
+        audioBrowser.MutedVolume = volume;
     }
 }
