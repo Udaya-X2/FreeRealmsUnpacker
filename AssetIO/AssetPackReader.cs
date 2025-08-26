@@ -39,7 +39,7 @@ public class AssetPackReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(buffer);
-        if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
+        if ((uint)buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
 
         _assetStream.Position = asset.Offset;
         int bytesRead = _assetStream.Read(buffer, 0, (int)asset.Size);
@@ -53,9 +53,9 @@ public class AssetPackReader : AssetReader
     /// <summary>
     /// Returns a <see cref="Stream"/> that reads the bytes of the specified asset from the .pack file.
     /// </summary>
-    /// <param name="asset">The asset to read.</param>
     /// <returns>A <see cref="Stream"/> that reads the bytes of the specified asset from the .pack file.</returns>
-    public Stream ReadStream(Asset asset)
+    /// <inheritdoc/>
+    public override Stream ReadStream(Asset asset)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
@@ -276,6 +276,8 @@ public class AssetPackReader : AssetReader
     /// <param name="asset">The asset to read.</param>
     private class AssetStream(FileStream stream, Asset asset) : Stream
     {
+        private long _position = asset.Offset;
+
         /// <inheritdoc/>
         public override bool CanRead => stream.CanRead;
 
@@ -291,8 +293,13 @@ public class AssetPackReader : AssetReader
         /// <inheritdoc/>
         public override long Position
         {
-            get => stream.Position - asset.Offset;
-            set => stream.Position = asset.Offset + value;
+            get => _position - asset.Offset;
+            set
+            {
+                ArgumentOutOfRangeException.ThrowIfNegative(value);
+
+                _position = asset.Offset + value;
+            }
         }
 
         /// <inheritdoc/>
@@ -301,32 +308,33 @@ public class AssetPackReader : AssetReader
         /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            long position = Position;
+            ArgumentNullException.ThrowIfNull(buffer);
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
+            if (buffer.Length - offset < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
 
-            if (position < 0)
-            {
-                Position = 0;
-                position = 0;
-            }
-
-            long bytesLeft = asset.Size - position;
+            long bytesLeft = asset.Offset + asset.Size - _position;
 
             if (bytesLeft <= 0) return 0;
             if (count > bytesLeft) count = (int)bytesLeft;
+
+            stream.Position = _position;
+            
             if (stream.Read(buffer, offset, count) != count)
             {
                 throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, stream.Name));
             }
 
+            _position += count;
             return count;
         }
 
         /// <inheritdoc/>
         public override long Seek(long offset, SeekOrigin origin) => origin switch
         {
-            SeekOrigin.Begin => stream.Seek(asset.Offset + offset, origin),
-            SeekOrigin.Current => stream.Seek(Position + offset, origin),
-            SeekOrigin.End => stream.Seek(asset.Offset + asset.Size + offset, origin),
+            SeekOrigin.Begin => Position = offset,
+            SeekOrigin.Current => Position += offset,
+            SeekOrigin.End => Position = Length + offset,
             _ => throw new ArgumentException(SR.Argument_InvalidSeekOrigin, nameof(origin))
         };
 

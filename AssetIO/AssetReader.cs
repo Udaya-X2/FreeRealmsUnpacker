@@ -16,7 +16,7 @@ public abstract class AssetReader : IDisposable
     public virtual byte[] Read(Asset asset)
     {
         ArgumentNullException.ThrowIfNull(asset);
-        if (asset.Size > Array.MaxLength) throw new IOException(string.Format(SR.IO_AssetTooLong2GB, asset.Name));
+        if (asset.Size > (uint)Array.MaxLength) throw new IOException(string.Format(SR.IO_AssetTooLong2GB, asset.Name));
         if (asset.Size == 0) return [];
 
         byte[] bytes = new byte[asset.Size];
@@ -37,6 +37,19 @@ public abstract class AssetReader : IDisposable
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
     public abstract void Read(Asset asset, byte[] buffer);
+
+    /// <summary>
+    /// Returns a <see cref="Stream"/> that reads the bytes of the specified asset from the asset file(s).
+    /// </summary>
+    /// <remarks>
+    /// The returned <see cref="Stream"/> shares its lifetime with the
+    /// <see cref="AssetReader"/>; it does not need to be explicitly disposed.
+    /// </remarks>
+    /// <param name="asset">The asset to read.</param>
+    /// <returns>A <see cref="Stream"/> that reads the bytes of the specified asset from the asset file(s).</returns>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ObjectDisposedException"/>
+    public abstract Stream ReadStream(Asset asset);
 
     /// <summary>
     /// Reads the bytes of the specified asset from the asset file(s) and writes them to another stream.

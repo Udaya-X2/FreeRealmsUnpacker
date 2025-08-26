@@ -1,5 +1,7 @@
 ﻿using Force.Crc32;
 using System.Buffers;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace AssetIO;
 
@@ -40,7 +42,7 @@ public class AssetDatReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(buffer);
-        if (buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
+        if ((uint)buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
 
         // Determine which .dat file to read and where to start reading from based on the offset.
         long file = asset.Offset / MaxAssetDatSize;
@@ -56,6 +58,19 @@ public class AssetDatReader : AssetReader
             assetStream.Position = 0;
             bytesRead += assetStream.Read(buffer, bytesRead, (int)asset.Size - bytesRead);
         }
+    }
+
+    /// <summary>
+    /// Returns a <see cref="Stream"/> that reads the bytes of the specified asset from the .dat file(s).
+    /// </summary>
+    /// <returns>A <see cref="Stream"/> that reads the bytes of the specified asset from the .dat file(s).</returns>
+    /// <inheritdoc/>
+    public override Stream ReadStream(Asset asset)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(asset);
+
+        return new AssetStream(_assetStreams, asset);
     }
 
     /// <summary>
@@ -265,16 +280,20 @@ public class AssetDatReader : AssetReader
         }
     }
 
+    /// <inheritdoc cref="GetAssetStream(FileStream[], long, Asset)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private FileStream GetAssetStream(long file, Asset asset) => GetAssetStream(_assetStreams, file, asset);
+
     /// <summary>
     /// Returns the <see cref="FileStream"/> at the specified index.
     /// </summary>
     /// <returns>The <see cref="FileStream"/> at the specified index.</returns>
     /// <exception cref="IOException"/>
-    private FileStream GetAssetStream(long file, Asset asset)
+    private static FileStream GetAssetStream(FileStream[] streams, long file, Asset asset)
     {
         try
         {
-            return _assetStreams[file];
+            return streams[file];
         }
         catch
         {
@@ -328,5 +347,91 @@ public class AssetDatReader : AssetReader
 
             _disposed = true;
         }
+    }
+
+    /// <summary>
+    /// Provides a read-only view of the bytes from the specified asset in the .dat file(s).
+    /// </summary>
+    /// <param name="streams">The asset .dat file streams.</param>
+    /// <param name="asset">The asset to read.</param>
+    private class AssetStream(FileStream[] streams, Asset asset) : Stream
+    {
+        private long _position = asset.Offset;
+
+        /// <inheritdoc/>
+        public override bool CanRead => Array.TrueForAll(streams, x => x.CanRead);
+
+        /// <inheritdoc/>
+        public override bool CanSeek => Array.TrueForAll(streams, x => x.CanSeek);
+
+        /// <inheritdoc/>
+        public override bool CanWrite => false;
+
+        /// <inheritdoc/>
+        public override long Length => asset.Size;
+
+        /// <inheritdoc/>
+        public override long Position
+        {
+            get => _position - asset.Offset;
+            set
+            {
+                ArgumentOutOfRangeException.ThrowIfNegative(value);
+
+                _position = asset.Offset + value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void Flush() => Array.ForEach(streams, x => x.Flush());
+
+        /// <inheritdoc/>
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            ArgumentNullException.ThrowIfNull(buffer);
+            ArgumentOutOfRangeException.ThrowIfNegative(offset);
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
+            if (buffer.Length - offset < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+
+            long bytesLeft = asset.Offset + asset.Size - _position;
+
+            if (bytesLeft <= 0) return 0;
+            if (count > bytesLeft) count = (int)bytesLeft;
+
+            // Determine which .dat file to read and where to start reading from based on the current position.
+            long file = _position / MaxAssetDatSize;
+            long address = _position % MaxAssetDatSize;
+            FileStream stream = GetAssetStream(streams, file, asset);
+            stream.Position = address;
+            int bytesRead = stream.Read(buffer, offset, count);
+
+            // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
+            while (bytesRead != count)
+            {
+                stream = GetAssetStream(streams, ++file, asset);
+                stream.Position = 0;
+                bytesRead += stream.Read(buffer, offset + bytesRead, count - bytesRead);
+            }
+
+            _position += count;
+            return count;
+        }
+
+        /// <inheritdoc/>
+        public override long Seek(long offset, SeekOrigin origin) => origin switch
+        {
+            SeekOrigin.Begin => Position = offset,
+            SeekOrigin.Current => Position += offset,
+            SeekOrigin.End => Position = Length + offset,
+            _ => throw new ArgumentException(SR.Argument_InvalidSeekOrigin, nameof(origin))
+        };
+
+        /// <inheritdoc/>
+        public override void SetLength(long value)
+            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
+
+        /// <inheritdoc/>
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
     }
 }
