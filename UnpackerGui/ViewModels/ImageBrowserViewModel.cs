@@ -6,7 +6,6 @@ using Pfim;
 using ReactiveUI;
 using SkiaSharp;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Reactive;
 using System.Runtime.InteropServices;
@@ -72,26 +71,16 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
 
         try
         {
-            if (asset.AssetFile.FileType is not AssetType.Pack) return null;
-            if (asset.Type is "DDS" or "TGA") return null;
-
-            using AssetPackReader packReader = new(asset.AssetFile.FullName);
-            Stream stream = packReader.ReadStream(asset);
-            Debug.Assert(stream.Length == asset.Size);
-            return new Bitmap(stream);
-
-            // Read the asset into the image stream.
+            // Read the asset as a stream.
             using AssetReader reader = asset.AssetFile.OpenRead();
-            _imageStream.SetLength(0);
-            reader.CopyTo(asset, _imageStream);
+            Stream stream = reader.ReadStream(asset);
 
             // Convert the stream from DDS/TGA to PNG, if necessary.
-            if (asset.Type is "DDS" && !ConvertDdsImage()) return null;
-            if (asset.Type is "TGA" && !ConvertTargaImage()) return null;
+            if (asset.Type is "DDS" && !ConvertDdsImage(ref stream)) return null;
+            if (asset.Type is "TGA" && !ConvertTargaImage(ref stream)) return null;
 
             // Create the bitmap image from the stream.
-            _imageStream.Position = 0;
-            return new Bitmap(_imageStream);
+            return new Bitmap(stream);
         }
         catch
         {
@@ -100,24 +89,24 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Converts the contents of the current image stream from DDS to PNG.
+    /// Converts the specified stream from DDS to PNG.
     /// </summary>
     /// <returns><inheritdoc cref="ConvertImage(IImage)"/></returns>
-    private bool ConvertDdsImage()
+    private bool ConvertDdsImage(ref Stream stream)
     {
-        _imageStream.Position = 0;
-        using IImage image = Dds.Create(_imageStream, _imageConfig);
+        using IImage image = Dds.Create(stream, _imageConfig);
+        stream = _imageStream;
         return ConvertImage(image);
     }
 
     /// <summary>
-    /// Converts the contents of the current image stream from TARGA to PNG.
+    /// Converts the specified stream from TARGA to PNG.
     /// </summary>
     /// <returns><inheritdoc cref="ConvertImage(IImage)"/></returns>
-    private bool ConvertTargaImage()
+    private bool ConvertTargaImage(ref Stream stream)
     {
-        _imageStream.Position = 0;
-        using IImage image = Targa.Create(_imageStream, _imageConfig);
+        using IImage image = Targa.Create(stream, _imageConfig);
+        stream = _imageStream;
         return ConvertImage(image);
     }
 
@@ -182,7 +171,14 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
         using SKBitmap bitmap = SKBitmap.FromImage(skImage);
         _imageStream.SetLength(0);
         using SKManagedWStream wstream = new(_imageStream);
-        return bitmap.Encode(wstream, SKEncodedImageFormat.Png, 100);
+
+        if (bitmap.Encode(wstream, SKEncodedImageFormat.Png, 100))
+        {
+            _imageStream.Position = 0;
+            return true;
+        }
+
+        return false;
     }
 
     /// <summary>
