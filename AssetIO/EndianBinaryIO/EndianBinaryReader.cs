@@ -178,10 +178,7 @@ internal class EndianBinaryReader : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        if (!_stream.CanSeek)
-        {
-            return -1;
-        }
+        if (!_stream.CanSeek) return -1;
 
         long origPos = _stream.Position;
         int ch = Read();
@@ -219,10 +216,8 @@ internal class EndianBinaryReader : IDisposable
             int r = _stream.ReadByte();
             _charBytes[0] = (byte)r;
 
-            if (r == -1)
-            {
-                return -1;
-            }
+            if (r == -1) return -1;
+
             if (numBytes == 2)
             {
                 r = _stream.ReadByte();
@@ -490,19 +485,11 @@ internal class EndianBinaryReader : IDisposable
     public string ReadString(int stringLength)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-
-        if (stringLength < 0)
-        {
-            throw new IOException(string.Format(SR.IO_InvalidStringLen, stringLength));
-        }
-        if (stringLength == 0)
-        {
-            return string.Empty;
-        }
+        if (stringLength < 0) throw new IOException(string.Format(SR.IO_InvalidStringLen, stringLength));
+        if (stringLength == 0) return string.Empty;
 
         int currPos = 0;
         int n;
-        int readLength;
         int charsRead;
         _charBytes ??= new byte[MaxCharBytesSize];
         _charBuffer ??= new char[_maxCharsSize];
@@ -510,25 +497,16 @@ internal class EndianBinaryReader : IDisposable
 
         do
         {
-            readLength = Math.Min(MaxCharBytesSize, stringLength - currPos);
-            n = _stream.Read(_charBytes, 0, readLength);
-
-            if (n == 0)
-            {
-                throw new EndOfStreamException(SR.EndOfStream_Stream);
-            }
-
+            n = Math.Min(MaxCharBytesSize, stringLength - currPos);
+            _stream.ReadExactly(_charBytes, 0, n);
             charsRead = _decoder.GetChars(_charBytes, 0, n, _charBuffer, 0);
 
-            if (currPos == 0 && n == stringLength)
-            {
-                return new string(_charBuffer, 0, charsRead);
-            }
+            if (currPos == 0 && n == stringLength) return new string(_charBuffer, 0, charsRead);
 
             // Since we could be reading from an untrusted data source, limit the initial size of the
             // StringBuilder instance we're about to get or create. It'll expand automatically as needed.
-            const int maxBuilderSize = 360;
-            sb ??= new(Math.Min(stringLength, maxBuilderSize)); // Actual string length in chars may be smaller.
+            const int MaxBuilderSize = 360;
+            sb ??= new(Math.Min(stringLength, MaxBuilderSize)); // Actual string length in chars may be smaller.
             sb.Append(_charBuffer, 0, charsRead);
             currPos += n;
         }
@@ -563,18 +541,9 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public int Read(char[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer), SR.ArgumentNull_Buffer);
-        }
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
-        }
-        if (buffer.Length - index < count)
-        {
-            throw new ArgumentException(SR.Argument_InvalidOffLen);
-        }
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
 
         ObjectDisposedException.ThrowIf(_disposed, this);
         return InternalReadChars(new Span<char>(buffer, index, count));
@@ -632,7 +601,9 @@ internal class EndianBinaryReader : IDisposable
                 // The worst case is charsRemaining = 2 and UTF32Decoder holding
                 // onto 3 pending bytes. We need to read just one byte in this case.
                 if (_2BytesPerChar && numBytes > 2)
+                {
                     numBytes -= 2;
+                }
             }
 
             ReadOnlySpan<byte> byteBuffer;
@@ -646,10 +617,7 @@ internal class EndianBinaryReader : IDisposable
             numBytes = _stream.Read(_charBytes, 0, numBytes);
             byteBuffer = new ReadOnlySpan<byte>(_charBytes, 0, numBytes);
 
-            if (byteBuffer.IsEmpty)
-            {
-                break;
-            }
+            if (byteBuffer.IsEmpty) break;
 
             int charsRead = _decoder.GetChars(byteBuffer, buffer, flush: false);
             buffer = buffer[charsRead..];
@@ -680,17 +648,10 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public char[] ReadChars(int count)
     {
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
-        }
-
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        if (count == 0)
-        {
-            return [];
-        }
+        if (count == 0) return [];
 
         char[] chars = new char[count];
         int n = InternalReadChars(new Span<char>(chars));
@@ -726,20 +687,11 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public int Read(byte[] buffer, int index, int count)
     {
-        if (buffer == null)
-        {
-            throw new ArgumentNullException(nameof(buffer), SR.ArgumentNull_Buffer);
-        }
-        if (index < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
-        }
-        if (buffer.Length - index < count)
-        {
-            throw new ArgumentException(SR.Argument_InvalidOffLen);
-        }
-
+        ArgumentNullException.ThrowIfNull(buffer);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
         ObjectDisposedException.ThrowIf(_disposed, this);
+
         return _stream.Read(buffer, index, count);
     }
 
@@ -778,17 +730,10 @@ internal class EndianBinaryReader : IDisposable
     /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
     public byte[] ReadBytes(int count)
     {
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
-        }
-
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        if (count == 0)
-        {
-            return [];
-        }
+        if (count == 0) return [];
 
         byte[] result = new byte[count];
         int numRead = 0;
@@ -797,10 +742,7 @@ internal class EndianBinaryReader : IDisposable
         {
             int n = _stream.Read(result, numRead, count);
 
-            if (n == 0)
-            {
-                break;
-            }
+            if (n == 0) break;
 
             numRead += n;
             count -= n;
@@ -830,21 +772,7 @@ internal class EndianBinaryReader : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
         Debug.Assert(numBytes is > 0 and < 16, "Number of bytes must be in the range [1, 16].");
 
-        int bytesRead = 0;
-
-        do
-        {
-            int n = _stream.Read(_buffer, bytesRead, numBytes - bytesRead);
-
-            if (n == 0)
-            {
-                throw new EndOfStreamException(SR.EndOfStream_Stream);
-            }
-
-            bytesRead += n;
-        }
-        while (bytesRead < numBytes);
-
+        _stream.ReadExactly(_buffer, 0, numBytes);
         return _buffer;
     }
 
@@ -879,10 +807,7 @@ internal class EndianBinaryReader : IDisposable
             byteReadJustNow = ReadByte();
             result |= (byteReadJustNow & 0x7Fu) << shift;
 
-            if (byteReadJustNow <= 0x7Fu)
-            {
-                return (int)result;
-            }
+            if (byteReadJustNow <= 0x7Fu) return (int)result;
         }
 
         // Read the 5th byte. Since we already read 28 bits,
@@ -890,10 +815,7 @@ internal class EndianBinaryReader : IDisposable
         // and it must not have the high bit set.
         byteReadJustNow = ReadByte();
 
-        if (byteReadJustNow > 0b_1111u)
-        {
-            throw new FormatException(SR.Format_Bad7BitInt);
-        }
+        if (byteReadJustNow > 0b_1111u) throw new FormatException(SR.Format_Bad7BitInt);
 
         result |= (uint)byteReadJustNow << MaxBytesWithoutOverflow * 7;
         return (int)result;
@@ -927,10 +849,7 @@ internal class EndianBinaryReader : IDisposable
             byteReadJustNow = ReadByte();
             result |= (byteReadJustNow & 0x7Ful) << shift;
 
-            if (byteReadJustNow <= 0x7Fu)
-            {
-                return (long)result;
-            }
+            if (byteReadJustNow <= 0x7Fu) return (long)result;
         }
 
         // Read the 10th byte. Since we already read 63 bits,
@@ -938,10 +857,7 @@ internal class EndianBinaryReader : IDisposable
         // and it must not have the high bit set.
         byteReadJustNow = ReadByte();
 
-        if (byteReadJustNow > 0b_1u)
-        {
-            throw new FormatException(SR.Format_Bad7BitInt);
-        }
+        if (byteReadJustNow > 0b_1u) throw new FormatException(SR.Format_Bad7BitInt);
 
         result |= (ulong)byteReadJustNow << MaxBytesWithoutOverflow * 7;
         return (long)result;
