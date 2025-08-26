@@ -213,4 +213,10 @@
   <data name="IO_CantCreateTempFile" xml:space="preserve">
     <value>Cannot create temporary file "{0}"; the file already exists.</value>
   </data>
+  <data name="Argument_InvalidSeekOrigin" xml:space="preserve">
+    <value>Invalid seek origin.</value>
+  </data>
+  <data name="NotSupported_UnwritableStream" xml:space="preserve">
+    <value>Stream does not support writing.</value>
+  </data>
 </root>

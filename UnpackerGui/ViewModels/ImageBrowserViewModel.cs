@@ -6,6 +6,7 @@ using Pfim;
 using ReactiveUI;
 using SkiaSharp;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reactive;
 using System.Runtime.InteropServices;
@@ -71,6 +72,14 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
 
         try
         {
+            if (asset.AssetFile.FileType is not AssetType.Pack) return null;
+            if (asset.Type is "DDS" or "TGA") return null;
+
+            using AssetPackReader packReader = new(asset.AssetFile.FullName);
+            Stream stream = packReader.ReadStream(asset);
+            Debug.Assert(stream.Length == asset.Size);
+            return new Bitmap(stream);
+
             // Read the asset into the image stream.
             using AssetReader reader = asset.AssetFile.OpenRead();
             _imageStream.SetLength(0);

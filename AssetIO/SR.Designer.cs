@@ -106,6 +106,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid seek origin..
+        /// </summary>
+        internal static string Argument_InvalidSeekOrigin {
+            get {
+                return ResourceManager.GetString("Argument_InvalidSeekOrigin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Stream was not readable..
         /// </summary>
         internal static string Argument_StreamNotReadable {
@@ -327,6 +336,15 @@ namespace AssetIO {
         internal static string NotSupported_PackTempWrite {
             get {
                 return ResourceManager.GetString("NotSupported_PackTempWrite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stream does not support writing..
+        /// </summary>
+        internal static string NotSupported_UnwritableStream {
+            get {
+                return ResourceManager.GetString("NotSupported_UnwritableStream", resourceCulture);
             }
         }
         

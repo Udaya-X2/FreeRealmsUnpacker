@@ -51,6 +51,19 @@ public class AssetPackReader : AssetReader
     }
 
     /// <summary>
+    /// Returns a <see cref="Stream"/> that reads the bytes of the specified asset from the .pack file.
+    /// </summary>
+    /// <param name="asset">The asset to read.</param>
+    /// <returns>A <see cref="Stream"/> that reads the bytes of the specified asset from the .pack file.</returns>
+    public Stream ReadStream(Asset asset)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        ArgumentNullException.ThrowIfNull(asset);
+
+        return new AssetStream(_assetStream, asset);
+    }
+
+    /// <summary>
     /// Reads the bytes of the specified asset from the .pack file and writes them to another stream.
     /// </summary>
     /// <inheritdoc/>
@@ -254,5 +267,75 @@ public class AssetPackReader : AssetReader
 
             _disposed = true;
         }
+    }
+
+    /// <summary>
+    /// Provides a read-only view of the bytes from the specified asset in the .pack file.
+    /// </summary>
+    /// <param name="stream">The asset .pack file's stream.</param>
+    /// <param name="asset">The asset to read.</param>
+    private class AssetStream(FileStream stream, Asset asset) : Stream
+    {
+        /// <inheritdoc/>
+        public override bool CanRead => stream.CanRead;
+
+        /// <inheritdoc/>
+        public override bool CanSeek => stream.CanSeek;
+
+        /// <inheritdoc/>
+        public override bool CanWrite => false;
+
+        /// <inheritdoc/>
+        public override long Length => asset.Size;
+
+        /// <inheritdoc/>
+        public override long Position
+        {
+            get => stream.Position - asset.Offset;
+            set => stream.Position = asset.Offset + value;
+        }
+
+        /// <inheritdoc/>
+        public override void Flush() => stream.Flush();
+
+        /// <inheritdoc/>
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            long position = Position;
+
+            if (position < 0)
+            {
+                Position = 0;
+                position = 0;
+            }
+
+            long bytesLeft = asset.Size - position;
+
+            if (bytesLeft <= 0) return 0;
+            if (count > bytesLeft) count = (int)bytesLeft;
+            if (stream.Read(buffer, offset, count) != count)
+            {
+                throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, stream.Name));
+            }
+
+            return count;
+        }
+
+        /// <inheritdoc/>
+        public override long Seek(long offset, SeekOrigin origin) => origin switch
+        {
+            SeekOrigin.Begin => stream.Seek(asset.Offset + offset, origin),
+            SeekOrigin.Current => stream.Seek(Position + offset, origin),
+            SeekOrigin.End => stream.Seek(asset.Offset + asset.Size + offset, origin),
+            _ => throw new ArgumentException(SR.Argument_InvalidSeekOrigin, nameof(origin))
+        };
+
+        /// <inheritdoc/>
+        public override void SetLength(long value)
+            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
+
+        /// <inheritdoc/>
+        public override void Write(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
     }
 }
