@@ -204,7 +204,6 @@ public class AssetPackWriter : AssetWriter
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
         if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
 

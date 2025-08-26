@@ -310,7 +310,6 @@ public class AssetPackReader : AssetReader
         {
             ArgumentNullException.ThrowIfNull(buffer);
             ArgumentOutOfRangeException.ThrowIfNegative(offset);
-            ArgumentOutOfRangeException.ThrowIfNegative(count);
             if (buffer.Length - offset < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
 
             long bytesLeft = asset.Offset + asset.Size - _position;

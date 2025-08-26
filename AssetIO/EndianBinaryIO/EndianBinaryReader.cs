@@ -571,10 +571,6 @@ internal class EndianBinaryReader : IDisposable
         {
             throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
         }
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
-        }
         if (buffer.Length - index < count)
         {
             throw new ArgumentException(SR.Argument_InvalidOffLen);
@@ -737,10 +733,6 @@ internal class EndianBinaryReader : IDisposable
         if (index < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
-        }
-        if (count < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum);
         }
         if (buffer.Length - index < count)
         {
