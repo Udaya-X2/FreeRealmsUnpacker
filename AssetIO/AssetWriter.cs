@@ -154,7 +154,7 @@ public abstract class AssetWriter : IDisposable
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
 
         Add(name);
         Write(buffer, index, count);

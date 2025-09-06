@@ -388,9 +388,7 @@ public class AssetDatReader : AssetReader
         /// <inheritdoc/>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            ArgumentNullException.ThrowIfNull(buffer);
-            ArgumentOutOfRangeException.ThrowIfNegative(offset);
-            if (buffer.Length - offset < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+            ValidateBufferArguments(buffer, offset, count);
 
             long bytesLeft = asset.Offset + asset.Size - _position;
 

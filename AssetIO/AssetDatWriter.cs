@@ -177,7 +177,7 @@ public class AssetDatWriter : AssetWriter
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
         if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
 
         while (count > 0)

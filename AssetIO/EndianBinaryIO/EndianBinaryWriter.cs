@@ -9,7 +9,6 @@ namespace AssetIO.EndianBinaryIO;
 /// </summary>
 internal class EndianBinaryWriter : BinaryWriter
 {
-    private const int MaxArrayPoolRentalSize = 64 * 1024; // try to keep rentals to a reasonable size
     private const int CodePageUTF8 = 65001;
 
     private readonly Encoding _encoding;
@@ -200,8 +199,5 @@ internal class EndianBinaryWriter : BinaryWriter
     }
 
     /// <inheritdoc/>
-    public override void Write(ReadOnlySpan<byte> buffer)
-    {
-        OutStream.Write(buffer);
-    }
+    public override void Write(ReadOnlySpan<byte> buffer) => OutStream.Write(buffer);
 }

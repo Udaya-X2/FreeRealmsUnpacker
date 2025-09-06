@@ -543,9 +543,9 @@ internal class EndianBinaryReader : IDisposable
     {
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
-
+        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
         ObjectDisposedException.ThrowIf(_disposed, this);
+
         return InternalReadChars(new Span<char>(buffer, index, count));
     }
 
@@ -689,7 +689,7 @@ internal class EndianBinaryReader : IDisposable
     {
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if (buffer.Length - index < count) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         return _stream.Read(buffer, index, count);
