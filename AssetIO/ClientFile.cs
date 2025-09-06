@@ -1093,8 +1093,8 @@ public static partial class ClientFile
 
             do
             {
-                bytesRead1 = stream1.Read(buffer1);
-                bytesRead2 = stream2.Read(buffer2);
+                bytesRead1 = stream1.Read(buffer1, 0, BufferSize);
+                bytesRead2 = stream2.Read(buffer2, 0, BufferSize);
 
                 if (!buffer1.AsSpan(0, bytesRead1).SequenceEqual(buffer2.AsSpan(0, bytesRead2))) return false;
             }
