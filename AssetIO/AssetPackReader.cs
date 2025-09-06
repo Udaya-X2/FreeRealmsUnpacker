@@ -10,7 +10,7 @@ public class AssetPackReader : AssetReader
 {
     private const int BufferSize = 81920;
 
-    private readonly FileStream _assetStream;
+    private readonly FileStream _stream;
     private readonly byte[] _buffer;
 
     private bool _disposed;
@@ -26,7 +26,7 @@ public class AssetPackReader : AssetReader
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);
 
-        _assetStream = File.OpenRead(packFile);
+        _stream = File.OpenRead(packFile);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
     }
 
@@ -41,12 +41,12 @@ public class AssetPackReader : AssetReader
         ArgumentNullException.ThrowIfNull(buffer);
         if ((uint)buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
 
-        _assetStream.Position = asset.Offset;
-        int bytesRead = _assetStream.Read(buffer, 0, (int)asset.Size);
+        _stream.Position = asset.Offset;
+        int bytesRead = _stream.Read(buffer, 0, (int)asset.Size);
 
         if (bytesRead != asset.Size)
         {
-            throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
+            throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _stream.Name));
         }
     }
 
@@ -60,7 +60,7 @@ public class AssetPackReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
 
-        return new AssetStream(_assetStream, asset);
+        return new AssetStream(_stream, asset);
     }
 
     /// <summary>
@@ -204,7 +204,7 @@ public class AssetPackReader : AssetReader
     /// <returns>An enumerable sequence of the number of bytes read into the buffer at each read.</returns>
     private IEnumerable<int> InternalRead(Asset asset)
     {
-        _assetStream.Position = asset.Offset;
+        _stream.Position = asset.Offset;
         uint bytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
@@ -212,9 +212,9 @@ public class AssetPackReader : AssetReader
         {
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
 
-            if (_assetStream.Read(_buffer, 0, count) != count)
+            if (_stream.Read(_buffer, 0, count) != count)
             {
-                throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
+                throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _stream.Name));
             }
 
             yield return count;
@@ -231,7 +231,7 @@ public class AssetPackReader : AssetReader
     private IEnumerable<Task<int>> InternalReadAsync(Asset asset, CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
-        _assetStream.Position = asset.Offset;
+        _stream.Position = asset.Offset;
         uint bytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
@@ -241,11 +241,11 @@ public class AssetPackReader : AssetReader
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
             yield return Task.Run(async () =>
             {
-                int bytesRead = await _assetStream.ReadAsync(_buffer.AsMemory(0, count), token);
+                int bytesRead = await _stream.ReadAsync(_buffer.AsMemory(0, count), token);
 
                 if (bytesRead != count)
                 {
-                    throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _assetStream.Name));
+                    throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _stream.Name));
                 }
 
                 return bytesRead;
@@ -262,7 +262,7 @@ public class AssetPackReader : AssetReader
             if (disposing)
             {
                 ArrayPool<byte>.Shared.Return(_buffer);
-                _assetStream.Dispose();
+                _stream.Dispose();
             }
 
             _disposed = true;
@@ -274,7 +274,7 @@ public class AssetPackReader : AssetReader
     /// </summary>
     /// <param name="stream">The asset .pack file's stream.</param>
     /// <param name="asset">The asset to read.</param>
-    private class AssetStream(FileStream stream, Asset asset) : Stream
+    private sealed class AssetStream(FileStream stream, Asset asset) : Stream
     {
         private long _position = asset.Offset;
 

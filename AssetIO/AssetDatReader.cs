@@ -1,6 +1,5 @@
 ﻿using Force.Crc32;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace AssetIO;
@@ -13,7 +12,7 @@ public class AssetDatReader : AssetReader
     private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
     private const int BufferSize = 81920;
 
-    private readonly FileStream[] _assetStreams;
+    private readonly FileStream[] _streams;
     private readonly byte[] _buffer;
 
     private bool _disposed;
@@ -29,7 +28,7 @@ public class AssetDatReader : AssetReader
     {
         ArgumentNullException.ThrowIfNull(dataFiles);
 
-        _assetStreams = OpenReadDataFiles(dataFiles);
+        _streams = OpenReadDataFiles(dataFiles);
         _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
     }
 
@@ -47,16 +46,16 @@ public class AssetDatReader : AssetReader
         // Determine which .dat file to read and where to start reading from based on the offset.
         long file = asset.Offset / MaxAssetDatSize;
         long address = asset.Offset % MaxAssetDatSize;
-        FileStream assetStream = GetAssetStream(file, asset);
-        assetStream.Position = address;
-        int bytesRead = assetStream.Read(buffer, 0, (int)asset.Size);
+        FileStream stream = GetStream(file, asset);
+        stream.Position = address;
+        int bytesRead = stream.Read(buffer, 0, (int)asset.Size);
 
         // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
         while (bytesRead != asset.Size)
         {
-            assetStream = GetAssetStream(++file, asset);
-            assetStream.Position = 0;
-            bytesRead += assetStream.Read(buffer, bytesRead, (int)asset.Size - bytesRead);
+            stream = GetStream(++file, asset);
+            stream.Position = 0;
+            bytesRead += stream.Read(buffer, bytesRead, (int)asset.Size - bytesRead);
         }
     }
 
@@ -70,7 +69,7 @@ public class AssetDatReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
 
-        return new AssetStream(_assetStreams, asset);
+        return new AssetStream(_streams, asset);
     }
 
     /// <summary>
@@ -218,22 +217,22 @@ public class AssetDatReader : AssetReader
         // Determine which .dat file to read and where to start reading from based on the offset.
         long file = asset.Offset / MaxAssetDatSize;
         long address = asset.Offset % MaxAssetDatSize;
-        FileStream assetStream = GetAssetStream(file, asset);
-        assetStream.Position = address;
+        FileStream stream = GetStream(file, asset);
+        stream.Position = address;
         uint bytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
         while (bytes > 0u)
         {
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
-            int bytesRead = assetStream.Read(_buffer, 0, count);
+            int bytesRead = stream.Read(_buffer, 0, count);
 
             // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
             while (bytesRead != count)
             {
-                assetStream = GetAssetStream(++file, asset);
-                assetStream.Position = 0;
-                bytesRead += assetStream.Read(_buffer, bytesRead, count - bytesRead);
+                stream = GetStream(++file, asset);
+                stream.Position = 0;
+                bytesRead += stream.Read(_buffer, bytesRead, count - bytesRead);
             }
 
             yield return count;
@@ -253,8 +252,8 @@ public class AssetDatReader : AssetReader
         token.ThrowIfCancellationRequested();
         long file = asset.Offset / MaxAssetDatSize;
         long address = asset.Offset % MaxAssetDatSize;
-        FileStream assetStream = GetAssetStream(file, asset);
-        assetStream.Position = address;
+        FileStream stream = GetStream(file, asset);
+        stream.Position = address;
         uint bytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
@@ -264,14 +263,14 @@ public class AssetDatReader : AssetReader
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
             yield return Task.Run(async () =>
             {
-                int bytesRead = await assetStream.ReadAsync(_buffer.AsMemory(0, count), token);
+                int bytesRead = await stream.ReadAsync(_buffer.AsMemory(0, count), token);
 
                 // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
                 while (bytesRead != count)
                 {
-                    assetStream = GetAssetStream(++file, asset);
-                    assetStream.Position = 0;
-                    bytesRead += assetStream.Read(_buffer, bytesRead, count - bytesRead);
+                    stream = GetStream(++file, asset);
+                    stream.Position = 0;
+                    bytesRead += stream.Read(_buffer, bytesRead, count - bytesRead);
                 }
 
                 return bytesRead;
@@ -280,16 +279,16 @@ public class AssetDatReader : AssetReader
         }
     }
 
-    /// <inheritdoc cref="GetAssetStream(FileStream[], long, Asset)"/>
+    /// <inheritdoc cref="GetStream(FileStream[], long, Asset)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private FileStream GetAssetStream(long file, Asset asset) => GetAssetStream(_assetStreams, file, asset);
+    private FileStream GetStream(long file, Asset asset) => GetStream(_streams, file, asset);
 
     /// <summary>
     /// Returns the <see cref="FileStream"/> at the specified index.
     /// </summary>
     /// <returns>The <see cref="FileStream"/> at the specified index.</returns>
     /// <exception cref="IOException"/>
-    private static FileStream GetAssetStream(FileStream[] streams, long file, Asset asset)
+    private static FileStream GetStream(FileStream[] streams, long file, Asset asset)
     {
         try
         {
@@ -310,9 +309,9 @@ public class AssetDatReader : AssetReader
         List<FileStream> fileStreams = [];
         FileStream? fileStream = null;
 
-        foreach (string file in files)
+        try
         {
-            try
+            foreach (string file in files)
             {
                 // Break early if the previous asset .dat file doesn't meet the size requirement.
                 if (fileStream?.Length < MaxAssetDatSize)
@@ -323,12 +322,12 @@ public class AssetDatReader : AssetReader
                 fileStream = File.OpenRead(file);
                 fileStreams.Add(fileStream);
             }
-            catch
-            {
-                // If some files were opened before the error occurred, dispose them before throwing.
-                fileStreams.ForEach(x => x.Dispose());
-                throw;
-            }
+        }
+        catch
+        {
+            // If some files were opened before the error occurred, dispose them before throwing.
+            fileStreams.ForEach(x => x.Dispose());
+            throw;
         }
 
         return [.. fileStreams];
@@ -342,7 +341,7 @@ public class AssetDatReader : AssetReader
             if (disposing)
             {
                 ArrayPool<byte>.Shared.Return(_buffer);
-                Array.ForEach(_assetStreams, x => x.Dispose());
+                Array.ForEach(_streams, x => x.Dispose());
             }
 
             _disposed = true;
@@ -354,7 +353,7 @@ public class AssetDatReader : AssetReader
     /// </summary>
     /// <param name="streams">The asset .dat file streams.</param>
     /// <param name="asset">The asset to read.</param>
-    private class AssetStream(FileStream[] streams, Asset asset) : Stream
+    private sealed class AssetStream(FileStream[] streams, Asset asset) : Stream
     {
         private long _position = asset.Offset;
 
@@ -398,14 +397,14 @@ public class AssetDatReader : AssetReader
             // Determine which .dat file to read and where to start reading from based on the current position.
             long file = _position / MaxAssetDatSize;
             long address = _position % MaxAssetDatSize;
-            FileStream stream = GetAssetStream(streams, file, asset);
+            FileStream stream = GetStream(streams, file, asset);
             stream.Position = address;
             int bytesRead = stream.Read(buffer, offset, count);
 
             // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
             while (bytesRead != count)
             {
-                stream = GetAssetStream(streams, ++file, asset);
+                stream = GetStream(streams, ++file, asset);
                 stream.Position = 0;
                 bytesRead += stream.Read(buffer, offset + bytesRead, count - bytesRead);
             }
