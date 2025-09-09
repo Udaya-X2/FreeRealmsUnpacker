@@ -141,15 +141,14 @@ internal class EndianBinaryReader : IDisposable
     /// <inheritdoc cref="Dispose()"/>
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed)
-        {
-            if (disposing && !_leaveOpen)
-            {
-                _stream.Close();
-            }
+        if (_disposed) return;
 
-            _disposed = true;
+        if (disposing && !_leaveOpen)
+        {
+            _stream.Close();
         }
+
+        _disposed = true;
     }
 
     /// <summary>

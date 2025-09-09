@@ -276,31 +276,30 @@ public class AssetPackWriter : AssetWriter
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (_disposed) return;
+
+        if (disposing)
         {
-            if (disposing)
+            ArrayPool<byte>.Shared.Return(_buffer);
+
+            // Index the current asset, if necessary.
+            if (CanWrite)
             {
-                ArrayPool<byte>.Shared.Return(_buffer);
-
-                // Index the current asset, if necessary.
-                if (CanWrite)
-                {
-                    IndexAsset();
-                }
-                // Flush the current asset info chunk if necessary, setting the next chunk offset
-                // to the start of the .pack file and writing the number of assets in this chunk.
-                if (_numAssets > 0)
-                {
-                    _packStream.Position = _chunkOffset;
-                    _packWriter.Write(0u);
-                    _packWriter.Write(_numAssets);
-                }
-
-                _packStream.Dispose();
-                _packWriter.Dispose();
+                IndexAsset();
+            }
+            // Flush the current asset info chunk if necessary, setting the next chunk offset
+            // to the start of the .pack file and writing the number of assets in this chunk.
+            if (_numAssets > 0)
+            {
+                _packStream.Position = _chunkOffset;
+                _packWriter.Write(0u);
+                _packWriter.Write(_numAssets);
             }
 
-            _disposed = true;
+            _packStream.Dispose();
+            _packWriter.Dispose();
         }
+
+        _disposed = true;
     }
 }

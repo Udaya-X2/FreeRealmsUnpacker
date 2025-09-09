@@ -336,16 +336,15 @@ public class AssetDatReader : AssetReader
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                ArrayPool<byte>.Shared.Return(_buffer);
-                Array.ForEach(_streams, x => x.Dispose());
-            }
+        if (_disposed) return;
 
-            _disposed = true;
+        if (disposing)
+        {
+            ArrayPool<byte>.Shared.Return(_buffer);
+            Array.ForEach(_streams, x => x.Dispose());
         }
+
+        _disposed = true;
     }
 
     /// <summary>

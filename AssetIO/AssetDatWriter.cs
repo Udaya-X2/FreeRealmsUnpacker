@@ -291,35 +291,34 @@ public class AssetDatWriter : AssetWriter
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (_disposed) return;
+
+        if (disposing)
         {
-            if (disposing)
+            ArrayPool<byte>.Shared.Return(_buffer);
+
+            // Index the current asset, if necessary.
+            if (CanWrite)
             {
-                ArrayPool<byte>.Shared.Return(_buffer);
-
-                // Index the current asset, if necessary.
-                if (CanWrite)
-                {
-                    IndexAsset();
-                }
-
-                // Set length to include null byte padding.
-                _manifestStream.SetLength(_manifestStream.Position);
-                _manifestStream.Dispose();
-                _manifestWriter.Dispose();
-                _dataStream.Dispose();
-
-                // Remove any unused asset .dat files.
-                using (_dataFileEnumerator)
-                {
-                    while (_dataFileEnumerator.MoveNext() && File.Exists(_dataFileEnumerator.Current))
-                    {
-                        File.Delete(_dataFileEnumerator.Current);
-                    }
-                }
+                IndexAsset();
             }
 
-            _disposed = true;
+            // Set length to include null byte padding.
+            _manifestStream.SetLength(_manifestStream.Position);
+            _manifestStream.Dispose();
+            _manifestWriter.Dispose();
+            _dataStream.Dispose();
+
+            // Remove any unused asset .dat files.
+            using (_dataFileEnumerator)
+            {
+                while (_dataFileEnumerator.MoveNext() && File.Exists(_dataFileEnumerator.Current))
+                {
+                    File.Delete(_dataFileEnumerator.Current);
+                }
+            }
         }
+
+        _disposed = true;
     }
 }

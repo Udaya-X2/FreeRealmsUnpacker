@@ -257,16 +257,15 @@ public class AssetPackReader : AssetReader
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
     {
-        if (!_disposed)
-        {
-            if (disposing)
-            {
-                ArrayPool<byte>.Shared.Return(_buffer);
-                _stream.Dispose();
-            }
+        if (_disposed) return;
 
-            _disposed = true;
+        if (disposing)
+        {
+            ArrayPool<byte>.Shared.Return(_buffer);
+            _stream.Dispose();
         }
+
+        _disposed = true;
     }
 
     /// <summary>
