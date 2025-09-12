@@ -167,6 +167,7 @@ public class AssetPackReader : AssetReader
             foreach (Task<int> task1 in InternalReadAsync(asset, token))
             {
                 token.ThrowIfCancellationRequested();
+
                 int count = BufferSize <= bytes ? BufferSize : (int)bytes;
                 Task<int> task2 = stream.ReadAsync(buffer, 0, count, token);
                 int[] bytesRead = await Task.WhenAll(task1, task2);
@@ -225,6 +226,7 @@ public class AssetPackReader : AssetReader
     private IEnumerable<Task<int>> InternalReadAsync(Asset asset, CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
+
         _stream.Position = asset.Offset;
         uint bytes = asset.Size;
 
@@ -232,6 +234,7 @@ public class AssetPackReader : AssetReader
         while (bytes > 0u)
         {
             token.ThrowIfCancellationRequested();
+
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
             yield return Task.Run(async () =>
             {

@@ -25,12 +25,14 @@ public class WriterViewModel(AssetFileViewModel assetFile, List<string> files) :
     private void WriteAssets(CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
+
         using AssetWriter writer = _assetFile.OpenAppend();
         Message = $"Writing {_assetFile.Name}";
 
         foreach (string file in _files)
         {
             token.ThrowIfCancellationRequested();
+
             writer.Write(file);
             Tick();
         }

@@ -55,6 +55,7 @@ public class ExtractionViewModel : ProgressViewModel
             foreach (AssetInfo asset in assetFile.SelectedAssets)
             {
                 token.ThrowIfCancellationRequested();
+
                 reader.ExtractTo(asset, Settings.OutputDirectory, Settings.ConflictOptions);
                 Tick();
             }

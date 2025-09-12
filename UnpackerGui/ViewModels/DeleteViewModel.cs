@@ -36,6 +36,7 @@ public class DeleteViewModel(IEnumerable<AssetInfo> assets) : ProgressViewModel
         foreach (AssetFileSelection assetFile in _assetFiles)
         {
             token.ThrowIfCancellationRequested();
+
             Message = $"Deleting from {assetFile.File.Name}";
             ModifiedFiles.Add(assetFile.File);
             assetFile.File.RemoveAssets(assetFile.SelectedAssets.ToHashSet(AssetInfo.Comparer));

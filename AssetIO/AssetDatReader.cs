@@ -169,7 +169,6 @@ public class AssetDatReader : AssetReader
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
-
         token.ThrowIfCancellationRequested();
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -181,6 +180,7 @@ public class AssetDatReader : AssetReader
             foreach (Task<int> task1 in InternalReadAsync(asset, token))
             {
                 token.ThrowIfCancellationRequested();
+
                 int count = BufferSize <= bytes ? BufferSize : (int)bytes;
                 Task<int> task2 = stream.ReadAsync(buffer, 0, count, token);
                 int[] bytesRead = await Task.WhenAll(task1, task2);
@@ -249,8 +249,9 @@ public class AssetDatReader : AssetReader
     /// </returns>
     private IEnumerable<Task<int>> InternalReadAsync(Asset asset, CancellationToken token = default)
     {
-        // Determine which .dat file to read and where to start reading from based on the offset.
         token.ThrowIfCancellationRequested();
+
+        // Determine which .dat file to read and where to start reading from based on the offset.
         long file = asset.Offset / MaxAssetDatSize;
         long address = asset.Offset % MaxAssetDatSize;
         FileStream stream = GetStream(file, asset);
@@ -261,6 +262,7 @@ public class AssetDatReader : AssetReader
         while (bytes > 0u)
         {
             token.ThrowIfCancellationRequested();
+
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
             yield return Task.Run(async () =>
             {

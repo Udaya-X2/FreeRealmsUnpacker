@@ -44,6 +44,7 @@ public class ReaderViewModel(ISourceList<AssetFileViewModel> sourceAssetFiles,
             while (Value < Maximum)
             {
                 token.ThrowIfCancellationRequested();
+
                 assetFile = _inputAssetFiles[Value];
                 Message = $"Reading {assetFile.Name}";
                 assetFileViewModels[Value] = new AssetFileViewModel(assetFile, token);

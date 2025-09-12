@@ -62,6 +62,7 @@ public class AssetFileViewModel : ViewModelBase, IList<AssetInfo>
         foreach (Asset asset in _assetFile)
         {
             token.ThrowIfCancellationRequested();
+
             _assets.Add(new AssetInfo(asset, _assetFile));
             Size += asset.Size;
         }

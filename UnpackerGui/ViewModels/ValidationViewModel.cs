@@ -36,6 +36,7 @@ public class ValidationViewModel(IEnumerable<AssetFileViewModel> assetFiles) : P
             foreach (AssetInfo asset in assetFile)
             {
                 token.ThrowIfCancellationRequested();
+
                 asset.FileCrc32 = reader.GetCrc32(asset);
                 Tick();
             }
