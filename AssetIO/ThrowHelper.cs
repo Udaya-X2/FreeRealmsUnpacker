@@ -19,11 +19,6 @@ internal static class ThrowHelper
     internal static T ThrowArgumentOutOfRange_Enum<T>(string paramName)
         => throw new ArgumentOutOfRangeException(paramName, SR.ArgumentOutOfRange_Enum);
 
-    /// <inheritdoc cref="SR.Argument_BadAssetName"/>
-    [DoesNotReturn]
-    internal static T ThrowArgument_BadAssetName<T>(string assetName, string fileName, Exception innerException)
-        => throw new ArgumentException(string.Format(SR.Argument_BadAssetName, assetName, fileName), innerException);
-
     /// <inheritdoc cref="SR.Argument_CantInferAssetType"/>
     [DoesNotReturn]
     internal static void ThrowArgument_CantInferAssetType(string fileName)
@@ -33,6 +28,11 @@ internal static class ThrowHelper
     [DoesNotReturn]
     internal static void ThrowArgument_InvalidAssetLen()
         => throw new ArgumentException(SR.Argument_InvalidAssetLen);
+
+    /// <inheritdoc cref="SR.Argument_InvalidAssetName"/>
+    [DoesNotReturn]
+    internal static T ThrowArgument_InvalidAssetName<T>(string assetName, string fileName)
+        => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetName, assetName, fileName));
 
     /// <inheritdoc cref="SR.Argument_InvalidAssetType"/>
     [DoesNotReturn]

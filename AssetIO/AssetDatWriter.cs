@@ -241,17 +241,9 @@ public class AssetDatWriter : AssetWriter
     /// <param name="name">The string containing the characters to encode.</param>
     /// <returns>The number of encoded bytes.</returns>
     /// <exception cref="ArgumentException"/>
-    private int GetByteCountUTF8(string name)
-    {
-        try
-        {
-            return Encoding.UTF8.GetBytes(name, _nameBuffer);
-        }
-        catch (ArgumentException ex)
-        {
-            return ThrowHelper.ThrowArgument_BadAssetName<int>(name, _manifestStream.Name, ex);
-        }
-    }
+    private int GetByteCountUTF8(string name) => Encoding.UTF8.TryGetBytes(name, _nameBuffer, out int bytesWritten)
+        ? bytesWritten
+        : ThrowHelper.ThrowArgument_InvalidAssetName<int>(name, _manifestStream.Name);
 
     /// <summary>
     /// Closes the current data file stream and opens the next asset .dat file.
