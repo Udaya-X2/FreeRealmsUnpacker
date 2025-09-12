@@ -139,11 +139,6 @@ internal static class ThrowHelper
     internal static void ThrowIO_BadManifest(string fileName)
         => throw new IOException(string.Format(SR.IO_BadManifest, fileName));
 
-    /// <inheritdoc cref="SR.IO_BadManifest"/>
-    [DoesNotReturn]
-    internal static T ThrowIO_BadManifest<T>(string fileName)
-        => throw new IOException(string.Format(SR.IO_BadManifest, fileName));
-
     /// <inheritdoc cref="SR.IO_CantCreateTempFile"/>
     [DoesNotReturn]
     internal static T ThrowIO_CantCreateTempFile<T>(string fileName)

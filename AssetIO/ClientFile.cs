@@ -340,10 +340,10 @@ public static partial class ClientFile
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
         using EndianBinaryReader reader = new(stream, Endian.Little);
-        long numAssets = stream.Length / ManifestChunkSize;
+        (long numAssets, long remainder) = Math.DivRem(stream.Length, ManifestChunkSize);
         Asset? asset = null;
 
-        if (stream.Length % ManifestChunkSize != 0) ThrowHelper.ThrowIO_BadManifest(stream.Name);
+        if (remainder != 0) ThrowHelper.ThrowIO_BadManifest(stream.Name);
 
         // manifest.dat files are divided into 148-byte chunks of data with the following format:
         // 
@@ -415,12 +415,13 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         FileInfo manifestFileInfo = new(manifestFile);
+        (long numAssets, long remainder) = Math.DivRem(manifestFileInfo.Length, ManifestChunkSize);
+
+        if (remainder != 0) ThrowHelper.ThrowIO_BadManifest(manifestFile);
 
         try
         {
-            return manifestFileInfo.Length % ManifestChunkSize == 0
-                ? checked((int)(manifestFileInfo.Length / ManifestChunkSize))
-                : ThrowHelper.ThrowIO_BadManifest<int>(manifestFile);
+            return checked((int)numAssets);
         }
         catch (OverflowException ex)
         {

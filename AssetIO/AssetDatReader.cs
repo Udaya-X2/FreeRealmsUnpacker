@@ -44,8 +44,7 @@ public class AssetDatReader : AssetReader
         if ((uint)buffer.Length < asset.Size) ThrowHelper.ThrowArgument_InvalidAssetLen();
 
         // Determine which .dat file to read and where to start reading from based on the offset.
-        long file = asset.Offset / MaxAssetDatSize;
-        long address = asset.Offset % MaxAssetDatSize;
+        (long file, long address) = Math.DivRem(asset.Offset, MaxAssetDatSize);
         FileStream stream = GetStream(file, asset);
         stream.Position = address;
         int bytesRead = stream.Read(buffer, 0, (int)asset.Size);
@@ -216,8 +215,7 @@ public class AssetDatReader : AssetReader
     private IEnumerable<int> InternalRead(Asset asset)
     {
         // Determine which .dat file to read and where to start reading from based on the offset.
-        long file = asset.Offset / MaxAssetDatSize;
-        long address = asset.Offset % MaxAssetDatSize;
+        (long file, long address) = Math.DivRem(asset.Offset, MaxAssetDatSize);
         FileStream stream = GetStream(file, asset);
         stream.Position = address;
         uint bytes = asset.Size;
@@ -252,8 +250,7 @@ public class AssetDatReader : AssetReader
         token.ThrowIfCancellationRequested();
 
         // Determine which .dat file to read and where to start reading from based on the offset.
-        long file = asset.Offset / MaxAssetDatSize;
-        long address = asset.Offset % MaxAssetDatSize;
+        (long file, long address) = Math.DivRem(asset.Offset, MaxAssetDatSize);
         FileStream stream = GetStream(file, asset);
         stream.Position = address;
         uint bytes = asset.Size;
@@ -397,8 +394,7 @@ public class AssetDatReader : AssetReader
             if (count > bytesLeft) count = (int)bytesLeft;
 
             // Determine which .dat file to read and where to start reading from based on the current position.
-            long file = _position / MaxAssetDatSize;
-            long address = _position % MaxAssetDatSize;
+            (long file, long address) = Math.DivRem(_position, MaxAssetDatSize);
             FileStream stream = GetStream(streams, file, asset);
             stream.Position = address;
             int bytesRead = stream.Read(buffer, offset, count);
