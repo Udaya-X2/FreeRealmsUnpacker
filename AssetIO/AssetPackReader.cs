@@ -39,15 +39,12 @@ public class AssetPackReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(buffer);
-        if ((uint)buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
+        if ((uint)buffer.Length < asset.Size) ThrowHelper.ThrowArgument_InvalidAssetLen();
 
         _stream.Position = asset.Offset;
         int bytesRead = _stream.Read(buffer, 0, (int)asset.Size);
 
-        if (bytesRead != asset.Size)
-        {
-            throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _stream.Name));
-        }
+        if (bytesRead != asset.Size) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
     }
 
     /// <summary>
@@ -71,7 +68,7 @@ public class AssetPackReader : AssetReader
     {
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(destination);
-        if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
+        if (!destination.CanWrite) ThrowHelper.ThrowArgument_StreamNotWritable();
 
         foreach (int bytesRead in InternalRead(asset))
         {
@@ -122,7 +119,7 @@ public class AssetPackReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
 
@@ -158,7 +155,7 @@ public class AssetPackReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
         token.ThrowIfCancellationRequested();
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -212,10 +209,7 @@ public class AssetPackReader : AssetReader
         {
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
 
-            if (_stream.Read(_buffer, 0, count) != count)
-            {
-                throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _stream.Name));
-            }
+            if (_stream.Read(_buffer, 0, count) != count) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
 
             yield return count;
             bytes -= (uint)count;
@@ -243,10 +237,7 @@ public class AssetPackReader : AssetReader
             {
                 int bytesRead = await _stream.ReadAsync(_buffer.AsMemory(0, count), token);
 
-                if (bytesRead != count)
-                {
-                    throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, _stream.Name));
-                }
+                if (bytesRead != count) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
 
                 return bytesRead;
             });
@@ -315,11 +306,8 @@ public class AssetPackReader : AssetReader
             if (count > bytesLeft) count = (int)bytesLeft;
 
             stream.Position = _position;
-            
-            if (stream.Read(buffer, offset, count) != count)
-            {
-                throw new IOException(string.Format(SR.IO_AssetEOF, asset.Name, stream.Name));
-            }
+
+            if (stream.Read(buffer, offset, count) != count) ThrowHelper.ThrowIO_AssetEOF(asset.Name, stream.Name);
 
             _position += count;
             return count;
@@ -331,15 +319,15 @@ public class AssetPackReader : AssetReader
             SeekOrigin.Begin => Position = offset,
             SeekOrigin.Current => Position += offset,
             SeekOrigin.End => Position = Length + offset,
-            _ => throw new ArgumentException(SR.Argument_InvalidSeekOrigin, nameof(origin))
+            _ => ThrowHelper.ThrowArgument_InvalidSeekOrigin<long>(nameof(origin))
         };
 
         /// <inheritdoc/>
         public override void SetLength(long value)
-            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
+            => ThrowHelper.ThrowNotSupported_UnwritableStream();
 
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
-            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
+            => ThrowHelper.ThrowNotSupported_UnwritableStream();
     }
 }

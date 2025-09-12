@@ -113,7 +113,7 @@ public abstract class AssetWriter : IDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
 
         Add(name);
         Write(stream);
@@ -154,7 +154,7 @@ public abstract class AssetWriter : IDisposable
         ArgumentException.ThrowIfNullOrEmpty(name);
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if ((uint)count > buffer.Length - index) ThrowHelper.ThrowArgument_InvalidOffLen();
 
         Add(name);
         Write(buffer, index, count);

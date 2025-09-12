@@ -74,7 +74,7 @@ public class AssetFile : IEnumerable<Asset>
     public AssetFile(string path, AssetType assetType, [AllowNull] IEnumerable<string> dataFiles)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
-        if (!assetType.IsValid()) throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, assetType));
+        if (!assetType.IsValid()) ThrowHelper.ThrowArgument_InvalidAssetType(assetType);
 
         Info = new FileInfo(path);
         Type = assetType;
@@ -153,7 +153,7 @@ public class AssetFile : IEnumerable<Asset>
         AssetType.Pack => ClientFile.GetPackAssetCount(FullName),
         AssetType.Dat => ClientFile.GetManifestAssetCount(FullName),
         AssetType.Pack | AssetType.Temp => ClientFile.GetPackTempAssetCount(FullName),
-        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+        _ => ThrowHelper.ThrowArgument_InvalidAssetType<int>(Type)
     };
 
     /// <summary>
@@ -167,7 +167,7 @@ public class AssetFile : IEnumerable<Asset>
         AssetType.Pack => ClientFile.GetPackAssets(FullName),
         AssetType.Dat => ClientFile.GetManifestAssets(FullName),
         AssetType.Pack | AssetType.Temp => ClientFile.GetPackTempAssets(FullName),
-        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+        _ => ThrowHelper.ThrowArgument_InvalidAssetType<Asset[]>(Type)
     };
 
     /// <summary>
@@ -179,7 +179,7 @@ public class AssetFile : IEnumerable<Asset>
     {
         AssetType.Pack => new AssetPackReader(FullName),
         AssetType.Dat => new AssetDatReader(DataFiles),
-        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+        _ => ThrowHelper.ThrowArgument_InvalidAssetType<AssetReader>(Type)
     };
 
     /// <summary>
@@ -192,8 +192,8 @@ public class AssetFile : IEnumerable<Asset>
     {
         AssetType.Pack => new AssetPackWriter(FullName),
         AssetType.Dat => new AssetDatWriter(FullName, DataFiles),
-        AssetType.Pack | AssetType.Temp => throw new NotSupportedException(SR.NotSupported_PackTempWrite),
-        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+        AssetType.Pack | AssetType.Temp => ThrowHelper.ThrowNotSupported_PackTempWrite<AssetWriter>(),
+        _ => ThrowHelper.ThrowArgument_InvalidAssetType<AssetWriter>(Type)
     };
 
     /// <summary>
@@ -207,8 +207,8 @@ public class AssetFile : IEnumerable<Asset>
     {
         AssetType.Pack => new AssetPackWriter(FullName, append: true),
         AssetType.Dat => new AssetDatWriter(FullName, DataFiles, append: true),
-        AssetType.Pack | AssetType.Temp => throw new NotSupportedException(SR.NotSupported_PackTempWrite),
-        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+        AssetType.Pack | AssetType.Temp => ThrowHelper.ThrowNotSupported_PackTempWrite<AssetWriter>(),
+        _ => ThrowHelper.ThrowArgument_InvalidAssetType<AssetWriter>(Type)
     };
 
     /// <summary>
@@ -229,7 +229,7 @@ public class AssetFile : IEnumerable<Asset>
     public virtual void ExtractAssets(string destDir, FileConflictOptions options = FileConflictOptions.Overwrite)
     {
         ArgumentNullException.ThrowIfNull(destDir);
-        
+
         switch (FileType)
         {
             case AssetType.Pack:
@@ -242,7 +242,8 @@ public class AssetFile : IEnumerable<Asset>
                 ClientFile.ExtractPackTempAssets(FullName, destDir, options);
                 break;
             default:
-                throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type));
+                ThrowHelper.ThrowArgument_InvalidAssetType(Type);
+                break;
         }
     }
 
@@ -269,9 +270,11 @@ public class AssetFile : IEnumerable<Asset>
                 ClientFile.RemoveManifestAssets(FullName, DataFiles, assets);
                 break;
             case AssetType.Pack | AssetType.Temp:
-                throw new NotSupportedException(SR.NotSupported_PackTempWrite);
+                ThrowHelper.ThrowNotSupported_PackTempWrite();
+                break;
             default:
-                throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type));
+                ThrowHelper.ThrowArgument_InvalidAssetType(Type);
+                break;
         }
     }
 
@@ -294,7 +297,8 @@ public class AssetFile : IEnumerable<Asset>
                 ClientFile.ValidatePackTempAssets(FullName);
                 break;
             default:
-                throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type));
+                ThrowHelper.ThrowArgument_InvalidAssetType(Type);
+                break;
         }
     }
 
@@ -315,7 +319,7 @@ public class AssetFile : IEnumerable<Asset>
         AssetType.Pack => ClientFile.EnumeratePackAssets(FullName),
         AssetType.Dat => ClientFile.EnumerateManifestAssets(FullName),
         AssetType.Pack | AssetType.Temp => ClientFile.EnumeratePackTempAssets(FullName),
-        _ => throw new ArgumentException(string.Format(SR.Argument_InvalidAssetType, Type))
+        _ => ThrowHelper.ThrowArgument_InvalidAssetType<IEnumerable<Asset>>(Type)
     };
 
     /// <summary>

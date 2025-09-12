@@ -52,7 +52,7 @@ public static partial class ClientFile
         using EndianBinaryReader reader = new(stream, Endian.Big);
         uint nextOffset = 0;
         uint numAssets = 0;
-        Asset asset;
+        Asset? asset = null;
 
         // .pack files store assets via two types of data:
         // 
@@ -88,7 +88,7 @@ public static partial class ClientFile
             }
             catch (EndOfStreamException ex)
             {
-                throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
+                ThrowHelper.ThrowEndOfStream_AssetFile(stream.Name, ex);
             }
 
             for (uint i = 0; i < numAssets; i++)
@@ -104,11 +104,11 @@ public static partial class ClientFile
                 }
                 catch (InvalidAssetException ex)
                 {
-                    throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - ex.Size, stream.Name), ex);
+                    ThrowHelper.ThrowIO_BadAsset(stream.Position - ex.Size, stream.Name, ex);
                 }
                 catch (EndOfStreamException ex)
                 {
-                    throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
+                    ThrowHelper.ThrowEndOfStream_AssetFile(stream.Name, ex);
                 }
 
                 yield return asset;
@@ -167,11 +167,11 @@ public static partial class ClientFile
         }
         catch (EndOfStreamException ex)
         {
-            throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, stream.Name), ex);
+            return ThrowHelper.ThrowEndOfStream_AssetFile<int>(stream.Name, ex);
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, stream.Name), ex);
+            return ThrowHelper.ThrowOverflow_TooManyAssets<int>(stream.Name, ex);
         }
     }
 
@@ -272,7 +272,7 @@ public static partial class ClientFile
         catch
         {
             // Attempt to delete the temp .pack file if an error occurs.
-            TryDeleteFiles([tempFile]);
+            TryDeleteFiles(tempFile);
             throw;
         }
     }
@@ -295,10 +295,7 @@ public static partial class ClientFile
         {
             uint crc32 = reader.GetCrc32(asset);
 
-            if (asset.Crc32 != crc32)
-            {
-                throw new IOException(string.Format(SR.IO_CrcMismatch, asset.Name, crc32, asset.Crc32, packFile));
-            }
+            if (asset.Crc32 != crc32) ThrowHelper.ThrowIO_CrcMismatch(asset.Name, crc32, asset.Crc32, packFile);
         }
     }
 
@@ -344,12 +341,9 @@ public static partial class ClientFile
         using FileStream stream = File.OpenRead(manifestFile);
         using EndianBinaryReader reader = new(stream, Endian.Little);
         long numAssets = stream.Length / ManifestChunkSize;
-        Asset asset;
+        Asset? asset = null;
 
-        if (stream.Length % ManifestChunkSize != 0)
-        {
-            throw new IOException(string.Format(SR.IO_BadManifest, stream.Name));
-        }
+        if (stream.Length % ManifestChunkSize != 0) ThrowHelper.ThrowIO_BadManifest(stream.Name);
 
         // manifest.dat files are divided into 148-byte chunks of data with the following format:
         // 
@@ -376,7 +370,7 @@ public static partial class ClientFile
             }
             catch (InvalidAssetException ex)
             {
-                throw new IOException(string.Format(SR.IO_BadAsset, stream.Position - ex.Size, stream.Name), ex);
+                ThrowHelper.ThrowIO_BadAsset(stream.Position - ex.Size, stream.Name, ex);
             }
 
             yield return asset;
@@ -426,11 +420,11 @@ public static partial class ClientFile
         {
             return manifestFileInfo.Length % ManifestChunkSize == 0
                 ? checked((int)(manifestFileInfo.Length / ManifestChunkSize))
-                : throw new IOException(string.Format(SR.IO_BadManifest, manifestFile));
+                : ThrowHelper.ThrowIO_BadManifest<int>(manifestFile);
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, manifestFileInfo.Name), ex);
+            return ThrowHelper.ThrowOverflow_TooManyAssets<int>(manifestFileInfo.Name, ex);
         }
     }
 
@@ -633,10 +627,7 @@ public static partial class ClientFile
         {
             uint crc32 = reader.GetCrc32(asset);
 
-            if (asset.Crc32 != crc32)
-            {
-                throw new IOException(string.Format(SR.IO_CrcMismatch, asset.Name, crc32, asset.Crc32, manifestFile));
-            }
+            if (asset.Crc32 != crc32) ThrowHelper.ThrowIO_CrcMismatch(asset.Name, crc32, asset.Crc32, manifestFile);
         }
     }
 
@@ -666,7 +657,7 @@ public static partial class ClientFile
                 }
             }
             // Stop iteration if an error occurs due to cut off data in the file.
-            catch (Exception ex) when (ex is EndOfStreamException || ex.InnerException is InvalidAssetException)
+            catch (Exception ex) when (ex is EndOfStreamException or { InnerException: InvalidAssetException })
             {
                 break;
             }
@@ -792,7 +783,7 @@ public static partial class ClientFile
                     // Check whether the current asset extends past the end of the .pack.temp file.
                     if (end - offset - size < 0 || stream.Seek(sizeof(uint), SeekOrigin.Current) > end)
                     {
-                        throw new EndOfStreamException(SR.EndOfStream_AssetFile);
+                        ThrowHelper.ThrowEndOfStream_AssetFile(stream.Name);
                     }
                 }
             }
@@ -908,10 +899,7 @@ public static partial class ClientFile
         {
             uint crc32 = reader.GetCrc32(asset);
 
-            if (asset.Crc32 != crc32)
-            {
-                throw new IOException(string.Format(SR.IO_CrcMismatch, asset.Name, crc32, asset.Crc32, packTempFile));
-            }
+            if (asset.Crc32 != crc32) ThrowHelper.ThrowIO_CrcMismatch(asset.Name, crc32, asset.Crc32, packTempFile);
         }
     }
 
@@ -945,7 +933,7 @@ public static partial class ClientFile
         }
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
+            ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         }
 
         return 0;
@@ -974,7 +962,7 @@ public static partial class ClientFile
         }
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
+            ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         }
 
         return 0;
@@ -1009,7 +997,7 @@ public static partial class ClientFile
         }
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, assetFile.ToString()));
+            ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         }
 
         return 0;
@@ -1043,7 +1031,7 @@ public static partial class ClientFile
     End:
         if (strict)
         {
-            throw new ArgumentException(string.Format(SR.Argument_CantInferAssetType, dataFile.ToString()));
+            ThrowHelper.ThrowArgument_CantInferAssetType(dataFile.ToString());
         }
 
         return 0;
@@ -1056,9 +1044,7 @@ public static partial class ClientFile
     /// <returns>The specified integer.</returns>
     /// <exception cref="InvalidAssetException"/>
     internal static int ValidateNameLength(int value)
-        => value is >= 1 and <= MaxAssetNameLength
-        ? value
-        : throw new InvalidAssetException(string.Format(SR.InvalidAsset_Name, value), sizeof(int));
+        => value is >= 1 and <= MaxAssetNameLength ? value : ThrowHelper.ThrowInvalidAsset_Name(value);
 
     /// <summary>
     /// Throws an exception if the specified integer is negative.
@@ -1067,9 +1053,7 @@ public static partial class ClientFile
     /// <returns>The specified integer.</returns>
     /// <exception cref="InvalidAssetException"/>
     private static long ValidateOffset(long value)
-        => value >= 0
-        ? value
-        : throw new InvalidAssetException(string.Format(SR.InvalidAsset_Offset, value), sizeof(long));
+        => value >= 0 ? value : ThrowHelper.ThrowInvalidAsset_Offset(value);
 
     /// <summary>
     /// Checks whether the contents of the files are the same.
@@ -1130,13 +1114,13 @@ public static partial class ClientFile
         }
         while (i++ < 100);
 
-        throw new IOException(string.Format(SR.IO_CantCreateTempFile, tempFileName));
+        return ThrowHelper.ThrowIO_CantCreateTempFile<string>(tempFileName);
     }
 
     /// <summary>
     /// Attempts to delete the specified files.
     /// </summary>
-    private static void TryDeleteFiles(IEnumerable<string> files)
+    private static void TryDeleteFiles(params IEnumerable<string> files)
     {
         foreach (string file in files)
         {

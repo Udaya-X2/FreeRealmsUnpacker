@@ -41,7 +41,7 @@ public class AssetDatReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(buffer);
-        if ((uint)buffer.Length < asset.Size) throw new ArgumentException(SR.Argument_InvalidAssetLen);
+        if ((uint)buffer.Length < asset.Size) ThrowHelper.ThrowArgument_InvalidAssetLen();
 
         // Determine which .dat file to read and where to start reading from based on the offset.
         long file = asset.Offset / MaxAssetDatSize;
@@ -81,7 +81,7 @@ public class AssetDatReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(destination);
-        if (!destination.CanWrite) throw new ArgumentException(SR.Argument_StreamNotWritable);
+        if (!destination.CanWrite) ThrowHelper.ThrowArgument_StreamNotWritable();
 
         foreach (int bytesRead in InternalRead(asset))
         {
@@ -132,7 +132,7 @@ public class AssetDatReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
 
@@ -168,7 +168,8 @@ public class AssetDatReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
+        if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
+
         token.ThrowIfCancellationRequested();
 
         byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
@@ -296,7 +297,7 @@ public class AssetDatReader : AssetReader
         }
         catch
         {
-            throw new IOException(string.Format(SR.IO_NoMoreAssetDatFilesRead, asset.Name));
+            return ThrowHelper.ThrowIO_NoMoreAssetDatFilesRead<FileStream>(asset.Name);
         }
     }
 
@@ -418,15 +419,15 @@ public class AssetDatReader : AssetReader
             SeekOrigin.Begin => Position = offset,
             SeekOrigin.Current => Position += offset,
             SeekOrigin.End => Position = Length + offset,
-            _ => throw new ArgumentException(SR.Argument_InvalidSeekOrigin, nameof(origin))
+            _ => ThrowHelper.ThrowArgument_InvalidSeekOrigin<long>(nameof(origin))
         };
 
         /// <inheritdoc/>
         public override void SetLength(long value)
-            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
+            => ThrowHelper.ThrowNotSupported_UnwritableStream();
 
         /// <inheritdoc/>
         public override void Write(byte[] buffer, int offset, int count)
-            => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
+            => ThrowHelper.ThrowNotSupported_UnwritableStream();
     }
 }

@@ -80,7 +80,7 @@ public class AssetPackWriter : AssetWriter
 
                     if (_chunkSize > AssetInfoChunkSize)
                     {
-                        throw new IOException(string.Format(SR.IO_BadAssetInfo, _chunkOffset, _packStream.Name));
+                        ThrowHelper.ThrowIO_BadAssetInfo(_chunkOffset, _packStream.Name);
                     }
                 }
 
@@ -99,12 +99,12 @@ public class AssetPackWriter : AssetWriter
         catch (InvalidAssetException ex)
         {
             using var _ = this;
-            throw new IOException(string.Format(SR.IO_BadAsset, _packStream.Position - ex.Size, _packStream.Name), ex);
+            ThrowHelper.ThrowIO_BadAsset(_packStream.Position - ex.Size, _packStream.Name, ex);
         }
         catch (EndOfStreamException ex)
         {
             using var _ = this;
-            throw new EndOfStreamException(string.Format(SR.EndOfStream_AssetFile, _packStream.Name), ex);
+            ThrowHelper.ThrowEndOfStream_AssetFile(_packStream.Name, ex);
         }
         catch
         {
@@ -165,7 +165,7 @@ public class AssetPackWriter : AssetWriter
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, name, _packStream.Name), ex);
+            ThrowHelper.ThrowOverflow_CantAddAsset(name, _packStream.Name, ex);
         }
     }
 
@@ -175,8 +175,8 @@ public class AssetPackWriter : AssetWriter
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(stream);
-        if (!stream.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable);
-        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
+        if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
+        if (!CanWrite) ThrowHelper.ThrowInvalidOperation_NoAssetToWrite();
 
         try
         {
@@ -193,7 +193,7 @@ public class AssetPackWriter : AssetWriter
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, _assetName, _packStream.Name), ex);
+            ThrowHelper.ThrowOverflow_CantAddAsset(_assetName, _packStream.Name, ex);
         }
     }
 
@@ -204,8 +204,8 @@ public class AssetPackWriter : AssetWriter
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
-        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToWrite);
+        if ((uint)count > buffer.Length - index) ThrowHelper.ThrowArgument_InvalidOffLen();
+        if (!CanWrite) ThrowHelper.ThrowInvalidOperation_NoAssetToWrite();
 
         try
         {
@@ -216,7 +216,7 @@ public class AssetPackWriter : AssetWriter
         }
         catch (OverflowException ex)
         {
-            throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, _assetName, _packStream.Name), ex);
+            ThrowHelper.ThrowOverflow_CantAddAsset(_assetName, _packStream.Name, ex);
         }
     }
 
@@ -227,7 +227,7 @@ public class AssetPackWriter : AssetWriter
     public override Asset Flush()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (!CanWrite) throw new InvalidOperationException(SR.InvalidOperation_NoAssetToFlush);
+        if (!CanWrite) ThrowHelper.ThrowInvalidOperation_NoAssetToFlush();
 
         Asset asset = new(_assetName, _assetOffset, _assetSize, _assetCrc32);
         IndexAsset();
@@ -269,7 +269,7 @@ public class AssetPackWriter : AssetWriter
         }
         catch (ArgumentException ex)
         {
-            throw new ArgumentException(string.Format(SR.Argument_InvalidAssetName, name, _packStream.Name), ex);
+            return ThrowHelper.ThrowArgument_BadAssetName<int>(name, _packStream.Name, ex);
         }
     }
 

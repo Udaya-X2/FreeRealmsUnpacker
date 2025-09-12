@@ -61,6 +61,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot add &quot;{0}&quot; to &quot;{1}&quot;; asset name length exceeds 128 bytes..
+        /// </summary>
+        internal static string Argument_BadAssetName {
+            get {
+                return ResourceManager.GetString("Argument_BadAssetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to infer asset type from the specified file name: &quot;{0}&quot;..
         /// </summary>
         internal static string Argument_CantInferAssetType {
@@ -75,15 +84,6 @@ namespace AssetIO {
         internal static string Argument_InvalidAssetLen {
             get {
                 return ResourceManager.GetString("Argument_InvalidAssetLen", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot add &quot;{0}&quot; to &quot;{1}&quot;; asset name length exceeds 128 bytes..
-        /// </summary>
-        internal static string Argument_InvalidAssetName {
-            get {
-                return ResourceManager.GetString("Argument_InvalidAssetName", resourceCulture);
             }
         }
         

@@ -109,7 +109,7 @@ internal class EndianBinaryReader : IDisposable
     {
         ArgumentNullException.ThrowIfNull(input);
         ArgumentNullException.ThrowIfNull(encoding);
-        if (!input.CanRead) throw new ArgumentException(SR.Argument_StreamNotReadable, nameof(input));
+        if (!input.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
 
         _stream = input;
         _decoder = encoding.GetDecoder();
@@ -124,7 +124,7 @@ internal class EndianBinaryReader : IDisposable
         {
             Endian.Little => true,
             Endian.Big => false,
-            _ => throw new ArgumentOutOfRangeException(nameof(endianness), SR.ArgumentOutOfRange_Enum),
+            _ => ThrowHelper.ThrowArgumentOutOfRange_Enum<bool>(nameof(endianness)),
         };
     }
 
@@ -263,8 +263,9 @@ internal class EndianBinaryReader : IDisposable
     private byte InternalReadByte()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
+
         int b = _stream.ReadByte();
-        return b == -1 ? throw new EndOfStreamException(SR.EndOfStream_Stream) : (byte)b;
+        return b == -1 ? ThrowHelper.ThrowEndOfStream_Stream<byte>() : (byte)b;
     }
 
     /// <summary>
@@ -299,7 +300,7 @@ internal class EndianBinaryReader : IDisposable
     public char ReadChar()
     {
         int value = Read();
-        return value == -1 ? throw new EndOfStreamException(SR.EndOfStream_Stream) : (char)value;
+        return value == -1 ? ThrowHelper.ThrowEndOfStream_Stream<char>() : (char)value;
     }
 
     /// <summary>
@@ -429,7 +430,7 @@ internal class EndianBinaryReader : IDisposable
         catch (ArgumentException ex)
         {
             // ReadDecimal cannot leak out ArgumentException.
-            throw new IOException(SR.IO_InvalidDecimalBits, ex);
+            return ThrowHelper.ThrowIO_InvalidDecimalBits<decimal>(ex);
         }
     }
 
@@ -484,7 +485,7 @@ internal class EndianBinaryReader : IDisposable
     public string ReadString(int stringLength)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        if (stringLength < 0) throw new IOException(string.Format(SR.IO_InvalidStringLen, stringLength));
+        if (stringLength < 0) ThrowHelper.ThrowIO_InvalidStringLen(stringLength);
         if (stringLength == 0) return string.Empty;
 
         int currPos = 0;
@@ -542,7 +543,7 @@ internal class EndianBinaryReader : IDisposable
     {
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if ((uint)count > buffer.Length - index) ThrowHelper.ThrowArgument_InvalidOffLen();
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         return InternalReadChars(new Span<char>(buffer, index, count));
@@ -688,7 +689,7 @@ internal class EndianBinaryReader : IDisposable
     {
         ArgumentNullException.ThrowIfNull(buffer);
         ArgumentOutOfRangeException.ThrowIfNegative(index);
-        if ((uint)count > buffer.Length - index) throw new ArgumentException(SR.Argument_InvalidOffLen);
+        if ((uint)count > buffer.Length - index) ThrowHelper.ThrowArgument_InvalidOffLen();
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         return _stream.Read(buffer, index, count);
@@ -814,7 +815,7 @@ internal class EndianBinaryReader : IDisposable
         // and it must not have the high bit set.
         byteReadJustNow = ReadByte();
 
-        if (byteReadJustNow > 0b_1111u) throw new FormatException(SR.Format_Bad7BitInt);
+        if (byteReadJustNow > 0b_1111u) ThrowHelper.ThrowFormat_Bad7BitInt();
 
         result |= (uint)byteReadJustNow << MaxBytesWithoutOverflow * 7;
         return (int)result;
@@ -856,7 +857,7 @@ internal class EndianBinaryReader : IDisposable
         // and it must not have the high bit set.
         byteReadJustNow = ReadByte();
 
-        if (byteReadJustNow > 0b_1u) throw new FormatException(SR.Format_Bad7BitInt);
+        if (byteReadJustNow > 0b_1u) ThrowHelper.ThrowFormat_Bad7BitInt();
 
         result |= (ulong)byteReadJustNow << MaxBytesWithoutOverflow * 7;
         return (long)result;

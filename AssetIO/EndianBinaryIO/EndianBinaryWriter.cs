@@ -90,7 +90,7 @@ internal class EndianBinaryWriter : BinaryWriter
         {
             Endian.Little => true,
             Endian.Big => false,
-            _ => throw new ArgumentOutOfRangeException(nameof(endianness), SR.ArgumentOutOfRange_Enum),
+            _ => ThrowHelper.ThrowArgumentOutOfRange_Enum<bool>(nameof(endianness)),
         };
     }
 
