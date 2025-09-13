@@ -1,6 +1,7 @@
 ﻿using Force.Crc32;
 using System.Buffers;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace AssetIO;
 
@@ -288,17 +289,9 @@ public class AssetDatReader : AssetReader
     /// </summary>
     /// <returns>The <see cref="FileStream"/> at the specified index.</returns>
     /// <exception cref="IOException"/>
-    private static FileStream GetStream(FileStream[] streams, long file, Asset asset)
-    {
-        try
-        {
-            return streams[file];
-        }
-        catch
-        {
-            return ThrowHelper.ThrowIO_NoMoreAssetDatFilesRead<FileStream>(asset.Name);
-        }
-    }
+    private static FileStream GetStream(FileStream[] streams, long file, Asset asset) => file < streams.Length
+        ? Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(streams), (nint)file)
+        : ThrowHelper.ThrowIO_NoMoreAssetDatFilesRead<FileStream>(asset.Name);
 
     /// <summary>
     /// Opens the specified asset .dat files for reading.
@@ -314,10 +307,7 @@ public class AssetDatReader : AssetReader
             foreach (string file in files)
             {
                 // Break early if the previous asset .dat file doesn't meet the size requirement.
-                if (fileStream?.Length < MaxAssetDatSize)
-                {
-                    break;
-                }
+                if (fileStream?.Length < MaxAssetDatSize) break;
 
                 fileStream = File.OpenRead(file);
                 fileStreams.Add(fileStream);

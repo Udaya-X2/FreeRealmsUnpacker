@@ -928,15 +928,8 @@ public static partial class ClientFile
 
         AssetType assetDirType = InferAssetDirectoryType(assetFile);
 
-        if (!requireFullType || assetDirType != 0)
-        {
-            return assetFileType | assetDirType;
-        }
-        if (strict)
-        {
-            ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
-        }
-
+        if (!requireFullType || assetDirType != 0) return assetFileType | assetDirType;
+        if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         return 0;
     }
 
@@ -949,23 +942,12 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     public static AssetType InferAssetFileType(ReadOnlySpan<char> assetFile, bool strict = false)
     {
-        if (assetFile.EndsWith(PackFileSuffix, StringComparison.OrdinalIgnoreCase))
-        {
-            return AssetType.Pack;
-        }
-        if (assetFile.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase))
-        {
-            return AssetType.Dat;
-        }
-        if (assetFile.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase))
-        {
-            return AssetType.Pack | AssetType.Temp;
-        }
-        if (strict)
-        {
-            ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
-        }
+        const StringComparison ComparisonType = StringComparison.OrdinalIgnoreCase;
 
+        if (assetFile.EndsWith(PackFileSuffix, ComparisonType)) return AssetType.Pack;
+        if (assetFile.EndsWith(ManifestFileSuffix, ComparisonType)) return AssetType.Dat;
+        if (assetFile.EndsWith(PackTempFileSuffix, ComparisonType)) return AssetType.Pack | AssetType.Temp;
+        if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         return 0;
     }
 
@@ -980,27 +962,11 @@ public static partial class ClientFile
     {
         ReadOnlySpan<char> filename = Path.GetFileName(assetFile);
 
-        if (GameAssetRegex().IsMatch(filename))
-        {
-            return AssetType.Game;
-        }
-        if (TcgAssetRegex().IsMatch(filename))
-        {
-            return AssetType.Tcg;
-        }
-        if (ResourceAssetRegex().IsMatch(filename))
-        {
-            return AssetType.Resource;
-        }
-        if (PS3AssetRegex().IsMatch(filename))
-        {
-            return AssetType.PS3;
-        }
-        if (strict)
-        {
-            ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
-        }
-
+        if (GameAssetRegex().IsMatch(filename)) return AssetType.Game;
+        if (TcgAssetRegex().IsMatch(filename)) return AssetType.Tcg;
+        if (ResourceAssetRegex().IsMatch(filename)) return AssetType.Resource;
+        if (PS3AssetRegex().IsMatch(filename)) return AssetType.PS3;
+        if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         return 0;
     }
 
@@ -1017,24 +983,11 @@ public static partial class ClientFile
 
         ReadOnlySpan<char> filename = Path.GetFileName(dataFile);
 
-        if (GameDataRegex().IsMatch(filename))
-        {
-            return AssetType.Game;
-        }
-        if (TcgDataRegex().IsMatch(filename))
-        {
-            return AssetType.Tcg;
-        }
-        if (ResourceDataRegex().IsMatch(filename))
-        {
-            return AssetType.Resource;
-        }
-    End:
-        if (strict)
-        {
-            ThrowHelper.ThrowArgument_CantInferAssetType(dataFile.ToString());
-        }
-
+        if (GameDataRegex().IsMatch(filename)) return AssetType.Game;
+        if (TcgDataRegex().IsMatch(filename)) return AssetType.Tcg;
+        if (ResourceDataRegex().IsMatch(filename)) return AssetType.Resource;
+        End:
+        if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(dataFile.ToString());
         return 0;
     }
 
