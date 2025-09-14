@@ -126,8 +126,8 @@ public class AssetDatWriter : AssetWriter
 
         _assetNameLength = GetByteCountUTF8(name);
         _assetName = name;
-        _assetSize = 0u;
-        _assetCrc32 = 0u;
+        _assetSize = 0;
+        _assetCrc32 = 0;
     }
 
     /// <inheritdoc/>

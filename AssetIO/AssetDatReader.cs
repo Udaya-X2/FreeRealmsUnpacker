@@ -116,7 +116,7 @@ public class AssetDatReader : AssetReader
         ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
 
-        uint crc32 = 0u;
+        uint crc32 = 0;
 
         foreach (int bytesRead in InternalRead(asset))
         {
@@ -222,7 +222,7 @@ public class AssetDatReader : AssetReader
         uint bytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
-        while (bytes > 0u)
+        while (bytes > 0)
         {
             int count = BufferSize <= bytes ? BufferSize : (int)bytes;
             int bytesRead = stream.Read(_buffer, 0, count);
@@ -257,7 +257,7 @@ public class AssetDatReader : AssetReader
         uint bytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
-        while (bytes > 0u)
+        while (bytes > 0)
         {
             token.ThrowIfCancellationRequested();
 

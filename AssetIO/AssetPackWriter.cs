@@ -139,8 +139,8 @@ public class AssetPackWriter : AssetWriter
         {
             _assetNameLength = GetByteCountUTF8(name);
             _assetOffset = checked((uint)_packStream.Length);
-            _assetSize = 0u;
-            _assetCrc32 = 0u;
+            _assetSize = 0;
+            _assetCrc32 = 0;
 
             // If current asset exceeds the space of this asset info chunk, proceed to the next asset chunk.
             if (_chunkSize + _assetNameLength + AssetFieldsSize > AssetInfoChunkSize)
@@ -283,7 +283,7 @@ public class AssetPackWriter : AssetWriter
             if (_numAssets > 0)
             {
                 _packStream.Position = _chunkOffset;
-                _packWriter.Write(0u);
+                _packWriter.Write(0);
                 _packWriter.Write(_numAssets);
             }
 
