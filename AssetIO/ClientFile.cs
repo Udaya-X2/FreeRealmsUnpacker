@@ -49,7 +49,7 @@ public static partial class ClientFile
 
         // Read the .pack file in big-endian format.
         using FileStream stream = File.OpenRead(packFile);
-        using EndianBinaryReader reader = new(stream, Endian.Big);
+        EndianBinaryReader reader = new(stream, Endian.Big, MaxAssetNameLength);
         uint nextOffset = 0;
         uint numAssets = 0;
         Asset? asset = null;
@@ -145,7 +145,7 @@ public static partial class ClientFile
 
         // Read the .pack file in big-endian format.
         using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
-        using EndianBinaryReader reader = new(stream, Endian.Big);
+        EndianBinaryReader reader = new(stream, Endian.Big);
         uint nextOffset = 0;
         uint numAssets = 0;
 
@@ -339,7 +339,7 @@ public static partial class ClientFile
 
         // Read the manifest.dat file in little-endian format.
         using FileStream stream = File.OpenRead(manifestFile);
-        using EndianBinaryReader reader = new(stream, Endian.Little);
+        EndianBinaryReader reader = new(stream, Endian.Little, MaxAssetNameLength);
         (long numAssets, long remainder) = Math.DivRem(stream.Length, ManifestChunkSize);
         Asset? asset = null;
 
@@ -755,7 +755,7 @@ public static partial class ClientFile
 
         // Read the .pack.temp file in big-endian format.
         using FileStream stream = File.OpenRead(packTempFile);
-        using EndianBinaryReader reader = new(stream, Endian.Big);
+        EndianBinaryReader reader = new(stream, Endian.Big);
         long end = stream.Length;
         uint prevOffset = 0;
         uint currOffset = 0;

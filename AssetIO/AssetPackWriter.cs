@@ -59,7 +59,7 @@ public class AssetPackWriter : AssetWriter
             // If appending to a non-empty .pack file, skip to the last asset chunk.
             if (append && _packStream.Length != 0)
             {
-                using EndianBinaryReader reader = new(_packStream, Endian.Big, Encoding.UTF8, leaveOpen: true);
+                EndianBinaryReader reader = new(_packStream, Endian.Big);
                 uint nextOffset;
 
                 while ((nextOffset = reader.ReadUInt32()) != 0)
@@ -262,8 +262,7 @@ public class AssetPackWriter : AssetWriter
     /// <returns>The number of encoded bytes.</returns>
     /// <exception cref="ArgumentException"/>
     private int GetByteCountUTF8(string name) => Encoding.UTF8.TryGetBytes(name, _nameBuffer, out int bytesWritten)
-        ? bytesWritten
-        : ThrowHelper.ThrowArgument_InvalidAssetName<int>(name, _packStream.Name);
+        ? bytesWritten : ThrowHelper.ThrowArgument_InvalidAssetName<int>(name, _packStream.Name);
 
     /// <inheritdoc/>
     protected override void Dispose(bool disposing)
@@ -289,7 +288,6 @@ public class AssetPackWriter : AssetWriter
             }
 
             _packStream.Dispose();
-            _packWriter.Dispose();
         }
 
         _disposed = true;

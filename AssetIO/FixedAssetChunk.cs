@@ -21,7 +21,7 @@ public static partial class ClientFile
         {
             // Write to the .pack.temp file in big-endian format.
             using FileStream stream = new(packTempFile, FileMode.Open, FileAccess.Write, FileShare.Read, bufferSize: 8);
-            using EndianBinaryWriter writer = new(stream, Endian.Big);
+            EndianBinaryWriter writer = new(stream, Endian.Big);
             stream.Position = Offset;
 
             // Set the next offset to zero.

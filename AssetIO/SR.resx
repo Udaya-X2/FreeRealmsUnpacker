@@ -141,9 +141,6 @@
   <data name="EndOfStream_Stream" xml:space="preserve">
     <value>Unable to read beyond the end of the stream.</value>
   </data>
-  <data name="Format_Bad7BitInt" xml:space="preserve">
-    <value>Too many bytes in what should have been a 7-bit encoded integer.</value>
-  </data>
   <data name="IO_AssetEOF" xml:space="preserve">
     <value>The asset "{0}" extends past the end of "{1}".</value>
   </data>
@@ -155,9 +152,6 @@
   </data>
   <data name="IO_InvalidDecimalBits" xml:space="preserve">
     <value>Decimal constructor requires an array or span of four valid decimal bytes.</value>
-  </data>
-  <data name="IO_InvalidStringLen" xml:space="preserve">
-    <value>EndianBinaryReader encountered an invalid string length of {0} characters.</value>
   </data>
   <data name="IO_NoMoreAssetDatFilesRead" xml:space="preserve">
     <value>Ran out of asset .dat files while reading "{0}".</value>
@@ -212,5 +206,8 @@
   </data>
   <data name="NotSupported_UnwritableStream" xml:space="preserve">
     <value>Stream does not support writing.</value>
+  </data>
+  <data name="Argument_InvalidStringLen" xml:space="preserve">
+    <value>{0}-byte read exceeds the maximum string length.</value>
   </data>
 </root>

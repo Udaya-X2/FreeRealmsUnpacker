@@ -54,6 +54,11 @@ internal static class ThrowHelper
     internal static T ThrowArgument_InvalidSeekOrigin<T>(string paramName)
         => throw new ArgumentException(SR.Argument_InvalidSeekOrigin, paramName);
 
+    /// <inheritdoc cref="SR.Argument_InvalidStringLen"/>
+    [DoesNotReturn]
+    internal static void ThrowArgument_InvalidStringLen(int numBytes)
+        => throw new ArgumentException(string.Format(SR.Argument_InvalidStringLen, numBytes));
+
     /// <inheritdoc cref="SR.Argument_StreamNotReadable"/>
     [DoesNotReturn]
     internal static void ThrowArgument_StreamNotReadable()
@@ -81,13 +86,13 @@ internal static class ThrowHelper
 
     /// <inheritdoc cref="SR.EndOfStream_Stream"/>
     [DoesNotReturn]
-    internal static T ThrowEndOfStream_Stream<T>()
+    internal static void ThrowEndOfStream_Stream()
         => throw new EndOfStreamException(SR.EndOfStream_Stream);
 
-    /// <inheritdoc cref="SR.Format_Bad7BitInt"/>
+    /// <inheritdoc cref="SR.EndOfStream_Stream"/>
     [DoesNotReturn]
-    internal static void ThrowFormat_Bad7BitInt()
-        => throw new FormatException(SR.Format_Bad7BitInt);
+    internal static T ThrowEndOfStream_Stream<T>()
+        => throw new EndOfStreamException(SR.EndOfStream_Stream);
 
     /// <inheritdoc cref="SR.InvalidAsset_Name"/>
     [DoesNotReturn]
@@ -153,11 +158,6 @@ internal static class ThrowHelper
     [DoesNotReturn]
     internal static T ThrowIO_InvalidDecimalBits<T>(Exception innerException)
         => throw new IOException(SR.IO_InvalidDecimalBits, innerException);
-
-    /// <inheritdoc cref="SR.IO_InvalidStringLen"/>
-    [DoesNotReturn]
-    internal static void ThrowIO_InvalidStringLen(int stringLength)
-        => throw new IOException(string.Format(SR.IO_InvalidStringLen, stringLength));
 
     /// <inheritdoc cref="SR.IO_NoMoreAssetDatFilesRead"/>
     [DoesNotReturn]

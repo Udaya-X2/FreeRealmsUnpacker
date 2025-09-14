@@ -1,203 +1,240 @@
 ﻿using System.Buffers.Binary;
-using System.Text;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace AssetIO.EndianBinaryIO;
 
 /// <summary>
-/// Writes primitive types in binary to a stream in a specific
-/// endianness and supports writing strings in a specific encoding.
+/// Writes primitive types in binary to a stream in a specific endianness.
 /// </summary>
-internal class EndianBinaryWriter : BinaryWriter
+internal sealed class EndianBinaryWriter
 {
-    private const int CodePageUTF8 = 65001;
-
-    private readonly Encoding _encoding;
-    private readonly bool _useFastUtf8;
+    private readonly Stream _stream;
     private readonly bool _isLittleEndian;
+    private readonly bool _reverseEndianness;
+    private readonly byte[] _buffer;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="EndianBinaryWriter"/> class based
-    /// on the specified stream, using little endian order and UTF-8 encoding.
-    /// </summary>
-    /// <inheritdoc cref="BinaryWriter(Stream)"/>
-    public EndianBinaryWriter(Stream output)
-        : this(output, Endian.Little)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EndianBinaryWriter"/> class
-    /// based on the specified stream and endianness, using UTF-8 encoding.
+    /// Initializes a new instance of the <see cref="EndianBinaryWriter"/>
+    /// class based on the specified stream and endianness.
     /// </summary>
     /// <param name="output">The output stream.</param>
-    /// <param name="endianness">Specifies the order in which bytes are read.</param>
+    /// <param name="endianness">Specifies the order in which bytes are written.</param>
+    /// <exception cref="ArgumentException">The stream does not support reading or is already closed.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="output"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
     /// </exception>
-    /// <inheritdoc cref="BinaryWriter(Stream)"/>
     public EndianBinaryWriter(Stream output, Endian endianness)
-        : this(output, endianness, Encoding.UTF8)
     {
-    }
+        ArgumentNullException.ThrowIfNull(output);
+        if (!output.CanWrite) ThrowHelper.ThrowArgument_StreamNotWritable();
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EndianBinaryWriter"/> class based
-    /// on the specified stream and character encoding, using little endian order.
-    /// </summary>
-    /// <inheritdoc cref="BinaryWriter(Stream, Encoding)"/>
-    public EndianBinaryWriter(Stream output, Encoding encoding)
-        : this(output, Endian.Little, encoding)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EndianBinaryWriter"/> class
-    /// based on the specified stream, endianness, and character encoding.
-    /// </summary>
-    /// <param name="output">The output stream.</param>
-    /// <param name="endianness">Specifies the order in which bytes are read.</param>
-    /// <param name="encoding">The character encoding to use.</param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
-    /// </exception>
-    /// <inheritdoc cref="BinaryWriter(Stream, Encoding)"/>
-    public EndianBinaryWriter(Stream output, Endian endianness, Encoding encoding)
-        : this(output, endianness, encoding, false)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EndianBinaryWriter"/> class based on the specified
-    /// stream, endianness, and character encoding, and optionally leaves the stream open.
-    /// </summary>
-    /// <param name="output">The output stream.</param>
-    /// <param name="endianness">Specifies the order in which bytes are read.</param>
-    /// <param name="encoding">The character encoding to use.</param>
-    /// <param name="leaveOpen">
-    /// <see langword="true"/> to leave the stream open after the <see cref="EndianBinaryWriter"/>
-    /// object is disposed; otherwise, <see langword="false"/>.
-    /// </param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// <paramref name="endianness"/> is not a valid <see cref="Endian"/> value.
-    /// </exception>
-    /// <inheritdoc cref="BinaryWriter(Stream, Encoding, bool)"/>
-    public EndianBinaryWriter(Stream output, Endian endianness, Encoding encoding, bool leaveOpen)
-        : base(output, encoding, leaveOpen)
-    {
-        _encoding = encoding;
-        _useFastUtf8 = encoding is { CodePage: CodePageUTF8, EncoderFallback.MaxCharCount: <= 1 };
         _isLittleEndian = endianness switch
         {
             Endian.Little => true,
             Endian.Big => false,
             _ => ThrowHelper.ThrowArgumentOutOfRange_Enum<bool>(nameof(endianness)),
         };
+        _reverseEndianness = _isLittleEndian != BitConverter.IsLittleEndian;
+        _stream = output;
+        _buffer = new byte[sizeof(decimal)];
     }
+
+    /// <summary>
+    /// Returns the underlying stream.
+    /// </summary>
+    public Stream BaseStream => _stream;
 
     /// <summary>
     /// Gets an enum value indicating the order in which bytes are written.
     /// </summary>
     public Endian Endianness => _isLittleEndian ? Endian.Little : Endian.Big;
 
-    /// <inheritdoc/>
-    public override void Write(short value)
+    /// <summary>
+    /// Writes an unsigned byte to the current stream and advances the stream position by one byte.
+    /// </summary>
+    /// <param name="value">The unsigned byte to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(byte value) => _stream.WriteByte(value);
+
+    /// <summary>
+    /// Writes a signed byte to the current stream and advances the stream position by one byte.
+    /// </summary>
+    /// <param name="value">The signed byte to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(sbyte value) => _stream.WriteByte((byte)value);
+
+    /// <summary>
+    /// Writes a one-byte <see langword="Boolean"/> value to the current stream, with
+    /// 0 representing <see langword="false"/> and 1 representing <see langword="true"/>.
+    /// </summary>
+    /// <param name="value">The <see langword="Boolean"/> value to write (0 or 1).</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(bool value) => _stream.WriteByte((byte)(value ? 1 : 0));
+
+    /// <summary>
+    /// Writes a two-byte signed integer to the current stream and advances the stream position by two bytes.
+    /// </summary>
+    /// <param name="value">The two-byte signed integer to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(short value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(short)];
-
-        if (_isLittleEndian) BinaryPrimitives.WriteInt16LittleEndian(buffer, value);
-        else BinaryPrimitives.WriteInt16BigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        if (_reverseEndianness) value = BinaryPrimitives.ReverseEndianness(value);
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        _stream.Write(_buffer, 0, sizeof(short));
     }
 
-    /// <inheritdoc/>
-    public override void Write(ushort value)
+    /// <summary>
+    /// Writes a two-byte unsigned integer to the current stream and advances the stream position by two bytes.
+    /// </summary>
+    /// <param name="value">The two-byte unsigned integer to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(ushort value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(ushort)];
-
-        if (_isLittleEndian) BinaryPrimitives.WriteUInt16LittleEndian(buffer, value);
-        else BinaryPrimitives.WriteUInt16BigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        if (_reverseEndianness) value = BinaryPrimitives.ReverseEndianness(value);
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        _stream.Write(_buffer, 0, sizeof(ushort));
     }
 
-    /// <inheritdoc/>
-    public override void Write(int value)
+    /// <summary>
+    /// Writes a four-byte signed integer to the current stream and advances the stream position by four bytes.
+    /// </summary>
+    /// <param name="value">The four-byte signed integer to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(int value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(int)];
-
-        if (_isLittleEndian) BinaryPrimitives.WriteInt32LittleEndian(buffer, value);
-        else BinaryPrimitives.WriteInt32BigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        if (_reverseEndianness) value = BinaryPrimitives.ReverseEndianness(value);
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        _stream.Write(_buffer, 0, sizeof(int));
     }
 
-    /// <inheritdoc/>
-    public override void Write(uint value)
+    /// <summary>
+    /// Writes a four-byte unsigned integer to the current stream and advances the stream position by four bytes.
+    /// </summary>
+    /// <param name="value">The four-byte unsigned integer to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(uint value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(uint)];
-
-        if (_isLittleEndian) BinaryPrimitives.WriteUInt32LittleEndian(buffer, value);
-        else BinaryPrimitives.WriteUInt32BigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        if (_reverseEndianness) value = BinaryPrimitives.ReverseEndianness(value);
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        _stream.Write(_buffer, 0, sizeof(uint));
     }
 
-    /// <inheritdoc/>
-    public override void Write(long value)
+    /// <summary>
+    /// Writes an eight-byte signed integer to the current stream and advances the stream position by eight bytes.
+    /// </summary>
+    /// <param name="value">The eight-byte signed integer to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(long value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(long)];
-
-        if (_isLittleEndian) BinaryPrimitives.WriteInt64LittleEndian(buffer, value);
-        else BinaryPrimitives.WriteInt64BigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        if (_reverseEndianness) value = BinaryPrimitives.ReverseEndianness(value);
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        _stream.Write(_buffer, 0, sizeof(long));
     }
 
-    /// <inheritdoc/>
-    public override void Write(ulong value)
+    /// <summary>
+    /// Writes an eight-byte unsigned integer to the current stream and advances the stream position by eight bytes.
+    /// </summary>
+    /// <param name="value">The eight-byte unsigned integer to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(ulong value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(ulong)];
-
-        if (_isLittleEndian) BinaryPrimitives.WriteUInt64LittleEndian(buffer, value);
-        else BinaryPrimitives.WriteUInt64BigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        if (_reverseEndianness) value = BinaryPrimitives.ReverseEndianness(value);
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        _stream.Write(_buffer, 0, sizeof(ulong));
     }
 
-    /// <inheritdoc/>
-    public override void Write(Half value)
+    /// <summary>
+    /// Writes a two-byte floating-point value to the current stream and advances the stream position by two bytes.
+    /// </summary>
+    /// <param name="value">The two-byte floating-point value to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(Half value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(ushort) /* sizeof(Half)) */];
+        if (_reverseEndianness)
+        {
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer),
+                                  BinaryPrimitives.ReverseEndianness(Unsafe.BitCast<Half, short>(value)));
+        }
+        else
+        {
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        }
 
-        if (_isLittleEndian) BinaryPrimitives.WriteHalfLittleEndian(buffer, value);
-        else BinaryPrimitives.WriteHalfBigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        _stream.Write(_buffer, 0, sizeof(short));
     }
 
-    /// <inheritdoc/>
-    public override void Write(float value)
+    /// <summary>
+    /// Writes a four-byte floating-point value to the current stream and advances the stream position by four bytes.
+    /// </summary>
+    /// <param name="value">The four-byte floating-point value to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(float value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(float)];
+        if (_reverseEndianness)
+        {
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer),
+                                  BinaryPrimitives.ReverseEndianness(Unsafe.BitCast<float, int>(value)));
+        }
+        else
+        {
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        }
 
-        if (_isLittleEndian) BinaryPrimitives.WriteSingleLittleEndian(buffer, value);
-        else BinaryPrimitives.WriteSingleBigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        _stream.Write(_buffer, 0, sizeof(float));
     }
 
-    /// <inheritdoc/>
-    public override void Write(double value)
+    /// <summary>
+    /// Writes an eight-byte floating-point value to the current stream and advances the stream position by eight bytes.
+    /// </summary>
+    /// <param name="value">The eight-byte floating-point value to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(double value)
     {
-        Span<byte> buffer = stackalloc byte[sizeof(double)];
+        if (_reverseEndianness)
+        {
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer),
+                                  BinaryPrimitives.ReverseEndianness(Unsafe.BitCast<double, long>(value)));
+        }
+        else
+        {
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        }
 
-        if (_isLittleEndian) BinaryPrimitives.WriteDoubleLittleEndian(buffer, value);
-        else BinaryPrimitives.WriteDoubleBigEndian(buffer, value);
-
-        OutStream.Write(buffer);
+        _stream.Write(_buffer, 0, sizeof(double));
     }
 
-    /// <inheritdoc/>
-    public override void Write(ReadOnlySpan<byte> buffer) => OutStream.Write(buffer);
+    /// <summary>
+    /// Writes a decimal value to the current stream and advances the stream position by sixteen bytes.
+    /// </summary>
+    /// <param name="value">The decimal value to write.</param>
+    /// <exception cref="IOException">An I/O error occurs.</exception>
+    /// <exception cref="ObjectDisposedException">The stream is closed.</exception>
+    public void Write(decimal value)
+    {
+        if (_reverseEndianness)
+        {
+            Span<int> bits = MemoryMarshal.CreateSpan(ref Unsafe.As<decimal, int>(ref value), 4);
+            (bits[0], bits[3]) = (BinaryPrimitives.ReverseEndianness(bits[3]),
+                                  BinaryPrimitives.ReverseEndianness(bits[0]));
+            (bits[1], bits[2]) = (BinaryPrimitives.ReverseEndianness(bits[2]),
+                                  BinaryPrimitives.ReverseEndianness(bits[1]));
+        }
+
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(_buffer), value);
+        _stream.Write(_buffer, 0, sizeof(decimal));
+    }
 }

@@ -92,7 +92,6 @@ public class AssetDatWriter : AssetWriter
         {
             // Clean up disposables if an error occurs.
             _manifestStream?.Dispose();
-            _manifestWriter?.Dispose();
             _dataFileEnumerator?.Dispose();
             _dataStream?.Dispose();
             throw;
@@ -242,8 +241,7 @@ public class AssetDatWriter : AssetWriter
     /// <returns>The number of encoded bytes.</returns>
     /// <exception cref="ArgumentException"/>
     private int GetByteCountUTF8(string name) => Encoding.UTF8.TryGetBytes(name, _nameBuffer, out int bytesWritten)
-        ? bytesWritten
-        : ThrowHelper.ThrowArgument_InvalidAssetName<int>(name, _manifestStream.Name);
+        ? bytesWritten : ThrowHelper.ThrowArgument_InvalidAssetName<int>(name, _manifestStream.Name);
 
     /// <summary>
     /// Closes the current data file stream and opens the next asset .dat file.
@@ -292,7 +290,6 @@ public class AssetDatWriter : AssetWriter
             // Set length to include null byte padding.
             _manifestStream.SetLength(_manifestStream.Position);
             _manifestStream.Dispose();
-            _manifestWriter.Dispose();
             _dataStream.Dispose();
 
             // Remove any unused asset .dat files.

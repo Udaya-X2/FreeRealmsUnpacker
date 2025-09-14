@@ -115,6 +115,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}-byte read exceeds the maximum string length..
+        /// </summary>
+        internal static string Argument_InvalidStringLen {
+            get {
+                return ResourceManager.GetString("Argument_InvalidStringLen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Stream was not readable..
         /// </summary>
         internal static string Argument_StreamNotReadable {
@@ -156,15 +165,6 @@ namespace AssetIO {
         internal static string EndOfStream_Stream {
             get {
                 return ResourceManager.GetString("EndOfStream_Stream", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Too many bytes in what should have been a 7-bit encoded integer..
-        /// </summary>
-        internal static string Format_Bad7BitInt {
-            get {
-                return ResourceManager.GetString("Format_Bad7BitInt", resourceCulture);
             }
         }
         
@@ -282,15 +282,6 @@ namespace AssetIO {
         internal static string IO_InvalidDecimalBits {
             get {
                 return ResourceManager.GetString("IO_InvalidDecimalBits", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to EndianBinaryReader encountered an invalid string length of {0} characters..
-        /// </summary>
-        internal static string IO_InvalidStringLen {
-            get {
-                return ResourceManager.GetString("IO_InvalidStringLen", resourceCulture);
             }
         }
         
