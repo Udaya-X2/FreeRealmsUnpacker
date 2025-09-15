@@ -220,11 +220,7 @@ public abstract class AssetReader : IDisposable
     /// </returns>
     private bool AssetEquals(Asset asset, string path)
     {
-        FileInfo file = new(path);
-
-        if (asset.Size != file.Length) return false;
-
-        using FileStream fs = file.OpenRead();
+        using FileStream fs = File.OpenRead(path);
         return StreamEquals(asset, fs);
     }
 
@@ -268,22 +264,6 @@ public abstract class AssetReader : IDisposable
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
     public abstract bool StreamEquals(Asset asset, Stream stream);
-
-    /// <summary>
-    /// Asynchronously determines whether the contents of the given asset matches the specified stream.
-    /// </summary>
-    /// <param name="asset">The asset to read.</param>
-    /// <param name="stream">The stream to which the contents of the asset will be compared.</param>
-    /// <param name="token">The token to monitor for cancellation requests.</param>
-    /// <returns>
-    /// A task that represents the stream comparison. The result of the task is <see langword="true"/>
-    /// if the contents of the asset and the stream are the same; otherwise, <see langword="false"/>.
-    /// </returns>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
-    public abstract Task<bool> StreamEqualsAsync(Asset asset, Stream stream, CancellationToken token = default);
 
     /// <inheritdoc cref="Dispose()"/>
     protected abstract void Dispose(bool disposing);
