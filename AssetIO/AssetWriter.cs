@@ -94,7 +94,7 @@ public abstract class AssetWriter : IDisposable
     public virtual Asset Write(FileInfo file)
     {
         ArgumentNullException.ThrowIfNull(file);
-        
+
         using FileStream stream = new(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 0);
         return Write(file.Name, stream);
     }

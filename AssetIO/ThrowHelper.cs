@@ -193,4 +193,9 @@ internal static class ThrowHelper
     [DoesNotReturn]
     internal static T ThrowOverflow_TooManyAssets<T>(string fileName, Exception innerException)
         => throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, fileName), innerException);
+
+    /// <inheritdoc cref="SR.Overflow_TooManyAssets"/>
+    [DoesNotReturn]
+    internal static void ThrowOverflow_TooManyAssets(string fileName)
+        => throw new OverflowException(string.Format(SR.Overflow_TooManyAssets, fileName));
 }

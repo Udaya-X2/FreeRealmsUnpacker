@@ -420,15 +420,9 @@ public static partial class ClientFile
         (long numAssets, long remainder) = Math.DivRem(manifestFileInfo.Length, ManifestChunkSize);
 
         if (remainder != 0) ThrowHelper.ThrowIO_BadManifest(manifestFile);
+        if (numAssets > int.MaxValue) ThrowHelper.ThrowOverflow_TooManyAssets(manifestFileInfo.Name);
 
-        try
-        {
-            return checked((int)numAssets);
-        }
-        catch (OverflowException ex)
-        {
-            return ThrowHelper.ThrowOverflow_TooManyAssets<int>(manifestFileInfo.Name, ex);
-        }
+        return (int)numAssets;
     }
 
     /// <inheritdoc cref="AppendManifestAssets(string, IEnumerable{FileInfo})"/>
