@@ -284,7 +284,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
     /// </summary>
     private void EnsureCapacity(uint value)
     {
-        if (value <= _buffer.Length) return;
+        if (value <= (uint)_buffer.Length) return;
         if (value > (uint)Array.MaxLength) throw new OutOfMemoryException(SR.OutOfMemory_ArrayLength);
 
         _buffer = new byte[Math.Min(BitOperations.RoundUpToPowerOf2(value), (uint)Array.MaxLength)];

@@ -358,7 +358,7 @@ public static partial class ClientFile
         // X+16-148     0               Null bytes for the rest of the chunk.
         // 
         // Scan each manifest chunk for information regarding each asset.
-        for (int i = 0; i < numAssets; i++)
+        for (long i = 0; i < numAssets; i++)
         {
             try
             {

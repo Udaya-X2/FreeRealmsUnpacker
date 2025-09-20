@@ -52,7 +52,7 @@ public class AssetDatReader : AssetReader
         int bytesRead = stream.Read(buffer, 0, (int)asset.Size);
 
         // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
-        while (bytesRead != asset.Size)
+        while (bytesRead != (int)asset.Size)
         {
             stream = GetStream(++file, asset);
             stream.Position = 0;
@@ -153,7 +153,7 @@ public class AssetDatReader : AssetReader
 
                     totalRead += read;
                 }
-                while (totalRead != count);
+                while (totalRead < count);
 
                 if (!_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
             }

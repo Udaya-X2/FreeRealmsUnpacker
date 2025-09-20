@@ -42,9 +42,11 @@ public class AssetPackReader : AssetReader
         if ((uint)buffer.Length < asset.Size) ThrowHelper.ThrowArgument_InvalidAssetLen();
 
         _stream.Position = asset.Offset;
-        int bytesRead = _stream.Read(buffer, 0, (int)asset.Size);
 
-        if (bytesRead != asset.Size) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
+        if (_stream.Read(buffer, 0, (int)asset.Size) != (int)asset.Size)
+        {
+            ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
+        }
     }
 
     /// <summary>
