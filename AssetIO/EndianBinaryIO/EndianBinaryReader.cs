@@ -22,7 +22,7 @@ internal sealed class EndianBinaryReader
     /// </summary>
     /// <param name="input">The input stream.</param>
     /// <param name="endianness">Specifies the order in which bytes are read.</param>
-    /// <param name="maxStringLength">A positive integer value indicating the max string length.</param>
+    /// <param name="maxStringLength">A non-negative integer value indicating the max string length.</param>
     /// <exception cref="ArgumentException">The stream does not support reading or is already closed.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="input"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">

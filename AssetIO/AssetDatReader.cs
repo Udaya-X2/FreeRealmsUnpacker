@@ -11,7 +11,6 @@ namespace AssetIO;
 public class AssetDatReader : AssetReader
 {
     private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
-    private const int BufferSize = 81920;
 
     private readonly FileStream[] _streams;
     private readonly byte[] _buffer;
@@ -22,15 +21,17 @@ public class AssetDatReader : AssetReader
     /// Initializes a new instance of the <see cref="AssetDatReader"/> class for the specified asset .dat files.
     /// </summary>
     /// <param name="dataFiles">The asset .dat files to read.</param>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetDatReader(IEnumerable<string> dataFiles)
+    public AssetDatReader(IEnumerable<string> dataFiles, int bufferSize = 131072)
     {
         ArgumentNullException.ThrowIfNull(dataFiles);
+        ArgumentOutOfRangeException.ThrowIfNegative(bufferSize);
 
-        _streams = OpenReadDataFiles(dataFiles);
-        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        _streams = OpenReadDataFiles(dataFiles, bufferSize);
+        _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
     }
 
     /// <summary>
@@ -95,6 +96,7 @@ public class AssetDatReader : AssetReader
     /// <inheritdoc/>
     public override void CopyTo(Asset asset, AssetWriter writer)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(writer);
 
@@ -135,7 +137,7 @@ public class AssetDatReader : AssetReader
         if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
         if (asset.Size != stream.Length) return false;
 
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(_buffer.Length);
 
         try
         {
@@ -174,12 +176,12 @@ public class AssetDatReader : AssetReader
         (long file, long address) = Math.DivRem(asset.Offset, MaxAssetDatSize);
         FileStream stream = GetStream(file, asset);
         stream.Position = address;
-        uint bytes = asset.Size;
+        uint numBytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
-        while (bytes > 0)
+        while (numBytes > 0)
         {
-            int count = BufferSize <= bytes ? BufferSize : (int)bytes;
+            int count = (int)Math.Min(numBytes, (uint)_buffer.Length);
             int bytesRead = stream.Read(_buffer, 0, count);
 
             // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
@@ -191,7 +193,7 @@ public class AssetDatReader : AssetReader
             }
 
             yield return count;
-            bytes -= (uint)count;
+            numBytes -= (uint)count;
         }
     }
 
@@ -212,7 +214,7 @@ public class AssetDatReader : AssetReader
     /// Opens the specified asset .dat files for reading.
     /// </summary>
     /// <returns>An array of read-only <see cref="FileStream"/> objects on the specified files.</returns>
-    private static FileStream[] OpenReadDataFiles(IEnumerable<string> files)
+    private static FileStream[] OpenReadDataFiles(IEnumerable<string> files, int bufferSize)
     {
         List<FileStream> fileStreams = [];
         FileStream? fileStream = null;
@@ -224,7 +226,7 @@ public class AssetDatReader : AssetReader
                 // Break early if the previous asset .dat file doesn't meet the size requirement.
                 if (fileStream?.Length < MaxAssetDatSize) break;
 
-                fileStream = File.OpenRead(file);
+                fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
                 fileStreams.Add(fileStream);
             }
         }
@@ -293,10 +295,10 @@ public class AssetDatReader : AssetReader
         {
             ValidateBufferArguments(buffer, offset, count);
 
-            long bytesLeft = asset.Offset + asset.Size - _position;
+            long numBytes = asset.Offset + asset.Size - _position;
 
-            if (bytesLeft <= 0) return 0;
-            if (count > bytesLeft) count = (int)bytesLeft;
+            if (numBytes <= 0) return 0;
+            if (count > numBytes) count = (int)numBytes;
 
             // Determine which .dat file to read and where to start reading from based on the current position.
             (long file, long address) = Math.DivRem(_position, MaxAssetDatSize);

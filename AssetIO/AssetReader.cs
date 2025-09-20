@@ -104,7 +104,7 @@ public abstract class AssetReader : IDisposable
         if (fileExtracted)
         {
             file.Directory?.Create();
-            using FileStream fs = file.Open(FileMode.Create, FileAccess.Write, FileShare.Read);
+            using FileStream fs = new(file.FullName, FileMode.Create, FileAccess.Write, FileShare.Read);
             CopyTo(asset, fs);
         }
 
@@ -220,8 +220,8 @@ public abstract class AssetReader : IDisposable
     /// </returns>
     private bool AssetEquals(Asset asset, string path)
     {
-        using FileStream fs = File.OpenRead(path);
-        return StreamEquals(asset, fs);
+        using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0);
+        return StreamEquals(asset, stream);
     }
 
     /// <summary>

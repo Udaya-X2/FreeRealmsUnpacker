@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using UnpackerGui.Commands;
@@ -48,6 +49,11 @@ public partial class MainView : UserControl
             if (e is { Key: Key.F, KeyModifiers: KeyModifiers.Control })
             {
                 searchBarTextBox.Focus();
+            }
+            if (e is { Key: Key.D, KeyModifiers: KeyModifiers.Alt })
+            {
+                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, true, true);
             }
         });
 

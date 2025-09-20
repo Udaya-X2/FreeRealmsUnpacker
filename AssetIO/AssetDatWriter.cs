@@ -14,7 +14,6 @@ public class AssetDatWriter : AssetWriter
     private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
     private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest.dat file.
     private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
-    private const int BufferSize = 81920;
 
     private readonly FileStream _manifestStream;
     private readonly EndianBinaryWriter _manifestWriter;
@@ -37,11 +36,12 @@ public class AssetDatWriter : AssetWriter
     /// </summary>
     /// <param name="manifestFile">The manifest.dat file to write.</param>
     /// <param name="append">Whether to append assets instead of overwriting the file.</param>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetDatWriter(string manifestFile, bool append = false)
-        : this(manifestFile, ClientDirectory.EnumerateDataFilesInfinite(manifestFile), append)
+    public AssetDatWriter(string manifestFile, bool append = false, int bufferSize = 131072)
+        : this(manifestFile, ClientDirectory.EnumerateDataFilesInfinite(manifestFile), append, bufferSize)
     {
     }
 
@@ -52,10 +52,14 @@ public class AssetDatWriter : AssetWriter
     /// <param name="manifestFile">The manifest.dat file to write.</param>
     /// <param name="dataFiles">The asset .dat files to write to.</param>
     /// <param name="append">Whether to append assets instead of overwriting the file.</param>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetDatWriter(string manifestFile, IEnumerable<string> dataFiles, bool append = false)
+    public AssetDatWriter(string manifestFile,
+                          IEnumerable<string> dataFiles,
+                          bool append = false,
+                          int bufferSize = 131072)
     {
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
@@ -63,8 +67,8 @@ public class AssetDatWriter : AssetWriter
         {
             // Open the manifest.dat file in little-endian format.
             _mode = append ? FileMode.Append : FileMode.Create;
-            _manifestStream = new(manifestFile, _mode, FileAccess.Write, FileShare.Read);
-            _manifestWriter = new(_manifestStream, Endian.Little);
+            _manifestStream = new FileStream(manifestFile, _mode, FileAccess.Write, FileShare.Read);
+            _manifestWriter = new EndianBinaryWriter(_manifestStream, Endian.Little);
 
             // Create an enumerator to access asset .dat files.
             _dataFileEnumerator = dataFiles.GetEnumerator();
@@ -99,7 +103,7 @@ public class AssetDatWriter : AssetWriter
 
         // Ensure future asset .dat files are written to from the start of the file.
         _mode = FileMode.Create;
-        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
         _nameBuffer = new byte[MaxAssetNameLength];
     }
 
@@ -141,7 +145,7 @@ public class AssetDatWriter : AssetWriter
         int bytesRead;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
-        while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) > 0)
+        while ((bytesRead = stream.Read(_buffer, 0, _buffer.Length)) > 0)
         {
             int spaceLeft = MaxAssetDatSize - (int)_dataStream.Position;
 
@@ -264,7 +268,7 @@ public class AssetDatWriter : AssetWriter
             }
 
             _dataFileIdx++;
-            return File.Open(_dataFileEnumerator.Current, _mode, FileAccess.Write, FileShare.Read);
+            return new FileStream(_dataFileEnumerator.Current, _mode, FileAccess.Write, FileShare.Read);
         }
         catch (Exception ex)
         {

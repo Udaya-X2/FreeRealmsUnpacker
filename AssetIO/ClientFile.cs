@@ -1,4 +1,5 @@
 ﻿using AssetIO.EndianBinaryIO;
+using Microsoft.Win32.SafeHandles;
 using System.Buffers;
 using System.Text.RegularExpressions;
 
@@ -12,7 +13,8 @@ public static partial class ClientFile
 {
     private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest.dat file.
     private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
-    private const int BufferSize = 81920;
+    private const int AssetInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
+    private const int BufferSize = 131072;
     private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
     private const string PackFileSuffix = ".pack";
     private const string ManifestFileSuffix = "_manifest.dat";
@@ -48,7 +50,7 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         // Read the .pack file in big-endian format.
-        using FileStream stream = File.OpenRead(packFile);
+        using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, AssetInfoChunkSize);
         EndianBinaryReader reader = new(stream, Endian.Big, MaxAssetNameLength);
         uint nextOffset = 0;
         uint numAssets = 0;
@@ -144,7 +146,7 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         // Read the .pack file in big-endian format.
-        using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 8);
+        using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, 2 * sizeof(uint));
         EndianBinaryReader reader = new(stream, Endian.Big);
         uint nextOffset = 0;
         uint numAssets = 0;
@@ -338,7 +340,7 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         // Read the manifest.dat file in little-endian format.
-        using FileStream stream = File.OpenRead(manifestFile);
+        using FileStream stream = new(manifestFile, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
         EndianBinaryReader reader = new(stream, Endian.Little, MaxAssetNameLength);
         (long numAssets, long remainder) = Math.DivRem(stream.Length, ManifestChunkSize);
         Asset? asset = null;
@@ -754,7 +756,7 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
         // Read the .pack.temp file in big-endian format.
-        using FileStream stream = File.OpenRead(packTempFile);
+        using FileStream stream = new(packTempFile, FileMode.Open, FileAccess.Read, FileShare.Read, AssetInfoChunkSize);
         EndianBinaryReader reader = new(stream, Endian.Big);
         long end = stream.Length;
         uint prevOffset = 0;
@@ -1010,38 +1012,64 @@ public static partial class ClientFile
         => value >= 0 ? value : ThrowHelper.ThrowInvalidAsset_Offset(value);
 
     /// <summary>
-    /// Checks whether the contents of the files are the same.
+    /// Checks whether the contents of the specified files are the same.
     /// </summary>
     /// <returns><see langword="true"/> if the files have the same bytes; otherwise, <see langword="false"/>.</returns>
     private static bool FilesEqual(string file1, string file2)
     {
         if (file1 == file2) return true;
 
-        using FileStream stream1 = File.OpenRead(file1);
-        using FileStream stream2 = File.OpenRead(file2);
+        using SafeFileHandle handle1 = File.OpenHandle(file1, options: FileOptions.SequentialScan);
+        using SafeFileHandle handle2 = File.OpenHandle(file2, options: FileOptions.SequentialScan);
+        long length = RandomAccess.GetLength(handle1);
 
-        if (stream1.Length != stream2.Length) return false;
+        if (length != RandomAccess.GetLength(handle2)) return false;
 
         byte[] buffer1 = ArrayPool<byte>.Shared.Rent(BufferSize);
         byte[] buffer2 = ArrayPool<byte>.Shared.Rent(BufferSize);
 
         try
         {
-            int bytesRead1, bytesRead2;
+            Span<byte> span1 = buffer1.AsSpan(0, BufferSize);
+            Span<byte> span2 = buffer2.AsSpan(0, BufferSize);
+            long position = 0;
 
-            do
+            while (true)
             {
-                bytesRead1 = stream1.Read(buffer1, 0, BufferSize);
-                bytesRead2 = stream2.Read(buffer2, 0, BufferSize);
+                int read = RandomAccess.Read(handle1, span1, position);
 
-                if (!buffer1.AsSpan(0, bytesRead1).SequenceEqual(buffer2.AsSpan(0, bytesRead2))) return false;
+                if (read == 0) return position == length;
+                if (!ReadExactly(handle2, span2, position, read)) return false;
+                if (!span1[..read].SequenceEqual(span2[..read])) return false;
+
+                position += read;
             }
-            while (bytesRead1 != 0);
         }
         finally
         {
             ArrayPool<byte>.Shared.Return(buffer1);
             ArrayPool<byte>.Shared.Return(buffer2);
+        }
+    }
+
+    /// <summary>
+    /// Reads the specified number of bytes from the given file at the given offset into the buffer.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if exactly <paramref name="numBytes"/> bytes
+    /// were read into the buffer; otherwise, <see langword="false"/>.
+    /// </returns>
+    private static bool ReadExactly(SafeFileHandle handle, Span<byte> buffer, long fileOffset, int numBytes)
+    {
+        int totalRead = 0;
+
+        while (totalRead < numBytes)
+        {
+            int read = RandomAccess.Read(handle, buffer[totalRead..], fileOffset + totalRead);
+
+            if (read == 0) return false;
+
+            totalRead += read;
         }
 
         return true;

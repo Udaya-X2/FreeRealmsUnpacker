@@ -15,7 +15,6 @@ public class AssetPackWriter : AssetWriter
     private const int AssetInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
     private const int AssetInfoHeaderSize = 8; // The size of an asset info chunk header (NextOffset + NumAssets).
     private const int AssetFieldsSize = 16; // The size of an asset's fields (Name.Length + Offset + Size + Crc32).
-    private const int BufferSize = 81920;
 
     private readonly FileStream _packStream;
     private readonly EndianBinaryWriter _packWriter;
@@ -37,11 +36,12 @@ public class AssetPackWriter : AssetWriter
     /// </summary>
     /// <param name="packFile">The asset .pack file to write.</param>
     /// <param name="append">Whether to append assets instead of overwriting the file.</param>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    public AssetPackWriter(string packFile, bool append = false)
+    public AssetPackWriter(string packFile, bool append = false, int bufferSize = 131072)
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);
 
@@ -50,7 +50,7 @@ public class AssetPackWriter : AssetWriter
         FileAccess access = append ? FileAccess.ReadWrite : FileAccess.Write;
         _packStream = new FileStream(packFile, mode, access, FileShare.Read);
         _packWriter = new EndianBinaryWriter(_packStream, Endian.Big);
-        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
         _nameBuffer = new byte[MaxAssetNameLength];
         _chunkSize = AssetInfoHeaderSize;
 
@@ -183,12 +183,12 @@ public class AssetPackWriter : AssetWriter
             int bytesRead;
 
             // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
-            while ((bytesRead = stream.Read(_buffer, 0, BufferSize)) > 0)
+            while ((bytesRead = stream.Read(_buffer, 0, _buffer.Length)) > 0)
             {
                 // Compute the CRC-32/size of the asset while the data is being written.
                 _packStream.Write(_buffer, 0, bytesRead);
                 _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, _buffer, 0, bytesRead);
-                checked { _assetSize += (uint)bytesRead; }
+                checked { _assetSize += unchecked((uint)bytesRead); }
             }
         }
         catch (OverflowException ex)
@@ -212,7 +212,7 @@ public class AssetPackWriter : AssetWriter
             // Compute the CRC-32/size of the asset while the data is being written.
             _packStream.Write(buffer, index, count);
             _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, buffer, index, count);
-            checked { _assetSize += (uint)count; }
+            checked { _assetSize += unchecked((uint)count); }
         }
         catch (OverflowException ex)
         {

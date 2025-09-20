@@ -8,8 +8,6 @@ namespace AssetIO;
 /// </summary>
 public class AssetPackReader : AssetReader
 {
-    private const int BufferSize = 81920;
-
     private readonly FileStream _stream;
     private readonly byte[] _buffer;
 
@@ -19,15 +17,17 @@ public class AssetPackReader : AssetReader
     /// Initializes a new instance of the <see cref="AssetPackReader"/> class for the specified asset .pack file.
     /// </summary>
     /// <param name="packFile">The asset .pack file to read.</param>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetPackReader(string packFile)
+    public AssetPackReader(string packFile, int bufferSize = 131072)
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);
+        ArgumentOutOfRangeException.ThrowIfNegative(bufferSize);
 
-        _stream = File.OpenRead(packFile);
-        _buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        _stream = new FileStream(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
+        _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
     }
 
     /// <summary>
@@ -66,6 +66,7 @@ public class AssetPackReader : AssetReader
     /// <inheritdoc/>
     public override void CopyTo(Asset asset, Stream destination)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(destination);
         if (!destination.CanWrite) ThrowHelper.ThrowArgument_StreamNotWritable();
@@ -82,6 +83,7 @@ public class AssetPackReader : AssetReader
     /// <inheritdoc/>
     public override void CopyTo(Asset asset, AssetWriter writer)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(writer);
 
@@ -122,7 +124,7 @@ public class AssetPackReader : AssetReader
         if (!stream.CanRead) ThrowHelper.ThrowArgument_StreamNotReadable();
         if (asset.Size != stream.Length) return false;
 
-        byte[] buffer = ArrayPool<byte>.Shared.Rent(BufferSize);
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(_buffer.Length);
 
         try
         {
@@ -138,7 +140,7 @@ public class AssetPackReader : AssetReader
 
                     totalRead += read;
                 }
-                while (totalRead != count) ;
+                while (totalRead != count);
 
                 if (!_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
             }
@@ -158,17 +160,17 @@ public class AssetPackReader : AssetReader
     private IEnumerable<int> InternalRead(Asset asset)
     {
         _stream.Position = asset.Offset;
-        uint bytes = asset.Size;
+        uint numBytes = asset.Size;
 
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been read.
-        while (bytes > 0)
+        while (numBytes > 0)
         {
-            int count = BufferSize <= bytes ? BufferSize : (int)bytes;
+            int count = (int)Math.Min(numBytes, (uint)_buffer.Length);
 
             if (_stream.Read(_buffer, 0, count) != count) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
 
             yield return count;
-            bytes -= (uint)count;
+            numBytes -= (uint)count;
         }
     }
 
@@ -227,10 +229,10 @@ public class AssetPackReader : AssetReader
         {
             ValidateBufferArguments(buffer, offset, count);
 
-            long bytesLeft = asset.Offset + asset.Size - _position;
+            long numBytes = asset.Offset + asset.Size - _position;
 
-            if (bytesLeft <= 0) return 0;
-            if (count > bytesLeft) count = (int)bytesLeft;
+            if (numBytes <= 0) return 0;
+            if (count > numBytes) count = (int)numBytes;
 
             stream.Position = _position;
 
