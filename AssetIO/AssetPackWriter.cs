@@ -11,11 +11,6 @@ namespace AssetIO;
 /// </summary>
 public class AssetPackWriter : AssetWriter
 {
-    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
-    private const int AssetInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
-    private const int AssetInfoHeaderSize = 8; // The size of an asset info chunk header (NextOffset + NumAssets).
-    private const int AssetFieldsSize = 16; // The size of an asset's fields (Name.Length + Offset + Size + Crc32).
-
     private readonly FileStream _packStream;
     private readonly EndianBinaryWriter _packWriter;
     private readonly byte[] _buffer;
@@ -41,7 +36,7 @@ public class AssetPackWriter : AssetWriter
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    public AssetPackWriter(string packFile, bool append = false, int bufferSize = 131072)
+    public AssetPackWriter(string packFile, bool append = false, int bufferSize = Constants.BufferSize)
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);
 
@@ -51,8 +46,8 @@ public class AssetPackWriter : AssetWriter
         _packStream = new FileStream(packFile, mode, access, FileShare.Read);
         _packWriter = new EndianBinaryWriter(_packStream, Endian.Big);
         _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-        _nameBuffer = new byte[MaxAssetNameLength];
-        _chunkSize = AssetInfoHeaderSize;
+        _nameBuffer = new byte[Constants.MaxAssetNameLength];
+        _chunkSize = Constants.AssetInfoHeaderSize;
 
         try
         {
@@ -74,26 +69,26 @@ public class AssetPackWriter : AssetWriter
                 for (uint i = 0; i < _numAssets; i++)
                 {
                     int length = ClientFile.ValidateNameLength(reader.ReadInt32());
-                    int assetIndexSize = length + AssetFieldsSize;
+                    int assetIndexSize = length + Constants.AssetFieldsSize;
                     _packStream.Seek(assetIndexSize - sizeof(int), SeekOrigin.Current);
                     _chunkSize += assetIndexSize;
 
-                    if (_chunkSize > AssetInfoChunkSize)
+                    if (_chunkSize > Constants.AssetInfoChunkSize)
                     {
                         ThrowHelper.ThrowIO_BadAssetInfo(_chunkOffset, _packStream.Name);
                     }
                 }
 
                 // Expand the last asset info chunk if necessary.
-                if (_packStream.Length < _chunkOffset + AssetInfoChunkSize)
+                if (_packStream.Length < _chunkOffset + Constants.AssetInfoChunkSize)
                 {
-                    _packStream.SetLength(_chunkOffset + AssetInfoChunkSize);
+                    _packStream.SetLength(_chunkOffset + Constants.AssetInfoChunkSize);
                 }
             }
             // Otherwise, create an empty asset info chunk at the start of the .pack file.
             else
             {
-                _packStream.SetLength(AssetInfoChunkSize);
+                _packStream.SetLength(Constants.AssetInfoChunkSize);
             }
         }
         catch (InvalidAssetException ex)
@@ -143,7 +138,7 @@ public class AssetPackWriter : AssetWriter
             _assetCrc32 = 0;
 
             // If current asset exceeds the space of this asset info chunk, proceed to the next asset chunk.
-            if (_chunkSize + _assetNameLength + AssetFieldsSize > AssetInfoChunkSize)
+            if (_chunkSize + _assetNameLength + Constants.AssetFieldsSize > Constants.AssetInfoChunkSize)
             {
                 // Write the offset of the next asset info chunk and the number of assets at the start of the chunk.
                 _packStream.Position = _chunkOffset;
@@ -152,11 +147,11 @@ public class AssetPackWriter : AssetWriter
 
                 // Reset asset info chunk related fields.
                 _chunkOffset = _assetOffset;
-                _chunkSize = AssetInfoHeaderSize;
+                _chunkSize = Constants.AssetInfoHeaderSize;
                 _numAssets = 0;
 
                 // Start the next asset content chunk at the end of the next asset info chunk.
-                checked { _assetOffset += AssetInfoChunkSize; }
+                checked { _assetOffset += Constants.AssetInfoChunkSize; }
                 _packStream.SetLength(_assetOffset);
             }
 
@@ -250,7 +245,7 @@ public class AssetPackWriter : AssetWriter
         _packWriter.Write(_assetOffset);
         _packWriter.Write(_assetSize);
         _packWriter.Write(_assetCrc32);
-        _chunkSize += _assetNameLength + AssetFieldsSize;
+        _chunkSize += _assetNameLength + Constants.AssetFieldsSize;
         _numAssets++;
         _assetName = null;
     }

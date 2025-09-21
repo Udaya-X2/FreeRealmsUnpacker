@@ -5,8 +5,6 @@
 /// </summary>
 public static class ClientDirectory
 {
-    private const string ManifestFileSuffix = "_manifest.dat";
-
     /// <summary>
     /// Returns an enumerable collection of the asset files that match a filter on a specified path.
     /// </summary>
@@ -123,8 +121,8 @@ public static class ClientDirectory
         ArgumentNullException.ThrowIfNull(manifestFile);
 
         string path = EscapeFormatString(manifestFile.FullName);
-        string dataFileFormat = path.EndsWith(ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
-            ? $"{path[..^ManifestFileSuffix.Length]}_{{0:D3}}.dat"
+        string dataFileFormat = path.EndsWith(Constants.ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
+            ? $"{path[..^Constants.ManifestFileSuffix.Length]}_{{0:D3}}.dat"
             : $"{Path.ChangeExtension(path, null)}_{{0:D3}}.dat";
 
         while (true)

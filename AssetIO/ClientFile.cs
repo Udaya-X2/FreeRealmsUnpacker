@@ -1,7 +1,6 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Microsoft.Win32.SafeHandles;
 using System.Buffers;
-using System.Text.RegularExpressions;
 
 namespace AssetIO;
 
@@ -9,33 +8,8 @@ namespace AssetIO;
 /// Provides static methods for the reading, writing, extraction,
 /// and validation of assets from a Free Realms asset file.
 /// </summary>
-public static partial class ClientFile
+public static class ClientFile
 {
-    private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest.dat file.
-    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
-    private const int AssetInfoChunkSize = 8192; // The size of an asset info chunk in an asset .pack file.
-    private const int BufferSize = 131072;
-    private const RegexOptions Options = RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture;
-    private const string PackFileSuffix = ".pack";
-    private const string ManifestFileSuffix = "_manifest.dat";
-    private const string PackTempFileSuffix = ".pack.temp";
-    private const string DatFileSuffix = ".dat";
-
-    [GeneratedRegex(@"^Assets(W?_\d{3}\.pack(\.temp)?|_manifest\.dat)$", Options, "en-US")]
-    private static partial Regex GameAssetRegex();
-    [GeneratedRegex(@"^assetpack000(W?_\d{3}\.pack(\.temp)?|_manifest\.dat)$", Options, "en-US")]
-    private static partial Regex TcgAssetRegex();
-    [GeneratedRegex(@"^AssetsTcg(W?_\d{3}\.pack(\.temp)?|_manifest\.dat)$", Options, "en-US")]
-    private static partial Regex ResourceAssetRegex();
-    [GeneratedRegex(@"^assets_ps3w?_\d{3}\.pack(\.temp)?$", Options, "en-US")]
-    private static partial Regex PS3AssetRegex();
-    [GeneratedRegex(@"^Assets_\d{3}\.dat$", Options, "en-US")]
-    private static partial Regex GameDataRegex();
-    [GeneratedRegex(@"^assetpack000_\d{3}\.dat$", Options, "en-US")]
-    private static partial Regex TcgDataRegex();
-    [GeneratedRegex(@"^AssetsTcg_\d{3}\.dat$", Options, "en-US")]
-    private static partial Regex ResourceDataRegex();
-
     /// <summary>
     /// Returns an enumerable collection of the assets in the specified .pack file.
     /// </summary>
@@ -50,8 +24,12 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         // Read the .pack file in big-endian format.
-        using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, AssetInfoChunkSize);
-        EndianBinaryReader reader = new(stream, Endian.Big, MaxAssetNameLength);
+        using FileStream stream = new(packFile,
+                                      FileMode.Open,
+                                      FileAccess.Read,
+                                      FileShare.Read,
+                                      Constants.AssetInfoChunkSize);
+        EndianBinaryReader reader = new(stream, Endian.Big, Constants.MaxAssetNameLength);
         uint nextOffset = 0;
         uint numAssets = 0;
         Asset? asset = null;
@@ -146,7 +124,11 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(packFile);
 
         // Read the .pack file in big-endian format.
-        using FileStream stream = new(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, 2 * sizeof(uint));
+        using FileStream stream = new(packFile,
+                                      FileMode.Open,
+                                      FileAccess.Read,
+                                      FileShare.Read,
+                                      Constants.AssetInfoHeaderSize);
         EndianBinaryReader reader = new(stream, Endian.Big);
         uint nextOffset = 0;
         uint numAssets = 0;
@@ -340,9 +322,13 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         // Read the manifest.dat file in little-endian format.
-        using FileStream stream = new(manifestFile, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize);
-        EndianBinaryReader reader = new(stream, Endian.Little, MaxAssetNameLength);
-        (long numAssets, long remainder) = Math.DivRem(stream.Length, ManifestChunkSize);
+        using FileStream stream = new(manifestFile,
+                                      FileMode.Open,
+                                      FileAccess.Read,
+                                      FileShare.Read,
+                                      Constants.BufferSize);
+        EndianBinaryReader reader = new(stream, Endian.Little, Constants.MaxAssetNameLength);
+        (long numAssets, long remainder) = Math.DivRem(stream.Length, Constants.ManifestChunkSize);
         Asset? asset = null;
 
         if (remainder != 0) ThrowHelper.ThrowIO_BadManifest(stream.Name);
@@ -368,7 +354,7 @@ public static partial class ClientFile
                 uint size = reader.ReadUInt32();
                 uint crc32 = reader.ReadUInt32();
                 asset = new Asset(name, offset, size, crc32);
-                stream.Seek(MaxAssetNameLength - length, SeekOrigin.Current);
+                stream.Seek(Constants.MaxAssetNameLength - length, SeekOrigin.Current);
             }
             catch (InvalidAssetException ex)
             {
@@ -417,7 +403,7 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
         FileInfo manifestFileInfo = new(manifestFile);
-        (long numAssets, long remainder) = Math.DivRem(manifestFileInfo.Length, ManifestChunkSize);
+        (long numAssets, long remainder) = Math.DivRem(manifestFileInfo.Length, Constants.ManifestChunkSize);
 
         if (remainder != 0) ThrowHelper.ThrowIO_BadManifest(manifestFile);
         if (numAssets > int.MaxValue) ThrowHelper.ThrowOverflow_TooManyAssets(manifestFileInfo.Name);
@@ -750,7 +736,11 @@ public static partial class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(packTempFile);
 
         // Read the .pack.temp file in big-endian format.
-        using FileStream stream = new(packTempFile, FileMode.Open, FileAccess.Read, FileShare.Read, AssetInfoChunkSize);
+        using FileStream stream = new(packTempFile,
+                                      FileMode.Open,
+                                      FileAccess.Read,
+                                      FileShare.Read,
+                                      Constants.AssetInfoChunkSize);
         EndianBinaryReader reader = new(stream, Endian.Big);
         long end = stream.Length;
         uint prevOffset = 0;
@@ -819,9 +809,9 @@ public static partial class ClientFile
         string newPath;
 
         // Remove the current file extension.
-        if (name.EndsWith(PackTempFileSuffix, StringComparison.OrdinalIgnoreCase))
+        if (name.EndsWith(Constants.PackTempFileSuffix, StringComparison.OrdinalIgnoreCase))
         {
-            name = name[..^PackTempFileSuffix.Length];
+            name = name[..^Constants.PackTempFileSuffix.Length];
         }
         else
         {
@@ -940,9 +930,9 @@ public static partial class ClientFile
     {
         const StringComparison ComparisonType = StringComparison.OrdinalIgnoreCase;
 
-        if (assetFile.EndsWith(PackFileSuffix, ComparisonType)) return AssetType.Pack;
-        if (assetFile.EndsWith(ManifestFileSuffix, ComparisonType)) return AssetType.Dat;
-        if (assetFile.EndsWith(PackTempFileSuffix, ComparisonType)) return AssetType.Pack | AssetType.Temp;
+        if (assetFile.EndsWith(Constants.PackFileSuffix, ComparisonType)) return AssetType.Pack;
+        if (assetFile.EndsWith(Constants.ManifestFileSuffix, ComparisonType)) return AssetType.Dat;
+        if (assetFile.EndsWith(Constants.PackTempFileSuffix, ComparisonType)) return AssetType.Pack | AssetType.Temp;
         if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         return 0;
     }
@@ -958,10 +948,10 @@ public static partial class ClientFile
     {
         ReadOnlySpan<char> filename = Path.GetFileName(assetFile);
 
-        if (GameAssetRegex().IsMatch(filename)) return AssetType.Game;
-        if (TcgAssetRegex().IsMatch(filename)) return AssetType.Tcg;
-        if (ResourceAssetRegex().IsMatch(filename)) return AssetType.Resource;
-        if (PS3AssetRegex().IsMatch(filename)) return AssetType.PS3;
+        if (RegexConstants.GameAssetRegex.IsMatch(filename)) return AssetType.Game;
+        if (RegexConstants.TcgAssetRegex.IsMatch(filename)) return AssetType.Tcg;
+        if (RegexConstants.ResourceAssetRegex.IsMatch(filename)) return AssetType.Resource;
+        if (RegexConstants.PS3AssetRegex.IsMatch(filename)) return AssetType.PS3;
         if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(assetFile.ToString());
         return 0;
     }
@@ -975,29 +965,30 @@ public static partial class ClientFile
     /// <exception cref="ArgumentException"/>
     public static AssetType InferDataType(ReadOnlySpan<char> dataFile, bool strict = false)
     {
-        if (!dataFile.EndsWith(DatFileSuffix, StringComparison.OrdinalIgnoreCase)) goto End;
+        if (!dataFile.EndsWith(Constants.DatFileSuffix, StringComparison.OrdinalIgnoreCase)) goto End;
 
         ReadOnlySpan<char> filename = Path.GetFileName(dataFile);
 
-        if (GameDataRegex().IsMatch(filename)) return AssetType.Game;
-        if (TcgDataRegex().IsMatch(filename)) return AssetType.Tcg;
-        if (ResourceDataRegex().IsMatch(filename)) return AssetType.Resource;
+        if (RegexConstants.GameDataRegex.IsMatch(filename)) return AssetType.Game;
+        if (RegexConstants.TcgDataRegex.IsMatch(filename)) return AssetType.Tcg;
+        if (RegexConstants.ResourceDataRegex.IsMatch(filename)) return AssetType.Resource;
         End:
         if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(dataFile.ToString());
+
         return 0;
     }
 
     /// <summary>
-    /// Throws an exception if the specified integer is outside of the range [1, <see cref="MaxAssetNameLength"/>].
+    /// Throws an exception if the specified integer is an invalid asset name length.
     /// </summary>
     /// <param name="value">The integer value to check.</param>
-    /// <returns>The specified integer.</returns>
+    /// <returns>The specified integer value.</returns>
     /// <exception cref="InvalidAssetException"/>
     internal static int ValidateNameLength(int value)
-        => value is >= 1 and <= MaxAssetNameLength ? value : ThrowHelper.ThrowInvalidAsset_Name(value);
+        => value is >= 1 and <= Constants.MaxAssetNameLength ? value : ThrowHelper.ThrowInvalidAsset_Name(value);
 
     /// <summary>
-    /// Throws an exception if the specified integer is negative.
+    /// Throws an exception if the specified integer is an invalid asset offset.
     /// </summary>
     /// <param name="value">The integer value to check.</param>
     /// <returns>The specified integer.</returns>
@@ -1019,13 +1010,13 @@ public static partial class ClientFile
 
         if (length != RandomAccess.GetLength(handle2)) return false;
 
-        byte[] buffer1 = ArrayPool<byte>.Shared.Rent(BufferSize);
-        byte[] buffer2 = ArrayPool<byte>.Shared.Rent(BufferSize);
+        byte[] buffer1 = ArrayPool<byte>.Shared.Rent(Constants.BufferSize);
+        byte[] buffer2 = ArrayPool<byte>.Shared.Rent(Constants.BufferSize);
 
         try
         {
-            Span<byte> span1 = buffer1.AsSpan(0, BufferSize);
-            Span<byte> span2 = buffer2.AsSpan(0, BufferSize);
+            Span<byte> span1 = buffer1.AsSpan(0, Constants.BufferSize);
+            Span<byte> span2 = buffer2.AsSpan(0, Constants.BufferSize);
             long position = 0;
 
             while (true)

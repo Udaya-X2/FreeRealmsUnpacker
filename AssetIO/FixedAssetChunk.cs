@@ -18,7 +18,11 @@ public readonly record struct FixedAssetChunk(uint Offset, uint NumAssets)
     public void FixPackTempFile(string packTempFile)
     {
         // Write to the .pack.temp file in big-endian format.
-        using FileStream stream = new(packTempFile, FileMode.Open, FileAccess.Write, FileShare.Read, 2 * sizeof(uint));
+        using FileStream stream = new(packTempFile,
+                                      FileMode.Open,
+                                      FileAccess.Write,
+                                      FileShare.Read,
+                                      Constants.AssetInfoHeaderSize);
         EndianBinaryWriter writer = new(stream, Endian.Big);
         stream.Position = Offset;
 

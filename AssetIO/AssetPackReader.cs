@@ -21,7 +21,7 @@ public class AssetPackReader : AssetReader
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetPackReader(string packFile, int bufferSize = 131072)
+    public AssetPackReader(string packFile, int bufferSize = Constants.BufferSize)
     {
         ArgumentException.ThrowIfNullOrEmpty(packFile);
         ArgumentOutOfRangeException.ThrowIfNegative(bufferSize);

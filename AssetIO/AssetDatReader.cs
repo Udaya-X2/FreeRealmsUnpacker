@@ -10,8 +10,6 @@ namespace AssetIO;
 /// </summary>
 public class AssetDatReader : AssetReader
 {
-    private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
-
     private readonly FileStream[] _streams;
     private readonly byte[] _buffer;
 
@@ -25,7 +23,7 @@ public class AssetDatReader : AssetReader
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetDatReader(IEnumerable<string> dataFiles, int bufferSize = 131072)
+    public AssetDatReader(IEnumerable<string> dataFiles, int bufferSize = Constants.BufferSize)
     {
         ArgumentNullException.ThrowIfNull(dataFiles);
         ArgumentOutOfRangeException.ThrowIfNegative(bufferSize);
@@ -46,7 +44,7 @@ public class AssetDatReader : AssetReader
         if ((uint)buffer.Length < asset.Size) ThrowHelper.ThrowArgument_InvalidAssetLen();
 
         // Determine which .dat file to read and where to start reading from based on the offset.
-        (long file, long address) = Math.DivRem(asset.Offset, MaxAssetDatSize);
+        (long file, long address) = Math.DivRem(asset.Offset, Constants.MaxAssetDatSize);
         FileStream stream = GetStream(file, asset);
         stream.Position = address;
         int bytesRead = stream.Read(buffer, 0, (int)asset.Size);
@@ -173,7 +171,7 @@ public class AssetDatReader : AssetReader
     private IEnumerable<int> InternalRead(Asset asset)
     {
         // Determine which .dat file to read and where to start reading from based on the offset.
-        (long file, long address) = Math.DivRem(asset.Offset, MaxAssetDatSize);
+        (long file, long address) = Math.DivRem(asset.Offset, Constants.MaxAssetDatSize);
         FileStream stream = GetStream(file, asset);
         stream.Position = address;
         uint numBytes = asset.Size;
@@ -224,7 +222,7 @@ public class AssetDatReader : AssetReader
             foreach (string file in files)
             {
                 // Break early if the previous asset .dat file doesn't meet the size requirement.
-                if (fileStream?.Length < MaxAssetDatSize) break;
+                if (fileStream?.Length < Constants.MaxAssetDatSize) break;
 
                 fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
                 fileStreams.Add(fileStream);
@@ -301,7 +299,7 @@ public class AssetDatReader : AssetReader
             if (count > numBytes) count = (int)numBytes;
 
             // Determine which .dat file to read and where to start reading from based on the current position.
-            (long file, long address) = Math.DivRem(_position, MaxAssetDatSize);
+            (long file, long address) = Math.DivRem(_position, Constants.MaxAssetDatSize);
             FileStream stream = GetStream(streams, file, asset);
             stream.Position = address;
             int bytesRead = stream.Read(buffer, offset, count);

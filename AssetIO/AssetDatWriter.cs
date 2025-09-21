@@ -11,10 +11,6 @@ namespace AssetIO;
 /// </summary>
 public class AssetDatWriter : AssetWriter
 {
-    private const int MaxAssetDatSize = 209715200; // The maximum possible size of an asset .dat file.
-    private const int ManifestChunkSize = 148; // The size of an asset chunk in a manifest.dat file.
-    private const int MaxAssetNameLength = 128; // The maximum asset name length allowed in a manifest.dat file.
-
     private readonly FileStream _manifestStream;
     private readonly EndianBinaryWriter _manifestWriter;
     private readonly FileMode _mode;
@@ -40,7 +36,7 @@ public class AssetDatWriter : AssetWriter
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetDatWriter(string manifestFile, bool append = false, int bufferSize = 131072)
+    public AssetDatWriter(string manifestFile, bool append = false, int bufferSize = Constants.BufferSize)
         : this(manifestFile, ClientDirectory.EnumerateDataFilesInfinite(manifestFile), append, bufferSize)
     {
     }
@@ -59,7 +55,7 @@ public class AssetDatWriter : AssetWriter
     public AssetDatWriter(string manifestFile,
                           IEnumerable<string> dataFiles,
                           bool append = false,
-                          int bufferSize = 131072)
+                          int bufferSize = Constants.BufferSize)
     {
         ArgumentException.ThrowIfNullOrEmpty(manifestFile);
 
@@ -77,14 +73,17 @@ public class AssetDatWriter : AssetWriter
             // Skip to the first asset .dat file with free space.
             if (append)
             {
-                if (_manifestStream.Length % ManifestChunkSize != 0) ThrowHelper.ThrowIO_BadManifest(manifestFile);
+                if (_manifestStream.Length % Constants.ManifestChunkSize != 0)
+                {
+                    ThrowHelper.ThrowIO_BadManifest(manifestFile);
+                }
 
                 long size = _dataStream.Length;
                 _assetOffset += size;
 
-                while (size >= MaxAssetDatSize)
+                while (size >= Constants.MaxAssetDatSize)
                 {
-                    if (size > MaxAssetDatSize) ThrowHelper.ThrowIO_BadAssetDat(size, _dataStream.Name);
+                    if (size > Constants.MaxAssetDatSize) ThrowHelper.ThrowIO_BadAssetDat(size, _dataStream.Name);
 
                     _dataStream = GetNextDataStream();
                     size = _dataStream.Length;
@@ -104,7 +103,7 @@ public class AssetDatWriter : AssetWriter
         // Ensure future asset .dat files are written to from the start of the file.
         _mode = FileMode.Create;
         _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-        _nameBuffer = new byte[MaxAssetNameLength];
+        _nameBuffer = new byte[Constants.MaxAssetNameLength];
     }
 
     /// <summary>
@@ -147,7 +146,7 @@ public class AssetDatWriter : AssetWriter
         // Read blocks of data into the buffer at a time, until all bytes of the asset have been written.
         while ((bytesRead = stream.Read(_buffer, 0, _buffer.Length)) > 0)
         {
-            int spaceLeft = MaxAssetDatSize - (int)_dataStream.Position;
+            int spaceLeft = Constants.MaxAssetDatSize - (int)_dataStream.Position;
 
             // If the asset content exceeds the remaining space in the current asset
             // .dat file, write the overflow bytes to the next asset .dat file.
@@ -179,7 +178,7 @@ public class AssetDatWriter : AssetWriter
 
         while (count > 0)
         {
-            int spaceLeft = MaxAssetDatSize - (int)_dataStream.Position;
+            int spaceLeft = Constants.MaxAssetDatSize - (int)_dataStream.Position;
             int bytesWritten;
 
             // If the asset content exceeds the remaining space in the current asset
@@ -233,7 +232,7 @@ public class AssetDatWriter : AssetWriter
         _manifestWriter.Write(_assetOffset);
         _manifestWriter.Write(_assetSize);
         _manifestWriter.Write(_assetCrc32);
-        _manifestStream.Seek(MaxAssetNameLength - _assetNameLength, SeekOrigin.Current); // Pad with null bytes
+        _manifestStream.Seek(Constants.MaxAssetNameLength - _assetNameLength, SeekOrigin.Current);
         _assetOffset += _assetSize;
         _assetName = null;
     }
