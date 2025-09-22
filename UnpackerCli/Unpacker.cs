@@ -89,19 +89,19 @@ public partial class Unpacker
     /// <returns>The number of assets written.</returns>
     private int WriteAssets(AssetFile assetFile)
     {
-        List<FileInfo> assets = File.Exists(InputFile)
-            ? [.. File.ReadLines(InputFile).Select(x => new FileInfo(x))]
-            : [.. new DirectoryInfo(InputFile).EnumerateFiles("*", SearchOption.AllDirectories)];
-        using ProgressBar? pbar = NoProgressBars ? null : new(assets.Count, "Writing assets...");
+        List<string> files = File.Exists(InputFile)
+            ? [.. File.ReadLines(InputFile)]
+            : [.. Directory.EnumerateFiles(InputFile, "*", SearchOption.AllDirectories)];
+        using ProgressBar? pbar = NoProgressBars ? null : new(files.Count, "Writing assets...");
         using AssetWriter writer = AppendAssets ? assetFile.OpenAppend() : assetFile.OpenWrite();
 
-        foreach (FileInfo asset in assets)
+        foreach (string file in files)
         {
-            writer.Write(asset);
+            Asset asset = writer.Write(file);
             pbar?.UpdateProgress($"Added {asset.Name}");
         }
 
-        return assets.Count;
+        return files.Count;
     }
 
     /// <summary>

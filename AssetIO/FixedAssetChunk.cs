@@ -12,17 +12,13 @@ public readonly record struct FixedAssetChunk(uint Offset, uint NumAssets)
     /// <summary>
     /// Fixes the specified asset .pack.temp file.
     /// </summary>
-    /// <param name="packTempFile">The asset .pack.temp file.</param>
+    /// <param name="path">The asset .pack.temp file.</param>
     /// <exception cref="IOException"/>
     /// <exception cref="FileNotFoundException"/>
-    public void FixPackTempFile(string packTempFile)
+    public void FixPackTempFile(string path)
     {
         // Write to the .pack.temp file in big-endian format.
-        using FileStream stream = new(packTempFile,
-                                      FileMode.Open,
-                                      FileAccess.Write,
-                                      FileShare.Read,
-                                      Constants.AssetInfoHeaderSize);
+        using FileStream stream = new(path, FileMode.Open, FileAccess.Write, FileShare.Read, Constants.PackHeaderSize);
         EndianBinaryWriter writer = new(stream, Endian.Big);
         stream.Position = Offset;
 

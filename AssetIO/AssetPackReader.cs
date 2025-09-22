@@ -16,17 +16,17 @@ public class AssetPackReader : AssetReader
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetPackReader"/> class for the specified asset .pack file.
     /// </summary>
-    /// <param name="packFile">The asset .pack file to read.</param>
+    /// <param name="path">The asset .pack file to read.</param>
     /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetPackReader(string packFile, int bufferSize = Constants.BufferSize)
+    public AssetPackReader(string path, int bufferSize = Constants.BufferSize)
     {
-        ArgumentException.ThrowIfNullOrEmpty(packFile);
+        ArgumentException.ThrowIfNullOrEmpty(path);
         ArgumentOutOfRangeException.ThrowIfNegative(bufferSize);
 
-        _stream = new FileStream(packFile, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
+        _stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize);
         _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
     }
 

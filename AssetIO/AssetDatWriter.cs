@@ -17,7 +17,6 @@ public class AssetDatWriter : AssetWriter
     private readonly byte[] _buffer;
     private readonly byte[] _nameBuffer;
 
-    private bool _disposed;
     private IEnumerator<string> _dataFileEnumerator;
     private FileStream _dataStream;
     private int _dataFileIdx;
@@ -26,18 +25,19 @@ public class AssetDatWriter : AssetWriter
     private long _assetOffset;
     private uint _assetSize;
     private uint _assetCrc32;
+    private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AssetDatWriter"/> class for the specified manifest.dat file.
     /// </summary>
-    /// <param name="manifestFile">The manifest.dat file to write.</param>
+    /// <param name="path">The manifest.dat file to write.</param>
     /// <param name="append">Whether to append assets instead of overwriting the file.</param>
     /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetDatWriter(string manifestFile, bool append = false, int bufferSize = Constants.BufferSize)
-        : this(manifestFile, ClientDirectory.EnumerateDataFilesInfinite(manifestFile), append, bufferSize)
+    public AssetDatWriter(string path, bool append = false, int bufferSize = Constants.BufferSize)
+        : this(path, ClientDirectory.EnumerateDataFilesInfinite(path), append, bufferSize)
     {
     }
 
@@ -45,25 +45,25 @@ public class AssetDatWriter : AssetWriter
     /// Initializes a new instance of the <see cref="AssetDatWriter"/> class
     /// for the specified manifest.dat file and asset .dat files.
     /// </summary>
-    /// <param name="manifestFile">The manifest.dat file to write.</param>
+    /// <param name="path">The manifest.dat file to write.</param>
     /// <param name="dataFiles">The asset .dat files to write to.</param>
     /// <param name="append">Whether to append assets instead of overwriting the file.</param>
     /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    public AssetDatWriter(string manifestFile,
+    public AssetDatWriter(string path,
                           IEnumerable<string> dataFiles,
                           bool append = false,
                           int bufferSize = Constants.BufferSize)
     {
-        ArgumentException.ThrowIfNullOrEmpty(manifestFile);
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         try
         {
             // Open the manifest.dat file in little-endian format.
             _mode = append ? FileMode.Append : FileMode.Create;
-            _manifestStream = new FileStream(manifestFile, _mode, FileAccess.Write, FileShare.Read);
+            _manifestStream = new FileStream(path, _mode, FileAccess.Write, FileShare.Read);
             _manifestWriter = new EndianBinaryWriter(_manifestStream, Endian.Little);
 
             // Create an enumerator to access asset .dat files.
@@ -75,7 +75,7 @@ public class AssetDatWriter : AssetWriter
             {
                 if (_manifestStream.Length % Constants.ManifestChunkSize != 0)
                 {
-                    ThrowHelper.ThrowIO_BadManifest(manifestFile);
+                    ThrowHelper.ThrowIO_BadManifest(path);
                 }
 
                 long size = _dataStream.Length;

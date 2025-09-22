@@ -80,26 +80,26 @@ public static class ClientDirectory
     }
 
     /// <inheritdoc cref="EnumerateDataFiles(FileInfo)"/>
-    public static IEnumerable<string> EnumerateDataFiles(string manifestFile)
-        => EnumerateDataFilesInfinite(manifestFile).TakeWhile(File.Exists);
+    public static IEnumerable<string> EnumerateDataFiles(string file)
+        => EnumerateDataFilesInfinite(file).TakeWhile(File.Exists);
 
     /// <summary>
     /// Returns an enumerable collection of full file names for all asset
     /// .dat files corresponding to the specified manifest.dat file.
     /// </summary>
-    /// <param name="manifestFile">The manifest.dat file.</param>
+    /// <param name="file">The manifest.dat file.</param>
     /// <returns>
     /// An enumerable collection of the full file names (including paths) for
     /// the asset .dat files corresponding to the specified manifest.dat file.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<string> EnumerateDataFiles(FileInfo manifestFile)
-        => EnumerateDataFilesInfinite(manifestFile).TakeWhile(File.Exists);
+    public static IEnumerable<string> EnumerateDataFiles(FileInfo file)
+        => EnumerateDataFilesInfinite(file).TakeWhile(File.Exists);
 
     /// <inheritdoc cref="EnumerateDataFilesInfinite(FileInfo, int)"/>
-    public static IEnumerable<string> EnumerateDataFilesInfinite(string manifestFile, int index = 0)
-        => EnumerateDataFilesInfinite(new FileInfo(manifestFile), index);
+    public static IEnumerable<string> EnumerateDataFilesInfinite(string file, int index = 0)
+        => EnumerateDataFilesInfinite(new FileInfo(file), index);
 
     /// <summary>
     /// Returns an infinite enumerable of full file names for all asset
@@ -108,7 +108,7 @@ public static class ClientDirectory
     /// <remarks>
     /// Unlike <see cref="EnumerateDataFiles(string)"/>, this method includes nonexistent files.
     /// </remarks>
-    /// <param name="manifestFile">The manifest.dat file.</param>
+    /// <param name="file">The manifest.dat file.</param>
     /// <param name="index">The starting index.</param>
     /// <returns>
     /// An infinite enumerable of the full file names (including paths) for
@@ -116,11 +116,11 @@ public static class ClientDirectory
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    public static IEnumerable<string> EnumerateDataFilesInfinite(FileInfo manifestFile, int index = 0)
+    public static IEnumerable<string> EnumerateDataFilesInfinite(FileInfo file, int index = 0)
     {
-        ArgumentNullException.ThrowIfNull(manifestFile);
+        ArgumentNullException.ThrowIfNull(file);
 
-        string path = EscapeFormatString(manifestFile.FullName);
+        string path = EscapeFormatString(file.FullName);
         string dataFileFormat = path.EndsWith(Constants.ManifestFileSuffix, StringComparison.OrdinalIgnoreCase)
             ? $"{path[..^Constants.ManifestFileSuffix.Length]}_{{0:D3}}.dat"
             : $"{Path.ChangeExtension(path, null)}_{{0:D3}}.dat";

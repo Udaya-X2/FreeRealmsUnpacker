@@ -205,7 +205,7 @@ public class AssetDatReader : AssetReader
     /// <returns>The <see cref="FileStream"/> at the specified index.</returns>
     /// <exception cref="IOException"/>
     private static FileStream GetStream(FileStream[] streams, long file, Asset asset) => file < streams.Length
-        ? Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(streams), (nint)file)
+        ? Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(streams), (nint)file) // streams[file]
         : ThrowHelper.ThrowIO_NoMoreAssetDatFilesRead<FileStream>(asset.Name);
 
     /// <summary>

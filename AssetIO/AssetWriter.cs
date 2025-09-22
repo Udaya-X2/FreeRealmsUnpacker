@@ -74,29 +74,18 @@ public abstract class AssetWriter : IDisposable
     /// <summary>
     /// Writes an asset with the name and contents of the given file to the asset file(s).
     /// </summary>
-    /// <param name="file">The path of the file to write as an asset.</param>
+    /// <param name="path">The file to write as an asset.</param>
     /// <returns>The asset written.</returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="ObjectDisposedException"/>
-    public virtual Asset Write(string file) => Write(new FileInfo(file));
-
-    /// <summary>
-    /// Writes an asset with the name and contents of the given file to the asset file(s).
-    /// </summary>
-    /// <param name="file">The file to write as an asset.</param>
-    /// <returns>The asset written.</returns>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    /// <exception cref="ObjectDisposedException"/>
-    public virtual Asset Write(FileInfo file)
+    public virtual Asset Write(string path)
     {
-        ArgumentNullException.ThrowIfNull(file);
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
-        using FileStream stream = new(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, 0);
-        return Write(file.Name, stream);
+        using FileStream stream = new(path, FileMode.Open, FileAccess.Read, FileShare.Read, 0);
+        return Write(Path.GetFileName(stream.Name), stream);
     }
 
     /// <summary>
