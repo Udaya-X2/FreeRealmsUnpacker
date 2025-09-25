@@ -517,7 +517,7 @@ public static class ClientFile
             Asset asset = enumerator.Current;
 
             // Check whether the current asset extends past the end of the file.
-            if (end - asset.Offset - asset.Size < 0) break;
+            if (asset.Size > end - asset.Offset) break;
 
             yield return asset;
         }
@@ -632,7 +632,7 @@ public static class ClientFile
                     uint size = reader.ReadUInt32();
 
                     // Check whether the current asset extends past the end of the .pack.temp file.
-                    if (end - offset - size < 0 || stream.Seek(sizeof(uint), SeekOrigin.Current) > end)
+                    if (size > end - offset || stream.Seek(sizeof(uint), SeekOrigin.Current) > end)
                     {
                         ThrowHelper.ThrowEndOfStream_AssetFile(stream.Name);
                     }
