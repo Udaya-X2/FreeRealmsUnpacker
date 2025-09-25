@@ -92,7 +92,8 @@ public partial class Unpacker
         List<string> files = File.Exists(InputFile)
             ? [.. File.ReadLines(InputFile)]
             : [.. Directory.EnumerateFiles(InputFile, "*", SearchOption.AllDirectories)];
-        using ProgressBar? pbar = NoProgressBars ? null : new(files.Count, "Writing assets...");
+        ProgressBarOptions options = new() { ProgressCharacter = '─' };
+        using ProgressBar? pbar = NoProgressBars ? null : new(files.Count, "Writing assets...", options);
         using AssetWriter writer = AppendAssets ? assetFile.OpenAppend() : assetFile.OpenWrite();
 
         foreach (string file in files)
