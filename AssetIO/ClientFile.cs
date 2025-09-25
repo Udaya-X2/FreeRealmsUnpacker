@@ -153,27 +153,29 @@ public static class ClientFile
     }
 
     /// <summary>
-    /// Opens a .pack file, appends the specified assets to the file, and then closes
-    /// the file. If the target file does not exist, this method creates the file.
+    /// Extracts the assets from the specified .pack file to the given directory.
     /// </summary>
-    /// <param name="path">The asset .pack file to append.</param>
-    /// <param name="assets">The files to append as assets to the .pack file.</param>
+    /// <param name="path">The asset .pack file to extract.</param>
+    /// <param name="destDir">The destination directory path.</param>
+    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void ExtractPackAssets(string path, string destDir, FileConflictOptions options = default)
+        => ExtractAssets(new AssetPackReader(path), EnumeratePackAssets(path), destDir, options);
+
+    /// <summary>
+    /// Throws an exception if the specified .pack file is invalid or contains assets with CRC-32 mismatches.
+    /// </summary>
+    /// <param name="path">The asset .pack file to validate.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    public static void AppendPackAssets(string path, IEnumerable<string> assets)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentNullException.ThrowIfNull(assets);
-
-        using AssetPackWriter writer = new(path, append: true);
-
-        foreach (string asset in assets)
-        {
-            writer.Write(asset);
-        }
-    }
+    public static void ValidatePackAssets(string path)
+        => ValidateAssets(new AssetPackReader(path), EnumeratePackAssets(path), path);
 
     /// <summary>
     /// Creates a new .pack file, writes the specified assets to the file, and then
@@ -185,17 +187,20 @@ public static class ClientFile
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
     public static void WritePackAssets(string path, IEnumerable<string> assets)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentNullException.ThrowIfNull(assets);
+        => WriteAssets(new AssetPackWriter(path, append: false), assets);
 
-        using AssetPackWriter writer = new(path);
-
-        foreach (string asset in assets)
-        {
-            writer.Write(asset);
-        }
-    }
+    /// <summary>
+    /// Opens a .pack file, appends the specified assets to the file, and then closes
+    /// the file. If the target file does not exist, this method creates the file.
+    /// </summary>
+    /// <param name="path">The asset .pack file to append.</param>
+    /// <param name="assets">The files to append as assets to the .pack file.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="EndOfStreamException"/>
+    /// <exception cref="IOException"/>
+    public static void AppendPackAssets(string path, IEnumerable<string> assets)
+        => WriteAssets(new AssetPackWriter(path, append: true), assets);
 
     /// <inheritdoc cref="RemovePackAssets(string, ISet{Asset})"/>
     public static void RemovePackAssets(string path, IEnumerable<Asset> assets)
@@ -240,52 +245,6 @@ public static class ClientFile
             // Attempt to delete the temp .pack file if an error occurs.
             TryDeleteFiles(tempFile);
             throw;
-        }
-    }
-
-    /// <summary>
-    /// Throws an exception if the specified .pack file is invalid or contains assets with CRC-32 mismatches.
-    /// </summary>
-    /// <param name="path">The asset .pack file to validate.</param>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="EndOfStreamException"/>
-    /// <exception cref="IOException"/>
-    public static void ValidatePackAssets(string path)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-
-        using AssetPackReader reader = new(path);
-
-        foreach (Asset asset in EnumeratePackAssets(path))
-        {
-            uint crc32 = reader.GetCrc32(asset);
-
-            if (asset.Crc32 != crc32) ThrowHelper.ThrowIO_CrcMismatch(asset.Name, crc32, asset.Crc32, path);
-        }
-    }
-
-    /// <summary>
-    /// Extracts the assets from the specified .pack file to the given directory.
-    /// </summary>
-    /// <param name="path">The asset .pack file to extract.</param>
-    /// <param name="destDir">The destination directory path.</param>
-    /// <param name="options">Specifies how to handle file conflicts in the destination path.</param>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="ArgumentOutOfRangeException"/>
-    /// <exception cref="EndOfStreamException"/>
-    /// <exception cref="IOException"/>
-    public static void ExtractPackAssets(string path, string destDir, FileConflictOptions options = default)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentException.ThrowIfNullOrEmpty(destDir);
-
-        using AssetPackReader reader = new(path);
-
-        foreach (Asset asset in EnumeratePackAssets(path))
-        {
-            reader.ExtractTo(asset, destDir, options);
         }
     }
 
@@ -376,50 +335,6 @@ public static class ClientFile
     }
 
     /// <summary>
-    /// Opens a manifest.dat file, appends the specified assets to the file, and then
-    /// closes the file. If the target file does not exist, this method creates the file.
-    /// </summary>
-    /// <param name="path">The manifest.dat file to append.</param>
-    /// <param name="assets">The files to append as assets to the manifest.dat file.</param>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    public static void AppendManifestAssets(string path, IEnumerable<string> assets)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentNullException.ThrowIfNull(assets);
-
-        using AssetDatWriter writer = new(path, append: true);
-
-        foreach (string asset in assets)
-        {
-            writer.Write(asset);
-        }
-    }
-
-    /// <summary>
-    /// Creates a new manifest.dat file, writes the specified assets to the file, and
-    /// then closes the file. If the target file already exists, it is overwritten.
-    /// </summary>
-    /// <param name="path">The manifest.dat file to write.</param>
-    /// <param name="assets">The files to write as assets to the manifest.dat file.</param>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    public static void WriteManifestAssets(string path, IEnumerable<string> assets)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentNullException.ThrowIfNull(assets);
-
-        using AssetDatWriter writer = new(path);
-
-        foreach (string asset in assets)
-        {
-            writer.Write(asset);
-        }
-    }
-
-    /// <summary>
     /// Extracts the assets from the asset .dat files corresponding
     /// to the specified manifest.dat file to the given directory.
     /// </summary>
@@ -449,17 +364,54 @@ public static class ClientFile
                                              IEnumerable<string> dataFiles,
                                              string destDir,
                                              FileConflictOptions options = default)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentException.ThrowIfNullOrEmpty(destDir);
+        => ExtractAssets(new AssetDatReader(dataFiles), EnumerateManifestAssets(path), destDir, options);
 
-        using AssetDatReader reader = new(dataFiles);
+    /// <summary>
+    /// Throws an exception if the specified manifest.dat file and corresponding
+    /// asset .dat files are invalid or contain assets with CRC-32 mismatches.
+    /// </summary>
+    /// <param name="path">The manifest.dat file to validate.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static void ValidateManifestAssets(string path)
+        => ValidateManifestAssets(path, ClientDirectory.EnumerateDataFiles(path));
 
-        foreach (Asset asset in EnumerateManifestAssets(path))
-        {
-            reader.ExtractTo(asset, destDir, options);
-        }
-    }
+    /// <summary>
+    /// Throws an exception if the specified manifest.dat file and asset
+    /// .dat files are invalid or contain assets with CRC-32 mismatches.
+    /// </summary>
+    /// <param name="path">The manifest.dat file to validate.</param>
+    /// <param name="dataFiles">The asset .dat files to validate.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static void ValidateManifestAssets(string path, IEnumerable<string> dataFiles)
+        => ValidateAssets(new AssetDatReader(dataFiles), EnumerateManifestAssets(path), path);
+
+    /// <summary>
+    /// Creates a new manifest.dat file, writes the specified assets to the file, and
+    /// then closes the file. If the target file already exists, it is overwritten.
+    /// </summary>
+    /// <param name="path">The manifest.dat file to write.</param>
+    /// <param name="assets">The files to write as assets to the manifest.dat file.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static void WriteManifestAssets(string path, IEnumerable<string> assets)
+        => WriteAssets(new AssetDatWriter(path, append: false), assets);
+
+    /// <summary>
+    /// Opens a manifest.dat file, appends the specified assets to the file, and then
+    /// closes the file. If the target file does not exist, this method creates the file.
+    /// </summary>
+    /// <param name="path">The manifest.dat file to append.</param>
+    /// <param name="assets">The files to append as assets to the manifest.dat file.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static void AppendManifestAssets(string path, IEnumerable<string> assets)
+        => WriteAssets(new AssetDatWriter(path, append: true), assets);
 
     /// <inheritdoc cref="RemoveManifestAssets(string, IEnumerable{string}, ISet{Asset})"/>
     public static void RemoveManifestAssets(string path, IEnumerable<Asset> assets)
@@ -528,41 +480,6 @@ public static class ClientFile
             // Attempt to delete the temp files if an error occurs.
             TryDeleteFiles(ClientDirectory.EnumerateDataFiles(tempFile).Prepend(tempFile));
             throw;
-        }
-    }
-
-    /// <summary>
-    /// Throws an exception if the specified manifest.dat file and corresponding
-    /// asset .dat files are invalid or contain assets with CRC-32 mismatches.
-    /// </summary>
-    /// <param name="path">The manifest.dat file to validate.</param>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    public static void ValidateManifestAssets(string path)
-        => ValidateManifestAssets(path, ClientDirectory.EnumerateDataFiles(path));
-
-    /// <summary>
-    /// Throws an exception if the specified manifest.dat file and asset
-    /// .dat files are invalid or contain assets with CRC-32 mismatches.
-    /// </summary>
-    /// <param name="path">The manifest.dat file to validate.</param>
-    /// <param name="dataFiles">The asset .dat files to validate.</param>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    public static void ValidateManifestAssets(string path, IEnumerable<string> dataFiles)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentNullException.ThrowIfNull(dataFiles);
-
-        using AssetDatReader reader = new(dataFiles);
-
-        foreach (Asset asset in EnumerateManifestAssets(path))
-        {
-            uint crc32 = reader.GetCrc32(asset);
-
-            if (asset.Crc32 != crc32) ThrowHelper.ThrowIO_CrcMismatch(asset.Name, crc32, asset.Crc32, path);
         }
     }
 
@@ -641,17 +558,17 @@ public static class ClientFile
     /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="IOException"/>
     public static void ExtractPackTempAssets(string path, string destDir, FileConflictOptions options = default)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-        ArgumentException.ThrowIfNullOrEmpty(destDir);
+        => ExtractAssets(new AssetPackReader(path), EnumeratePackTempAssets(path), destDir, options);
 
-        using AssetPackReader reader = new(path);
-
-        foreach (Asset asset in EnumeratePackTempAssets(path))
-        {
-            reader.ExtractTo(asset, destDir, options);
-        }
-    }
+    /// <summary>
+    /// Throws an exception if the specified .pack.temp file is invalid or contains assets with CRC-32 mismatches.
+    /// </summary>
+    /// <param name="path">The asset .pack.temp file to validate.</param>
+    /// <exception cref="ArgumentException"/>
+    /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="IOException"/>
+    public static void ValidatePackTempAssets(string path)
+        => ValidateAssets(new AssetPackReader(path), EnumeratePackTempAssets(path), path);
 
     /// <summary>
     /// Fixes the first invalid asset info chunk in the specified .pack.temp file.
@@ -817,27 +734,6 @@ public static class ClientFile
     }
 
     /// <summary>
-    /// Throws an exception if the specified .pack.temp file is invalid or contains assets with CRC-32 mismatches.
-    /// </summary>
-    /// <param name="path">The asset .pack.temp file to validate.</param>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="IOException"/>
-    public static void ValidatePackTempAssets(string path)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-
-        using AssetPackReader reader = new(path);
-
-        foreach (Asset asset in EnumeratePackTempAssets(path))
-        {
-            uint crc32 = reader.GetCrc32(asset);
-
-            if (asset.Crc32 != crc32) ThrowHelper.ThrowIO_CrcMismatch(asset.Name, crc32, asset.Crc32, path);
-        }
-    }
-
-    /// <summary>
     /// Gets an enum value corresponding to the name of the specified asset file.
     /// </summary>
     /// <remarks>
@@ -919,7 +815,6 @@ public static class ClientFile
         if (RegexConstants.ResourceDataRegex.IsMatch(filename)) return AssetType.Resource;
         End:
         if (strict) ThrowHelper.ThrowArgument_CantInferAssetType(path.ToString());
-
         return 0;
     }
 
@@ -940,6 +835,58 @@ public static class ClientFile
     /// <exception cref="InvalidAssetException"/>
     private static long ValidateOffset(long value)
         => value >= 0 ? value : ThrowHelper.ThrowInvalidAsset_Offset(value);
+
+    /// <summary>
+    /// Writes the specified assets to asset file via the given asset writer.
+    /// </summary>
+    private static void WriteAssets(AssetWriter writer, IEnumerable<string> assets)
+    {
+        ArgumentNullException.ThrowIfNull(assets);
+
+        using (writer)
+        {
+            foreach (string asset in assets)
+            {
+                writer.Write(asset);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Throws an exception if the asset file opened by the reader is invalid or contain assets with CRC-32 mismatches.
+    /// </summary>
+    private static void ValidateAssets(AssetReader reader, IEnumerable<Asset> assets, string path)
+    {
+        using (reader)
+        {
+            foreach (Asset asset in assets)
+            {
+                if (reader.GetCrc32(asset) is uint crc32 && crc32 != asset.Crc32)
+                {
+                    ThrowHelper.ThrowIO_CrcMismatch(asset.Name, crc32, asset.Crc32, path);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Extracts the assets from the asset file opened by the reader to the given directory.
+    /// </summary>
+    private static void ExtractAssets(AssetReader reader,
+                                      IEnumerable<Asset> assets,
+                                      string destDir,
+                                      FileConflictOptions options)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(destDir);
+
+        using (reader)
+        {
+            foreach (Asset asset in assets)
+            {
+                reader.ExtractTo(asset, destDir, options);
+            }
+        }
+    }
 
     /// <summary>
     /// Checks whether the contents of the specified files are the same.
