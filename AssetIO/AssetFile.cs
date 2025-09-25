@@ -173,25 +173,27 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Creates an <see cref="AssetReader"/> that reads from the asset file or related data files.
     /// </summary>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <returns>A new <see cref="AssetReader"/> that reads from the asset file or related data files.</returns>
     /// <exception cref="IOException"/>
-    public virtual AssetReader OpenRead() => (FileType & ~AssetType.Temp) switch
+    public virtual AssetReader OpenRead(int bufferSize = Constants.BufferSize) => (FileType & ~AssetType.Temp) switch
     {
-        AssetType.Pack => new AssetPackReader(FullName),
-        AssetType.Dat => new AssetDatReader(DataFiles),
+        AssetType.Pack => new AssetPackReader(FullName, bufferSize),
+        AssetType.Dat => new AssetDatReader(DataFiles, bufferSize),
         _ => ThrowHelper.ThrowArgument_InvalidAssetType<AssetReader>(Type)
     };
 
     /// <summary>
     /// Creates an <see cref="AssetWriter"/> that writes to the asset file and related data files.
     /// </summary>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <returns>A new <see cref="AssetReader"/> that writes to the asset file and related data files.</returns>
     /// <exception cref="IOException"/>
     /// <exception cref="NotSupportedException"/>
-    public virtual AssetWriter OpenWrite() => FileType switch
+    public virtual AssetWriter OpenWrite(int bufferSize = Constants.BufferSize) => FileType switch
     {
-        AssetType.Pack => new AssetPackWriter(FullName),
-        AssetType.Dat => new AssetDatWriter(FullName, DataFiles),
+        AssetType.Pack => new AssetPackWriter(FullName, append: false, bufferSize),
+        AssetType.Dat => new AssetDatWriter(FullName, DataFiles, append: false, bufferSize),
         AssetType.Pack | AssetType.Temp => ThrowHelper.ThrowNotSupported_PackTempWrite<AssetWriter>(),
         _ => ThrowHelper.ThrowArgument_InvalidAssetType<AssetWriter>(Type)
     };
@@ -199,14 +201,15 @@ public class AssetFile : IEnumerable<Asset>
     /// <summary>
     /// Creates an <see cref="AssetWriter"/> that appends to the asset file and related data files.
     /// </summary>
+    /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <returns>A new <see cref="AssetReader"/> that appends to the asset file and related data files.</returns>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     /// <exception cref="NotSupportedException"/>
-    public virtual AssetWriter OpenAppend() => FileType switch
+    public virtual AssetWriter OpenAppend(int bufferSize = Constants.BufferSize) => FileType switch
     {
-        AssetType.Pack => new AssetPackWriter(FullName, append: true),
-        AssetType.Dat => new AssetDatWriter(FullName, DataFiles, append: true),
+        AssetType.Pack => new AssetPackWriter(FullName, append: true, bufferSize),
+        AssetType.Dat => new AssetDatWriter(FullName, DataFiles, append: true, bufferSize),
         AssetType.Pack | AssetType.Temp => ThrowHelper.ThrowNotSupported_PackTempWrite<AssetWriter>(),
         _ => ThrowHelper.ThrowArgument_InvalidAssetType<AssetWriter>(Type)
     };
@@ -216,7 +219,7 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     /// <exception cref="IOException"/>
     /// <exception cref="NotSupportedException"/>
-    public virtual void Create() => OpenWrite().Dispose();
+    public virtual void Create() => OpenWrite(0).Dispose();
 
     /// <summary>
     /// Extracts the assets from the asset file to the given directory.

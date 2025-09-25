@@ -227,7 +227,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         try
         {
             EnsureCapacity(asset.Size);
-            using AssetReader reader = asset.AssetFile.OpenRead();
+            using AssetReader reader = asset.AssetFile.OpenRead(0);
             reader.Read(asset, _buffer);
         }
         catch
