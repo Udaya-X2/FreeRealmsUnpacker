@@ -16,6 +16,7 @@ public class AssetDatWriter : AssetWriter
     private readonly FileMode _mode;
     private readonly byte[] _buffer;
     private readonly byte[] _nameBuffer;
+    private readonly int _bufferSize;
 
     private IEnumerator<string> _dataFileEnumerator;
     private FileStream _dataStream;
@@ -35,6 +36,7 @@ public class AssetDatWriter : AssetWriter
     /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="IOException"/>
     public AssetDatWriter(string path, bool append = false, int bufferSize = Constants.BufferSize)
         : this(path, ClientDirectory.EnumerateDataFilesInfinite(path), append, bufferSize)
@@ -51,6 +53,7 @@ public class AssetDatWriter : AssetWriter
     /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="IOException"/>
     public AssetDatWriter(string path,
                           IEnumerable<string> dataFiles,
@@ -58,13 +61,16 @@ public class AssetDatWriter : AssetWriter
                           int bufferSize = Constants.BufferSize)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
+        ArgumentNullException.ThrowIfNull(dataFiles);
+        ArgumentOutOfRangeException.ThrowIfNegative(bufferSize);
 
         try
         {
             // Open the manifest.dat file in little-endian format.
             _mode = append ? FileMode.Append : FileMode.Create;
-            _manifestStream = new FileStream(path, _mode, FileAccess.Write, FileShare.Read);
+            _manifestStream = new FileStream(path, _mode, FileAccess.Write, FileShare.Read, bufferSize);
             _manifestWriter = new EndianBinaryWriter(_manifestStream, Endian.Little);
+            _bufferSize = bufferSize;
 
             // Create an enumerator to access asset .dat files.
             _dataFileEnumerator = dataFiles.GetEnumerator();
@@ -162,8 +168,8 @@ public class AssetDatWriter : AssetWriter
             }
 
             // Compute the CRC-32/size of the asset while the data is being written.
-            _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, _buffer, 0, bytesRead);
             _assetSize += (uint)bytesRead;
+            _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, _buffer, 0, bytesRead);
         }
     }
 
@@ -196,8 +202,8 @@ public class AssetDatWriter : AssetWriter
             }
 
             // Compute the CRC-32/size of the asset while the data is being written.
-            _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, buffer, index, bytesWritten);
             _assetSize += (uint)bytesWritten;
+            _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, buffer, index, bytesWritten);
             index += bytesWritten;
             count -= bytesWritten;
         }
@@ -222,11 +228,7 @@ public class AssetDatWriter : AssetWriter
     /// </summary>
     private void IndexAsset()
     {
-        if (_assetSize == 0)
-        {
-            _assetOffset = 0;
-        }
-
+        if (_assetSize == 0) _assetOffset = 0;
         _manifestWriter.Write(_assetNameLength);
         _manifestStream.Write(_nameBuffer, 0, _assetNameLength);
         _manifestWriter.Write(_assetOffset);
@@ -267,7 +269,7 @@ public class AssetDatWriter : AssetWriter
             }
 
             _dataFileIdx++;
-            return new FileStream(_dataFileEnumerator.Current, _mode, FileAccess.Write, FileShare.Read);
+            return new FileStream(_dataFileEnumerator.Current, _mode, FileAccess.Write, FileShare.Read, _bufferSize);
         }
         catch (Exception ex)
         {

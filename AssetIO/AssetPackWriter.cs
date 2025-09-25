@@ -1,5 +1,6 @@
 ﻿using AssetIO.EndianBinaryIO;
 using Force.Crc32;
+using Microsoft.Win32.SafeHandles;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -34,33 +35,37 @@ public class AssetPackWriter : AssetWriter
     /// <param name="bufferSize">A non-negative integer value indicating the buffer size.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
+    /// <exception cref="ArgumentOutOfRangeException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
     public AssetPackWriter(string path, bool append = false, int bufferSize = Constants.BufferSize)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
+        ArgumentOutOfRangeException.ThrowIfNegative(bufferSize);
 
-        // Open the .pack file in big-endian format.
-        FileMode mode = append ? FileMode.OpenOrCreate : FileMode.Create;
-        FileAccess access = append ? FileAccess.ReadWrite : FileAccess.Write;
-        _packStream = new FileStream(path, mode, access, FileShare.Read);
-        _packWriter = new EndianBinaryWriter(_packStream, Endian.Big);
-        _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-        _nameBuffer = new byte[Constants.MaxAssetNameLength];
+        // Open the .pack file for writing, with read permissions if appending assets.
+        (FileMode mode, FileAccess access) = append switch
+        {
+            false => (FileMode.Create, FileAccess.Write),
+            true => (FileMode.OpenOrCreate, FileAccess.ReadWrite)
+        };
+        SafeFileHandle handle = File.OpenHandle(path, mode, access, FileShare.Read);
+        FileStream stream = new(handle, access, Constants.PackChunkSize);
         _chunkSize = Constants.PackHeaderSize;
 
         try
         {
             // If appending to a non-empty .pack file, skip to the last asset chunk.
-            if (append && _packStream.Length != 0)
+            if (append && stream.Length != 0)
             {
-                EndianBinaryReader reader = new(_packStream, Endian.Big);
+                // Read the .pack file in big-endian format.
+                EndianBinaryReader reader = new(stream, Endian.Big);
                 uint nextOffset;
 
                 while ((nextOffset = reader.ReadUInt32()) != 0)
                 {
                     _chunkOffset = nextOffset;
-                    _packStream.Position = nextOffset;
+                    stream.Position = nextOffset;
                 }
 
                 _numAssets = reader.ReadUInt32();
@@ -70,42 +75,50 @@ public class AssetPackWriter : AssetWriter
                 {
                     int length = ClientFile.ValidateNameLength(reader.ReadInt32());
                     int assetIndexSize = length + Constants.PackAssetSize;
-                    _packStream.Seek(assetIndexSize - sizeof(int), SeekOrigin.Current);
+                    stream.Seek(assetIndexSize - sizeof(int), SeekOrigin.Current);
                     _chunkSize += assetIndexSize;
 
                     if (_chunkSize > Constants.PackChunkSize)
                     {
-                        ThrowHelper.ThrowIO_BadAssetInfo(_chunkOffset, _packStream.Name);
+                        ThrowHelper.ThrowIO_BadAssetInfo(_chunkOffset, stream.Name);
                     }
                 }
 
                 // Expand the last asset info chunk if necessary.
-                if (_packStream.Length < _chunkOffset + Constants.PackChunkSize)
+                if (stream.Length < _chunkOffset + Constants.PackChunkSize)
                 {
-                    _packStream.SetLength(_chunkOffset + Constants.PackChunkSize);
+                    stream.SetLength(_chunkOffset + Constants.PackChunkSize);
                 }
             }
             // Otherwise, create an empty asset info chunk at the start of the .pack file.
             else
             {
-                _packStream.SetLength(Constants.PackChunkSize);
+                stream.SetLength(Constants.PackChunkSize);
+                stream.Write(EmptyChunkHeader);
             }
         }
-        catch (InvalidAssetException ex)
+        catch (Exception exception)
         {
-            using var _ = this;
-            ThrowHelper.ThrowIO_BadAsset(_packStream.Position - ex.Size, _packStream.Name, ex);
+            handle.Dispose();
+
+            switch (exception)
+            {
+                case EndOfStreamException ex:
+                    ThrowHelper.ThrowEndOfStream_AssetFile(stream.Name, ex);
+                    break;
+                case InvalidAssetException ex:
+                    ThrowHelper.ThrowIO_BadAsset(stream.Position - ex.Size, stream.Name, ex);
+                    break;
+                default:
+                    throw;
+            }
         }
-        catch (EndOfStreamException ex)
-        {
-            using var _ = this;
-            ThrowHelper.ThrowEndOfStream_AssetFile(_packStream.Name, ex);
-        }
-        catch
-        {
-            Dispose();
-            throw;
-        }
+
+        // Write to the .pack file in big-endian format.
+        _packStream = new FileStream(handle, FileAccess.Write, bufferSize) { Position = stream.Length };
+        _packWriter = new EndianBinaryWriter(stream, Endian.Big);
+        _buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+        _nameBuffer = new byte[Constants.MaxAssetNameLength];
     }
 
     /// <summary>
@@ -118,6 +131,11 @@ public class AssetPackWriter : AssetWriter
     /// Gets the current asset being written to the .pack file.
     /// </summary>
     public override Asset? Asset => CanWrite ? new Asset(_assetName, _assetOffset, _assetSize, _assetCrc32) : null;
+
+    /// <summary>
+    /// Gets an empty asset info chunk header.
+    /// </summary>
+    private static ReadOnlySpan<byte> EmptyChunkHeader => [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 
     /// <summary>
     /// Adds a new asset with the specified name to the .pack file.
@@ -141,7 +159,7 @@ public class AssetPackWriter : AssetWriter
             if (_chunkSize + _assetNameLength + Constants.PackAssetSize > Constants.PackChunkSize)
             {
                 // Write the offset of the next asset info chunk and the number of assets at the start of the chunk.
-                _packStream.Position = _chunkOffset;
+                _packWriter.BaseStream.Position = _chunkOffset;
                 _packWriter.Write(_assetOffset);
                 _packWriter.Write(_numAssets);
 
@@ -153,9 +171,13 @@ public class AssetPackWriter : AssetWriter
                 // Start the next asset content chunk at the end of the next asset info chunk.
                 checked { _assetOffset += Constants.PackChunkSize; }
                 _packStream.SetLength(_assetOffset);
+                _packStream.Position = _assetOffset;
+
+                // Write an empty header at the start of the new chunk for later use.
+                _packWriter.BaseStream.Position = _chunkOffset;
+                _packWriter.BaseStream.Write(EmptyChunkHeader);
             }
 
-            _packStream.Position = _assetOffset;
             _assetName = name;
         }
         catch (OverflowException ex)
@@ -181,9 +203,9 @@ public class AssetPackWriter : AssetWriter
             while ((bytesRead = stream.Read(_buffer, 0, _buffer.Length)) > 0)
             {
                 // Compute the CRC-32/size of the asset while the data is being written.
+                checked { _assetSize += unchecked((uint)bytesRead); }
                 _packStream.Write(_buffer, 0, bytesRead);
                 _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, _buffer, 0, bytesRead);
-                checked { _assetSize += unchecked((uint)bytesRead); }
             }
         }
         catch (OverflowException ex)
@@ -205,9 +227,9 @@ public class AssetPackWriter : AssetWriter
         try
         {
             // Compute the CRC-32/size of the asset while the data is being written.
+            checked { _assetSize += unchecked((uint)count); }
             _packStream.Write(buffer, index, count);
             _assetCrc32 = Crc32Algorithm.Append(_assetCrc32, buffer, index, count);
-            checked { _assetSize += unchecked((uint)count); }
         }
         catch (OverflowException ex)
         {
@@ -234,14 +256,9 @@ public class AssetPackWriter : AssetWriter
     /// </summary>
     private void IndexAsset()
     {
-        if (_assetSize == 0)
-        {
-            _assetOffset = 0;
-        }
-
-        _packStream.Position = _chunkOffset + _chunkSize;
+        if (_assetSize == 0) _assetOffset = 0;
         _packWriter.Write(_assetNameLength);
-        _packStream.Write(_nameBuffer, 0, _assetNameLength);
+        _packWriter.BaseStream.Write(_nameBuffer, 0, _assetNameLength);
         _packWriter.Write(_assetOffset);
         _packWriter.Write(_assetSize);
         _packWriter.Write(_assetCrc32);
@@ -277,11 +294,13 @@ public class AssetPackWriter : AssetWriter
             // to the start of the .pack file and writing the number of assets in this chunk.
             if (_numAssets > 0)
             {
-                _packStream.Position = _chunkOffset;
-                _packWriter.Write(0);
+                _packWriter.BaseStream.Position = _chunkOffset;
+                _packWriter.Write(0u);
                 _packWriter.Write(_numAssets);
             }
 
+            _packWriter.BaseStream.Flush();
+            _packStream.Flush();
             _packStream.Dispose();
         }
 
