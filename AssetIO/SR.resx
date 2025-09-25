@@ -162,7 +162,7 @@
   <data name="Argument_CantInferAssetType" xml:space="preserve">
     <value>Unable to infer asset type from the specified file name: "{0}".</value>
   </data>
-  <data name="Overflow_CantAddAsset" xml:space="preserve">
+  <data name="IO_CantAddPackAsset" xml:space="preserve">
     <value>Cannot add "{0}" to "{1}"; asset .pack file exceeds maximum capacity.</value>
   </data>
   <data name="IO_BadAssetDat" xml:space="preserve">

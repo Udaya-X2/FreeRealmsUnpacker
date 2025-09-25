@@ -144,6 +144,11 @@ internal static class ThrowHelper
     internal static void ThrowIO_BadManifest(string fileName)
         => throw new IOException(string.Format(SR.IO_BadManifest, fileName));
 
+    /// <inheritdoc cref="SR.IO_CantAddPackAsset"/>
+    [DoesNotReturn]
+    internal static void ThrowIO_CantAddPackAsset(string assetName, string fileName, Exception innerException)
+        => throw new IOException(string.Format(SR.IO_CantAddPackAsset, assetName, fileName), innerException);
+
     /// <inheritdoc cref="SR.IO_CantCreateTempFile"/>
     [DoesNotReturn]
     internal static T ThrowIO_CantCreateTempFile<T>(string fileName)
@@ -183,11 +188,6 @@ internal static class ThrowHelper
     [DoesNotReturn]
     internal static void ThrowNotSupported_UnwritableStream()
         => throw new NotSupportedException(SR.NotSupported_UnwritableStream);
-
-    /// <inheritdoc cref="SR.Overflow_CantAddAsset"/>
-    [DoesNotReturn]
-    internal static void ThrowOverflow_CantAddAsset(string assetName, string fileName, Exception innerException)
-        => throw new OverflowException(string.Format(SR.Overflow_CantAddAsset, assetName, fileName), innerException);
 
     /// <inheritdoc cref="SR.Overflow_TooManyAssets"/>
     [DoesNotReturn]

@@ -161,7 +161,7 @@ public class AssetFile : IEnumerable<Asset>
     /// </summary>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    /// <exception cref="OverflowException"/>
+    /// <exception cref="OutOfMemoryException"/>
     public virtual Asset[] Assets => FileType switch
     {
         AssetType.Pack => ClientFile.GetPackAssets(FullName),

@@ -141,7 +141,6 @@ public class AssetPackWriter : AssetWriter
     /// Adds a new asset with the specified name to the .pack file.
     /// </summary>
     /// <inheritdoc/>
-    /// <exception cref="OverflowException"/>
     public override void Add(string name)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -182,12 +181,11 @@ public class AssetPackWriter : AssetWriter
         }
         catch (OverflowException ex)
         {
-            ThrowHelper.ThrowOverflow_CantAddAsset(name, _packStream.Name, ex);
+            ThrowHelper.ThrowIO_CantAddPackAsset(name, _packStream.Name, ex);
         }
     }
 
     /// <inheritdoc/>
-    /// <exception cref="OverflowException"/>
     public override void Write(Stream stream)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -210,12 +208,11 @@ public class AssetPackWriter : AssetWriter
         }
         catch (OverflowException ex)
         {
-            ThrowHelper.ThrowOverflow_CantAddAsset(_assetName, _packStream.Name, ex);
+            ThrowHelper.ThrowIO_CantAddPackAsset(_assetName, _packStream.Name, ex);
         }
     }
 
     /// <inheritdoc/>
-    /// <exception cref="OverflowException"/>
     public override void Write(byte[] buffer, int index, int count)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -233,7 +230,7 @@ public class AssetPackWriter : AssetWriter
         }
         catch (OverflowException ex)
         {
-            ThrowHelper.ThrowOverflow_CantAddAsset(_assetName, _packStream.Name, ex);
+            ThrowHelper.ThrowIO_CantAddPackAsset(_assetName, _packStream.Name, ex);
         }
     }
 

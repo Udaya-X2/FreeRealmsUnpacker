@@ -259,6 +259,15 @@ namespace AssetIO {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot add &quot;{0}&quot; to &quot;{1}&quot;; asset .pack file exceeds maximum capacity..
+        /// </summary>
+        internal static string IO_CantAddPackAsset {
+            get {
+                return ResourceManager.GetString("IO_CantAddPackAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot create temporary file &quot;{0}&quot;; the file already exists..
         /// </summary>
         internal static string IO_CantCreateTempFile {
@@ -318,15 +327,6 @@ namespace AssetIO {
         internal static string NotSupported_UnwritableStream {
             get {
                 return ResourceManager.GetString("NotSupported_UnwritableStream", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Cannot add &quot;{0}&quot; to &quot;{1}&quot;; asset .pack file exceeds maximum capacity..
-        /// </summary>
-        internal static string Overflow_CantAddAsset {
-            get {
-                return ResourceManager.GetString("Overflow_CantAddAsset", resourceCulture);
             }
         }
         

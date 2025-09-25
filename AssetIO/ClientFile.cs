@@ -102,6 +102,7 @@ public static class ClientFile
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
+    /// <exception cref="OutOfMemoryException"/>
     public static Asset[] GetPackAssets(string path)
         => [.. EnumeratePackAssets(path)];
 
@@ -161,7 +162,6 @@ public static class ClientFile
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    /// <exception cref="OverflowException"/>
     public static void AppendPackAssets(string path, IEnumerable<string> assets)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -183,9 +183,7 @@ public static class ClientFile
     /// <param name="assets">The files to write as assets to the .pack file.</param>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
-    /// <exception cref="EndOfStreamException"/>
     /// <exception cref="IOException"/>
-    /// <exception cref="OverflowException"/>
     public static void WritePackAssets(string path, IEnumerable<string> assets)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -351,21 +349,9 @@ public static class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
-    /// <exception cref="OverflowException"/>
+    /// <exception cref="OutOfMemoryException"/>
     public static Asset[] GetManifestAssets(string path)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(path);
-
-        Asset[] assets = new Asset[GetManifestAssetCount(path)];
-        int i = 0;
-
-        foreach (Asset asset in EnumerateManifestAssets(path))
-        {
-            assets[i++] = asset;
-        }
-
-        return assets;
-    }
+        => [.. EnumerateManifestAssets(path)];
 
     /// <summary>
     /// Returns the number of assets in the specified manifest.dat file.
@@ -628,6 +614,7 @@ public static class ClientFile
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="IOException"/>
+    /// <exception cref="OutOfMemoryException"/>
     public static Asset[] GetPackTempAssets(string path)
         => [.. EnumeratePackTempAssets(path)];
 
