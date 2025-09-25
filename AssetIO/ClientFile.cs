@@ -496,7 +496,7 @@ public static class ClientFile
         ArgumentException.ThrowIfNullOrEmpty(path);
 
         using IEnumerator<Asset> enumerator = EnumeratePackAssets(path).GetEnumerator();
-        long end = new FileInfo(path).Length;
+        long end = -1; // Initialize length after file is opened to avoid race condition.
 
         while (true)
         {
@@ -517,6 +517,7 @@ public static class ClientFile
             Asset asset = enumerator.Current;
 
             // Check whether the current asset extends past the end of the file.
+            if (end == -1) end = new FileInfo(path).Length;
             if (asset.Size > end - asset.Offset) break;
 
             yield return asset;
