@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace AssetIO;
 
 /// <summary>
-/// Provides extension methods for the <see cref="AssetType"/> class.
+/// Provides extension methods for the <see cref="AssetType"/> enum.
 /// </summary>
 public static class EnumExtensions
 {
@@ -44,7 +44,7 @@ public static class EnumExtensions
     /// </summary>
     /// <param name="value">An unsigned integer value.</param>
     /// <returns>
-    /// <see langword="true"/> if the specified value is a power of two; <see langword="false"/> otherwise.
+    /// <see langword="true"/> if the specified value is a power of two or zero; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool IsPow2OrZero(uint value) => (value & (value - 1)) == 0;
