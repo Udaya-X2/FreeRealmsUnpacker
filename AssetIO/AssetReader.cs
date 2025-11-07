@@ -104,7 +104,14 @@ public abstract class AssetReader : IDisposable
         if (fileExtracted)
         {
             file.Directory?.Create();
-            using FileStream fs = new(file.FullName, FileMode.Create, FileAccess.Write, FileShare.Read, 0);
+            using FileStream fs = new(file.FullName, new FileStreamOptions
+            {
+                Mode = FileMode.Create,
+                Access = FileAccess.Write,
+                Share = FileShare.Read,
+                PreallocationSize = asset.Size,
+                BufferSize = 0
+            });
             CopyTo(asset, fs);
         }
 
