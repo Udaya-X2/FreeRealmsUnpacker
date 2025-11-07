@@ -21,7 +21,7 @@ public class PreferencesViewModel : ViewModelBase
         new Preference("Appearance", "Customize the display settings."),
         new Preference("Miscellaneous", "Other options that don't fit the previous categories.")
     ];
-    
+
     /// <summary>
     /// Gets the available clipboard line separators.
     /// </summary>

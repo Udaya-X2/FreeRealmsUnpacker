@@ -141,15 +141,15 @@
                                                 <MenuItem Header="Delete"
                                                           Command="{Binding DeleteDataFilesCommand}"/>
                                                 <MenuItem Header="Rename..."
-                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                                           Command="{Binding RenameDataFileCommand}"/>
-                                                <Separator IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
+                                                <Separator IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"/>
                                                 <MenuItem Header="Copy Full File Path"
-                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                                           Command="{x:Static c:StaticCommands.CopyCommand}"
                                                           CommandParameter="{Binding SelectedDataFile?.FullName}"/>
                                                 <MenuItem Header="Open Containing Folder"
-                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                                          IsVisible="{Binding SelectedDataFiles.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                                           Command="{x:Static c:StaticCommands.OpenFileCommand}"
                                                           CommandParameter="{Binding SelectedDataFile?.DirectoryName}"/>
                                             </ContextMenu>
@@ -396,23 +396,23 @@
                     <Style Selector="DataGridRow">
                         <Setter Property="ContextMenu">
                             <ContextMenu IsVisible="{Binding SelectedAsset, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                         DataContext="{Binding $parent.DataContext}}">
+                                         DataContext="{Binding $parent.DataContext}">
                                 <MenuItem Header="Open"
-                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                           Command="{x:Static c:StaticCommands.OpenAssetCommand}"
                                           CommandParameter="{Binding SelectedAsset}"/>
                                 <MenuItem Header="Delete"
-                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                           Command="{Binding DeleteAssetsCommand}"
                                           CommandParameter="{Binding SelectedAssets}"/>
-                                <Separator IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"/>
+                                <Separator IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"/>
                                 <MenuItem Header="Copy"
-                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                           Click="AssetGridRow_ContextMenu_Copy"/>
                                 <MenuItem Header="{Binding SelectedAssets.Count, Converter={StaticResource PluralConverter}, ConverterParameter=Copy Row}"
                                           Click="AssetGridRow_ContextMenu_CopyRows"/>
                                 <MenuItem Header="Select Asset File"
-                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                           Command="{Binding SelectFileCommand}"/>
                                 <MenuItem Header="Show in Image Browser"
                                           Click="AssetGridRow_ContextMenu_ShowImageBrowser">
@@ -442,15 +442,15 @@
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Header="Save As..."
-                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                           Command="{Binding SaveAssetCommand}"
                                           CommandParameter="{Binding SelectedAsset}"/>
                                 <MenuItem Header="Extract Selected Assets..."
-                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}"
                                           Command="{Binding ExtractAssetsCommand}"
                                           CommandParameter="{Binding SelectedAssets}"/>
                                 <MenuItem Header="Delete Selected Assets"
-                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}}"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}"
                                           Command="{Binding DeleteAssetsCommand}"
                                           CommandParameter="{Binding SelectedAssets}"/>
                             </ContextMenu>
@@ -512,7 +512,7 @@
                 <StackPanel Orientation="Horizontal"
                             Margin="0 0 10 0"
                             IsVisible="{Binding ValidationOptions.ShowValid, Converter={x:Static ObjectConverters.IsNotNull}}"
-                            ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource BooleanToStringConverter} ConverterParameter='Invalid Assets/Valid Assets'}">
+                            ToolTip.Tip="{Binding !ValidationOptions.ShowValid, Converter={StaticResource BooleanToStringConverter}, ConverterParameter='Invalid Assets/Valid Assets'}">
                     <ic:FluentIcon Icon="Warning"
                                    Margin="0 0 5 0"
                                    IsVisible="{Binding !ValidationOptions.ShowValid}"/>

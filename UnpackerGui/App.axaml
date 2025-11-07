@@ -15,7 +15,7 @@
         </Style>
         <Style Selector="ic|FluentIcon">
             <Setter Property="IconVariant"
-                    Value="{Binding Source={x:Static Application.Current} Path=((vm:SettingsViewModel)DataContext).IconVariant}"/>
+                    Value="{Binding Source={x:Static Application.Current}, Path=((vm:SettingsViewModel)DataContext).IconVariant}"/>
         </Style>
     </Application.Styles>
     <Application.Resources>

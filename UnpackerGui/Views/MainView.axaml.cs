@@ -108,7 +108,7 @@ public partial class MainView : UserControl
     private void ListBox_Drop(object? sender, DragEventArgs e)
     {
         if (DataContext is not MainViewModel mainViewModel) return;
-        if (e.Data.Get(DataFormats.Files) is not IEnumerable<IStorageItem> files) return;
+        if (e.DataTransfer.TryGetFiles() is not IStorageItem[] files) return;
 
         mainViewModel.AddDragDropFilesCommand.Invoke(files.OfType<IStorageFile>().Select(x => x.Path.LocalPath));
     }

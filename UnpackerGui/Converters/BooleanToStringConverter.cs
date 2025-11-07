@@ -1,7 +1,7 @@
 ﻿using Avalonia.Data;
-using System.Globalization;
-using System;
 using Avalonia.Data.Converters;
+using System;
+using System.Globalization;
 
 namespace UnpackerGui.Converters;
 
@@ -18,7 +18,7 @@ public class BooleanToStringConverter : IValueConverter
     private static (string, string)? Split(object? parameter)
     {
         if (parameter is not string values) return null;
-        
+
         string[] splitValues = values.Split('/');
 
         if (splitValues.Length != 2) return null;

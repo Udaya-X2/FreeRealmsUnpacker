@@ -43,31 +43,31 @@
                         <ContextMenu IsVisible="{Binding SelectedAsset,Converter={x:Static ObjectConverters.IsNotNull}}"
                                      DataContext="{Binding $parent.DataContext}">
                             <MenuItem Header="Open"
-                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                       Command="{x:Static c:StaticCommands.OpenAssetCommand}"
                                       CommandParameter="{Binding SelectedAsset}"/>
                             <MenuItem Header="Delete"
-                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
                                       CommandParameter="{Binding SelectedAssets}"/>
-                            <Separator IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"/>
+                            <Separator IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"/>
                             <MenuItem Header="Copy"
                                       Command="{x:Static c:StaticCommands.CopyCommand}"
                                       CommandParameter="{Binding SelectedAsset?.Name}"/>
                             <MenuItem Header="Show in Asset Browser"
-                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                       Click="MenuItem_Click_ShowAssetBrowser"/>
                             <Separator/>
                             <MenuItem Header="Save As..."
-                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=1}}"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).SaveAssetCommand}"
                                       CommandParameter="{Binding SelectedAsset}"/>
                             <MenuItem Header="Extract Selected Assets..."
-                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=>1}}"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).ExtractAssetsCommand}"
                                       CommandParameter="{Binding SelectedAssets}"/>
                             <MenuItem Header="Delete Selected Assets"
-                                      IsVisible="{Binding SelectedAssets.Count,Converter={StaticResource ExpressionConverter},ConverterParameter=>1}}"
+                                      IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=>1}"
                                       Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAssetsCommand}"
                                       CommandParameter="{Binding SelectedAssets}"/>
                         </ContextMenu>

@@ -126,9 +126,14 @@ public partial class App : Application
     /// <summary>
     /// Sets the current application's clipboard data to the specified value.
     /// </summary>
-    public static async Task SetClipboardData(IDataObject data)
+    public static async Task SetClipboardData(string id, byte[] value)
     {
-        if (Current?.Clipboard?.SetDataObjectAsync(data) is Task task)
+        DataTransfer dataTransfer = new();
+        DataTransferItem dataTransferItem = new();
+        dataTransferItem.Set(DataFormat.CreateBytesPlatformFormat(id), value);
+        dataTransfer.Add(dataTransferItem);
+
+        if (Current?.Clipboard?.SetDataAsync(dataTransfer) is Task task)
         {
             await task;
         }

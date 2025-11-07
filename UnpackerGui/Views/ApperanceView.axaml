@@ -31,7 +31,7 @@
                       SelectedItem="{Binding Settings.ColorTheme}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding ., Converter={StaticResource TitleCaseConverter}}"/>
+                        <TextBlock Text="{Binding, Converter={StaticResource TitleCaseConverter}}"/>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>

@@ -1,5 +1,4 @@
 ﻿using AssetIO;
-using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Clowd.Clipboard;
 using GtfDdsSharp;
@@ -220,9 +219,7 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
         {
             _imageStream.SetLength(0);
             _displayedImage.Save(_imageStream);
-            DataObject dataObject = new();
-            dataObject.Set("image/png", _imageStream.ToArray());
-            await App.SetClipboardData(dataObject);
+            await App.SetClipboardData("image/png", _imageStream.ToArray());
         }
     }
 }

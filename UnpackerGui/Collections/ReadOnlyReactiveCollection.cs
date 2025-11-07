@@ -65,7 +65,7 @@ public abstract class ReadOnlyReactiveCollection<T>
     /// Occurs when a property changes.
     /// </summary>
     protected event PropertyChangedEventHandler? PropertyChanged;
-    
+
     /// <inheritdoc/>
     event PropertyChangedEventHandler? INotifyPropertyChanged.PropertyChanged
     {
@@ -95,7 +95,7 @@ public abstract class ReadOnlyReactiveCollection<T>
     {
         ArgumentNullException.ThrowIfNull(array);
         if (array.Length - arrayIndex < Count) throw new ArgumentException(SR.Argument_InvalidOffLen);
-        
+
         foreach (T item in this)
         {
             array[arrayIndex++] = item;

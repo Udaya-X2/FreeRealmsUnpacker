@@ -27,7 +27,7 @@
             </TextBlock>
             <TextBox Grid.Row="0"
                      Grid.Column="1"
-                     Text="{Binding Settings.ClipboardSeparator}}"
+                     Text="{Binding Settings.ClipboardSeparator}"
                      HorizontalAlignment="Left"
                      AcceptsTab="True"
                      Width="108"
@@ -43,8 +43,8 @@
             </TextBlock>
             <ComboBox Grid.Row="1"
                       Grid.Column="1"
-                      SelectedItem="{Binding Settings.ClipboardLineSeparator}}"
-                      ItemsSource="{Binding LineSeparators}}"
+                      SelectedItem="{Binding Settings.ClipboardLineSeparator}"
+                      ItemsSource="{Binding LineSeparators}"
                       MinHeight="0">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
