@@ -2,6 +2,7 @@
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Clowd.Clipboard;
+using GtfDdsSharp;
 using Pfim;
 using ReactiveUI;
 using SkiaSharp;
@@ -71,16 +72,22 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
 
         try
         {
-            // Read the asset as a stream.
-            using AssetReader reader = asset.AssetFile.OpenRead();
-            Stream stream = reader.ReadStream(asset);
+            // Clear the previous image data.
+            _imageStream.SetLength(0);
+            _imageStream.SetLength(asset.Size);
 
-            // Convert the stream from DDS/TGA to PNG, if necessary.
-            if (asset.Type is "DDS" && !ConvertDdsImage(ref stream)) return null;
-            if (asset.Type is "TGA" && !ConvertTargaImage(ref stream)) return null;
+            // Write the asset to the image stream.
+            using AssetReader reader = asset.AssetFile.OpenRead(0);
+            reader.Read(asset, _imageStream.GetBuffer());
 
-            // Create the bitmap image from the stream.
-            return new Bitmap(stream);
+            // Convert the stream from DDS/GTF/TGA to PNG, if necessary.
+            return asset.Type switch
+            {
+                "DDS" when !ConvertDdsImage() => null,
+                "GTF" when !ConvertGtfImage() => null,
+                "TGA" when !ConvertTargaImage() => null,
+                _ => new Bitmap(_imageStream) // Create the bitmap image from the stream.
+            };
         }
         catch
         {
@@ -89,24 +96,34 @@ public class ImageBrowserViewModel : AssetBrowserViewModel
     }
 
     /// <summary>
-    /// Converts the specified stream from DDS to PNG.
+    /// Converts the image stream from GTF to PNG.
     /// </summary>
     /// <returns><inheritdoc cref="ConvertImage(IImage)"/></returns>
-    private bool ConvertDdsImage(ref Stream stream)
+    private bool ConvertGtfImage()
     {
-        using IImage image = Dds.Create(stream, _imageConfig);
-        stream = _imageStream;
+        using GtfImage image = new(_imageStream.GetBuffer(), 0, (int)_imageStream.Length);
+        image[0].ConvertToDds(_imageStream);
+        _imageStream.Position = 0;
+        return ConvertDdsImage();
+    }
+
+    /// <summary>
+    /// Converts the image stream from DDS to PNG.
+    /// </summary>
+    /// <returns><inheritdoc cref="ConvertImage(IImage)"/></returns>
+    private bool ConvertDdsImage()
+    {
+        using Dds image = Dds.Create(_imageStream, _imageConfig);
         return ConvertImage(image);
     }
 
     /// <summary>
-    /// Converts the specified stream from TARGA to PNG.
+    /// Converts the image stream from TARGA to PNG.
     /// </summary>
     /// <returns><inheritdoc cref="ConvertImage(IImage)"/></returns>
-    private bool ConvertTargaImage(ref Stream stream)
+    private bool ConvertTargaImage()
     {
-        using IImage image = Targa.Create(stream, _imageConfig);
-        stream = _imageStream;
+        using Targa image = Targa.Create(_imageStream, _imageConfig);
         return ConvertImage(image);
     }
 

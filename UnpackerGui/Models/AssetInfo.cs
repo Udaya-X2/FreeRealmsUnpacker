@@ -59,6 +59,7 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
         "FLIF",
         "GIF",
         "GPR",
+        "GTF",
         "HDR",
         "HEIC",
         "HEIF",

@@ -33,6 +33,7 @@
         <PackageReference Include="Avalonia.Diagnostics" Version="11.3.3" Condition="'$(Configuration)' == 'Debug'" />
         <PackageReference Include="Clowd.Clipboard.Avalonia" Version="1.1.4" />
         <PackageReference Include="FluentIcons.Avalonia" Version="1.1.303" />
+        <PackageReference Include="GtfDdsSharp" Version="1.0.0" />
         <PackageReference Include="ManagedBass" Version="3.1.1" />
         <PackageReference Include="ManagedBass.Fx" Version="3.1.1" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
