@@ -21,8 +21,10 @@ public partial class MainWindow : Window
         settings.WhenAnyValue(x => x.ShowImageBrowser, x => x.ShowAudioBrowser)
                 .Subscribe(isVisible =>
                 {
-                    if ((!isVisible.Item1 && imageBrowserTab.IsSelected)
-                        || (!isVisible.Item2 && audioBrowserTab.IsSelected))
+                    (bool showImageBrowser, bool showAudioBrowser) = isVisible;
+
+                    if ((!showImageBrowser && imageBrowserTab.IsSelected)
+                        || (!showAudioBrowser && audioBrowserTab.IsSelected))
                     {
                         assetBrowserTab.IsSelected = true;
                     }

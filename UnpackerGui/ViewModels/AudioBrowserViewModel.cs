@@ -6,6 +6,8 @@ using ManagedBass.Fx;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Numerics;
 using System.Reactive;
 using UnpackerGui.Collections;
@@ -223,12 +225,52 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
         if (asset == null) return;
 
-        // Read the asset into the buffer.
+        uint length;
+
         try
         {
-            EnsureCapacity(asset.Size);
-            using AssetReader reader = asset.AssetFile.OpenRead(0);
-            reader.Read(asset, _buffer);
+            if (asset.Type is "BINKA")
+            {
+                // Locate the FFmpeg binary.
+                if (Where("ffmpeg") is not string ffmpegPath) return;
+
+                // Extract the BINKA asset to a temporary file.
+                string binkaPath = asset.ExtractTempFile().FullName;
+                string wavPath = Path.ChangeExtension(binkaPath, ".wav");
+
+                // Convert the BINKA file to a WAV file using FFmpeg.
+                ProcessStartInfo startInfo = new()
+                {
+                    FileName = ffmpegPath,
+                    CreateNoWindow = true
+                };
+                startInfo.ArgumentList.Add("-y");
+                startInfo.ArgumentList.Add("-i");
+                startInfo.ArgumentList.Add(binkaPath);
+                startInfo.ArgumentList.Add("-write_xing");
+                startInfo.ArgumentList.Add("0");
+                startInfo.ArgumentList.Add(wavPath);
+
+                // Block until the conversion is finished.
+                using Process process = Process.Start(startInfo)!;
+                {
+                    process.WaitForExit();
+                }
+
+                // Read the converted WAV file into the buffer.
+                using FileStream stream = new(wavPath, FileMode.Open, FileAccess.Read, FileShare.Read, 0);
+                length = checked((uint)stream.Length);
+                EnsureCapacity(length);
+                stream.ReadExactly(_buffer, 0, (int)length);
+            }
+            else
+            {
+                // Read the asset into the buffer.
+                EnsureCapacity(asset.Size);
+                using AssetReader reader = asset.AssetFile.OpenRead(0);
+                reader.Read(asset, _buffer);
+                length = asset.Size;
+            }
         }
         catch
         {
@@ -236,7 +278,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         }
 
         // Initialize the audio stream handle from the buffer data.
-        if (!CreateHandle(asset.Size)) return;
+        if (!CreateHandle(length)) return;
 
         // Update the playback length.
         Length = Bass.ChannelBytes2Seconds(Handle, Bass.ChannelGetLength(Handle));
@@ -247,6 +289,42 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             Bass.ChannelPlay(Handle);
         }
     }
+
+    /// <summary>
+    /// Locates the specified file by searching the current directory
+    /// and paths specified in the PATH environment variable.
+    /// </summary>
+    /// <returns>
+    /// The first location of the specified file, or <see langword="null"/> if the file cannot be found.
+    /// </returns>
+    private static string? Where(string file)
+    {
+        string[] paths = [Environment.CurrentDirectory, .. GetPathStrings("PATH")];
+        string[] extensions = ["", .. GetPathStrings("PATHEXT")];
+
+        foreach (string path in paths)
+        {
+            foreach (string extension in extensions)
+            {
+                string filePath = Path.Combine(path, file + extension.ToLower());
+
+                if (File.Exists(filePath))
+                {
+                    return filePath;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the path strings for the specified environment variable, or an empty array if the variable is not found.
+    /// </summary>
+    /// <param name="value">The name of the environment variable.</param>
+    /// <returns>The path strings.</returns>
+    private static string[] GetPathStrings(string value)
+        => Environment.GetEnvironmentVariable(value)?.Split(Path.PathSeparator, StringSplitOptions.TrimEntries) ?? [];
 
     /// <summary>
     /// Frees the audio stream handle and resets the media player.

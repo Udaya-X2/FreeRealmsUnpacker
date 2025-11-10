@@ -129,6 +129,7 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     [
         "AIF",
         "AIFF",
+        "BINKA",
         "BWF",
         "IT",
         "ITZ",
@@ -202,18 +203,23 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
     }
 
     /// <summary>
-    /// Extracts the asset to a temporary location and opens it.
+    /// Extracts the asset to a temporary location.
     /// </summary>
-    public void Open()
+    /// <returns>The extracted file.</returns>
+    public FileInfo ExtractTempFile()
     {
         using AssetReader reader = AssetFile.OpenRead();
-        FileInfo file = reader.ExtractTo(this, App.GetService<IFilesService>().CreateTempFolder());
-        Process.Start(new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            FileName = file.FullName
-        });
+        return reader.ExtractTo(this, App.GetService<IFilesService>().CreateTempFolder());
     }
+
+    /// <summary>
+    /// Extracts the asset to a temporary location and opens it.
+    /// </summary>
+    public void Open() => Process.Start(new ProcessStartInfo
+    {
+        UseShellExecute = true,
+        FileName = ExtractTempFile().FullName
+    });
 
     /// <summary>
     /// Returns a string representation of the asset's properties.
