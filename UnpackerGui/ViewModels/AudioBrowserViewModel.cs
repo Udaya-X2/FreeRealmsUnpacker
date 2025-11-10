@@ -244,6 +244,8 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
                     FileName = ffmpegPath,
                     CreateNoWindow = true
                 };
+                startInfo.ArgumentList.Add("-loglevel");
+                startInfo.ArgumentList.Add("panic");
                 startInfo.ArgumentList.Add("-y");
                 startInfo.ArgumentList.Add("-i");
                 startInfo.ArgumentList.Add(binkaPath);
