@@ -257,8 +257,16 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
                     process.WaitForExit();
                 }
 
+                // Delete the BINKA file.
+                File.Delete(binkaPath);
+
                 // Read the converted WAV file into the buffer.
-                using FileStream stream = new(wavPath, FileMode.Open, FileAccess.Read, FileShare.Read, 0);
+                using FileStream stream = new(wavPath,
+                                              FileMode.Open,
+                                              FileAccess.Read,
+                                              FileShare.Read,
+                                              0,
+                                              FileOptions.DeleteOnClose);
                 length = checked((uint)stream.Length);
                 EnsureCapacity(length);
                 stream.ReadExactly(_buffer, 0, (int)length);
