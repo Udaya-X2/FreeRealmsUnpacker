@@ -3,6 +3,9 @@ using System.IO;
 
 namespace UnpackerGui.Utils;
 
+/// <summary>
+/// Provides static helper methods related to the file system.
+/// </summary>
 public static class FileUtils
 {
     /// <summary>

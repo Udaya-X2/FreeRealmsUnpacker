@@ -21,6 +21,7 @@ using UnpackerGui.Extensions;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
 using UnpackerGui.Storage;
+using UnpackerGui.Utils;
 using UnpackerGui.Views;
 
 namespace UnpackerGui.ViewModels;
@@ -625,6 +626,8 @@ public class MainViewModel : AssetBrowserViewModel
     /// </summary>
     private void CheckAllFiles()
     {
+        if (_assetFiles.Count == _checkedAssetFiles.Count) return;
+
         using (Assets.SuspendNotifications())
         {
             AssetFiles.ForEach(x => x.IsChecked = true);
@@ -636,6 +639,8 @@ public class MainViewModel : AssetBrowserViewModel
     /// </summary>
     private void UncheckAllFiles()
     {
+        if (_checkedAssetFiles.Count == 0) return;
+
         using (Assets.SuspendNotifications())
         {
             AssetFiles.ForEach(x => x.IsChecked = false);
@@ -647,10 +652,14 @@ public class MainViewModel : AssetBrowserViewModel
     /// </summary>
     private void RemoveCheckedFiles()
     {
+        if (_checkedAssetFiles.Count == 0) return;
+
         using (Assets.SuspendNotifications())
         {
             _sourceAssetFiles.RemoveMany(CheckedAssetFiles);
         }
+
+        GCUtils.Collect();
     }
 
     /// <summary>
