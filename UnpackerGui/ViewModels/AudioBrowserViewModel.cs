@@ -13,6 +13,7 @@ using System.Reactive;
 using UnpackerGui.Collections;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
+using UnpackerGui.Utils;
 
 namespace UnpackerGui.ViewModels;
 
@@ -231,17 +232,22 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
         {
             if (asset.Type is "BINKA")
             {
-                // Locate the FFmpeg binary.
-                if (Where("ffmpeg") is not string ffmpegPath) return;
+                // Check whether FFmpeg is installed.
+                if (!File.Exists(Settings.FFmpegPath))
+                {
+                    if (FileUtils.Locate("ffmpeg") is not string ffmpegPath) return;
+
+                    Settings.FFmpegPath = ffmpegPath;
+                }
 
                 // Extract the BINKA asset to a temporary file.
                 string binkaPath = asset.ExtractTempFile().FullName;
                 string wavPath = Path.ChangeExtension(binkaPath, ".wav");
-
+                
                 // Convert the BINKA file to a WAV file using FFmpeg.
                 ProcessStartInfo startInfo = new()
                 {
-                    FileName = ffmpegPath,
+                    FileName = Settings.FFmpegPath,
                     CreateNoWindow = true
                 };
                 startInfo.ArgumentList.Add("-loglevel");
@@ -299,42 +305,6 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
             Bass.ChannelPlay(Handle);
         }
     }
-
-    /// <summary>
-    /// Locates the specified file by searching the current directory
-    /// and paths specified in the PATH environment variable.
-    /// </summary>
-    /// <returns>
-    /// The first location of the specified file, or <see langword="null"/> if the file cannot be found.
-    /// </returns>
-    private static string? Where(string file)
-    {
-        string[] paths = [Environment.CurrentDirectory, .. GetPathStrings("PATH")];
-        string[] extensions = ["", .. GetPathStrings("PATHEXT")];
-
-        foreach (string path in paths)
-        {
-            foreach (string extension in extensions)
-            {
-                string filePath = Path.Combine(path, file + extension.ToLower());
-
-                if (File.Exists(filePath))
-                {
-                    return filePath;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Gets the path strings for the specified environment variable, or an empty array if the variable is not found.
-    /// </summary>
-    /// <param name="value">The name of the environment variable.</param>
-    /// <returns>The path strings.</returns>
-    private static string[] GetPathStrings(string value)
-        => Environment.GetEnvironmentVariable(value)?.Split(Path.PathSeparator, StringSplitOptions.TrimEntries) ?? [];
 
     /// <summary>
     /// Frees the audio stream handle and resets the media player.

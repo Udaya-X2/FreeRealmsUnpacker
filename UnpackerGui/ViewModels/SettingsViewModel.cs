@@ -36,6 +36,7 @@ public class SettingsViewModel : ViewModelBase
     private bool _copyColumnHeaders = false;
     private string _clipboardSeparator = "\t";
     private string _clipboardLineSeparator = Environment.NewLine;
+    private string _ffmpegPath = "";
     private string _inputDirectory = "";
     private string _outputDirectory = "";
     private RecentItemCollection<string> _recentFiles = [];
@@ -242,6 +243,15 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _clipboardLineSeparator;
         set => this.RaiseAndSetIfChanged(ref _clipboardLineSeparator, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the location to the FFmpeg binary.
+    /// </summary>
+    public string FFmpegPath
+    {
+        get => _ffmpegPath;
+        set => this.RaiseAndSetIfChanged(ref _ffmpegPath, value);
     }
 
     /// <summary>

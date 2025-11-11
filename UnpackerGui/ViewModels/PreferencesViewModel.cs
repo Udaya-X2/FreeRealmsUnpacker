@@ -19,6 +19,7 @@ public class PreferencesViewModel : ViewModelBase
         new Preference("File Conflict Options", "Select how to extract assets with conflicting names."),
         new Preference("Folder Options", "Check the types of assets to add when opening a folder."),
         new Preference("Appearance", "Customize the display settings."),
+        new Preference("Clipboard", "Specify how to copy assets to the clipboard."),
         new Preference("Miscellaneous", "Other options that don't fit the previous categories.")
     ];
 

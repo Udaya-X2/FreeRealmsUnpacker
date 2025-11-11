@@ -48,7 +48,8 @@
             <views:FileConflictOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=0}"/>
             <views:FolderOptionsView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"/>
             <views:AppearanceView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=2}"/>
-            <views:MiscellaneousView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=3}"/>
+            <views:ClipboardView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=3}"/>
+            <views:MiscellaneousView IsVisible="{Binding SelectedIndex, Converter={StaticResource ExpressionConverter}, ConverterParameter=4}"/>
         </StackPanel>
     </DockPanel>
 </Window>

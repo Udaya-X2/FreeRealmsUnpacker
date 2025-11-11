@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+             xmlns:ic="using:FluentIcons.Avalonia"
+             xmlns:views="clr-namespace:UnpackerGui.Views"
+             mc:Ignorable="d"
+             d:DesignWidth="300"
+             d:DesignHeight="200"
+             x:Class="UnpackerGui.Views.ClipboardView"
+             x:DataType="vm:PreferencesViewModel">
+    <Design.DataContext>
+        <vm:DesignPreferencesViewModel/>
+    </Design.DataContext>
+    <StackPanel Spacing="5">
+        <Grid RowDefinitions="Auto,Auto"
+              ColumnDefinitions="Auto,Auto"
+              RowSpacing="10"
+              ColumnSpacing="5">
+            <!--Clipboard Separator-->
+            <TextBlock Grid.Row="0"
+                       Grid.Column="0"
+                       Text="Clipboard Separator:"
+                       ToolTip.Tip="The separator to use when copying assets to the clipboard."
+                       VerticalAlignment="Center">
+            </TextBlock>
+            <TextBox Grid.Row="0"
+                     Grid.Column="1"
+                     Text="{Binding Settings.ClipboardSeparator}"
+                     HorizontalAlignment="Left"
+                     AcceptsTab="True"
+                     Width="108"
+                     MinHeight="0"
+                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+            <!--Clipboard Line Separator-->
+            <TextBlock Grid.Row="1"
+                       Grid.Column="0"
+                       Text="Clipboard Line Separator:"
+                       ToolTip.Tip="The line separator to use when copying assets to the clipboard."
+                       VerticalAlignment="Center">
+            </TextBlock>
+            <ComboBox Grid.Row="1"
+                      Grid.Column="1"
+                      SelectedItem="{Binding Settings.ClipboardLineSeparator}"
+                      ItemsSource="{Binding LineSeparators}"
+                      MinHeight="0">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding ., Converter={StaticResource ControlStringConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+        <!--Copy Column Headers-->
+        <CheckBox Content="Copy Column Headers"
+                  ToolTip.Tip="Include the column headers when copying assets to the clipboard."
+                  IsChecked="{Binding Settings.CopyColumnHeaders}"/>
+    </StackPanel>
+</UserControl>
