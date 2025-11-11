@@ -47,14 +47,14 @@ public class AssetDatReader : AssetReader
         (long file, long address) = Math.DivRem(asset.Offset, Constants.MaxAssetDatSize);
         FileStream stream = GetStream(file, asset);
         stream.Position = address;
-        int bytesRead = stream.Read(buffer, 0, (int)asset.Size);
+        int bytesRead = stream.ReadBlocking(buffer, 0, (int)asset.Size);
 
         // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
         while (bytesRead != (int)asset.Size)
         {
             stream = GetStream(++file, asset);
             stream.Position = 0;
-            bytesRead += stream.Read(buffer, bytesRead, (int)asset.Size - bytesRead);
+            bytesRead += stream.ReadBlocking(buffer, bytesRead, (int)asset.Size - bytesRead);
         }
     }
 
@@ -141,19 +141,8 @@ public class AssetDatReader : AssetReader
         {
             foreach (int count in InternalRead(asset))
             {
-                int totalRead = 0;
-
-                do
-                {
-                    int read = stream.Read(buffer, totalRead, count - totalRead);
-
-                    if (read == 0) return false;
-
-                    totalRead += read;
-                }
-                while (totalRead < count);
-
-                if (!_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
+                if (!stream.TryReadExactly(buffer, 0, count)
+                    || !_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
             }
         }
         finally
@@ -180,14 +169,14 @@ public class AssetDatReader : AssetReader
         while (numBytes > 0)
         {
             int count = (int)Math.Min(numBytes, (uint)_buffer.Length);
-            int bytesRead = stream.Read(_buffer, 0, count);
+            int bytesRead = stream.ReadBlocking(_buffer, 0, count);
 
             // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
             while (bytesRead != count)
             {
                 stream = GetStream(++file, asset);
                 stream.Position = 0;
-                bytesRead += stream.Read(_buffer, bytesRead, count - bytesRead);
+                bytesRead += stream.ReadBlocking(_buffer, bytesRead, count - bytesRead);
             }
 
             yield return count;
@@ -302,14 +291,14 @@ public class AssetDatReader : AssetReader
             (long file, long address) = Math.DivRem(_position, Constants.MaxAssetDatSize);
             FileStream stream = GetStream(streams, file, asset);
             stream.Position = address;
-            int bytesRead = stream.Read(buffer, offset, count);
+            int bytesRead = stream.ReadBlocking(buffer, offset, count);
 
             // If the asset spans multiple files, read the next .dat file(s) to obtain the rest of the asset.
             while (bytesRead != count)
             {
                 stream = GetStream(streams, ++file, asset);
                 stream.Position = 0;
-                bytesRead += stream.Read(buffer, offset + bytesRead, count - bytesRead);
+                bytesRead += stream.ReadBlocking(buffer, offset + bytesRead, count - bytesRead);
             }
 
             _position += count;

@@ -1,5 +1,6 @@
 ﻿using Force.Crc32;
 using System.Buffers;
+using System.Diagnostics;
 
 namespace AssetIO;
 
@@ -43,10 +44,7 @@ public class AssetPackReader : AssetReader
 
         _stream.Position = asset.Offset;
 
-        if (_stream.Read(buffer, 0, (int)asset.Size) != (int)asset.Size)
-        {
-            ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
-        }
+        if (!_stream.TryReadExactly(buffer, 0, (int)asset.Size)) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
     }
 
     /// <summary>
@@ -132,19 +130,8 @@ public class AssetPackReader : AssetReader
         {
             foreach (int count in InternalRead(asset))
             {
-                int totalRead = 0;
-
-                do
-                {
-                    int read = stream.Read(buffer, totalRead, count - totalRead);
-
-                    if (read == 0) return false;
-
-                    totalRead += read;
-                }
-                while (totalRead != count);
-
-                if (!_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
+                if (!stream.TryReadExactly(buffer, 0, count)
+                    || !_buffer.AsSpan(0, count).SequenceEqual(buffer.AsSpan(0, count))) return false;
             }
         }
         finally
@@ -169,7 +156,7 @@ public class AssetPackReader : AssetReader
         {
             int count = (int)Math.Min(numBytes, (uint)_buffer.Length);
 
-            if (_stream.Read(_buffer, 0, count) != count) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
+            if (!_stream.TryReadExactly(_buffer, 0, count)) ThrowHelper.ThrowIO_AssetEOF(asset.Name, _stream.Name);
 
             yield return count;
             numBytes -= (uint)count;
@@ -238,7 +225,7 @@ public class AssetPackReader : AssetReader
 
             stream.Position = _position;
 
-            if (stream.Read(buffer, offset, count) != count) ThrowHelper.ThrowIO_AssetEOF(asset.Name, stream.Name);
+            if (!stream.TryReadExactly(buffer, offset, count)) ThrowHelper.ThrowIO_AssetEOF(asset.Name, stream.Name);
 
             _position += count;
             return count;
