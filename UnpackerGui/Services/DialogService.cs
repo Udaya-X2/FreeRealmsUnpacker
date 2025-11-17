@@ -41,7 +41,10 @@ public class DialogService(Window window) : IDialogService
     public async Task ShowErrorDialog(Exception exception, bool terminal = false, bool unhandled = false)
         => await ShowErrorDialog(_owner, exception, terminal, unhandled);
 
-    public static async Task ShowErrorDialog(Window owner, Exception exception, bool terminal = false, bool unhandled = false)
+    public static async Task ShowErrorDialog(Window owner,
+                                             Exception exception,
+                                             bool terminal = false,
+                                             bool unhandled = false)
     {
         ErrorWindow errorWindow = new()
         {
