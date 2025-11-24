@@ -243,7 +243,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
                 // Extract the BINKA asset to a temporary file.
                 string binkaPath = asset.ExtractTempFile().FullName;
                 string wavPath = Path.ChangeExtension(binkaPath, ".wav");
-                
+
                 // Convert the BINKA file to a WAV file using FFmpeg.
                 ProcessStartInfo startInfo = new()
                 {

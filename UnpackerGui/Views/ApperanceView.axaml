@@ -14,8 +14,8 @@
         <vm:DesignPreferencesViewModel/>
     </Design.DataContext>
     <StackPanel Spacing="5">
-        <Grid RowDefinitions="Auto,Auto"
-              ColumnDefinitions="Auto,Auto"
+        <Grid RowDefinitions="Auto,*"
+              ColumnDefinitions="Auto,*"
               RowSpacing="10"
               ColumnSpacing="5">
             <!--Color Theme-->
@@ -47,11 +47,5 @@
                       MinHeight="0"
                       SelectedItem="{Binding Settings.IconVariant}"/>
         </Grid>
-        <!--Show Image Browser-->
-        <CheckBox Content="Show Image Browser"
-                  IsChecked="{Binding Settings.ShowImageBrowser}"/>
-        <!--Show Audio Browser-->
-        <CheckBox Content="Show Audio Browser"
-                  IsChecked="{Binding Settings.ShowAudioBrowser}"/>
     </StackPanel>
 </UserControl>

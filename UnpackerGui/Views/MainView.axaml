@@ -418,7 +418,6 @@
                                           Click="AssetGridRow_ContextMenu_ShowImageBrowser">
                                     <MenuItem.IsVisible>
                                         <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                            <Binding Path="Settings.ShowImageBrowser"/>
                                             <Binding Path="SelectedAssets.Count"
                                                      Converter="{StaticResource ExpressionConverter}"
                                                      ConverterParameter="1"/>
@@ -431,7 +430,6 @@
                                           Click="AssetGridRow_ContextMenu_ShowAudioBrowser">
                                     <MenuItem.IsVisible>
                                         <MultiBinding Converter="{x:Static BoolConverters.And}">
-                                            <Binding Path="Settings.ShowAudioBrowser"/>
                                             <Binding Path="SelectedAssets.Count"
                                                      Converter="{StaticResource ExpressionConverter}"
                                                      ConverterParameter="1"/>

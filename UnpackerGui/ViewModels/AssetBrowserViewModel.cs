@@ -1,7 +1,6 @@
 ﻿using DynamicData.Binding;
 using ReactiveUI;
 using System;
-using System.Linq.Expressions;
 using UnpackerGui.Collections;
 using UnpackerGui.Models;
 
