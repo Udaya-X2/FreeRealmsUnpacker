@@ -157,11 +157,14 @@
                     </Style>
                 </TabStrip.Styles>
                 <TabStripItem Name="assetBrowserTab"
+                              IsSelected="{Binding IsVisible}"
                               Content="Asset Browser"/>
                 <TabStripItem Name="imageBrowserTab"
+                              IsSelected="{Binding ImageBrowser.IsVisible}"
                               IsVisible="{Binding Settings.ShowImageBrowser}"
                               Content="Image Browser"/>
                 <TabStripItem Name="audioBrowserTab"
+                              IsSelected="{Binding AudioBrowser.IsVisible}"
                               IsVisible="{Binding Settings.ShowAudioBrowser}"
                               Content="Audio Browser"/>
             </TabStrip>

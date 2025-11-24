@@ -58,7 +58,7 @@ public class AudioBrowserViewModel : AssetBrowserViewModel
 
         // Filter the audio assets from the asset browser.
         Assets = assets.Filter(x => x.IsAudio);
-        OnAssetsInitialized(x => x.ShowAudioBrowser);
+        OnAssetsInitialized();
 
         // Initialize media player resources.
         _isPlaying = false;

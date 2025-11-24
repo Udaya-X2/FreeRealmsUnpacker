@@ -176,7 +176,7 @@ public class MainViewModel : AssetBrowserViewModel
         CheckedAssets = CheckedAssetFiles.Flatten<ReadOnlyObservableCollection<AssetFileViewModel>, AssetInfo>();
         ValidatedAssets = CheckedAssets.Filter(ValidationOptions);
         Assets = ValidatedAssets.Filter(SearchOptions);
-        OnAssetsInitialized();
+        OnAssetsInitialized(true);
 
         // Toggle asset validation when requested.
         Settings.WhenAnyValue(x => x.ValidateAssets)
@@ -187,6 +187,9 @@ public class MainViewModel : AssetBrowserViewModel
         _preferences = new PreferencesViewModel();
         ImageBrowser = new ImageBrowserViewModel(Assets);
         AudioBrowser = new AudioBrowserViewModel(Assets);
+
+        // Display the main asset browser.
+        IsVisible = true;
     }
 
     /// <summary>
