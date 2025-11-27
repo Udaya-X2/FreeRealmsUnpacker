@@ -1,6 +1,6 @@
 ﻿using Avalonia;
-using Avalonia.ReactiveUI;
 using ManagedBass;
+using ReactiveUI.Avalonia;
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
