@@ -45,6 +45,13 @@ public static class CollectionExtensions
     /// Creates a <see cref="FilteredReactiveCollection{T}"/> from a collection with change notifications.
     /// </summary>
     /// <returns>A new instance of <see cref="FilteredReactiveCollection{T}"/>.</returns>
+    public static FilteredReactiveCollection<T> Filter<T>(this ReadOnlyReactiveCollection<T> items)
+        => new(items, new FilterViewModel<T>());
+
+    /// <summary>
+    /// Creates a <see cref="FilteredReactiveCollection{T}"/> from a collection with change notifications.
+    /// </summary>
+    /// <returns>A new instance of <see cref="FilteredReactiveCollection{T}"/>.</returns>
     public static FilteredReactiveCollection<TResult> Filter<TParam, TResult>(
         this TParam items,
         Func<TResult, bool> predicate)

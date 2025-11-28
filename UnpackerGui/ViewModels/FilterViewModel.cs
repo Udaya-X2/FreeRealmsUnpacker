@@ -18,7 +18,7 @@ public class FilterViewModel<T>(Func<T, bool> predicate) : ViewModelBase
     /// <summary>
     /// Initializes a new instance of the <see cref="FilterViewModel{T}"/> class.
     /// </summary>
-    protected FilterViewModel()
+    public FilterViewModel()
         : this(s_truePredicate)
     {
     }

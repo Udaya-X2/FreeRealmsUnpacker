@@ -61,6 +61,11 @@ public class MainViewModel : AssetBrowserViewModel
     /// </summary>
     public AudioBrowserViewModel AudioBrowser { get; }
 
+    /// <summary>
+    /// Gets the data context for the hex browser.
+    /// </summary>
+    public HexBrowserViewModel HexBrowser { get; }
+
     public ReactiveCommand<Unit, Unit> ExitCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowPreferencesCommand { get; }
     public ReactiveCommand<Unit, Unit> ShowAboutCommand { get; }
@@ -187,6 +192,7 @@ public class MainViewModel : AssetBrowserViewModel
         _preferences = new PreferencesViewModel();
         ImageBrowser = new ImageBrowserViewModel(Assets);
         AudioBrowser = new AudioBrowserViewModel(Assets);
+        HexBrowser = new HexBrowserViewModel(Assets);
 
         // Display the main asset browser.
         IsVisible = true;
