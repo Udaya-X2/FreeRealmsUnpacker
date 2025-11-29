@@ -1,40 +1,41 @@
 <Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:sys="using:System"
-             xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-             xmlns:conv="clr-namespace:UnpackerGui.Converters"
-             xmlns:ic="using:FluentIcons.Avalonia"
-             x:Class="UnpackerGui.App"
-             RequestedThemeVariant="Default">
-    <Application.Styles>
-        <FluentTheme/>
-        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
-        <StyleInclude Source="avares://AvaloniaHex/Themes/Simple/AvaloniaHex.axaml"/>
-        <StyleInclude Source="avares://UnpackerGui/Views/Styles/Styles.axaml"/>
-        <Style Selector="DataGridCell">
-            <Setter Property="FontSize" Value="12"/>
-        </Style>
-        <Style Selector="ic|FluentIcon">
-            <Setter Property="IconVariant"
-                    Value="{Binding Source={x:Static Application.Current}, Path=((vm:SettingsViewModel)DataContext).IconVariant}"/>
-        </Style>
-    </Application.Styles>
-    <Application.Resources>
-        <ResourceDictionary>
-            <FontFamily x:Key="ContentControlThemeFontFamily">Tahoma</FontFamily>
-            <sys:Double x:Key="ControlContentThemeFontSize">12</sys:Double>
-            <conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
-            <conv:ControlStringConverter x:Key="ControlStringConverter"/>
-            <conv:DoubleToTimestampConverter x:Key="DoubleToTimestampConverter"/>
-            <conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
-            <conv:EqualityConverter x:Key="EqualityConverter"/>
-            <conv:ExpressionConverter x:Key="ExpressionConverter"/>
-            <conv:FileSizeConverter x:Key="FileSizeConverter"/>
-            <conv:OptionalFileSizeConverter x:Key="OptionalFileSizeConverter"/>
-            <conv:PathConverter x:Key="PathConverter"/>
-            <conv:PluralConverter x:Key="PluralConverter"/>
-            <conv:TitleCaseConverter x:Key="TitleCaseConverter"/>
-            <conv:VolumeToIconConverter x:Key="VolumeToIconConverter"/>
-        </ResourceDictionary>
-    </Application.Resources>
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:sys="using:System"
+			 xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+			 xmlns:conv="clr-namespace:UnpackerGui.Converters"
+			 xmlns:ic="using:FluentIcons.Avalonia"
+			 x:Class="UnpackerGui.App"
+			 RequestedThemeVariant="Default">
+	<Application.Styles>
+		<FluentTheme/>
+		<StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+		<StyleInclude Source="avares://AvaloniaHex/Themes/Simple/AvaloniaHex.axaml"/>
+		<StyleInclude Source="avares://UnpackerGui/Views/Styles/Styles.axaml"/>
+		<Style Selector="DataGridCell">
+			<Setter Property="FontSize" Value="12"/>
+		</Style>
+		<Style Selector="ic|FluentIcon">
+			<Setter Property="IconVariant"
+					Value="{Binding Source={x:Static Application.Current}, Path=((vm:SettingsViewModel)DataContext).IconVariant}"/>
+		</Style>
+	</Application.Styles>
+	<Application.Resources>
+		<ResourceDictionary>
+			<FontFamily x:Key="ContentControlThemeFontFamily">Tahoma</FontFamily>
+			<FontFamily x:Key="SourceCodeProFont">avares://UnpackerGui/Assets/Fonts#Source Code Pro</FontFamily>
+			<sys:Double x:Key="ControlContentThemeFontSize">12</sys:Double>
+			<conv:BooleanToStringConverter x:Key="BooleanToStringConverter"/>
+			<conv:ControlStringConverter x:Key="ControlStringConverter"/>
+			<conv:DoubleToTimestampConverter x:Key="DoubleToTimestampConverter"/>
+			<conv:EnumToBooleanConverter x:Key="EnumToBooleanConverter"/>
+			<conv:EqualityConverter x:Key="EqualityConverter"/>
+			<conv:ExpressionConverter x:Key="ExpressionConverter"/>
+			<conv:FileSizeConverter x:Key="FileSizeConverter"/>
+			<conv:OptionalFileSizeConverter x:Key="OptionalFileSizeConverter"/>
+			<conv:PathConverter x:Key="PathConverter"/>
+			<conv:PluralConverter x:Key="PluralConverter"/>
+			<conv:TitleCaseConverter x:Key="TitleCaseConverter"/>
+			<conv:VolumeToIconConverter x:Key="VolumeToIconConverter"/>
+		</ResourceDictionary>
+	</Application.Resources>
 </Application>

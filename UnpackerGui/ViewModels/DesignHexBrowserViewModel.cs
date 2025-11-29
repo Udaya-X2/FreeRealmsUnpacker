@@ -1,5 +1,11 @@
-﻿namespace UnpackerGui.ViewModels;
+﻿using System.Linq;
 
-public class DesignHexBrowserViewModel() : HexBrowserViewModel(new DesignMainViewModel().Assets)
+namespace UnpackerGui.ViewModels;
+
+public class DesignHexBrowserViewModel : HexBrowserViewModel
 {
+    public DesignHexBrowserViewModel() : base(new DesignMainViewModel().Assets)
+    {
+        SelectedAsset = Assets.FirstOrDefault();
+    }
 }

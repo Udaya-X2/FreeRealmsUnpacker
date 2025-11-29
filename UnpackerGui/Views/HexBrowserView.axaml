@@ -99,7 +99,7 @@
 			<Grid RowDefinitions="*,Auto"
 				  ClipToBounds="True">
 				<!--Hex Editor-->
-				<avaloniaHex:HexEditor FontFamily="Cascadia Code,JetBrains Mono,Monospace,monospace"
+				<avaloniaHex:HexEditor FontFamily="{StaticResource SourceCodeProFont}"
 									   Document="{Binding DisplayedDocument}"
 									   Margin="5">
 					<avaloniaHex:HexEditor.Columns>
