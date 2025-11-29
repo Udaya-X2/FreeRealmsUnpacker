@@ -88,7 +88,7 @@ public partial class App : Application
         else if (Design.IsDesignMode)
         {
             // Use the default settings in design mode.
-            DataContext = Settings = new SettingsViewModel() { ColorTheme = ColorTheme.Light };
+            DataContext = Settings = new SettingsViewModel() { ColorTheme = ColorTheme.Dark };
         }
         else
         {
