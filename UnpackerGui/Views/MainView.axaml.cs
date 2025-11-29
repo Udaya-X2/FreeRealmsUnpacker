@@ -87,6 +87,15 @@ public partial class MainView : UserControl
     private async void AssetGridRow_ContextMenu_CopyRows(object? sender, RoutedEventArgs e)
         => await CopyAssetsToClipboard(assetGrid.SelectedItems);
 
+    private void AssetGridRow_ContextMenu_ShowHexBrowser(object? sender, RoutedEventArgs e)
+    {
+        if (VisualRoot is not MainWindow mainWindow) return;
+
+        mainWindow.hexBrowserTab.IsSelected = true;
+        mainWindow.hexBrowserView.assetGrid.SelectedItem = assetGrid.SelectedItem;
+        mainWindow.hexBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+    }
+
     private void AssetGridRow_ContextMenu_ShowImageBrowser(object? sender, RoutedEventArgs e)
     {
         if (VisualRoot is not MainWindow mainWindow) return;

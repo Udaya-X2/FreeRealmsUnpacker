@@ -414,6 +414,9 @@
                                 <MenuItem Header="Select Asset File"
                                           IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
                                           Command="{Binding SelectFileCommand}"/>
+                                <MenuItem Header="Show in Hex Browser"
+                                          IsVisible="{Binding SelectedAssets.Count, Converter={StaticResource ExpressionConverter}, ConverterParameter=1}"
+                                          Click="AssetGridRow_ContextMenu_ShowHexBrowser"/>
                                 <MenuItem Header="Show in Image Browser"
                                           Click="AssetGridRow_ContextMenu_ShowImageBrowser">
                                     <MenuItem.IsVisible>

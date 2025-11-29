@@ -50,6 +50,24 @@ public partial class HexBrowserView : UserControl
         mainWindow.assetBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
     }
 
+    private void MenuItem_Click_ShowImageBrowser(object? sender, RoutedEventArgs e)
+    {
+        if (VisualRoot is not MainWindow mainWindow) return;
+
+        mainWindow.imageBrowserTab.IsSelected = true;
+        mainWindow.imageBrowserView.assetGrid.SelectedItem = assetGrid.SelectedItem;
+        mainWindow.imageBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+    }
+
+    private void MenuItem_Click_ShowAudioBrowser(object? sender, RoutedEventArgs e)
+    {
+        if (VisualRoot is not MainWindow mainWindow) return;
+
+        mainWindow.audioBrowserTab.IsSelected = true;
+        mainWindow.audioBrowserView.assetGrid.SelectedItem = assetGrid.SelectedItem;
+        mainWindow.audioBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+    }
+
     private async void MenuItem_Click_CopyDataGridColumn(object? sender, RoutedEventArgs e)
         => await CopyAssetsToClipboard(assetGrid.CollectionView);
 

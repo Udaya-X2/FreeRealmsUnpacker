@@ -49,6 +49,15 @@ public partial class AudioBrowserView : UserControl
         mainWindow.assetBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
     }
 
+    private void MenuItem_Click_ShowHexBrowser(object? sender, RoutedEventArgs e)
+    {
+        if (VisualRoot is not MainWindow mainWindow) return;
+
+        mainWindow.hexBrowserTab.IsSelected = true;
+        mainWindow.hexBrowserView.assetGrid.SelectedItem = assetGrid.SelectedItem;
+        mainWindow.hexBrowserView.assetGrid.ScrollIntoView(assetGrid.SelectedItem, null);
+    }
+
     private async void MenuItem_Click_CopyDataGridColumn(object? sender, RoutedEventArgs e)
         => await CopyAssetsToClipboard(assetGrid.CollectionView);
 
