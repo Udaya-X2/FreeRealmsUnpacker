@@ -132,6 +132,11 @@
 						<rendering:HexColumn IsHeaderVisible="{Binding !!DisplayedDocument}"/>
 						<rendering:AsciiColumn/>
 					</avaloniaHex:HexEditor.Columns>
+					<avaloniaHex:HexEditor.ContextMenu>
+						<ContextMenu>
+							<MenuItem Header="Copy" Click="CopyHexData"/>
+						</ContextMenu>
+					</avaloniaHex:HexEditor.ContextMenu>
 				</avaloniaHex:HexEditor>
 				<!--File Info & Other Controls-->
 				<Border Grid.Row="1"

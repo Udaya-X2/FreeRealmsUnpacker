@@ -94,6 +94,8 @@ public partial class HexBrowserView : UserControl
         await App.SetClipboardText(sb.ToString());
     }
 
+    private async void CopyHexData(object? sender, RoutedEventArgs e) => await hexEditor.Copy();
+
     private void OnSelectionRangeChanged(object? s, EventArgs e)
     {
         BitRange range = hexEditor.Selection.Range;
