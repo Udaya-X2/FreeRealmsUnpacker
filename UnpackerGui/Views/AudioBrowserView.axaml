@@ -181,7 +181,8 @@
                 <!--Media Info & Other Controls-->
                 <Border Grid.Row="1"
                         BorderBrush="Gray"
-                        BorderThickness="0 1 0 0">
+                        BorderThickness="0 1 0 0"
+						Height="31">
                     <DockPanel Background="{DynamicResource SystemChromeMediumColor}"
                                ClipToBounds="True">
                         <!--Media Info-->

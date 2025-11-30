@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using AvaloniaHex.Document;
 using ReactiveUI;
+using System;
 using System.Collections;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ public partial class HexBrowserView : UserControl
     public HexBrowserView()
     {
         InitializeComponent();
+        hexEditor.Selection.RangeChanged += OnSelectionRangeChanged;
     }
 
     private void View_Loaded(object? sender, RoutedEventArgs e)
@@ -90,5 +92,13 @@ public partial class HexBrowserView : UserControl
         }
 
         await App.SetClipboardText(sb.ToString());
+    }
+
+    private void OnSelectionRangeChanged(object? s, EventArgs e)
+    {
+        BitRange range = hexEditor.Selection.Range;
+        offsetTextBlock.Text = hexEditor.Document != null ? $"Offset: {range.Start.ByteIndex}" : "";
+        lengthTextBlock.Text = range.ByteLength > 1 ? $"Length: {range.ByteLength}" : "";
+        blockTextBlock.Text = range.ByteLength > 1 ? $"Block: {range.Start.ByteIndex}-{range.End.ByteIndex - 1}" : "";
     }
 }
