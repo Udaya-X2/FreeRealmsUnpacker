@@ -126,16 +126,19 @@
 				<avaloniaHex:HexEditor Name="hexEditor"
 									   FontFamily="{StaticResource SourceCodeProFont}"
 									   Document="{Binding DisplayedDocument}"
+									   IsVisible="{Binding DisplayedDocument, Converter={x:Static ObjectConverters.IsNotNull}}"
 									   Margin="5">
 					<avaloniaHex:HexEditor.Columns>
 						<rendering:OffsetColumn/>
-						<rendering:HexColumn IsHeaderVisible="{Binding DisplayedDocument, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+						<rendering:HexColumn/>
 						<rendering:AsciiColumn/>
 					</avaloniaHex:HexEditor.Columns>
 					<avaloniaHex:HexEditor.ContextMenu>
 						<ContextMenu>
-							<MenuItem Header="Copy" Click="CopyHexData"/>
-							<MenuItem Header="Go To Offset" Click="GoToOffset"/>
+							<MenuItem Header="Copy"
+									  Click="CopyHexData"/>
+							<MenuItem Header="Go To Offset"
+									  Click="GoToOffset"/>
 						</ContextMenu>
 					</avaloniaHex:HexEditor.ContextMenu>
 				</avaloniaHex:HexEditor>
