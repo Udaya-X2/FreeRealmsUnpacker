@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+		xmlns:ic="using:FluentIcons.Avalonia"
+		x:Class="UnpackerGui.Views.InputWindow"
+		mc:Ignorable="d"
+		Icon="avares://UnpackerGui/Assets/info.ico"
+		Width="450"
+		x:DataType="vm:InputViewModel"
+		ShowInTaskbar="False"
+		WindowStartupLocation="CenterOwner"
+		SizeToContent="Height"
+		CanResize="False"
+		Loaded="Window_Loaded">
+	<Design.DataContext>
+		<vm:InputViewModel/>
+	</Design.DataContext>
+	<DockPanel Margin="10">
+		<StackPanel Spacing="5">
+			<TextBlock Text="{Binding Prompt}"/>
+			<TextBox Name="inputTextBox"/>
+			<StackPanel Orientation="Horizontal"
+						HorizontalAlignment="Right"
+						Spacing="10">
+				<Button Name="okButton"
+						HotKey="Enter"
+						Width="40"
+						HorizontalContentAlignment="Center"
+						Click="OK_Button_Click"
+						Content="OK">
+				</Button>
+				<Button Width="60"
+						HorizontalContentAlignment="Center"
+						Click="Cancel_Button_Click"
+						Content="Cancel">
+				</Button>
+			</StackPanel>
+		</StackPanel>
+	</DockPanel>
+</Window>

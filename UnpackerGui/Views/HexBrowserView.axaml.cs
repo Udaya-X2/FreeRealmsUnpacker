@@ -5,9 +5,11 @@ using AvaloniaHex.Document;
 using ReactiveUI;
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using UnpackerGui.Models;
+using UnpackerGui.Services;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -95,6 +97,18 @@ public partial class HexBrowserView : UserControl
     }
 
     private async void CopyHexData(object? sender, RoutedEventArgs e) => await hexEditor.Copy();
+
+    private async void GoToOffset(object? sender, RoutedEventArgs e)
+    {
+        if (await App.GetService<IDialogService>().ShowInputDialog(new InputViewModel
+        {
+            Title = "Go To Offset",
+            IsValid = static x => uint.TryParse(x, out _)
+        }) is not string offset) return;
+
+        hexEditor.Caret.Location = new BitLocation(uint.Parse(offset));
+        hexEditor.ResetSelection();
+    }
 
     private void OnSelectionRangeChanged(object? s, EventArgs e)
     {

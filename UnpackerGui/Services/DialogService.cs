@@ -14,10 +14,16 @@ public class DialogService(Window window) : IDialogService
 {
     private readonly Window _owner = window;
 
-    public async Task ShowDialog(Window window, bool terminal = false)
-        => await ShowDialog(_owner, window, terminal);
+    public Task ShowDialog(Window window, bool terminal = false)
+        => ShowDialog(_owner, window, terminal);
 
-    public static async Task ShowDialog(Window owner, Window window, bool terminal = false)
+    public static Task ShowDialog(Window owner, Window window, bool terminal = false)
+        => ShowDialog<object>(owner, window, terminal);
+
+    public Task<T> ShowDialog<T>(Window window, bool terminal = false)
+        => ShowDialog<T>(_owner, window, terminal);
+
+    public static async Task<T> ShowDialog<T>(Window owner, Window window, bool terminal = false)
     {
         using CompositeDisposable _ =
         [
@@ -30,21 +36,23 @@ public class DialogService(Window window) : IDialogService
                 }
             })
         ];
-        await window.ShowDialog(owner);
+        T result = await window.ShowDialog<T>(owner);
 
         if (terminal)
         {
             owner.Close();
         }
+
+        return result;
     }
 
-    public async Task ShowErrorDialog(Exception exception, bool terminal = false, bool unhandled = false)
-        => await ShowErrorDialog(_owner, exception, terminal, unhandled);
+    public Task ShowErrorDialog(Exception exception, bool terminal = false, bool unhandled = false)
+        => ShowErrorDialog(_owner, exception, terminal, unhandled);
 
-    public static async Task ShowErrorDialog(Window owner,
-                                             Exception exception,
-                                             bool terminal = false,
-                                             bool unhandled = false)
+    public static Task ShowErrorDialog(Window owner,
+                                       Exception exception,
+                                       bool terminal = false,
+                                       bool unhandled = false)
     {
         ErrorWindow errorWindow = new()
         {
@@ -54,16 +62,24 @@ public class DialogService(Window window) : IDialogService
                 Handled = !unhandled
             }
         };
-        await ShowDialog(owner, errorWindow, terminal);
+        return ShowDialog(owner, errorWindow, terminal);
     }
 
-    public async Task<bool> ShowConfirmDialog(ConfirmViewModel confirm, bool terminal = false)
-        => await ShowConfirmDialog(_owner, confirm, terminal);
+    public Task<bool> ShowConfirmDialog(ConfirmViewModel confirm, bool terminal = false)
+        => ShowConfirmDialog(_owner, confirm, terminal);
 
-    public static async Task<bool> ShowConfirmDialog(Window owner, ConfirmViewModel confirm, bool terminal = false)
+    public static Task<bool> ShowConfirmDialog(Window owner, ConfirmViewModel confirm, bool terminal = false)
     {
         ConfirmWindow window = new() { DataContext = confirm };
-        await ShowDialog(owner, window, terminal);
-        return window.Confirmed;
+        return ShowDialog<bool>(owner, window, terminal);
+    }
+
+    public Task<string> ShowInputDialog(InputViewModel input, bool terminal = false)
+        => ShowInputDialog(_owner, input, terminal);
+
+    public static Task<string> ShowInputDialog(Window owner, InputViewModel input, bool terminal = false)
+    {
+        InputWindow window = new() { DataContext = input };
+        return ShowDialog<string>(owner, window, terminal);
     }
 }

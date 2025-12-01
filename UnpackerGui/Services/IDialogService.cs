@@ -8,6 +8,8 @@ namespace UnpackerGui.Services;
 public interface IDialogService
 {
     Task ShowDialog(Window window, bool terminal = false);
+    Task<T> ShowDialog<T>(Window window, bool terminal = false);
     Task ShowErrorDialog(Exception exception, bool terminal = false, bool unhandled = false);
     Task<bool> ShowConfirmDialog(ConfirmViewModel confirm, bool terminal = false);
+    Task<string> ShowInputDialog(InputViewModel input, bool terminal = false);
 }
