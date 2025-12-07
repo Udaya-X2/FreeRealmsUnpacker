@@ -1,31 +1,71 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
+        <OutputType>WinExe</OutputType>
         <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <NeutralLanguage>en-US</NeutralLanguage>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationIcon>Assets\unpacker.ico</ApplicationIcon>
     </PropertyGroup>
-
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
-
-
-    <ItemGroup>
-        <None Remove="Assets\unpacker.ico" />
-    </ItemGroup>
-
 
     <ItemGroup>
         <Compile Include="..\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
     </ItemGroup>
 
     <ItemGroup>
+        <Content Include="runtimes\**" Condition="'$(RuntimeIdentifier)' == ''">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\linux-arm64\native\*" Condition="'$(RuntimeIdentifier)' == 'linux-arm64'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\linux-arm\native\*" Condition="'$(RuntimeIdentifier)' == 'linux-arm'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\linux-x64\native\*" Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\linux-x86\native\*" Condition="'$(RuntimeIdentifier)' == 'linux-x86'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\osx\native\*" Condition="$(RuntimeIdentifier.StartsWith('osx'))">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\win-arm64\native\*" Condition="'$(RuntimeIdentifier)' == 'win-arm64'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\win-arm\native\*" Condition="'$(RuntimeIdentifier)' == 'win-arm'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\win-x64\native\*" Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <Content Include="runtimes\win-x86\native\*" Condition="'$(RuntimeIdentifier)' == 'win-x86'">
+            <Link>%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    
+    <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.3.9" />
         <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.3.9" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.9" />
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.9" />
         <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.9" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
@@ -41,42 +81,43 @@
         <PackageReference Include="Pfim" Version="0.11.4" />
         <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
         <PackageReference Include="SkiaSharp" Version="3.119.1" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\AssetIO\AssetIO.csproj" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.1" />
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="SR.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>SR.resx</DependentUpon>
-      </Compile>
-      <Compile Update="Views\ConfirmWindow.axaml.cs">
-        <DependentUpon>ConfirmWindow.axaml</DependentUpon>
-      </Compile>
-      <Compile Update="Views\FileConflictOptionsView.axaml.cs">
-        <DependentUpon>FileConflictOptionsView.axaml</DependentUpon>
-      </Compile>
-      <Compile Update="Views\FolderOptionsView.axaml.cs">
-        <DependentUpon>FolderOptionsView.axaml</DependentUpon>
-      </Compile>
-      <Compile Update="Views\ApperanceView.axaml.cs">
-        <DependentUpon>ApperanceView.axaml</DependentUpon>
-      </Compile>
-      <Compile Update="Views\AudioBrowserView.axaml.cs">
-        <DependentUpon>AudioBrowserView.axaml</DependentUpon>
-      </Compile>
-      <Compile Update="Views\MiscellaneousView.axaml.cs">
-        <DependentUpon>MiscellaneousView.axaml</DependentUpon>
-      </Compile>
+        <ProjectReference Include="..\AssetIO\AssetIO.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="SR.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>SR.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+        <Compile Update="SR.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>SR.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Views\ConfirmWindow.axaml.cs">
+            <DependentUpon>ConfirmWindow.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\FileConflictOptionsView.axaml.cs">
+            <DependentUpon>FileConflictOptionsView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\FolderOptionsView.axaml.cs">
+            <DependentUpon>FolderOptionsView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\ApperanceView.axaml.cs">
+            <DependentUpon>ApperanceView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\AudioBrowserView.axaml.cs">
+            <DependentUpon>AudioBrowserView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\MiscellaneousView.axaml.cs">
+            <DependentUpon>MiscellaneousView.axaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="SR.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>SR.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 </Project>

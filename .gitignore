@@ -396,4 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-/UnpackerGui.Desktop/Properties/launchSettings.json
+
+# Visual Studio launch settings
+launchSettings.json
