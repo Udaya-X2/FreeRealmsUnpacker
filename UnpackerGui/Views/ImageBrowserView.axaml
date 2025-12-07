@@ -191,7 +191,8 @@
 									Click="Button_Click_ResetZoom"
 									HotKey="Ctrl+D0"
 									ToolTip.Tip="Reset Zoom (Ctrl+0)">
-								<ic:FluentIcon Icon="PageFit"/>
+								<ic:FluentIcon Icon="PageFit"
+											   IconSize="16"/>
 							</Button>
 							<!--Zoom In Button-->
 							<Button Classes="Transparent"

@@ -32,13 +32,13 @@
         <PackageReference Include="Avalonia.Diagnostics" Version="11.3.9" Condition="'$(Configuration)' == 'Debug'" />
         <PackageReference Include="AvaloniaHex" Version="0.1.10" />
         <PackageReference Include="Clowd.Clipboard.Avalonia" Version="1.1.4" />
-        <PackageReference Include="FluentIcons.Avalonia" Version="1.2.315" />
+        <PackageReference Include="FluentIcons.Avalonia" Version="2.0.316.1" />
         <PackageReference Include="GtfDdsSharp" Version="1.0.0" />
         <PackageReference Include="ManagedBass" Version="4.0.2" />
         <PackageReference Include="ManagedBass.Fx" Version="4.0.2" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
         <PackageReference Include="PanAndZoom" Version="11.3.6" />
-        <PackageReference Include="Pfim" Version="0.11.3" />
+        <PackageReference Include="Pfim" Version="0.11.4" />
         <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
         <PackageReference Include="SkiaSharp" Version="3.119.1" />
     </ItemGroup>
