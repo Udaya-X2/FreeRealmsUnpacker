@@ -20,7 +20,7 @@ namespace UnpackerGui.Models;
 public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFile AssetFile)
     : Asset(Name, Offset, Size, Crc32)
 {
-    private static readonly FrozenSet<string> s_imageFormats = ((HashSet<string>)
+    private static readonly FrozenSet<string> s_imageFormats = FrozenSet.Create(
     [
         "3FR",
         "AFPHOTO",
@@ -124,8 +124,8 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
         "WMF",
         "X3F",
         "XCF"
-    ]).ToFrozenSet();
-    private static readonly FrozenSet<string> s_audioFormats = ((HashSet<string>)
+    ]);
+    private static readonly FrozenSet<string> s_audioFormats = FrozenSet.Create(
     [
         "AIF",
         "AIFF",
@@ -154,7 +154,7 @@ public record AssetInfo(string Name, long Offset, uint Size, uint Crc32, AssetFi
         "WAV",
         "XM",
         "XMZ"
-    ]).ToFrozenSet();
+    ]);
 
     /// <summary>
     /// Gets an <see cref="EqualityComparer{T}"/> that compares
