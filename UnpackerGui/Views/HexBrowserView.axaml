@@ -127,6 +127,7 @@
 									   FontFamily="{StaticResource SourceCodeProFont}"
 									   Document="{Binding DisplayedDocument}"
 									   IsVisible="{Binding DisplayedDocument, Converter={x:Static ObjectConverters.IsNotNull}}"
+									   FontSize="{Binding Settings.HexBrowserFontSize}"
 									   Margin="5">
 					<avaloniaHex:HexEditor.Columns>
 						<rendering:OffsetColumn/>

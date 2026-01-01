@@ -29,6 +29,7 @@ public class SettingsViewModel : ViewModelBase
     private SearchOption _searchOption = SearchOption.AllDirectories;
     private ColorTheme _colorTheme = ColorTheme.SystemDefault;
     private IconVariant _iconVariant = IconVariant.Regular;
+    private int _hexBrowserFontSize = 12;
     private bool _confirmDelete = true;
     private bool _deleteDataFiles = true;
     private bool _copyColumnHeaders = false;
@@ -178,6 +179,15 @@ public class SettingsViewModel : ViewModelBase
     {
         get => _iconVariant;
         set => this.RaiseAndSetIfChanged(ref _iconVariant, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the hex browser font size.
+    /// </summary>
+    public int HexBrowserFontSize
+    {
+        get => _hexBrowserFontSize;
+        set => this.RaiseAndSetIfChanged(ref _hexBrowserFontSize, value);
     }
 
     /// <summary>

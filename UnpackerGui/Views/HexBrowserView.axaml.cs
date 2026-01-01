@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
-using UnpackerGui.Utils;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -38,7 +37,6 @@ public partial class HexBrowserView : UserControl
             Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
             Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
         });
-
 
         // Add hotkey event handler.
         mainWindow.AddHandler(KeyDownEvent, async (s, e) =>

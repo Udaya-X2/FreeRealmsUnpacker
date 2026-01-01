@@ -1,51 +1,82 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
-             xmlns:ic="using:FluentIcons.Avalonia"
-             xmlns:views="clr-namespace:UnpackerGui.Views"
-             mc:Ignorable="d"
-             d:DesignWidth="300"
-             d:DesignHeight="200"
-             x:Class="UnpackerGui.Views.AppearanceView"
-             x:DataType="vm:PreferencesViewModel">
-    <Design.DataContext>
-        <vm:DesignPreferencesViewModel/>
-    </Design.DataContext>
-    <StackPanel Spacing="5">
-        <Grid RowDefinitions="Auto,*"
-              ColumnDefinitions="Auto,*"
-              RowSpacing="10"
-              ColumnSpacing="5">
-            <!--Color Theme-->
-            <TextBlock Grid.Row="0"
-                       Grid.Column="0"
-                       Text="Color Theme:"
-                       ToolTip.Tip="The application's theme color."
-                       VerticalAlignment="Center"/>
-            <ComboBox Grid.Row="0"
-                      Grid.Column="1"
-                      Name="colorThemeComboBox"
-                      MinHeight="0"
-                      SelectedItem="{Binding Settings.ColorTheme}">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding, Converter={StaticResource TitleCaseConverter}}"/>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
-            <!--Icon Type-->
-            <TextBlock Grid.Row="1"
-                       Grid.Column="0"
-                       Text="Icon Type:"
-                       ToolTip.Tip="The Fluent UI icon type."
-                       VerticalAlignment="Center"/>
-            <ComboBox Grid.Row="1"
-                      Grid.Column="1"
-                      Name="iconTypeComboBox"
-                      MinHeight="0"
-                      SelectedItem="{Binding Settings.IconVariant}"/>
-        </Grid>
-    </StackPanel>
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:UnpackerGui.ViewModels"
+			 xmlns:ic="using:FluentIcons.Avalonia"
+			 xmlns:views="clr-namespace:UnpackerGui.Views"
+			 mc:Ignorable="d"
+			 d:DesignWidth="300"
+			 d:DesignHeight="200"
+			 x:Class="UnpackerGui.Views.AppearanceView"
+			 x:DataType="vm:PreferencesViewModel">
+	<Design.DataContext>
+		<vm:DesignPreferencesViewModel/>
+	</Design.DataContext>
+	<UserControl.Styles>
+		<!--Hide Validation Error Messages-->
+		<Style Selector="DataValidationErrors">
+			<Setter Property="Template">
+				<ControlTemplate>
+					<ContentPresenter Name="PART_ContentPresenter"
+									  Background="{TemplateBinding Background}"
+									  BorderBrush="{TemplateBinding BorderBrush}"
+									  BorderThickness="{TemplateBinding BorderThickness}"
+									  CornerRadius="{TemplateBinding CornerRadius}"
+									  ContentTemplate="{TemplateBinding ContentTemplate}"
+									  Content="{TemplateBinding Content}"
+									  Padding="{TemplateBinding Padding}"/>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+	</UserControl.Styles>
+	<StackPanel Spacing="5">
+		<Grid RowDefinitions="*,*,*"
+			  ColumnDefinitions="Auto,Auto"
+			  RowSpacing="10"
+			  ColumnSpacing="5">
+			<!--Color Theme-->
+			<TextBlock Grid.Row="0"
+					   Grid.Column="0"
+					   Text="Color Theme:"
+					   ToolTip.Tip="The application's theme color."
+					   VerticalAlignment="Center"/>
+			<ComboBox Grid.Row="0"
+					  Grid.Column="1"
+					  Name="colorThemeComboBox"
+					  MinHeight="0"
+					  SelectedItem="{Binding Settings.ColorTheme}">
+				<ComboBox.ItemTemplate>
+					<DataTemplate>
+						<TextBlock Text="{Binding, Converter={StaticResource TitleCaseConverter}}"/>
+					</DataTemplate>
+				</ComboBox.ItemTemplate>
+			</ComboBox>
+			<!--Icon Type-->
+			<TextBlock Grid.Row="1"
+					   Grid.Column="0"
+					   Text="Icon Type:"
+					   ToolTip.Tip="The Fluent UI icon type."
+					   VerticalAlignment="Center"/>
+			<ComboBox Grid.Row="1"
+					  Grid.Column="1"
+					  Name="iconTypeComboBox"
+					  MinHeight="0"
+					  SelectedItem="{Binding Settings.IconVariant}"/>
+			<!--Hex Browser Font Size-->
+			<TextBlock Grid.Row="2"
+					   Grid.Column="0"
+					   Text="Hex Browser Font Size:"
+					   ToolTip.Tip="The font size for the hex browser."
+					   VerticalAlignment="Center"/>
+			<NumericUpDown Grid.Row="2"
+						   Grid.Column="1"
+						   ClipValueToMinMax="True"
+						   Minimum="6"
+						   Maximum="100"
+						   Increment="1"
+						   ParsingNumberStyle="Integer"
+						   Value="{Binding Settings.HexBrowserFontSize}"/>
+		</Grid>
+	</StackPanel>
 </UserControl>
