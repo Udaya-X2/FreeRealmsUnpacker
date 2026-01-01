@@ -7,6 +7,7 @@
 		x:Class="UnpackerGui.Views.InputWindow"
 		mc:Ignorable="d"
 		Icon="avares://UnpackerGui/Assets/info.ico"
+		Title="{Binding Title}"
 		Width="450"
 		x:DataType="vm:InputViewModel"
 		ShowInTaskbar="False"
