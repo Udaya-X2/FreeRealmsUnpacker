@@ -1,5 +1,4 @@
 ﻿using AssetIO;
-using AvaloniaHex;
 using AvaloniaHex.Document;
 using ReactiveUI;
 using System;

@@ -9,12 +9,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using UnpackerGui.Commands;
 using UnpackerGui.Extensions;
 using UnpackerGui.Models;
+using UnpackerGui.Utils;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -52,8 +52,7 @@ public partial class MainView : UserControl
             }
             if (e is { Key: Key.D, KeyModifiers: KeyModifiers.Alt })
             {
-                GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, true, true);
+                GCUtils.Collect();
             }
         });
 

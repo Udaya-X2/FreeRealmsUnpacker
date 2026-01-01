@@ -5,11 +5,11 @@ using AvaloniaHex.Document;
 using ReactiveUI;
 using System;
 using System.Collections;
-using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
 using UnpackerGui.Models;
 using UnpackerGui.Services;
+using UnpackerGui.Utils;
 using UnpackerGui.ViewModels;
 
 namespace UnpackerGui.Views;
@@ -25,6 +25,7 @@ public partial class HexBrowserView : UserControl
     private void View_Loaded(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not AssetBrowserViewModel browser) return;
+        if (VisualRoot is not MainWindow mainWindow) return;
 
         // SelectedItems is a not a bindable property in DataGrid, so we need to pass
         // it as a reference to the view model to keep track of the selected assets.
@@ -36,6 +37,16 @@ public partial class HexBrowserView : UserControl
         {
             Gesture = new KeyGesture(Key.C, KeyModifiers.Control),
             Command = ReactiveCommand.CreateFromTask(() => CopyAssetsToClipboard(assetGrid.SelectedItems))
+        });
+
+
+        // Add hotkey event handler.
+        mainWindow.AddHandler(KeyDownEvent, async (s, e) =>
+        {
+            if (IsVisible && e is { Key: Key.G, KeyModifiers: KeyModifiers.Control })
+            {
+                await GoToOffset();
+            }
         });
     }
 
@@ -98,8 +109,11 @@ public partial class HexBrowserView : UserControl
 
     private async void CopyHexData(object? sender, RoutedEventArgs e) => await hexEditor.Copy();
 
-    private async void GoToOffset(object? sender, RoutedEventArgs e)
+    private async void GoToOffset(object? sender, RoutedEventArgs e) => await GoToOffset();
+
+    private async Task GoToOffset()
     {
+        if (hexEditor.Document == null) return;
         if (await App.GetService<IDialogService>().ShowInputDialog(new InputViewModel
         {
             Title = "Go To Offset",
