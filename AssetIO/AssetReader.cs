@@ -98,6 +98,7 @@ public abstract class AssetReader : IDisposable
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(dirPath);
 
+        dirPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(dirPath));
         fileExtracted = TryGetExtractionPath(asset, dirPath, options, out string filePath);
         FileInfo file = new(filePath);
 
