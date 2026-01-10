@@ -1,6 +1,10 @@
 # FreeRealmsUnpacker
 An application that allows you to browse and extract assets from Free Realms asset files. It also includes other utilities, such as creating asset files, adding/deleting/validating assets, and fixing corrupted asset files (i.e., .pack.temp files).
 
+## Requirements
+
+Must have [.NET 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) installed.
+
 ## GUI
 
 ![program.png](UnpackerGui/Assets/program.png)
